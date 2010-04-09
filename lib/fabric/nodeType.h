@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2009, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2010, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -15,29 +15,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef EQNET_NODETYPE_H
-#define EQNET_NODETYPE_H
+#ifndef EQFABRIC_NODETYPE_H
+#define EQFABRIC_NODETYPE_H
 
-#include <iostream>
+#include <eq/net/nodeType.h> // 'base' enum
 
 namespace eq
 {
-namespace net
+namespace fabric
 {
     /** Node types to identify connecting nodes. */
     enum NodeType
     {
-        NODETYPE_EQNET_INVALID,         //!< Invalid type
-        NODETYPE_EQNET_NODE,            //!< A plain eq::net::Node
-        NODETYPE_EQNET_USER = 0x100     //!< Application-specific types
+        NODETYPE_EQ_SERVER = net::NODETYPE_EQNET_USER  //!< A server node
     };
-
-    inline std::ostream& operator << ( std::ostream& os, const NodeType& type )
-    {
-        os << static_cast< unsigned >( type );
-        return os;
-    }
 }
 }
-
-#endif // EQNET_NODETYPE_H
+#endif // EQFABRIC_NODETYPE_H
