@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2009, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2010, Stefan Eilemann <eile@eyescale.ch> 
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -15,18 +15,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef EQNET_H
-#define EQNET_H
+#ifndef EQFABRIC_H
+#define EQFABRIC_H
 
-#include <eq/net/barrier.h>
-#include <eq/net/command.h>
-#include <eq/net/connection.h>
-#include <eq/net/connectionType.h>
-#include <eq/net/dataIStream.h>
-#include <eq/net/dataOStream.h>
-#include <eq/net/global.h>
-#include <eq/net/init.h>
-#include <eq/net/object.h>
+/** 
+ * @namespace eq::fabric
+ * @brief The Equalizer data synchronization fabric.
+ *
+ * This namespace implements the common data management and transport layer
+ * between the Equalizer applications, the server and the administrative
+ * interface, which use the eq, eq::server and eq::admin namespace,
+ * respectively.
+ */
 
-#endif // EQNET_H
+#include <eq/fabric/configVisitor.h>
+#include <eq/fabric/drawableConfig.h>
+
+#endif // EQFABRIC_H
 

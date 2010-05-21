@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2010, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2008-2010, Stefan Eilemann <eile@equalizergraphics.com> 
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -15,30 +15,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef EQ_H
-#define EQ_H
+#ifndef EQUTIL_H
+#define EQUTIL_H
 
-#pragma warning(push)
-#pragma warning(disable : 4244) //conversion from .. to ..,possible loss of data
+/** 
+ * @namespace eq::util
+ * @brief Equalizer utility classes
+ *
+ * The eq::util namespace groups common utility classes, which mostly facilitate
+ * the usage of OpenGL functions. Most of the classes in this namespace are used
+ * by the core client classes, but are implemented without a depency to the core
+ * classes.
+ */
 
-#include <eq/client.h>
+#include <eq/util/accum.h>
+#include <eq/util/accumBufferObject.h>
+#include <eq/util/bitmapFont.h>
+#include <eq/util/frameBufferObject.h>
+#include <eq/util/objectManager.h>
 
-#include <eq/util.h>
-#include <eq/fabric.h>
-#include <eq/net.h>
-#include <eq/base/base.h>
-#include <eq/base/file.h>
+#endif // EQUTIL_H
 
-#include <vmmlib/vmmlib.hpp>
-
-#ifdef EQ_USE_DEPRECATED
-namespace eqBase = ::eq::base;
-namespace eqNet  = ::eq::net;
-#endif
-
-/** \mainpage Equalizer API Documentation
-    \htmlinclude "RelNotes.dox"
-*/
-
-#pragma warning(pop)
-#endif // EQ_H
