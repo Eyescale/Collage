@@ -37,6 +37,15 @@ namespace admin
         /** Destruct a window. @version 1.0 */
         EQADMIN_EXPORT virtual ~Window();
 
+        /** @name Data Access. */
+        //@{
+        /** @return the Config of this window. */
+        EQADMIN_EXPORT const Config* getConfig() const;
+
+        /** @return the Config of this window. */
+        EQADMIN_EXPORT Config* getConfig();
+        //@}
+
     private:
         union // placeholder for binary-compatible changes
         {

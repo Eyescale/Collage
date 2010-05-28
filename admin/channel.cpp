@@ -31,6 +31,20 @@ Channel::Channel( Window* parent )
 Channel::~Channel()
 {}
 
+Config* Channel::getConfig()
+{
+    Window* window = getWindow();
+    EQASSERT( window );
+    return ( window ? window->getConfig() : 0 );
+}
+
+const Config* Channel::getConfig() const
+{
+    const Window* window = getWindow();
+    EQASSERT( window );
+    return ( window ? window->getConfig() : 0 );
+}
+
 }
 }
 
