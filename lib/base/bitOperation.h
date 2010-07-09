@@ -1,6 +1,5 @@
 
-/* Copyright (c) 2007-2010, Stefan Eilemann <eile@equalizergraphics.com>
- * Copyright (c) 2010, Cedric Stalder <cedric.stalder@gmail.com>
+/* Copyright (c) 2010, Cedric Stalder <cedric.stalder@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -16,29 +15,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef EQFABRIC_EYE_H
-#define EQFABRIC_EYE_H
+#ifndef EQBASE_BITOPERATION_H
+#define EQBASE_BITOPERATION_H
 
-#include <eq/base/base.h>
-#include <iostream>
+#include <eq/base/types.h>
 
 namespace eq
 {
-namespace fabric
+namespace base
 {
-    /**
-     * Eye pass bit mask for which is enabled.
-     */
-    enum Eye
+    /** @return the position of the last set bit, or -1. */
+    inline ssize_t getIndexOfLastBit( uint32_t value )
     {
-        EYE_UNDEFINED  = 0,
-        EYE_CYCLOP     = 1, //!<  monoscopic 'middle' eye
-        EYE_LEFT       = 2, //!< left eye
-        EYE_RIGHT      = 4, //!< right eye
-        NUM_EYES       = 3  //!< @internal increase with each new enum 
-    };
-
-    EQ_EXPORT std::ostream& operator << ( std::ostream& os, const Eye& eye );
+        ssize_t count = -1;
+        while( value ) 
+        {
+          ++count;
+          value >>= 1;
+        }
+        return count;
+    }
 }
 }
-#endif // EQFABRIC_EYE_H
+#endif //EQBASE_BITOPERATION_H
