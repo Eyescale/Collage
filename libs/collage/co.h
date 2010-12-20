@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2010, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2006-2010, Stefan Eilemann <eile@equalizergraphics.com> 
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -15,31 +15,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef EQUTIL_TYPES_H
-#define EQUTIL_TYPES_H
+#ifndef CO_H
+#define CO_H
 
-#include <vector>
+/**
+ * @namespace co::net
+ * @brief Equalizer network layer.
+ *
+ * The Equalizer network layer provides basic functionality for network
+ * communication, such as Connection and ConnectionSet, as well as higher-level
+ * functionality such as Node and Object.
+ */
 
-namespace eq
-{
-namespace util
-{
+// amalgam
 
-class Accum;
-class FrameBufferObject;
-class Texture;
-template< class > class BitmapFont;
-template< class > class ObjectManager;
+#include <co/barrier.h>
+#include <co/command.h>
+#include <co/connection.h>
+#include <co/connectionDescription.h>
+#include <co/connectionType.h>
+#include <co/dataIStream.h>
+#include <co/dataOStream.h>
+#include <co/global.h>
+#include <co/init.h>
+#include <co/object.h>
 
+#endif // CO_H
 
-/** A vector of pointers to eq::util::Texture */
-typedef std::vector< Texture* >  Textures;
-
-class GPUCompressor; //!< @internal
-
-#ifdef EQ_USE_DEPRECATED
-typedef Textures TextureVector
-#endif
-}
-}
-#endif // EQUTIL_TYPES_H
