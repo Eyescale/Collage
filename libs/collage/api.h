@@ -19,7 +19,7 @@
 #ifndef CO_BASE_H
 #define CO_BASE_H
 
-#include <eq/base/base.h>
+#include <eq/base/os.h>
 
 
 #ifdef EQ_USE_DEPRECATED
