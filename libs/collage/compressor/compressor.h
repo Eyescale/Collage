@@ -16,11 +16,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
  
-#ifndef EQ_PLUGIN_COMPRESSOR
-#define EQ_PLUGIN_COMPRESSOR 
+#ifndef CO_PLUGIN_COMPRESSOR
+#define CO_PLUGIN_COMPRESSOR 
 
 #include <co/plugins/compressor.h>
 
+#include <co/api.h>
 #include <co/base/os.h>
 #include <co/base/buffer.h>
 #include <vector>
@@ -34,7 +35,7 @@
  * Compression plugin provided with Equalizer.
  */
 
-namespace eq
+namespace co
 {
 namespace plugin
 {
@@ -49,9 +50,9 @@ namespace plugin
                                       const eq_uint64_t, const bool );
         typedef bool ( *IsCompatible_t ) ( const GLEWContext* );
 
-        struct Functions
+        CO_API struct Functions
         {
-            Functions( const unsigned name, CompressorGetInfo_t getInfo,
+            CO_API Functions( const unsigned name, CompressorGetInfo_t getInfo,
                        NewCompressor_t newCompressor,
                        NewCompressor_t newDecompressor,
                        Decompress_t decompress, IsCompatible_t isCompatible );
@@ -125,7 +126,7 @@ namespace plugin
                              const unsigned     destination ) { EQDONTCALL; }
 
         /** @internal Register a new plugin engine. */
-        static void registerEngine( const Functions& functions );
+        static CO_API void registerEngine( const Functions& functions );
 
     protected:
         ResultVector _results;  //!< The compressed data
@@ -134,5 +135,5 @@ namespace plugin
 }
 }
 
-#endif // EQ_PLUGIN_COMPRESSOR
+#endif // CO_PLUGIN_COMPRESSOR
 

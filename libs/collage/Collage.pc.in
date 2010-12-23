@@ -5,10 +5,10 @@ exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
 
-Name: Equalizer
-Description: Framework to create and deploy parallel OpenGL-based applications
+Name: Collage
+Description: Framework to create a Network layer
 Version: @VERSION@
 Requires:
 Conflicts:
-Libs: -L${libdir} -lEqualizer
+Libs: -L${libdir} -lCollage
 Cflags: -I${includedir}

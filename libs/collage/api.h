@@ -28,9 +28,9 @@ namespace co{}
 namespace eq{ namespace net = co; }
 #endif
 
-#if defined(EQ_NET_STATIC)
+#if defined(CO_STATIC)
 #  define CO_API
-#elif defined(EQ_NET_SHARED)
+#elif defined(CO_SHARED)
 #  define CO_API EQ_DLLEXPORT
 #else
 #  define CO_API EQ_DLLIMPORT
