@@ -2,7 +2,7 @@
 # Copyright (c) 2010 Cedric Stalder <cedric.stalder@gmail.ch>
 #               2011 Stefan Eilemann <eile@eyescale.ch>
 
-set(CO_FORWARD_HEADERS 
+set(CO_PUBLIC_HEADERS 
     api.h
     barrier.h
     bufferConnection.h

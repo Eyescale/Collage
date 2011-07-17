@@ -4,7 +4,7 @@
 #               2011 Stefan Eilemann <eile@eyescale.ch>
 ##
 
-set(COBASE_FORWARD_HEADERS 
+set(COBASE_PUBLIC_HEADERS 
     api.h
     atomic.h
     base.h

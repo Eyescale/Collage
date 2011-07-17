@@ -60,24 +60,16 @@ endif(Boost_FOUND)
 source_group(base REGULAR_EXPRESSION .*)
 source_group(\\ FILES CMakeLists.txt)
 source_group(plugin FILES ${PLUGIN_HEADERS} )
-source_group(collage FILES ${CO_FORWARD_HEADERS} ${CO_HEADERS} ${CO_SOURCES} )
+source_group(collage FILES ${CO_PUBLIC_HEADERS} ${CO_HEADERS} ${CO_SOURCES} )
 source_group(compressor FILES ${CO_COMPRESSOR_HEADERS} ${CO_COMPRESSOR_SOURCES})
 
 purple_add_library(co ${CO_LIB_VARIANT}
   HEADERS_PREFIX "co/"
-  FORWARD HEADERS
-    ${CO_FORWARD_HEADERS}
-    ${PLUGIN_HEADERS}
-  PRECOMPILE_HEADERS
-    precompile.h
-  SOURCES
-    ${CO_HEADERS}
-    ${CO_SOURCES}
-    ${CO_COMPRESSOR_HEADERS} 
-    ${CO_COMPRESSOR_SOURCES}
-  LINK_LIBRARIES
-    shared co_base
-    ${CO_ADD_LINKLIB}
+  HEADERS ${CO_PUBLIC_HEADERS} ${PLUGIN_HEADERS}
+  PRECOMPILE_HEADERS precompile.h
+  SOURCES ${CO_HEADERS} ${CO_SOURCES}
+          ${CO_COMPRESSOR_HEADERS} ${CO_COMPRESSOR_SOURCES}
+  LINK_LIBRARIES shared co_base ${CO_ADD_LINKLIB}
   )
 set_target_properties(lib_co_shared PROPERTIES FOLDER "Transitional")
 
