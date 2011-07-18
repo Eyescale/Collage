@@ -8,8 +8,8 @@
 if(NOT EQ_REVISION)
   set(EQ_REVISION 0)
 endif()
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.in.h ${EQ_INCLUDE_DIR}/co/version.h)
-install(FILES ${EQ_INCLUDE_DIR}/co/version.h DESTINATION include/co/ COMPONENT codev)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.in.h ${OUTPUT_INCLUDE_DIR}/co/version.h)
+install(FILES ${OUTPUT_INCLUDE_DIR}/co/version.h DESTINATION include/co/ COMPONENT codev)
 
 set(COLLAGE_DEFINES)
 
@@ -51,7 +51,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
   set(ARCH Linux)
 endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
 
-set(DEFINES_FILE ${EQ_INCLUDE_DIR}/co/base/defines${ARCH}.h)
+set(DEFINES_FILE ${OUTPUT_INCLUDE_DIR}/co/base/defines${ARCH}.h)
 set(DEFINES_FILE_IN ${CMAKE_CURRENT_BINARY_DIR}/defines.h.in)
 
 file(WRITE ${DEFINES_FILE_IN}
