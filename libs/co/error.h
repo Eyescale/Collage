@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2011, Stefan Eilemann <eile@eyescale.ch> 
+/* Copyright (c) 2011, Stefan Eilemann <eile@eyescale.ch> 
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -15,25 +15,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef COBASE_ERROR_H
-#define COBASE_ERROR_H
+#ifndef CO_ERROR_H
+#define CO_ERROR_H
 
-#include <co/base/api.h>
-#include <co/base/types.h> // EQ_KB definitions
+#include <co/base/error.h> // base enum
 
 namespace co
 {
-namespace base
-{
-    /** Defines errors produced by Collage base classes. */
+    /** Defines errors produced by Collage classes. */
     enum Error
     {
-        ERROR_NONE = 0,
-        ERROR_CUSTOM = EQ_16KB,  // 0x4000
+        // ERROR_FOO = co::base::ERROR_CUSTOM, // 0x8000
+        ERROR_CUSTOM = EQ_32KB, // 0x8000
     };
-
-    /** Print the error in a human-readable format. @version 1.0 */
-    COBASE_API std::ostream& operator << ( std::ostream& os, const Error& error);
-}
 }
 #endif // COBASE_ERROR_H
