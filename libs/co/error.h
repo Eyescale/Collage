@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2011, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2011, Stefan Eilemann <eile@eyescale.ch> 
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -15,30 +15,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef COBASE_OMP_H
-#define COBASE_OMP_H
+#ifndef CO_ERROR_H
+#define CO_ERROR_H
 
-#include <co/base/api.h>
-
-#ifdef CO_USE_OPENMP
-#  include <omp.h>
-#endif
+#include <co/base/error.h> // base enum
 
 namespace co
 {
-namespace base
-{
-    /** Base class for OpenMP functionality */
-    class OMP 
+    /** Defines errors produced by Collage classes. */
+    enum Error
     {
-    public:
-        /** 
-         * @return the number of threads used in a parallel region.
-         * @version 1.0
-         */
-        COBASE_API static unsigned getNThreads();
+        // ERROR_FOO = co::base::ERROR_CUSTOM, // 0x8000
+        ERROR_CUSTOM = EQ_32KB, // 0x8000
     };
 }
-
-}
-#endif //COBASE_OMP_H
+#endif // COBASE_ERROR_H
