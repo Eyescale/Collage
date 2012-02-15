@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2012, Stefan Eilemann <eile@eyescale.ch> 
+/* Copyright (c) 2012, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -15,25 +15,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef COBASE_ERROR_H
-#define COBASE_ERROR_H
-
-#include <co/base/api.h>
-#include <co/base/types.h> // EQ_KB definitions
+#include "uuid.h"
+#include "rng.h"
 
 namespace co
 {
 namespace base
 {
-    /** Defines errors produced by Collage base classes. */
-    enum Error
-    {
-        ERROR_NONE = 0,
-        ERROR_CUSTOM = EQ_16KB,  // 0x4000
-    };
+UUID::UUID( const bool generate )
+        : uint128_t()
+{ 
+    while( generate && high() == 0 )
+    {         
+        RNG rng;
+        high() = rng.get< uint64_t >();
+        low() = rng.get< uint64_t >();
+    }
+}
 
-    /** Print the error in a human-readable format. @version 1.0 */
-    COBASE_API std::ostream& operator << ( std::ostream& os, const Error& );
 }
 }
-#endif // COBASE_ERROR_H
