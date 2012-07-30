@@ -69,9 +69,7 @@ endif(APPLE)
 add_definitions(-DCO_BUILD_DIR="${CMAKE_BINARY_DIR}/")
 
 add_subdirectory(tools)
-if(EXISTS "${Equalizer_SOURCE_DIR}/tests/CMakeLists.txt")
-  add_subdirectory(tests)
-endif()
+add_subdirectory(tests)
 
 add_subdirectory(co)
 add_subdirectory(doc)

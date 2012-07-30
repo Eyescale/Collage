@@ -12,11 +12,14 @@ set(CO_PUBLIC_HEADERS
   commandFunc.h
   commandQueue.h
   commands.h
+  compressor.h
+  compressorInfo.h
   connection.h
   connection.ipp
   connectionDescription.h
   connectionSet.h
   connectionType.h
+  cpuCompressor.h
   dataIStream.h
   dataIStreamArchive.h
   dataIStreamArchive.ipp
@@ -42,14 +45,16 @@ set(CO_PUBLIC_HEADERS
   objectMap.h
   objectVersion.h
   packets.h
+  plugin.h
   pluginRegistry.h
-  queueMaster.h
   queueCommand.h
+  queueMaster.h
   queuePackets.h
   queueSlave.h
   serializable.h
   types.h
   worker.h
+  worker.ipp
   zeroconf.h
   )
 
@@ -57,10 +62,7 @@ set(CO_HEADERS
   barrierCommand.h
   barrierPackets.h
   commandCache.h
-  compressor.h
-  compressorInfo.h
   connectionListener.h
-  cpuCompressor.h
   dataIStreamQueue.h
   dataOStream.ipp
   deltaMasterCM.h
@@ -79,7 +81,6 @@ set(CO_HEADERS
   objectPackets.h
   objectSlaveDataOStream.h
   pipeConnection.h
-  plugin.h
   rspConnection.h
   socketConnection.h
   staticMasterCM.h

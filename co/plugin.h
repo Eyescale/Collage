@@ -29,7 +29,7 @@ namespace co
      * @internal
      * A class holding all functions and information for one compressor plugin.
      */
-class Plugin : public lunchbox::NonCopyable
+    class Plugin : public lunchbox::NonCopyable
     {
     public:
         typedef size_t ( *GetNumCompressors_t ) ();
