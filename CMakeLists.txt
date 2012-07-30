@@ -15,10 +15,10 @@ set(VERSION_PATCH "0")
 
 include(Common)
 include(GitTargets)
-include_directories(BEFORE ${CMAKE_SOURCE_DIR})
 include(DoxygenSetup)
 
 set(FEATURES)
+include_directories(BEFORE ${CMAKE_SOURCE_DIR})
 
 find_package(Lunchbox 1.5.0 REQUIRED)
 include_directories(${LUNCHBOX_INCLUDE_DIRS})
@@ -72,6 +72,7 @@ add_subdirectory(tools)
 if(EXISTS "${Equalizer_SOURCE_DIR}/tests/CMakeLists.txt")
   add_subdirectory(tests)
 endif()
+
 add_subdirectory(co)
 add_subdirectory(doc)
 
