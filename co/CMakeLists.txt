@@ -61,4 +61,4 @@ purple_add_library(Collage SHARED
 # TODO: this will be incorporated into PURPLE_ADD_LIBRARY
 configure_file(Collage.pc.in ${CMAKE_CURRENT_BINARY_DIR}/Collage.pc @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Collage.pc
-        DESTINATION ${LIBRARY_DIR}/pkgconfig COMPONENT colib)
+        DESTINATION ${LIBRARY_DIR}/pkgconfig COMPONENT lib)
