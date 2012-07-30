@@ -47,7 +47,7 @@ cdash: cdash/Makefile
 debug/Makefile:
 	@mkdir -p debug
 	@cd debug; $(CMAKE) .. -DCMAKE_BUILD_TYPE=Debug \
-	-DCMAKE_INSTALL_PREFIX:PATH=install -DEQUALIZER_RUN_GPU_TESTS=ON
+	-DCMAKE_INSTALL_PREFIX:PATH=install
 
 release/Makefile:
 	@mkdir -p release
@@ -59,18 +59,11 @@ cdash/Makefile:
 
 debug_glx/Makefile:
 	@mkdir -p debug_glx
-	@cd debug_glx; $(CMAKE) .. -DEQUALIZER_PREFER_AGL=OFF
+	@cd debug_glx; $(CMAKE) ..
 
 package: release/Makefile ../equalizergraphics/build/documents/Developer/API
 	@$(MAKE) -C release doxygen
 	@$(MAKE) -C release package
-
-XCode/Equalizer.xcodeproj: CMakeLists.txt
-	@mkdir -p XCode
-	@cd XCode; $(CMAKE) -G Xcode .. -DCMAKE_INSTALL_PREFIX:PATH=install
-
-xcode: XCode/Equalizer.xcodeproj
-	open XCode/Equalizer.xcodeproj
 
 tests: debug/Makefile
 	@$(MAKE) -C debug tests

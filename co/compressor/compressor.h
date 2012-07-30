@@ -31,7 +31,7 @@
 /**
  * @file co/compressor/compressor.h
  * 
- * Compression plugin provided with Equalizer.
+ * Compression plugins provided with Collage.
  */
 
 namespace co
