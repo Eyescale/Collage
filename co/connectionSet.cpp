@@ -39,7 +39,7 @@
 #  include <poll.h>
 #  define SELECT_TIMEOUT  0
 #  define SELECT_ERROR   -1
-#  define MAX_CONNECTIONS EQ_100KB  // Arbitrary
+#  define MAX_CONNECTIONS LB_100KB  // Arbitrary
 #endif
 
 namespace co

@@ -143,5 +143,5 @@ typedef std::vector< Plugin* > Plugins;
 typedef CompressorInfos::const_iterator CompressorInfosCIter;
 typedef Plugins::const_iterator PluginsCIter;
 /** @endcond */
-
+}
 #endif // CO_TYPES_H
