@@ -26,13 +26,13 @@ namespace co
 {
     // Collage version macros and functions
     /** The current major version. @version 0.4 */
-#   define CO_VERSION_MAJOR @CO_VERSION_MAJOR@
+#   define CO_VERSION_MAJOR @VERSION_MAJOR@
 
     /** The current minor version. @version 0.4 */
-#   define CO_VERSION_MINOR @CO_VERSION_MINOR@
+#   define CO_VERSION_MINOR @VERSION_MINOR@
 
     /** The current patch level. @version 0.4 */
-#   define CO_VERSION_PATCH @CO_VERSION_PATCH@
+#   define CO_VERSION_PATCH @VERSION_PATCH@
 
     /** The git wc hash revision, may be 0. @version 0.4 */
 #   define CO_VERSION_REVISION @EQ_REVISION@

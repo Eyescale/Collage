@@ -54,13 +54,13 @@ bool _init( const int argc, char** argv )
 #ifdef COLLAGE_DSO_NAME
     if( !plugins.addPlugin( COLLAGE_DSO_NAME ) && // Found by LDD
         // Hard-coded compile locations as backup:
-        !plugins.addPlugin( std::string( EQ_BUILD_DIR ) + "lib/" + 
+        !plugins.addPlugin( std::string( CO_BUILD_DIR ) + "lib/" + 
                             COLLAGE_DSO_NAME ) &&
 #  ifdef NDEBUG
-        !plugins.addPlugin( std::string( EQ_BUILD_DIR ) + "lib/Release/" +
+        !plugins.addPlugin( std::string( CO_BUILD_DIR ) + "lib/Release/" +
                             COLLAGE_DSO_NAME )
 #  else
-        !plugins.addPlugin( std::string( EQ_BUILD_DIR ) + "lib/Debug/"
+        !plugins.addPlugin( std::string( CO_BUILD_DIR ) + "lib/Debug/"
                             + COLLAGE_DSO_NAME )
 #  endif
         )

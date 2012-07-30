@@ -1,6 +1,6 @@
 
 /* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com> 
- *               2009-2011, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * Template functions used by all compression routines
  * 
@@ -228,9 +228,7 @@ static inline void _decompress( const void* const* inData,
     const ComponentType* const* in = 
         reinterpret_cast< const ComponentType* const* >( inData );
 
-#ifdef CO_USE_OPENMP
 #pragma omp parallel for
-#endif
     for( ssize_t i = 0; i < static_cast< ssize_t >( nInputs ) ; i+=4 )
     {
         const uint64_t startIndex = static_cast<uint64_t>( i/4 * width ) * 4;
@@ -290,7 +288,7 @@ static unsigned _setupResults( const unsigned nChannels,
                                co::plugin::Compressor::ResultVector& results )
 {
     // determine number of chunks and set up output data structure
-#ifdef CO_USE_OPENMP
+#ifdef LUNCHBOX_USE_OPENMP
     const unsigned cpuChunks = nChannels * lunchbox::OMP::getNThreads();
     const size_t sizeChunks = inSize / 4096 * nChannels;
     const unsigned minChunks = unsigned( nChannels > sizeChunks ?
@@ -330,9 +328,7 @@ static inline unsigned _compress( const void* const inData,
     const ComponentType* const data = 
         reinterpret_cast< const ComponentType* >( inData );
     
-#ifdef CO_USE_OPENMP
 #pragma omp parallel for
-#endif
     for( ssize_t i = 0; i < static_cast< ssize_t >( nChunks ) ; i += 4 )
     {
         const uint64_t startIndex = static_cast< uint64_t >( i/4 * width ) * 4;
