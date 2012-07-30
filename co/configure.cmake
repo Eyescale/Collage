@@ -9,7 +9,7 @@ if(NOT EQ_REVISION)
   set(EQ_REVISION 0)
 endif()
 update_file(${CMAKE_CURRENT_SOURCE_DIR}/version.in.h ${OUTPUT_INCLUDE_DIR}/co/version.h)
-install(FILES ${OUTPUT_INCLUDE_DIR}/co/version.h DESTINATION include/co/ COMPONENT codev)
+install(FILES ${OUTPUT_INCLUDE_DIR}/co/version.h DESTINATION include/co/ COMPONENT dev)
 
 # Compile definitions
 set(COLLAGE_DEFINES)
@@ -69,4 +69,4 @@ file(APPEND ${DEFINES_FILE_IN}
   )
 
 update_file(${DEFINES_FILE_IN} ${DEFINES_FILE})
-install(FILES ${DEFINES_FILE} DESTINATION include/co/ COMPONENT codev)
+install(FILES ${DEFINES_FILE} DESTINATION include/co/ COMPONENT dev)
