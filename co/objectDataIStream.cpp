@@ -93,15 +93,6 @@ bool ObjectDataIStream::hasInstanceData() const
     return( (*command)->command == CMD_OBJECT_INSTANCE );
 }
 
-NodePtr ObjectDataIStream::getMaster()
-{
-    if( !_usedCommand && _commands.empty( ))
-        return 0;
-
-    const CommandPtr command = _usedCommand ? _usedCommand : _commands.front();
-    return command->getNode();
-}
-
 size_t ObjectDataIStream::getDataSize() const
 {
     size_t size = 0;

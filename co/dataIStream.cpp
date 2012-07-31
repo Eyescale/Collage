@@ -103,12 +103,17 @@ void DataIStream::_read( void* data, uint64_t size )
     _impl->position += size;
 }
 
-const void* DataIStream::getRemainingBuffer()
+const void* DataIStream::getRemainingBuffer( const uint64_t size )
 {
     if( !_checkBuffer( ))
         return 0;
 
-    return _impl->input + _impl->position;
+    LBASSERT( _impl->position + size <= _impl->inputSize );
+    if( _impl->position + size > _impl->inputSize )
+        return 0;
+
+    _impl->position += size;
+    return _impl->input + _impl->position - size;
 }
 
 uint64_t DataIStream::getRemainingBufferSize()
@@ -117,12 +122,6 @@ uint64_t DataIStream::getRemainingBufferSize()
         return 0;
 
     return _impl->inputSize - _impl->position;
-}
-
-void DataIStream::advanceBuffer( const uint64_t offset )
-{
-    LBASSERT( _impl->position + offset <= _impl->inputSize );
-    _impl->position += offset;
 }
 
 bool DataIStream::_checkBuffer()

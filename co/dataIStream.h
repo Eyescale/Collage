@@ -1,16 +1,16 @@
 
 /* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
- *               2009-2010, Cedric Stalder <cedric.stalder@gmail.com> 
+ *               2009-2010, Cedric Stalder <cedric.stalder@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -34,8 +34,8 @@ namespace detail { class DataIStream; }
     {
     public:
         /** @name Internal */
-        //@{ 
-        /** @internal Get the number of remaining buffers. */
+        //@{
+        /** @internal @return the number of remaining buffers. */
         virtual size_t nRemainingBuffers() const = 0;
 
         virtual uint128_t getVersion() const = 0; //!< @internal
@@ -62,7 +62,7 @@ namespace detail { class DataIStream; }
             for( uint64_t i = 0; i < nElems; i++ )
                 (*this) >> value[i];
 
-            return *this; 
+            return *this;
         }
 
         /** @internal
@@ -80,35 +80,38 @@ namespace detail { class DataIStream; }
         void deserializeChildren( O* object, const std::vector< C* >& old,
                                   std::vector< C* >& result );
 
-        /** 
+        /**
          * Get the pointer to the remaining data in the current buffer.
          *
-         * The data written by the DataOStream on the other end is bucketized,
-         * that is, it is sent in multiple blocks. The remaining buffer and its
-         * size points into one of the buffers, that is, not all the data sent
-         * is returned by this function. However, a write operation on the other
-         * end is never segmented, that is, if the application writes n bytes to
-         * the DataOStream, a symmetric read from the DataIStream has at least n
+         * The buffer is advanced by the given size. If not enough data is
+         * present, 0 is returned and the buffer is unchanged.
+         *
+         * The data written to the DataOStream by the sender is bucketized, it
+         * is sent in multiple blocks. The remaining buffer and its size points
+         * into one of the buffers, i.e., not all the data sent is returned by
+         * this function. However, a write operation on the other end is never
+         * segmented, that is, if the application writes n bytes to the
+         * DataOStream, a symmetric read from the DataIStream has at least n
          * bytes available.
+         *
+         * @param size the number of bytes to advance the buffer
+         * @version 1.0
          */
-        CO_API const void* getRemainingBuffer();
+        CO_API const void* getRemainingBuffer( const uint64_t size );
 
-        /** Get the size of the remaining data in the current buffer. */
+        /**
+         * @return the size of the remaining data in the current buffer.
+         * @version 1.0
+         */
         CO_API uint64_t getRemainingBufferSize();
 
-        /** Advance the current buffer by a number of bytes. */
-        CO_API void advanceBuffer( const uint64_t offset );
-
-        /** @return true if not all data has been read. */
+        /** @return true if not all data has been read. @version 1.0 */
         bool hasData() { return _checkBuffer(); }
         //@}
 
-        /** @return the provider of the istream. */
-        CO_API virtual NodePtr getMaster() = 0;
-
     protected:
         /** @name Internal */
-        //@{ 
+        //@{
         CO_API DataIStream();
         DataIStream( const DataIStream& );
         CO_API virtual ~DataIStream();
@@ -125,11 +128,11 @@ namespace detail { class DataIStream; }
 
         /**
          * Check that the current buffer has data left, get the next buffer is
-         * necessary, return false if no data is left. 
+         * necessary, return false if no data is left.
          */
         CO_API bool _checkBuffer();
         CO_API void _reset();
-        
+
         const uint8_t* _decompress( const void* data, const uint32_t name,
                                     const uint32_t nChunks,
                                     const uint64_t dataSize );
@@ -145,7 +148,7 @@ namespace detail { class DataIStream; }
             value.resize( size_t( nElems ));
             if( nElems > 0 )
                 _read( &value.front(), nElems * sizeof( T ));
-            return *this; 
+            return *this;
         }
     };
 }
@@ -159,7 +162,7 @@ namespace co{
     /** Read a std::string. */
     template<>
     inline DataIStream& DataIStream::operator >> ( std::string& str )
-    { 
+    {
         uint64_t nElems = 0;
         _read( &nElems, sizeof( nElems ));
         LBASSERTINFO( nElems <= getRemainingBufferSize(),
@@ -167,12 +170,9 @@ namespace co{
         if( nElems == 0 )
             str.clear();
         else
-        {
-            str.assign( static_cast< const char* >( getRemainingBuffer( )), 
+            str.assign( static_cast< const char* >( getRemainingBuffer(nElems)),
                         size_t( nElems ));
-            advanceBuffer( nElems );
-        }
-        return *this; 
+        return *this;
     }
 
     /** Deserialize an object (id+version). */
@@ -214,7 +214,7 @@ namespace co{
              i != versions.end(); ++i )
         {
             const ObjectVersion& version = *i;
-            
+
             if( version.identifier == UUID::ZERO )
             {
                 result.push_back( 0 );
