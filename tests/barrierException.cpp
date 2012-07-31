@@ -279,7 +279,7 @@ bool testSleep()
     
     // Bug: if the first nodeThread is deleted before the the second nodeThread,
     // the barrier send unblock will fail because it is trying to send to an
-    // unexisting connection node. Can this happen in Equalizer ?
+    // unexisting connection node. Can this happen in Collage ?
     delete nodeThreads[0];
     delete nodeThreads[1];
     delete nodeThreads[2];

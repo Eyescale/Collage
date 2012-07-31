@@ -1,7 +1,7 @@
 
                          Windows-Specific Notes
 
- Equalizer is tested with CMake-generated Visual Studio 2008 projects on
+ Collage is tested with CMake-generated Visual Studio 2008 projects on
  Windows XP and 7. Support for Cygwin is preliminary.
 
 
@@ -67,6 +67,6 @@
 
                                Packaging
 
- If you want to distribute your applications based on Equalizer, you
- will have to install the "Microsoft Visual C++ 2005 Redistributable
+ If you want to distribute your applications based on Collage, you
+ will have to install the "Microsoft Visual C++ 2008 Redistributable
  Package" on the machines you want to run the application.
