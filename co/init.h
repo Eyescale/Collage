@@ -40,7 +40,7 @@ namespace co
         if( CO_VERSION_ABI == Version::getABI( ))
             return co::_init( argc, argv );
         LBWARN << "Collage shared library v" << Version::getABI()
-               << " not binary-compatible with application v" << CO_VERSION_ABI
+               << " not binary compatible with application v" << CO_VERSION_ABI
                << std::endl;
         return false;
     }
