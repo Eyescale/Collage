@@ -143,5 +143,17 @@ typedef std::vector< Plugin* > Plugins;
 typedef CompressorInfos::const_iterator CompressorInfosCIter;
 typedef Plugins::const_iterator PluginsCIter;
 /** @endcond */
+
+#ifndef EQ_2_0_API
+namespace base
+{
+using namespace lunchbox;
+using co::Error;
+using co::ErrorRegistry;
+using co::PluginRegistry;
+using co::Global;
+}
+#endif
+
 }
 #endif // CO_TYPES_H

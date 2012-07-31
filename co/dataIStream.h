@@ -107,6 +107,9 @@ namespace detail { class DataIStream; }
 
         /** @return true if not all data has been read. @version 1.0 */
         bool hasData() { return _checkBuffer(); }
+
+        /** @return the provider of the istream. */
+        CO_API virtual NodePtr getMaster() = 0;
         //@}
 
     protected:
