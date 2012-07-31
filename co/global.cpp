@@ -17,7 +17,6 @@
 
 #include "global.h"
 
-#include "errorRegistry.h"
 #include "pluginRegistry.h"
 
 #include <limits>
@@ -37,7 +36,6 @@ namespace co
 namespace
 {
 static PluginRegistry _pluginRegistry;
-static ErrorRegistry _errorRegistry;
 
 static uint32_t _getObjectBufferSize()
 {
@@ -186,11 +184,6 @@ uint32_t Global::getObjectBufferSize()
 PluginRegistry& Global::getPluginRegistry()
 {
     return _pluginRegistry;
-}
-
-ErrorRegistry& Global::getErrorRegistry()
-{
-    return _errorRegistry;
 }
 
 void Global::setIAttribute( const IAttribute attr, const int32_t value )
