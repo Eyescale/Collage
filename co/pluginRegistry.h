@@ -26,7 +26,7 @@
 
 namespace co
 {
-    /** The registry for all loaded Equalizer plugins. */
+    /** The registry for all loaded plugins. */
     class PluginRegistry
     {
     public:
@@ -34,8 +34,7 @@ namespace co
          * @internal
          * Construct a new plugin registry.
          *
-         * The plugin registry used by Equalizer can be obtained using
-         * Global::getPluginRegistry().
+         * The plugin registry can be obtained using Global::getPluginRegistry().
          */
         PluginRegistry();
 

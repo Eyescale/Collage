@@ -19,7 +19,6 @@
 #define CO_TYPES_H
 
 #include <co/defines.h>
-#include <co/error.h>
 #include <lunchbox/refPtr.h>
 #include <lunchbox/types.h>
 
@@ -45,7 +44,6 @@ class ConnectionDescription;
 class ConnectionListener;
 class DataIStream;
 class DataOStream;
-class ErrorRegistry;
 class Global;
 class LocalNode;
 class Node;
@@ -148,8 +146,6 @@ typedef Plugins::const_iterator PluginsCIter;
 namespace base
 {
 using namespace lunchbox;
-using co::Error;
-using co::ErrorRegistry;
 using co::PluginRegistry;
 using co::Global;
 }
