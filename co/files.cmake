@@ -29,8 +29,6 @@ set(CO_PUBLIC_HEADERS
   dataStreamArchiveException.h
   defines.h
   dispatcher.h
-  error.h
-  errorRegistry.h
   exception.h
   global.h
   init.h
@@ -66,8 +64,6 @@ set(CO_HEADERS
   dataIStreamQueue.h
   dataOStream.ipp
   deltaMasterCM.h
-  error.cpp
-  errorRegistry.cpp
   eventConnection.h
   fullMasterCM.h
   nodeCommand.h

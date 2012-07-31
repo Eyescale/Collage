@@ -23,7 +23,7 @@
  * @brief Object-oriented network library.
  *
  * Collage is a cross-platform C++ library for building heterogenous,
- * distributed applications. It is used as the cluster backend for
+ * distributed applications. Among other things, it is the cluster backend for
  * Equalizer. Collage provides an abstraction of different network connections,
  * peer-to-peer messaging, discovery and synchronization as well as
  * high-performance, object-oriented, versioned data distribution. Collage is
@@ -71,7 +71,6 @@
 #include <co/dataIStreamArchive.h>
 #include <co/dataOStream.h>
 #include <co/dataOStreamArchive.h>
-#include <co/errorRegistry.h>
 #include <co/global.h>
 #include <co/init.h>
 #include <co/object.h>

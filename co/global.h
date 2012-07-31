@@ -92,9 +92,6 @@ namespace co
         /** @return the plugin registry. @version 1.0 */
         CO_API static PluginRegistry& getPluginRegistry();
 
-        /** @return the error registry. @version 1.0 */
-        CO_API static ErrorRegistry& getErrorRegistry();
-
         /** @name Attributes */
         //@{
         // Note: also update string array initialization in global.cpp
