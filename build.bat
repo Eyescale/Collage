@@ -2,7 +2,7 @@
 
 set CMAKE="%PROGRAMFILES%\CMake 2.8\bin\cmake.exe"
 set SUBWCREV="%PROGRAMFILES%\TortoiseSVN\bin\SubWCRev.exe"
-set DESTINATION="C:\Equalizer"
+set DESTINATION="C:\Collage"
 
 call "%VS90COMNTOOLS%vsvars32.bat"
 

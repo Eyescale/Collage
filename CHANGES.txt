@@ -1,14 +1,14 @@
 
-This file lists all changes in the public Equalizer API, latest on top:
+This file lists all changes in the public Collage API, latest on top:
 
 
 27/Jul/2012
   Made co::DataIStream::read private. Use 'is >> co::Array< T >( ptr, num )'
   instead.
 
------------------------------------1.4-------------------------------------
+-------------------------------Equalizer 1.4---------------------------------
 
------------------------------------1.2-------------------------------------
+-------------------------------Equalizer 1.2---------------------------------
 
 25/Oct/2011
   Removed co::Object::commitNB and commitSync since request is no longer
@@ -29,7 +29,7 @@ This file lists all changes in the public Equalizer API, latest on top:
     std::string eq::Version::getRevision();
 
 
------------------------------------1.0-------------------------------------
+-------------------------------Equalizer 1.0---------------------------------
 
 14/Mar/2011
   Changed object mapping behavior when using a concrete version from:
@@ -52,7 +52,7 @@ This file lists all changes in the public Equalizer API, latest on top:
   obsoletion. co::Object::commitNB has the same new parameter, with no
   default value.
 
---------------------------------1.0 beta-----------------------------------
+----------------------------Equalizer 1.0 beta-------------------------------
 
 10/Feb/2011
   Changed GLXWindow implementation to use GLXFBConfigs. Use GLXFBConfigs
@@ -62,7 +62,7 @@ This file lists all changes in the public Equalizer API, latest on top:
   libEqualizer links libCollage dynamically, not statically.
   All libraries use correct versioning as mandated by the operating system.
 
--------------------------------1.0 alpha-----------------------------------
+---------------------------Equalizer 1.0 alpha-------------------------------
 
 7/Jan/2011
   Rename EVENT_POINTER_* to differantiate channel and window pointer events.
