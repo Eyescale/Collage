@@ -24,7 +24,7 @@ http://davidhunt.ie/wp/?p=375
 
 Ubuntu 11.04:
 
-blue:~/Software/Equalizer# cat /etc/network/interfaces
+blue:~/Software/Collage# cat /etc/network/interfaces
 auto lo
 iface lo inet loopback
 auto ib0
@@ -36,7 +36,7 @@ iface ib1 inet static
 address 192.168.1.2
 netmask 255.255.255.0
 
-blue:~/Software/Equalizer# cat /etc/udev/rules.d/99-infiniband.rules
+blue:~/Software/Collage# cat /etc/udev/rules.d/99-infiniband.rules
 KERNEL=="umad*", NAME="infiniband/%k"
 KERNEL=="issm*", NAME="infiniband/%k"
 KERNEL=="ucm*", NAME="infiniband/%k", MODE="0666"
@@ -44,7 +44,7 @@ KERNEL=="uverbs*", NAME="infiniband/%k", MODE="0666"
 KERNEL=="ucma", NAME="infiniband/%k", MODE="0666"
 KERNEL=="rdma_cm", NAME="infiniband/%k", MODE="0666"
 
-blue:~/Software/Equalizer# cat /etc/modules 
+blue:~/Software/Collage# cat /etc/modules 
 # /etc/modules: kernel modules to load at boot time.
 #
 # This file contains the names of kernel modules that should be loaded
