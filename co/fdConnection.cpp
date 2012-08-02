@@ -116,7 +116,7 @@ int64_t FDConnection::write( const void* buffer, const uint64_t bytes )
         const int res = poll( fds, 1, _getTimeOut( ));
         if (res < 0)
         {
-            LBWARN << "Write error : " << strerror( errno ) << std::endl;
+            LBWARN << "Write error: " << lunchbox::sysError << std::endl;
             return -1;
         }
 
@@ -134,7 +134,7 @@ int64_t FDConnection::write( const void* buffer, const uint64_t bytes )
         if( errno == EINTR ) // if interrupted, try again
             return 0;
 
-        LBWARN << "Error during write: " << strerror( errno ) << std::endl;
+        LBWARN << "Error during write: " << lunchbox::sysError << std::endl;
         return -1;
     }
 
