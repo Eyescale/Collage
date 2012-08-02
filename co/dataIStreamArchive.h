@@ -28,8 +28,7 @@
 #define CO_DATAISTREAMARCHIVE_H
 
 #include <co/api.h>
-#include <co/dataIStream.h>
-#include <co/dataStreamArchiveException.h>
+#include <co/types.h>
 
 #pragma warning( push )
 #pragma warning( disable: 4800 )
@@ -46,6 +45,7 @@
 #include <boost/type_traits/is_unsigned.hpp>
 #include <boost/type_traits/is_floating_point.hpp>
 
+#include <boost/utility/enable_if.hpp>
 
 namespace co
 {
@@ -147,9 +147,9 @@ private:
     DataIStream& _stream;
 };
 
-#include "dataIStreamArchive.ipp" // template implementation
-
 }
+
+#include "dataIStreamArchive.ipp" // template implementation
 
 // contains load_override impl for class_name_type
 #include <boost/archive/impl/basic_binary_iarchive.ipp>

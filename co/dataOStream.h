@@ -1,16 +1,16 @@
 
 /* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2010, Cedric Stalder <cedric.stalder@gmail.com> 
+ *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -21,17 +21,16 @@
 
 #include <co/api.h>
 #include <co/types.h>
-#include <lunchbox/buffer.h> // member
 #include <lunchbox/nonCopyable.h> // base class
 
 #include <iostream>
 #include <vector>
 
-//#define EQ_INSTRUMENT_DATAOSTREAM
-
 namespace co
 {
+namespace detail { class DataOStream; }
 namespace DataStreamTest { class Sender; }
+struct ObjectDataPacket;
 
     /**
      * A std::ostream-like interface for object serialization.
@@ -60,7 +59,7 @@ namespace DataStreamTest { class Sender; }
         void disableSave();
 
         /** @return if data was sent since the last enable() */
-        bool hasSentData() const { return _dataSent; }
+        CO_API bool hasSentData() const;
         //@}
 
         /** @name Data output */
@@ -85,7 +84,7 @@ namespace DataStreamTest { class Sender; }
         template< typename C >
         void serializeChildren( const std::vector< C* >& children );
         //@}
- 
+
     protected:
         /** Initialize the given compressor. */
         void _initCompressor( const uint32_t compressor );
@@ -105,12 +104,16 @@ namespace DataStreamTest { class Sender; }
         /** Set up the connection (list) for one node. */
         void _setupConnection( NodePtr node, const bool useMulticast );
 
+        /** @internal Needed by unit test. */
+        void _setupConnection( ConnectionPtr connection );
+        friend class DataStreamTest::Sender;
+
         /** Resend the saved buffer to all enabled connections. */
         void _resend();
 
         void _send( const Packet& packet );
 
-        void _clearConnections() { _connections.clear(); }
+        void _clearConnections();
 
         /** @name Packet sending, used by the subclasses */
         //@{
@@ -118,59 +121,26 @@ namespace DataStreamTest { class Sender; }
         virtual void sendData( const void* buffer, const uint64_t size,
                                const bool last ) = 0;
 
-        template< typename P >
-        void sendPacket( P& packet, const void* buffer, const uint64_t size,
-                         const bool last );
+        void sendPacket( ObjectDataPacket& packet, const void* buffer,
+                         const uint64_t size, const bool last );
         //@}
 
         /** Reset the whole stream. */
         virtual CO_API void reset();
 
-    private:        
-        enum CompressorState
-        {
-            STATE_UNCOMPRESSED,
-            STATE_PARTIAL,
-            STATE_COMPLETE,
-            STATE_UNCOMPRESSIBLE
-        };
-        CompressorState _compressorState;
-        
-        /** The buffer used for saving and buffering */
-        lunchbox::Bufferb  _buffer;
-
-        /** The start position of the buffering, always 0 if !_save */
-        uint64_t _bufferStart;
-
-        /** The uncompressed size of a completely compressed buffer. */
-        uint64_t _dataSize;
-
-        /** Locked connections to the receivers, if _enabled */
-        Connections _connections;
-        friend class DataStreamTest::Sender;
-
-        /** The compressor instance. */
-        CPUCompressor* const _compressor;
-
-        /** The output stream is enabled for writing */
-        bool _enabled;
-
-        /** Some data has been sent since it was _enabled */
-        bool _dataSent;
-
-        /** Save all sent data */
-        bool _save;
+    private:
+        detail::DataOStream* const _impl;
 
         bool _disable();
 
         /** Helper function preparing data for sendData() as needed. */
         void _sendData( const void* data, const uint64_t size );
-        
+
         /** Reset after sending a buffer. */
         void _resetBuffer();
 
         /** Write a vector of trivial data. */
-        template< typename T > 
+        template< typename T >
         DataOStream& _writeFlatVector( const std::vector< T >& value )
         {
             const uint64_t nElems = value.size();
@@ -188,14 +158,9 @@ namespace DataStreamTest { class Sender; }
          */
         CO_API uint64_t _getCompressedData( void** chunks,
                                             uint64_t* chunkSizes ) const;
-
-        /** Compress data and update the compressor state. */
-        void _compress( void* src, const uint64_t size,
-                        const CompressorState result );
     };
 
-    std::ostream& operator << ( std::ostream& os,
-                                const DataOStream& dataOStream );
+    std::ostream& operator << ( std::ostream&, const DataOStream& );
 
 }
 
@@ -209,7 +174,7 @@ namespace co
     /** Write a std::string. */
     template<>
     inline DataOStream& DataOStream::operator << ( const std::string& str )
-    { 
+    {
         const uint64_t nElems = str.length();
         write( &nElems, sizeof( nElems ));
         if ( nElems > 0 )
@@ -219,17 +184,17 @@ namespace co
     }
 
     /** Write an object identifier and version. */
-    template<> inline DataOStream& 
+    template<> inline DataOStream&
     DataOStream::operator << ( const Object* const& object )
     {
         LBASSERT( !object || object->isAttached( ));
         (*this) << ObjectVersion( object );
         return *this;
     }
- 
+
 /** @cond IGNORE */
     /** Write a std::vector of serializable items. */
-    template< typename T > inline DataOStream& 
+    template< typename T > inline DataOStream&
     DataOStream::operator << ( const std::vector< T >& value )
     {
         const uint64_t nElems = value.size();
@@ -238,7 +203,7 @@ namespace co
             (*this) << value[i];
         return *this;
     }
- 
+
     template< typename C > inline void
     DataOStream::serializeChildren( const std::vector<C*>& children )
     {
@@ -257,12 +222,12 @@ namespace co
 /** @endcond */
 
     /** Optimized specialization to write a std::vector of uint8_t. */
-    template<> inline DataOStream& 
+    template<> inline DataOStream&
     DataOStream::operator << ( const std::vector< uint8_t >& value )
     { return _writeFlatVector( value ); }
 
     /** Optimized specialization to write a std::vector of uint16_t. */
-    template<> inline DataOStream& 
+    template<> inline DataOStream&
     DataOStream::operator << ( const std::vector< uint16_t >& value )
     { return _writeFlatVector( value ); }
 
@@ -272,7 +237,7 @@ namespace co
     { return _writeFlatVector( value ); }
 
     /** Optimized specialization to write a std::vector of uint32_t. */
-    template<> inline DataOStream& 
+    template<> inline DataOStream&
     DataOStream::operator << ( const std::vector< uint32_t >& value )
     { return _writeFlatVector( value ); }
 
