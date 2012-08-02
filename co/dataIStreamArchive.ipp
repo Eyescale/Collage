@@ -15,6 +15,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "dataStreamArchiveException.h"
+
+namespace co
+{
 
 template< typename T >
 void DataIStreamArchive::load_array( boost::serialization::array< T >& a,
@@ -98,4 +102,6 @@ DataIStreamArchive::load( T& t )
     {
         throw DataStreamArchiveException( t );
     }
+}
+
 }

@@ -16,7 +16,9 @@
  */
 
 #include "dataIStreamArchive.h"
+
 #include "array.h"
+#include "dataIStream.h"
 
 #include <boost/archive/detail/archive_serializer_map.hpp>
 #include <boost/archive/impl/archive_serializer_map.ipp>
