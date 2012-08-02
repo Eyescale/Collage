@@ -105,7 +105,7 @@ struct ObjectDataPacket;
         void _setupConnection( NodePtr node, const bool useMulticast );
 
         /** @internal Needed by unit test. */
-        void _setupConnection( ConnectionPtr connection );
+        CO_API void _setupConnection( ConnectionPtr connection );
         friend class DataStreamTest::Sender;
 
         /** Resend the saved buffer to all enabled connections. */
@@ -121,8 +121,8 @@ struct ObjectDataPacket;
         virtual void sendData( const void* buffer, const uint64_t size,
                                const bool last ) = 0;
 
-        void sendPacket( ObjectDataPacket& packet, const void* buffer,
-                         const uint64_t size, const bool last );
+        CO_API void sendPacket( ObjectDataPacket& packet, const void* buffer,
+                                const uint64_t size, const bool last );
         //@}
 
         /** Reset the whole stream. */
