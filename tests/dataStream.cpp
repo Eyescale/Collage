@@ -115,7 +115,10 @@ public:
     Sender( lunchbox::RefPtr< co::Connection > connection )
             : Thread(),
               _connection( connection )
-        {}
+        {
+            TEST( connection );
+            TEST( connection->isConnected( ));
+        }
     virtual ~Sender(){}
 
 protected:
@@ -155,6 +158,7 @@ int main( int argc, char **argv )
     co::ConnectionPtr connection = co::Connection::create( desc );
 
     TEST( connection->connect( ));
+    TEST( connection->isConnected( ));
     co::DataStreamTest::Sender sender( connection->acceptSync( ));
     TEST( sender.start( ));
 
