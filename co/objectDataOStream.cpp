@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2011, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2010-2012, Stefan Eilemann <eile@eyescale.ch>
  *                    2010, Cedric Stalder  <cedric.stalder@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -23,8 +23,6 @@
 #include "objectPackets.h"
 
 #include <co/plugins/compressorTypes.h>
-
-#include "dataOStream.ipp"
 
 namespace co
 {
@@ -63,7 +61,7 @@ void ObjectDataOStream::sendData( ObjectDataPacket& packet, const void* buffer,
     packet.version = _version;
     packet.sequence = _sequence++;
     packet.objectID  = _cm->getObject()->getID();
-    DataOStream::sendPacket< ObjectDataPacket >( packet, buffer, size, last );
+    DataOStream::sendPacket( packet, buffer, size, last );
     if( last )
         _sequence = 0;
 }

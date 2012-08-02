@@ -31,7 +31,7 @@
 
 #include <lunchbox/thread.h>
 
-#include <co/dataOStream.ipp>      // private impl
+#include <co/objectPackets.h> // private header
 #include <co/cpuCompressor.h> // private header
 
 // Tests the functionality of the DataOStream and DataIStream
@@ -65,7 +65,7 @@ protected:
     virtual void sendData( const void* buffer, const uint64_t size,
                            const bool last )
         {
-            DataPacket packet;
+            co::ObjectDataPacket packet;
             sendPacket( packet, buffer, size, last );
         }
 };
@@ -123,7 +123,7 @@ protected:
         {
             ::DataOStream stream;
 
-            stream._connections.push_back( _connection );
+            stream._setupConnection( _connection );
             stream._enable();
 
             int foo = 42;
