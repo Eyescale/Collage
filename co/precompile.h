@@ -1,3 +1,4 @@
+
 /* Copyright (c) 2010, Daniel Pfeifer <daniel@pfeifer-mail.de> 
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -18,7 +19,7 @@
  * @file co/precompile.h
  *
  * Include headers that don't change... STL, Boost, other third-party stuff.
- * Don't include any Equalizer headers here!
+ * Don't include any Collage headers here!
  * Don't include this file anywhere!
  */
 
