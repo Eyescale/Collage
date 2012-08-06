@@ -49,6 +49,8 @@ int main( int argc, char **argv )
     co::LocalNodePtr client = new co::LocalNode;
     TEST( client->listen( ));
 
+    lunchbox::sleep( 1000 ); // give zeroconf time to update
+
     co::NodePtr serverProxy = client->connect( server->getNodeID( ));
     TEST( serverProxy );
 

@@ -67,11 +67,13 @@ endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
 # Write defines file
 set(DEFINES_FILE ${OUTPUT_INCLUDE_DIR}/co/defines${ARCH}.h)
 set(DEFINES_FILE_IN ${CMAKE_CURRENT_BINARY_DIR}/defines${ARCH}.h.in)
+set(OPTIONS_CMAKE ${CMAKE_BINARY_DIR}/options.cmake)
 
 file(WRITE ${DEFINES_FILE_IN}
   "#ifndef CO_DEFINES_${ARCH}_H\n"
   "#define CO_DEFINES_${ARCH}_H\n\n"
   )
+file(WRITE ${OPTIONS_CMAKE} "# Optional modules enabled during build\n")
 
 foreach(DEF ${COLLAGE_DEFINES})
   file(APPEND ${DEFINES_FILE_IN}
@@ -79,6 +81,9 @@ foreach(DEF ${COLLAGE_DEFINES})
     "#  define ${DEF}\n"
     "#endif\n"
     )
+  if(DEF MATCHES "CO_")
+    file(APPEND ${OPTIONS_CMAKE} "set(${DEF} ON)\n")
+  endif()
 endforeach(DEF ${COLLAGE_DEFINES})
 
 file(APPEND ${DEFINES_FILE_IN} "\n#ifndef EQ_2_0_API\n")

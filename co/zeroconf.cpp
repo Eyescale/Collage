@@ -17,16 +17,13 @@
 
 #include "zeroconf.h"
 
-#ifdef CO_USE_SERVUS
-#  include <lunchbox/servus.h>
-#  include <map>
-#endif
+#include <lunchbox/servus.h>
+#include <map>
 
 namespace co
 {
 static const std::string empty_;
 
-#ifdef CO_USE_SERVUS
 namespace detail
 {
 typedef std::map< std::string, std::string > ValueMap;
@@ -105,84 +102,56 @@ private:
     InstanceMap instanceMap_; //!< copy of discovered data
 };
 }
-#endif
 
-#ifdef CO_USE_SERVUS
 Zeroconf::Zeroconf( lunchbox::Servus& service )
         : _impl( new detail::Zeroconf( service ))
-#else
-Zeroconf::Zeroconf()
-        : _impl( 0 )
-#endif
 {}
 
 Zeroconf::Zeroconf( const Zeroconf& from )
-#ifdef CO_USE_SERVUS
         : _impl( new detail::Zeroconf( *from._impl ))
-#else
-        : _impl( 0 )
-#endif
 {
 }
 
 Zeroconf::~Zeroconf()
 {
-#ifdef CO_USE_SERVUS
     delete _impl;
-#endif
 }
 
 Zeroconf& Zeroconf::operator = ( const Zeroconf& rhs )
 {
-#ifdef CO_USE_SERVUS
     if( this != &rhs )
     {
         delete _impl;
         _impl = new detail::Zeroconf( *rhs._impl );
     }
-#endif
     return *this;
 }
 
 void Zeroconf::set( const std::string& key, const std::string& value )
 {
-#ifdef CO_USE_SERVUS
     _impl->set( key, value );
-#endif
 }
 
 Strings Zeroconf::getInstances() const
 {
-#ifdef CO_USE_SERVUS
     return _impl->getInstances();
-#endif
-    return Strings();
 }
 
 Strings Zeroconf::getKeys( const std::string& instance ) const
 {
-#ifdef CO_USE_SERVUS
     return _impl->getKeys( instance );
-#endif
-    return Strings();
 }
 
 bool Zeroconf::containsKey( const std::string& instance,
                             const std::string& key ) const
 {
-#ifdef CO_USE_SERVUS
     return _impl->containsKey( instance, key );
-#endif
-    return false;
 }
 
 const std::string& Zeroconf::get( const std::string& instance,
                                   const std::string& key ) const
 {
-#ifdef CO_USE_SERVUS
     return _impl->get( instance, key );
-#endif
-    return empty_;
 }
 
 }

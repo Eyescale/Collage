@@ -40,22 +40,6 @@
 
 static std::string _message( "So long, and thanks for all the fish" );
 
-struct DataPacket : public co::Packet
-{
-    DataPacket()
-        {
-            command        = 2;
-            size           = sizeof( DataPacket ); 
-            data[0]        = '\0';
-        }
-        
-    uint64_t dataSize;
-    uint32_t compressorName;
-    uint32_t nChunks;
-    LB_ALIGN8( uint64_t last ); // pad and align to multiple-of-eight
-    LB_ALIGN8( uint8_t data[8] );
-};
-
 class DataOStream : public co::DataOStream
 {
 public:
@@ -65,7 +49,7 @@ protected:
     virtual void sendData( const void* buffer, const uint64_t size,
                            const bool last )
         {
-            co::ObjectDataPacket packet;
+            co::ObjectDeltaPacket packet;
             sendPacket( packet, buffer, size, last );
         }
 };
@@ -75,7 +59,7 @@ class DataIStream : public co::DataIStream
 public:
     void addDataCommand( co::CommandPtr command )
         {
-            TESTINFO( (*command)->command == 2, command );
+            TESTINFO( (*command)->command == co::CMD_OBJECT_DELTA, command );
             _commands.push( command );
         }
 
@@ -91,9 +75,10 @@ protected:
             if( !command )
                 return false;
 
-            TESTINFO( (*command)->command == 2, *command );
+            TESTINFO( (*command)->command == co::CMD_OBJECT_DELTA, *command );
 
-            const DataPacket* packet = command->get< DataPacket >();
+            const co::ObjectDeltaPacket* packet =
+                command->get< co::ObjectDeltaPacket >();
             *compressor = packet->compressorName;
             *nChunks = packet->nChunks;
             *size = packet->dataSize;
@@ -184,10 +169,10 @@ int main( int argc, char **argv )
         
         switch( (*command)->command )
         {
-            case 2:
+          case co::CMD_OBJECT_DELTA:
                 stream.addDataCommand( command );
                 TEST( !command->isFree( ));
-                receiving = !command->get< DataPacket >()->last;
+                receiving = !command->get< co::ObjectDeltaPacket >()->last;
                 break;
             default:
                 TEST( false );

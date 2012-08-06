@@ -43,9 +43,7 @@
 #include <lunchbox/sleep.h>
 #include <lunchbox/spinLock.h>
 #include <lunchbox/types.h>
-#ifdef CO_USE_SERVUS
-#  include <lunchbox/servus.h>
-#endif
+#include <lunchbox/servus.h>
 
 namespace co
 {
@@ -110,9 +108,7 @@ public:
     LocalNode()
             : sendToken( true ), lastSendToken( 0 ), objectStore( 0 )
             , receiverThread( 0 ), commandThread( 0 )
-#ifdef CO_USE_SERVUS
             , service( "_collage._tcp" )
-#endif
         {
         }
 
@@ -173,9 +169,7 @@ public:
     ReceiverThread* receiverThread;
     CommandThread* commandThread;
 
-#ifdef CO_USE_SERVUS
     lunchbox::Lockable< lunchbox::Servus > service;
-#endif
 };
 }
 
@@ -940,7 +934,6 @@ NodePtr LocalNode::_connect( const NodeID& nodeID, NodePtr peer )
 
 NodePtr LocalNode::_connectFromZeroconf( const NodeID& nodeID )
 {
-#ifdef CO_USE_SERVUS
     lunchbox::ScopedWrite mutex( _impl->service );
 
     const Strings& instances =
@@ -985,7 +978,6 @@ NodePtr LocalNode::_connectFromZeroconf( const NodeID& nodeID )
         if( connect( node ))
             return node;
     }
-#endif
     return 0;
 }
 
@@ -1382,7 +1374,6 @@ void LocalNode::_redispatchCommands()
 void LocalNode::_initService()
 {
     LB_TS_SCOPED( _rcvThread );
-#ifdef CO_USE_SERVUS
     _impl->service->withdraw(); // go silent during k/v update
 
     const ConnectionDescriptions& descs = getConnectionDescriptions();
@@ -1406,25 +1397,18 @@ void LocalNode::_initService()
     }
 
     _impl->service->announce( descs.front()->port, getNodeID().getString( ));
-#endif
 }
 
 void LocalNode::_exitService()
 {
-#ifdef CO_USE_SERVUS
     _impl->service->withdraw();
-#endif
 }
 
 Zeroconf LocalNode::getZeroconf()
 {
-#ifdef CO_USE_SERVUS
     lunchbox::ScopedWrite mutex( _impl->service );
     _impl->service->discover( lunchbox::Servus::IF_ALL, 500 );
     return Zeroconf( _impl->service.data );
-#else
-    return Zeroconf();
-#endif
 }
 
 

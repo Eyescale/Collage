@@ -15,7 +15,6 @@ set(VERSION_PATCH "0")
 
 include(Common)
 include(GitTargets)
-include(DoxygenSetup)
 
 set(FEATURES)
 include_directories(BEFORE ${CMAKE_SOURCE_DIR})
