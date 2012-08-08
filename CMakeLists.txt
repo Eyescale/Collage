@@ -15,13 +15,12 @@ set(VERSION_PATCH "0")
 
 include(Common)
 include(GitTargets)
+include(FindPackages)
+include(UpdateFile)
 
 set(FEATURES)
 include_directories(BEFORE ${CMAKE_SOURCE_DIR})
 
-find_package(Lunchbox 1.5.0 REQUIRED)
-include_directories(${LUNCHBOX_INCLUDE_DIRS})
-link_directories(${LUNCHBOX_LIBRARY_DIRS})
 if(LUNCHBOX_USE_OPENMP)
   find_package(OpenMP REQUIRED)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -31,20 +30,11 @@ if(LUNCHBOX_USE_DNSSD)
   set(FEATURES "${FEATURES} zeroconf")
 endif()
 
-include(UpdateFile)
-
-find_package(Boost 1.41 REQUIRED system regex date_time serialization)
-link_directories(${Boost_LIBRARY_DIRS})
-include_directories(AFTER SYSTEM ${Boost_INCLUDE_DIRS})
-
 set(PTHREAD_LIBRARIES pthread)
 
-find_package(OFED)
 if(OFED_FOUND)
   set(FEATURES "${FEATURES} RDMA")
 endif()
-
-find_package(UDT)
 if(UDT_FOUND)
   set(FEATURES "${FEATURES} UDT")
 endif()
