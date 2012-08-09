@@ -57,7 +57,7 @@ namespace detail { class DataIStream; }
         DataIStream& operator >> ( std::vector< T >& value )
         {
             uint64_t nElems = 0;
-            _read( &nElems, sizeof( nElems ));
+            (*this) >> nElems;
             value.resize( nElems );
             for( uint64_t i = 0; i < nElems; i++ )
                 (*this) >> value[i];
@@ -145,12 +145,12 @@ namespace detail { class DataIStream; }
         DataIStream& _readFlatVector ( std::vector< T >& value )
         {
             uint64_t nElems = 0;
-            _read( &nElems, sizeof( nElems ));
+            (*this) >> nElems;
             LBASSERTINFO( nElems < LB_BIT48,
                   "Out-of-sync co::DataIStream: " << nElems << " elements?" );
             value.resize( size_t( nElems ));
             if( nElems > 0 )
-                _read( &value.front(), nElems * sizeof( T ));
+                (*this) >> Array< T >( &value.front(), nElems );
             return *this;
         }
     };
@@ -167,7 +167,7 @@ namespace co{
     inline DataIStream& DataIStream::operator >> ( std::string& str )
     {
         uint64_t nElems = 0;
-        _read( &nElems, sizeof( nElems ));
+        (*this) >> nElems;
         LBASSERTINFO( nElems <= getRemainingBufferSize(),
                       nElems << " > " << getRemainingBufferSize( ));
         if( nElems == 0 )
