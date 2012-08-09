@@ -52,7 +52,7 @@ DataOStreamArchive::DataOStreamArchive( DataOStream& stream )
 
 void DataOStreamArchive::save_binary( const void* data, std::size_t size )
 {
-    _stream.write( data, size );
+    _stream << Array< const void >( data, size );
 }
 
 void DataOStreamArchive::save( bool b )

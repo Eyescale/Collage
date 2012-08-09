@@ -1,6 +1,9 @@
 
 This file lists all changes in the public Collage API, latest on top:
 
+09/Aug/2012
+  Made co::DataOStream::write private. Use 'os << co::Array< T >( ptr, num )'
+  instead.
 
 27/Jul/2012
   Made co::DataIStream::read private. Use 'is >> co::Array< T >( ptr, num )'

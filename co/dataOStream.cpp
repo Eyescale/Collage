@@ -327,7 +327,7 @@ bool DataOStream::hasSentData() const
     return _impl->dataSent;
 }
 
-void DataOStream::write( const void* data, uint64_t size )
+void DataOStream::_write( const void* data, uint64_t size )
 {
     LBASSERT( _impl->enabled );
 #ifdef EQ_INSTRUMENT_DATAOSTREAM

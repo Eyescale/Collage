@@ -40,6 +40,8 @@ namespace co
     };
 
     template<> inline size_t Array< void >::getNumBytes() const { return num; }
+    template<> inline size_t Array< const void >::getNumBytes() const
+        { return num; }
 }
 
 #endif // CO_ARRAY_H

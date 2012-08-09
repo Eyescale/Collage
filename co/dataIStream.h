@@ -20,7 +20,7 @@
 #define CO_DATAISTREAM_H
 
 #include <co/api.h>
-#include <co/array.h>
+#include <co/array.h> // used inline
 #include <co/types.h>
 
 #include <vector>
