@@ -504,11 +504,9 @@ int64_t SocketConnection::write( const void* buffer, const uint64_t bytes )
         };
 
     ResetEvent( _overlappedWrite.hEvent );
-    if( WSASend( _writeFD, &wsaBuffer, 1, &wrote, 0, &_overlappedWrite, 
-                 0 ) ==  0 ) // ok
-    {
+    if( WSASend(_writeFD, &wsaBuffer, 1, &wrote, 0, &_overlappedWrite, 0 ) == 0 )
+        // ok
         return wrote;
-    }
 
     if( WSAGetLastError() != WSA_IO_PENDING )
           return -1;
@@ -523,7 +521,12 @@ int64_t SocketConnection::write( const void* buffer, const uint64_t bytes )
             LBWARN << "Write error" << lunchbox::sysError << std::endl;
             return -1;
         }
+
       default:
+          LBWARN << "Unhandled write error " << err << ": " << lunchbox::sysError
+                 << std::endl;
+          // no break;
+      case WAIT_OBJECT_0:
           break;
     }
 
