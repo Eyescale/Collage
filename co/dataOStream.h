@@ -20,6 +20,7 @@
 #define CO_DATAOSTREAM_H
 
 #include <co/api.h>
+#include <co/array.h> // used inline
 #include <co/types.h>
 #include <lunchbox/nonCopyable.h> // base class
 
@@ -43,39 +44,37 @@ struct ObjectDataPacket;
     public:
         /** @name Internal */
         //@{
-        CO_API DataOStream();
-        virtual CO_API ~DataOStream();
-
-        /** Disable and flush the output to the current receivers. */
+        /** @internal Disable and flush the output to the current receivers. */
         CO_API void disable();
 
-        /** Disable, then send the packet to the current receivers. */
+        /** @internal Disable, then send the packet to the current receivers. */
         void disable( const Packet& packet );
 
-        /** Enable copying of all data into a saved buffer. */
+        /** @internal Enable copying of all data into a saved buffer. */
         void enableSave();
 
-        /** Disable copying of all data into a saved buffer. */
+        /** @internal Disable copying of all data into a saved buffer. */
         void disableSave();
 
-        /** @return if data was sent since the last enable() */
+        /** @internal @return if data was sent since the last enable() */
         CO_API bool hasSentData() const;
         //@}
 
         /** @name Data output */
         //@{
-        /** Write a plain data item by copying it to the stream. */
+        /** Write a plain data item by copying it to the stream. @version 1.0 */
         template< typename T > DataOStream& operator << ( const T& value )
-            { write( &value, sizeof( value )); return *this; }
+            { _write( &value, sizeof( value )); return *this; }
 
-        /** Write a std::vector of serializable items. */
+        /** Write a C array. @version 1.0 */
+        template< typename T > DataOStream& operator << ( Array< T > array )
+            { _write( array.data, array.getNumBytes( )); return *this; }
+
+        /** Write a std::vector of serializable items. @version 1.0 */
         template< typename T >
         DataOStream& operator << ( const std::vector< T >& value );
 
-        /** Write a number of bytes from data into the stream. */
-        CO_API void write( const void* data, uint64_t size );
-
-        /**
+        /** @internal
          * Serialize child objects.
          *
          * The DataIStream has a deserialize counterpart to this method. All
@@ -86,50 +85,56 @@ struct ObjectDataPacket;
         //@}
 
     protected:
-        /** Initialize the given compressor. */
+        CO_API DataOStream(); //!< @internal
+        virtual CO_API ~DataOStream(); //!< @internal
+
+        /** @internal Initialize the given compressor. */
         void _initCompressor( const uint32_t compressor );
 
-        /** Enable output. */
+        /** @internal Enable output. */
         CO_API void _enable();
 
-        /** Flush remaining data in the buffer. */
+        /** @internal Flush remaining data in the buffer. */
         void _flush();
 
-        /**
+        /** @internal
          * Set up the connection list for a group of  nodes, using multicast
          * where possible.
          */
         void _setupConnections( const Nodes& receivers );
 
-        /** Set up the connection (list) for one node. */
+        /** @internal Set up the connection (list) for one node. */
         void _setupConnection( NodePtr node, const bool useMulticast );
 
         /** @internal Needed by unit test. */
         CO_API void _setupConnection( ConnectionPtr connection );
         friend class DataStreamTest::Sender;
 
-        /** Resend the saved buffer to all enabled connections. */
+        /** @internal Resend the saved buffer to all enabled connections. */
         void _resend();
 
-        void _send( const Packet& packet );
+        void _send( const Packet& packet ); //!< @internal
+        void _clearConnections(); //!< @internal
 
-        void _clearConnections();
-
-        /** @name Packet sending, used by the subclasses */
+        /** @internal @name Packet sending, used by the subclasses */
         //@{
-        /** Send a data buffer (packet) to the receivers. */
+        /** @internal Send a data buffer (packet) to the receivers. */
         virtual void sendData( const void* buffer, const uint64_t size,
                                const bool last ) = 0;
 
+        /** @internal */
         CO_API void sendPacket( ObjectDataPacket& packet, const void* buffer,
                                 const uint64_t size, const bool last );
         //@}
 
-        /** Reset the whole stream. */
+        /** @internal Reset the whole stream. */
         virtual CO_API void reset();
 
     private:
         detail::DataOStream* const _impl;
+
+        /** Write a number of bytes from data into the stream. */
+        CO_API void _write( const void* data, uint64_t size );
 
         bool _disable();
 
@@ -144,9 +149,9 @@ struct ObjectDataPacket;
         DataOStream& _writeFlatVector( const std::vector< T >& value )
         {
             const uint64_t nElems = value.size();
-            write( &nElems, sizeof( nElems ));
+            _write( &nElems, sizeof( nElems ));
             if( nElems > 0 )
-                write( &value.front(), nElems * sizeof( T ));
+                _write( &value.front(), nElems * sizeof( T ));
             return *this;
         }
         /** Send the trailing data (packet) to the receivers */
@@ -176,9 +181,9 @@ namespace co
     inline DataOStream& DataOStream::operator << ( const std::string& str )
     {
         const uint64_t nElems = str.length();
-        write( &nElems, sizeof( nElems ));
+        _write( &nElems, sizeof( nElems ));
         if ( nElems > 0 )
-            write( str.c_str(), nElems );
+            _write( str.c_str(), nElems );
 
         return *this;
     }
