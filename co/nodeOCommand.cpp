@@ -15,7 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "nodeDataOStream.h"
+#include "nodeOCommand.h"
 
 
 namespace co
@@ -24,19 +24,13 @@ namespace co
 namespace detail
 {
 
-class NodeDataOStream
+class NodeOCommand
 {
 public:
-    NodeDataOStream( ConnectionPtr connection_, uint32_t type_, uint32_t cmd_ )
+    NodeOCommand( ConnectionPtr connection_, uint32_t type_, uint32_t cmd_ )
         : connection( connection_ )
         , type( type_ )
         , cmd( cmd_ )
-    {}
-
-    NodeDataOStream( const NodeDataOStream& rhs )
-        : connection( rhs.connection )
-        , type( rhs.type )
-        , cmd( rhs.cmd )
     {}
 
     ConnectionPtr connection;
@@ -46,10 +40,10 @@ public:
 
 }
 
-NodeDataOStream::NodeDataOStream( ConnectionPtr connection, uint32_t type,
-                                  uint32_t cmd )
+NodeOCommand::NodeOCommand( ConnectionPtr connection, uint32_t type,
+                            uint32_t cmd )
     : DataOStream()
-    , _impl( new detail::NodeDataOStream( connection, type, cmd ))
+    , _impl( new detail::NodeOCommand( connection, type, cmd ))
 {
     _setupConnection( _impl->connection );
     enableSave();
@@ -57,23 +51,14 @@ NodeDataOStream::NodeDataOStream( ConnectionPtr connection, uint32_t type,
     *this << type << cmd;
 }
 
-NodeDataOStream::NodeDataOStream( NodeDataOStream const& rhs )
-    : DataOStream()
-    , _impl( new detail::NodeDataOStream( *rhs._impl ))
-{
-    _setupConnection( _impl->connection );
-    enableSave();
-    _enable();
-}
-
-NodeDataOStream::~NodeDataOStream()
+NodeOCommand::~NodeOCommand()
 {
     disable();
     delete _impl;
 }
 
-void NodeDataOStream::sendData( const void* buffer, const uint64_t size,
-                                const bool last )
+void NodeOCommand::sendData( const void* buffer, const uint64_t size,
+                             const bool last )
 {
     LBASSERT( last );
     LBASSERT( size > 0 );

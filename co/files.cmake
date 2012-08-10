@@ -34,8 +34,8 @@ set(CO_PUBLIC_HEADERS
   localNode.h
   log.h
   node.h
-  nodeDataIStream.h
-  nodeDataOStream.h
+  nodeICommand.h
+  nodeOCommand.h
   nodeType.h
   object.h
   objectFactory.h
@@ -110,8 +110,8 @@ set(CO_SOURCES
   instanceCache.cpp
   localNode.cpp
   node.cpp
-  nodeDataIStream.cpp
-  nodeDataOStream.cpp
+  nodeICommand.cpp
+  nodeOCommand.cpp
   object.cpp
   objectCM.cpp
   objectDataIStream.cpp

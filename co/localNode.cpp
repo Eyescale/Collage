@@ -26,8 +26,8 @@
 #include "dataIStream.h"
 #include "exception.h"
 #include "global.h"
-#include "nodeDataIStream.h"
-#include "nodeDataOStream.h"
+#include "nodeICommand.h"
+#include "nodeOCommand.h"
 #include "nodePackets.h"
 #include "object.h"
 #include "objectStore.h"
@@ -1290,7 +1290,7 @@ bool LocalNode::_handleData()
 
     if( newPacket )
         // will update type & command inside the command for dispatching
-        NodeDataIStream stream( command );
+        NodeICommand stream( command );
 
     // This is one of the initial packets during the connection handshake, at
     // this point the remote node is not yet available.
@@ -1433,7 +1433,7 @@ bool LocalNode::_notifyCommandThreadIdle()
 
 bool LocalNode::_cmdAckRequest( Command& command )
 {
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     uint32_t requestID;
     stream >> requestID;
     LBASSERT( requestID != LB_UNDEFINED_UINT32 );
@@ -1466,7 +1466,7 @@ bool LocalNode::_cmdStopCmd( Command& command )
 
 bool LocalNode::_cmdSetAffinity( Command& command )
 {
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     int32_t affinity;
     stream >> affinity;
 
@@ -1694,7 +1694,7 @@ bool LocalNode::_cmdDisconnect( Command& command )
 {
     LBASSERT( _impl->inReceiverThread( ));
 
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     uint32_t requestID;
     stream >> requestID;
 
@@ -1711,7 +1711,7 @@ bool LocalNode::_cmdGetNodeData( Command& command )
 {
     LBVERB << "cmd get node data: " << command << std::endl;
 
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     NodeID nodeID;
     uint32_t requestID;
     stream >> nodeID >> requestID;
@@ -1744,7 +1744,7 @@ bool LocalNode::_cmdGetNodeDataReply( Command& command )
     LBASSERT( _impl->inReceiverThread( ));
     LBVERB << "cmd get node data reply: " << command << std::endl;
 
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     NodeID nodeID;
     uint32_t requestID;
     uint32_t nodeType;
@@ -1802,7 +1802,7 @@ bool LocalNode::_cmdAcquireSendToken( Command& command )
 
     _impl->sendToken = false;
 
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     uint32_t requestID;
     stream >> requestID;
     command.getNode()->send( CMD_NODE_ACQUIRE_SEND_TOKEN_REPLY ) << requestID;
@@ -1811,7 +1811,7 @@ bool LocalNode::_cmdAcquireSendToken( Command& command )
 
 bool LocalNode::_cmdAcquireSendTokenReply( Command& command )
 {
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     uint32_t requestID;
     stream >> requestID;
     serveRequest( requestID );
@@ -1834,7 +1834,7 @@ bool LocalNode::_cmdReleaseSendToken( Command& )
     CommandPtr request = _impl->sendTokenQueue.front();
     _impl->sendTokenQueue.pop_front();
 
-    NodeDataIStream stream( request );
+    NodeICommand stream( request );
     uint32_t requestID;
     stream >> requestID;
     request->getNode()->send( CMD_NODE_ACQUIRE_SEND_TOKEN_REPLY ) << requestID;
@@ -1846,7 +1846,7 @@ bool LocalNode::_cmdAddListener( Command& command )
     ConnectionPtr connection;
     std::string data;
     {
-        NodeDataIStream stream( &command );
+        NodeICommand stream( &command );
         stream >> connection >> data;
         LBASSERT( connection );
         // scope ensures unref of connection inside command/stream
@@ -1876,7 +1876,7 @@ bool LocalNode::_cmdRemoveListener( Command& command )
     ConnectionPtr connection;
     std::string data;
     {
-        NodeDataIStream stream( &command );
+        NodeICommand stream( &command );
         stream >> requestID >> connection >> data;
         LBASSERT( connection );
         // scope ensures unref of connection inside command/stream

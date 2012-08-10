@@ -26,8 +26,8 @@
 #include "instanceCache.h"
 #include "log.h"
 #include "nodePackets.h"
-#include "nodeDataOStream.h"
-#include "nodeDataIStream.h"
+#include "nodeICommand.h"
+#include "nodeOCommand.h"
 #include "objectCM.h"
 #include "objectDataIStream.h"
 #include "objectPackets.h"
@@ -633,7 +633,7 @@ bool ObjectStore::_cmdFindMasterNodeID( Command& command )
 {
     LB_TS_THREAD( _commandThread );
 
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     UUID id;
     uint32_t requestID;
     stream >> id >> requestID;
@@ -675,7 +675,7 @@ bool ObjectStore::_cmdFindMasterNodeID( Command& command )
 
 bool ObjectStore::_cmdFindMasterNodeIDReply( Command& command )
 {
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     NodeID masterNodeID;
     uint32_t requestID;
     stream >> masterNodeID >> requestID;
@@ -688,7 +688,7 @@ bool ObjectStore::_cmdAttachObject( Command& command )
     LB_TS_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS ) << "Cmd attach object " << command << std::endl;
 
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     UUID objectID;
     uint32_t instanceID;
     uint32_t requestID;
@@ -706,7 +706,7 @@ bool ObjectStore::_cmdDetachObject( Command& command )
     LB_TS_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS ) << "Cmd detach object " << command << std::endl;
 
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     UUID objectID;
     uint32_t instanceID;
     uint32_t requestID;
@@ -742,7 +742,7 @@ bool ObjectStore::_cmdRegisterObject( Command& command )
 
     LBLOG( LOG_OBJECTS ) << "Cmd register object " << command << std::endl;
 
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     void* object;   // don't want to call operator >> (Object*)
     stream >> object;
 
@@ -767,7 +767,7 @@ bool ObjectStore::_cmdDeregisterObject( Command& command )
     LB_TS_THREAD( _commandThread );
     LBLOG( LOG_OBJECTS ) << "Cmd deregister object " << command << std::endl;
 
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     uint32_t requestID;
     stream >> requestID;
 
@@ -910,7 +910,7 @@ bool ObjectStore::_cmdUnsubscribeObject( Command& command )
     LB_TS_THREAD( _commandThread );
     LBLOG( LOG_OBJECTS ) << "Cmd unsubscribe object  " << command << std::endl;
 
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     UUID id;
     uint32_t requestID;
     uint32_t masterInstanceID;
@@ -947,7 +947,7 @@ bool ObjectStore::_cmdUnmapObject( Command& command )
     LB_TS_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS ) << "Cmd unmap object " << command << std::endl;
 
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     UUID objectID;
     stream >> objectID;
 
@@ -1047,7 +1047,7 @@ bool ObjectStore::_cmdDisableSendOnRegister( Command& command )
         }
     }
 
-    NodeDataIStream stream( &command );
+    NodeICommand stream( &command );
     uint32_t requestID;
     stream >> requestID;
     _localNode->serveRequest( requestID );

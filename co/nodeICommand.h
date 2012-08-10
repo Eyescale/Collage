@@ -15,32 +15,37 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_NODEDATAOSTREAM_H
-#define CO_NODEDATAOSTREAM_H
+#ifndef CO_NODEICOMMAND_H
+#define CO_NODEICOMMAND_H
 
-#include <co/dataOStream.h>   // base class
+#include <co/dataIStream.h>   // base class
 
 
 namespace co
 {
 
-namespace detail { class NodeDataOStream; }
+namespace detail { class NodeICommand; }
 
-/** The DataOStream for node data & commands. */
-class NodeDataOStream : public DataOStream
+/** A DataIStream based command for co::Node. */
+class NodeICommand : public DataIStream
 {
 public:
-    NodeDataOStream( ConnectionPtr connection, uint32_t type, uint32_t cmd );
-    NodeDataOStream( NodeDataOStream const& rhs );
-    virtual ~NodeDataOStream();
+    NodeICommand( CommandPtr command );
+    virtual ~NodeICommand();
 
 protected:
-    virtual void sendData( const void* buffer, const uint64_t size,
-                           const bool last );
+    virtual size_t nRemainingBuffers() const;
+
+    virtual uint128_t getVersion() const;
+
+    virtual NodePtr getMaster();
+
+    virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
+                                const void** chunkData, uint64_t* size );
 
 private:
-    detail::NodeDataOStream* const _impl;
+    detail::NodeICommand* const _impl;
 };
 }
 
-#endif //CO_NODEDATAOSTREAM_H
+#endif //CO_NODEICOMMAND_H

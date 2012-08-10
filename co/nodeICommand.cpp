@@ -15,7 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "nodeDataIStream.h"
+#include "nodeICommand.h"
 
 #include "command.h"
 #include "plugins/compressorTypes.h"
@@ -27,7 +27,7 @@ namespace co
 namespace detail
 {
 
-class NodeDataIStream
+class NodeICommand
 {
 public:
     CommandPtr command;
@@ -35,9 +35,9 @@ public:
 
 }
 
-NodeDataIStream::NodeDataIStream( CommandPtr command )
+NodeICommand::NodeICommand( CommandPtr command )
     : DataIStream()
-    , _impl( new detail::NodeDataIStream )
+    , _impl( new detail::NodeICommand )
 {
     _impl->command = command;
 
@@ -48,27 +48,27 @@ NodeDataIStream::NodeDataIStream( CommandPtr command )
     (*command)->command = cmd;
 }
 
-NodeDataIStream::~NodeDataIStream()
+NodeICommand::~NodeICommand()
 {
     delete _impl;
 }
 
-size_t NodeDataIStream::nRemainingBuffers() const
+size_t NodeICommand::nRemainingBuffers() const
 {
     return _impl->command ? 1 : 0;
 }
 
-uint128_t NodeDataIStream::getVersion() const
+uint128_t NodeICommand::getVersion() const
 {
     return uint128_t( 0, 0 );
 }
 
-NodePtr NodeDataIStream::getMaster()
+NodePtr NodeICommand::getMaster()
 {
     return _impl->command ? _impl->command->getNode() : 0;
 }
 
-bool NodeDataIStream::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
+bool NodeICommand::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
                                      const void** chunkData, uint64_t* size )
 {
     if( !_impl->command )

@@ -186,7 +186,7 @@ namespace detail { class Node; }
          * @param cmd the node command to execute
          * @return the stream object to pass additional data to
          */
-        NodeDataOStream send( uint32_t cmd );
+        NodeOCommand send( uint32_t cmd );
         //@}
 
         CO_API const NodeID& getNodeID() const;
