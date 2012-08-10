@@ -83,6 +83,10 @@ namespace detail { class DataIStream; }
         /**
          * Get the pointer to the remaining data in the current buffer.
          *
+         * The usage of this method is discouraged, no endian conversion or
+         * bounds checking is performed by the DataIStream on the returned raw
+         * pointer.
+         *
          * The buffer is advanced by the given size. If not enough data is
          * present, 0 is returned and the buffer is unchanged.
          *
@@ -159,7 +163,8 @@ namespace detail { class DataIStream; }
 #include <co/object.h>
 #include <co/objectVersion.h>
 
-namespace co{
+namespace co
+{
     /** @name Specialized input operators */
     //@{
     /** Read a std::string. */
