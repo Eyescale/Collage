@@ -26,6 +26,8 @@
 #include "instanceCache.h"
 #include "log.h"
 #include "nodePackets.h"
+#include "nodeDataOStream.h"
+#include "nodeDataIStream.h"
 #include "objectCM.h"
 #include "objectDataIStream.h"
 #include "objectPackets.h"
@@ -216,13 +218,9 @@ void ObjectStore::attachObject( Object* object, const UUID& id,
     LBASSERT( object );
     LB_TS_NOT_THREAD( _receiverThread );
 
-    NodeAttachObjectPacket packet;
-    packet.requestID = _localNode->registerRequest( object );
-    packet.objectID = id;
-    packet.objectInstanceID = instanceID;
-
-    _localNode->send( packet );
-    _localNode->waitRequest( packet.requestID );
+    const uint32_t requestID = _localNode->registerRequest( object );
+    _localNode->send( CMD_NODE_ATTACH_OBJECT ) << id << instanceID << requestID;
+    _localNode->waitRequest( requestID );
 }
 
 namespace
@@ -274,13 +272,11 @@ void ObjectStore::detachObject( Object* object )
     LBASSERT( object );
     LB_TS_NOT_THREAD( _receiverThread );
 
-    NodeDetachObjectPacket packet;
-    packet.requestID = _localNode->registerRequest();
-    packet.objectID  = object->getID();
-    packet.objectInstanceID  = object->getInstanceID();
-
-    _localNode->send( packet );
-    _localNode->waitRequest( packet.requestID );
+    const uint32_t requestID = _localNode->registerRequest();
+    _localNode->send( CMD_NODE_DETACH_OBJECT ) << object->getID()
+                                               << object->getInstanceID()
+                                               << requestID;
+    _localNode->waitRequest( requestID );
 }
 
 void ObjectStore::swapObject( Object* oldObject, Object* newObject )
@@ -698,26 +694,33 @@ bool ObjectStore::_cmdFindMasterNodeIDReply( Command& command )
 bool ObjectStore::_cmdAttachObject( Command& command )
 {
     LB_TS_THREAD( _receiverThread );
-    const NodeAttachObjectPacket* packet =
-        command.get< NodeAttachObjectPacket >();
-    LBLOG( LOG_OBJECTS ) << "Cmd attach object " << packet << std::endl;
+    LBLOG( LOG_OBJECTS ) << "Cmd attach object " << command << std::endl;
+
+    NodeDataIStream stream( &command );
+    UUID objectID;
+    uint32_t instanceID;
+    uint32_t requestID;
+    stream >> objectID >> instanceID >> requestID;
 
     Object* object = static_cast< Object* >( _localNode->getRequestData( 
-                                                 packet->requestID ));
-    _attachObject( object, packet->objectID, packet->objectInstanceID );
-    _localNode->serveRequest( packet->requestID );
+                                                 requestID ));
+    _attachObject( object, objectID, instanceID );
+    _localNode->serveRequest( requestID );
     return true;
 }
 
 bool ObjectStore::_cmdDetachObject( Command& command )
 {
     LB_TS_THREAD( _receiverThread );
-    const NodeDetachObjectPacket* packet =
-        command.get< NodeDetachObjectPacket >();
-    LBLOG( LOG_OBJECTS ) << "Cmd detach object " << packet << std::endl;
+    LBLOG( LOG_OBJECTS ) << "Cmd detach object " << command << std::endl;
 
-    const UUID& id = packet->objectID;
-    ObjectsHash::const_iterator i = _objects->find( id );
+    NodeDataIStream stream( &command );
+    UUID objectID;
+    uint32_t instanceID;
+    uint32_t requestID;
+    stream >> objectID >> instanceID >> requestID;
+
+    ObjectsHash::const_iterator i = _objects->find( objectID );
     if( i != _objects->end( ))
     {
         const Objects& objects = i->second;
@@ -726,7 +729,7 @@ bool ObjectStore::_cmdDetachObject( Command& command )
              j != objects.end(); ++j )
         {
             Object* object = *j;
-            if( object->getInstanceID() == packet->objectInstanceID )
+            if( object->getInstanceID() == instanceID )
             {
                 _detachObject( object );
                 break;
@@ -734,8 +737,8 @@ bool ObjectStore::_cmdDetachObject( Command& command )
         }
     }
 
-    LBASSERT( packet->requestID != LB_UNDEFINED_UINT32 );
-    _localNode->serveRequest( packet->requestID );
+    LBASSERT( requestID != LB_UNDEFINED_UINT32 );
+    _localNode->serveRequest( requestID );
     return true;
 }
 
@@ -935,8 +938,9 @@ bool ObjectStore::_cmdUnsubscribeObject( Command& command )
         }
     }
 
-    NodeDetachObjectPacket detachPacket( packet );
-    node->send( detachPacket );
+    node->send( CMD_NODE_DETACH_OBJECT ) << packet->objectID
+                                         << packet->slaveInstanceID
+                                         << packet->requestID;
     return true;
 }
 

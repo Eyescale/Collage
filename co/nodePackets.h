@@ -256,19 +256,6 @@ namespace co
         const uint32_t pad;
     };
 
-    struct NodeAttachObjectPacket : public NodePacket
-    {
-        NodeAttachObjectPacket()
-            {
-                command = CMD_NODE_ATTACH_OBJECT;
-                size    = sizeof( NodeAttachObjectPacket ); 
-            }
-        
-        UUID  objectID;
-        uint32_t    requestID;
-        uint32_t    objectInstanceID;
-    };
-
     struct NodeMapObjectPacket : public NodePacket
     {
         NodeMapObjectPacket()
@@ -399,29 +386,6 @@ namespace co
             }
         
         uint32_t requestID;
-    };
-
-    struct NodeDetachObjectPacket : public NodePacket
-    {
-        NodeDetachObjectPacket()
-                : requestID( LB_UNDEFINED_UINT32 )
-        {
-            command   = CMD_NODE_DETACH_OBJECT;
-            size      = sizeof( NodeDetachObjectPacket ); 
-        }
-
-        NodeDetachObjectPacket(const NodeUnsubscribeObjectPacket* request)
-                : requestID( request->requestID )
-        {
-            command   = CMD_NODE_DETACH_OBJECT;
-            size      = sizeof( NodeDetachObjectPacket ); 
-            objectID  = request->objectID;
-            objectInstanceID = request->slaveInstanceID;
-        }
-
-        UUID      objectID;
-        uint32_t        requestID;
-        uint32_t        objectInstanceID;
     };
 
     struct NodeDisableSendOnRegisterPacket : public NodePacket

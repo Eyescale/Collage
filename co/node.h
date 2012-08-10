@@ -175,6 +175,18 @@ namespace detail { class Node; }
             ConnectionPtr connection = useMulticast();
             return connection ? connection->send( packet ) : false;
         }
+
+        /**
+         * Send a command with optional data to the node.
+         *
+         * The returned data stream can be used to pass additional data to the
+         * given command. The data will be send after the stream is destroyed,
+         * aka when it is running out of scope.
+         *
+         * @param cmd the node command to execute
+         * @return the stream object to pass additional data to
+         */
+        NodeDataOStream send( uint32_t cmd );
         //@}
 
         CO_API const NodeID& getNodeID() const;

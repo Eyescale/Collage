@@ -47,6 +47,8 @@ class DataOStream;
 class Global;
 class LocalNode;
 class Node;
+class NodeDataIStream;
+class NodeDataOStream;
 class Object;
 class ObjectFactory;
 class ObjectHandler;

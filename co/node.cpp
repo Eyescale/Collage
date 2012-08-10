@@ -18,6 +18,7 @@
 #include "node.h"
 
 #include "connectionDescription.h"
+#include "nodeDataOStream.h"
 #include "nodePackets.h"
 
 #include <lunchbox/scopedMutex.h>
@@ -238,6 +239,11 @@ ConnectionPtr Node::getConnection() const
 ConnectionPtr Node::getMulticast() const
 {
     return _impl->outMulticast.data;
+}
+
+NodeDataOStream Node::send( uint32_t cmd )
+{
+    return NodeDataOStream( getConnection(), PACKETTYPE_CO_NODE, cmd );
 }
 
 const NodeID& Node::getNodeID() const

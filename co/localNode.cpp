@@ -26,6 +26,7 @@
 #include "dataIStream.h"
 #include "exception.h"
 #include "global.h"
+#include "nodeDataIStream.h"
 #include "nodePackets.h"
 #include "object.h"
 #include "objectStore.h"
@@ -1250,13 +1251,23 @@ bool LocalNode::_handleData()
     }
 
     LBASSERT( sizePtr );
-    const uint64_t size = *reinterpret_cast< uint64_t* >( sizePtr );
+    uint64_t size = *reinterpret_cast< uint64_t* >( sizePtr );
     if( bytes == 0 ) // fluke signal
     {
         LBWARN << "Erronous network event on " << connection->getDescription()
                << std::endl;
         _impl->incoming.setDirty();
         return false;
+    }
+
+    // TEMP: check for new datastream 'packet'
+    const bool newPacket = size == 0;
+    if( newPacket )
+    {
+        // get actual size of datastream 'packet'
+        connection->recvNB( sizePtr, sizeof( uint64_t ));
+        connection->recvSync( &sizePtr, &bytes, false );
+        size = *reinterpret_cast< uint64_t* >( sizePtr );
     }
 
     LBASSERT( size );
@@ -1270,7 +1281,10 @@ bool LocalNode::_handleData()
     uint8_t* ptr = reinterpret_cast< uint8_t* >(
         command->getModifiable< Packet >()) + sizeof( uint64_t );
 
-    connection->recvNB( ptr, size - sizeof( uint64_t ));
+    if( newPacket )
+        connection->recvNB( ptr, size );
+    else
+        connection->recvNB( ptr, size - sizeof( uint64_t ));
     const bool gotData = connection->recvSync( 0, 0 );
 
     LBASSERT( gotData );
@@ -1285,6 +1299,10 @@ bool LocalNode::_handleData()
         LBERROR << "Incomplete packet read: " << command << std::endl;
         return false;
     }
+
+    if( newPacket )
+        // will update type & command inside the command for dispatching
+        NodeDataIStream stream( command );
 
     // This is one of the initial packets during the connection handshake, at
     // this point the remote node is not yet available.
