@@ -33,8 +33,6 @@ namespace co
         /** @return the number of bytes stored in the pointer. @version 1.0 */
         size_t getNumBytes() const { return num * sizeof( T ); }
 
-        // for #146: void swapByteOrder() {...} 
-
         T* const data; //!< The data
         const size_t num; //!<  The number of elements in the data
     };
