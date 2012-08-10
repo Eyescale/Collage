@@ -29,26 +29,6 @@
 /** @cond IGNORE */
 namespace co
 {
-    struct NodeStopPacket : public NodePacket
-    {
-        NodeStopPacket()
-            {
-                command = CMD_NODE_STOP_RCV;
-                size    = sizeof( NodeStopPacket );
-            }
-    };
-
-    struct NodeAffinityPacket : public NodePacket
-    {
-      NodeAffinityPacket()
-	    {
-                command = CMD_NODE_SET_AFFINITY_RCV;
-                size = sizeof(NodeAffinityPacket);
-            }
-
-        int32_t affinity;
-    };
-
     struct NodeConnectPacket : public NodePacket
     {
         NodeConnectPacket( const LocalNodePtr node )
@@ -103,49 +83,6 @@ namespace co
         NodeID   id;
         uint32_t nodeType;
         LB_ALIGN8( char data[8] );
-    };
-
-    struct NodeDisconnectPacket : public NodePacket
-    {
-        NodeDisconnectPacket() 
-            {
-                command = CMD_NODE_DISCONNECT;
-                size = sizeof( NodeDisconnectPacket ); 
-            }
-
-        uint32_t requestID;
-    };
-
-    struct NodeGetNodeDataPacket : public NodePacket
-    {
-        NodeGetNodeDataPacket()
-                : pad( 0 )
-            {
-                command = CMD_NODE_GET_NODE_DATA;
-                size    = sizeof( NodeGetNodeDataPacket );
-            }
-
-        NodeID   nodeID;
-        uint32_t requestID;
-        const uint32_t pad;
-    };
-
-    struct NodeGetNodeDataReplyPacket : public NodePacket
-    {
-        NodeGetNodeDataReplyPacket(
-            const NodeGetNodeDataPacket* request )
-            {
-                command     = CMD_NODE_GET_NODE_DATA_REPLY;
-                size        = sizeof( NodeGetNodeDataReplyPacket );
-                nodeID      = request->nodeID;
-                requestID   = request->requestID;
-                nodeData[0] = '\0';
-            } 
-
-        NodeID   nodeID;
-        uint32_t requestID;
-        uint32_t nodeType; 
-        LB_ALIGN8( char nodeData[8] );
     };
 
     struct NodeAcquireSendTokenPacket : public NodePacket
@@ -445,20 +382,6 @@ namespace co
     {
         os << (NodePacket*)packet << " req " << packet->requestID << " type "
            << packet->nodeType << " data " << packet->nodeData;
-        return os;
-    }
-    inline std::ostream& operator << ( std::ostream& os, 
-                              const NodeGetNodeDataPacket* packet )
-    {
-        os << (NodePacket*)packet << " req " << packet->requestID << " nodeID " 
-           << packet->nodeID;
-        return os;
-    }
-    inline std::ostream& operator << ( std::ostream& os, 
-                                       const NodeGetNodeDataReplyPacket* packet)
-    {
-        os << (NodePacket*)packet << " req " << packet->requestID << " type "
-           << packet->type << " data " << packet->nodeData;
         return os;
     }
     inline std::ostream& operator << ( std::ostream& os, 

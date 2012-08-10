@@ -27,6 +27,7 @@
 #include "exception.h"
 #include "global.h"
 #include "nodeDataIStream.h"
+#include "nodeDataOStream.h"
 #include "nodePackets.h"
 #include "object.h"
 #include "objectStore.h"
@@ -348,8 +349,7 @@ bool LocalNode::close()
     if( !isListening() )
         return false;
 
-    NodeStopPacket packet;
-    send( packet );
+    send( CMD_NODE_STOP_RCV );
 
     LBCHECK( _impl->receiverThread->join( ));
     _cleanup();
@@ -372,12 +372,8 @@ bool LocalNode::close()
 
 void LocalNode::setAffinity( const int32_t affinity )
 {
-    NodeAffinityPacket packet;
-    packet.affinity = affinity;
-    send( packet );
-
-    packet.command = CMD_NODE_SET_AFFINITY_CMD;
-    send( packet );
+    send( CMD_NODE_SET_AFFINITY_RCV ) << affinity;
+    send( CMD_NODE_SET_AFFINITY_CMD ) << affinity;
 
     lunchbox::Thread::setAffinity( affinity );
 }
@@ -592,11 +588,10 @@ bool LocalNode::disconnect( NodePtr node )
 
     LBASSERT( !inCommandThread( ));
 
-    NodeDisconnectPacket packet;
-    packet.requestID = registerRequest( node.get( ));
-    send( packet );
+    const uint32_t requestID = registerRequest( node.get( ));
+    send( CMD_NODE_DISCONNECT ) << requestID;
 
-    waitRequest( packet.requestID );
+    waitRequest( requestID );
     _impl->objectStore->removeNode( node );
     return true;
 }
@@ -878,13 +873,11 @@ NodePtr LocalNode::_connect( const NodeID& nodeID, NodePtr peer )
     }
     LBASSERT( getNodeID() != nodeID );
 
-    NodeGetNodeDataPacket packet;
-    packet.requestID = registerRequest();
-    packet.nodeID    = nodeID;
-    peer->send( packet );
+    const uint32_t requestID = registerRequest();
+    peer->send( CMD_NODE_GET_NODE_DATA ) << nodeID << requestID;
 
     void* result = 0;
-    waitRequest( packet.requestID, result );
+    waitRequest( requestID, result );
 
     if( !result )
     {
@@ -1272,7 +1265,8 @@ bool LocalNode::_handleData()
 
     LBASSERT( size );
     LBASSERTINFO( bytes == sizeof( uint64_t ), bytes );
-    LBASSERT( size > sizeof( size ));
+    if( !newPacket )
+        LBASSERT( size > sizeof( size ));
 
     if( node )
         node->_setLastReceive( getTime64( ));
@@ -1476,9 +1470,11 @@ bool LocalNode::_cmdStopCmd( Command& command )
 
 bool LocalNode::_cmdSetAffinity( Command& command )
 {
-    const NodeAffinityPacket* packet = command.get< NodeAffinityPacket >();
+    NodeDataIStream stream( &command );
+    int32_t affinity;
+    stream >> affinity;
 
-    lunchbox::Thread::setAffinity( packet->affinity );
+    lunchbox::Thread::setAffinity( affinity );
     return true;
 }
 
@@ -1702,31 +1698,36 @@ bool LocalNode::_cmdDisconnect( Command& command )
 {
     LBASSERT( _impl->inReceiverThread( ));
 
-    const NodeDisconnectPacket* packet = command.get< NodeDisconnectPacket >();
+    NodeDataIStream stream( &command );
+    uint32_t requestID;
+    stream >> requestID;
 
-    NodePtr node = static_cast<Node*>( getRequestData( packet->requestID ));
+    NodePtr node = static_cast<Node*>( getRequestData( requestID ));
     LBASSERT( node.isValid( ));
 
     _closeNode( node );
     LBASSERT( node->isClosed( ));
-    serveRequest( packet->requestID );
+    serveRequest( requestID );
     return true;
 }
 
-bool LocalNode::_cmdGetNodeData( Command& command)
+bool LocalNode::_cmdGetNodeData( Command& command )
 {
-    const NodeGetNodeDataPacket* packet = command.get<NodeGetNodeDataPacket>();
-    LBVERB << "cmd get node data: " << packet << std::endl;
+    LBVERB << "cmd get node data: " << command << std::endl;
 
-    const NodeID& nodeID = packet->nodeID;
+    NodeDataIStream stream( &command );
+    NodeID nodeID;
+    uint32_t requestID;
+    stream >> nodeID >> requestID;
+
     NodePtr node = getNode( nodeID );
     NodePtr toNode = command.getNode();
-    NodeGetNodeDataReplyPacket reply( packet );
 
+    uint32_t nodeType;
     std::string nodeData;
     if( node.isValid( ))
     {
-        reply.nodeType = node->getType();
+        nodeType = node->getType();
         nodeData = node->serialize();
         LBINFO << "Sent node data '" << nodeData << "' for " << nodeID << " to "
                << toNode << std::endl;
@@ -1734,23 +1735,25 @@ bool LocalNode::_cmdGetNodeData( Command& command)
     else
     {
         LBVERB << "Node " << nodeID << " unknown" << std::endl;
-        reply.nodeType = NODETYPE_CO_INVALID;
+        nodeType = NODETYPE_CO_INVALID;
     }
 
-    toNode->send( reply, nodeData );
+    toNode->send( CMD_NODE_GET_NODE_DATA_REPLY ) << nodeID << requestID
+                                                 << nodeType << nodeData;
     return true;
 }
 
 bool LocalNode::_cmdGetNodeDataReply( Command& command )
 {
     LBASSERT( _impl->inReceiverThread( ));
+    LBVERB << "cmd get node data reply: " << command << std::endl;
 
-    const NodeGetNodeDataReplyPacket* packet =
-        command.get< NodeGetNodeDataReplyPacket >();
-    LBVERB << "cmd get node data reply: " << packet << std::endl;
-
-    const uint32_t requestID = packet->requestID;
-    const NodeID& nodeID = packet->nodeID;
+    NodeDataIStream stream( &command );
+    NodeID nodeID;
+    uint32_t requestID;
+    uint32_t nodeType;
+    std::string nodeData;
+    stream >> nodeID >> requestID >> nodeType >> nodeData;
 
     // No locking needed, only recv thread writes
     NodeHash::const_iterator i = _impl->nodes->find( nodeID );
@@ -1764,20 +1767,19 @@ bool LocalNode::_cmdGetNodeDataReply( Command& command )
         return true;
     }
 
-    if( packet->nodeType == NODETYPE_CO_INVALID )
+    if( nodeType == NODETYPE_CO_INVALID )
     {
         serveRequest( requestID, (void*)0 );
         return true;
     }
 
     // new node: create and add unconnected node
-    NodePtr node = createNode( packet->nodeType );
+    NodePtr node = createNode( nodeType );
     LBASSERT( node.isValid( ));
 
-    std::string data = packet->nodeData;
-    if( !node->deserialize( data ))
+    if( !node->deserialize( nodeData ))
         LBWARN << "Failed to initialize node data" << std::endl;
-    LBASSERT( data.empty( ));
+    LBASSERT( nodeData.empty( ));
 
     node->ref( this );
     serveRequest( requestID, node.get( ));

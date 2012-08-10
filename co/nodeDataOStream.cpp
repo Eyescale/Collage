@@ -54,6 +54,7 @@ NodeDataOStream::NodeDataOStream( ConnectionPtr connection, uint32_t type,
     _setupConnection( _impl->connection );
     enableSave();
     _enable();
+    *this << type << cmd;
 }
 
 NodeDataOStream::NodeDataOStream( NodeDataOStream const& rhs )
@@ -82,11 +83,7 @@ void NodeDataOStream::sendData( const void* buffer, const uint64_t size,
     uint64_t magicSize = 0;
     _impl->connection->send( &magicSize, sizeof( uint64_t ), true );
 
-    // include type & cmd in payload size
-    uint64_t actualSize = size + sizeof( uint32_t ) + sizeof( uint32_t );
-    _impl->connection->send( &actualSize, sizeof( uint64_t ), true );
-    _impl->connection->send( &_impl->type, sizeof( uint32_t ), true );
-    _impl->connection->send( &_impl->cmd, sizeof( uint32_t ), true );
+    _impl->connection->send( &size, sizeof( uint64_t ), true );
     _impl->connection->send( buffer, size, true );
     _impl->connection->unlockSend();
 }
