@@ -611,8 +611,7 @@ void LocalNode::ackRequest( NodePtr node, const uint32_t requestID )
 void LocalNode::ping( NodePtr remoteNode )
 {
     LBASSERT( !_impl->inReceiverThread( ) );
-    NodePingPacket packet;
-    remoteNode->send( packet );
+    remoteNode->send( CMD_NODE_PING );
 }
 
 bool LocalNode::pingIdleNodes()
@@ -630,8 +629,7 @@ bool LocalNode::pingIdleNodes()
         {
             LBINFO << " Ping Node: " <<  node->getNodeID() << " last seen "
                    << node->getLastReceiveTime() << std::endl;
-            NodePingPacket packet;
-            node->send( packet );
+            node->send( CMD_NODE_PING );
             pinged = true;
         }
     }
@@ -1908,8 +1906,7 @@ bool LocalNode::_cmdRemoveListener( Command& command )
 bool LocalNode::_cmdPing( Command& command )
 {
     LBASSERT( inCommandThread( ));
-    NodePingReplyPacket reply;
-    command.getNode()->send( reply );
+    command.getNode()->send( CMD_NODE_PING_REPLY );
     return true;
 }
 

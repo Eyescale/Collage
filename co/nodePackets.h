@@ -158,17 +158,6 @@ namespace co
         bool pad2[5];
     };
 
-    struct NodeUnmapObjectPacket : public NodePacket
-    {
-        NodeUnmapObjectPacket()
-            {
-                command = CMD_NODE_UNMAP_OBJECT;
-                size    = sizeof( NodeUnmapObjectPacket ); 
-            }
-        
-        UUID objectID;
-    };
-
     struct NodeRemoveNodePacket : public NodePacket
     {
         NodeRemoveNodePacket()
@@ -179,53 +168,6 @@ namespace co
             }
         Node*        node;
         uint32_t     requestID;
-    };
-
-    struct NodeUnsubscribeObjectPacket : public NodePacket
-    {
-        NodeUnsubscribeObjectPacket()
-            {
-                command = CMD_NODE_UNSUBSCRIBE_OBJECT;
-                size    = sizeof( NodeUnsubscribeObjectPacket ); 
-            }
-       
-        UUID      objectID;
-        uint32_t        requestID;
-        uint32_t        masterInstanceID;
-        uint32_t        slaveInstanceID;
-    };
-
-    struct NodeRegisterObjectPacket : public NodePacket
-    {
-        NodeRegisterObjectPacket()
-            {
-                command = CMD_NODE_REGISTER_OBJECT;
-                size    = sizeof( NodeRegisterObjectPacket ); 
-            }
-        
-        Object* object;
-    };
-
-    struct NodeDeregisterObjectPacket : public NodePacket
-    {
-        NodeDeregisterObjectPacket()
-            {
-                command = CMD_NODE_DEREGISTER_OBJECT;
-                size    = sizeof( NodeDeregisterObjectPacket ); 
-            }
-        
-        uint32_t requestID;
-    };
-
-    struct NodeDisableSendOnRegisterPacket : public NodePacket
-    {
-        NodeDisableSendOnRegisterPacket()
-            {
-                command = CMD_NODE_DISABLE_SEND_ON_REGISTER;
-                size    = sizeof( NodeDisableSendOnRegisterPacket ); 
-            }
-        
-        uint32_t    requestID;
     };
 
     struct NodeObjectPushPacket : public NodePacket
@@ -241,24 +183,6 @@ namespace co
         const uint128_t objectID;
         const uint128_t groupID;
         const uint128_t typeID;
-    };
-
-    struct NodePingPacket : public NodePacket
-    {
-        NodePingPacket()
-        {
-            command = CMD_NODE_PING;
-            size    = sizeof( NodePingPacket );
-        }
-    };
-
-    struct NodePingReplyPacket : public NodePacket
-    {
-        NodePingReplyPacket()
-        {
-            command = CMD_NODE_PING_REPLY;
-            size    = sizeof( NodePingReplyPacket );
-        }
     };
 
     //------------------------------------------------------------

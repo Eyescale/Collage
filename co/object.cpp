@@ -25,6 +25,7 @@
 #include "fullMasterCM.h"
 #include "log.h"
 #include "nodePackets.h"
+#include "nodeDataOStream.h"
 #include "nullCM.h"
 #include "objectCM.h"
 #include "staticMasterCM.h"
@@ -101,13 +102,10 @@ void Object::notifyDetach()
     LBWARN << slaves.size() << " slaves subscribed during deregisterObject of "
            << lunchbox::className( this ) << " id " << _id << std::endl;
 
-    NodeUnmapObjectPacket packet;
-    packet.objectID = _id;
-
     for( NodesCIter i = slaves.begin(); i != slaves.end(); ++i )
     {
         NodePtr node = *i;
-        node->send( packet );
+        node->send( CMD_NODE_UNMAP_OBJECT ) << _id;
     }
 }
 
