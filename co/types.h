@@ -53,6 +53,8 @@ class Object;
 class ObjectFactory;
 class ObjectHandler;
 class ObjectDataIStream;
+class ObjectICommand;
+class ObjectOCommand;
 class Plugin;        //!< @internal
 class PluginRegistry;
 class QueueMaster;

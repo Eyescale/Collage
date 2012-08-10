@@ -21,6 +21,8 @@
 #include "command.h"
 #include "commandCache.h"
 #include "dataOStream.h"
+#include "objectICommand.h"
+#include "nodeOCommand.h"
 #include "queuePackets.h"
 
 #include <lunchbox/mtQueue.h>
@@ -35,23 +37,26 @@ public:
     /** The command handler functions. */
     bool cmdGetItem( Command& command )
     {
-        const QueueGetItemPacket* packet = command.get< QueueGetItemPacket >();
+        co::ObjectICommand stream( &command );
+        uint32_t itemsRequested;
+        uint32_t slaveInstanceID;
+        int32_t requestID;
+        stream >> itemsRequested >> slaveInstanceID >> requestID;
+
         Commands commands;
-        queue.tryPop( packet->itemsRequested, commands );
+        queue.tryPop( itemsRequested, commands );
 
         for( CommandsCIter i = commands.begin(); i != commands.end(); ++i )
         {
             CommandPtr item = *i;
             ObjectPacket* reply = item->getModifiable< ObjectPacket >();
-            reply->instanceID = packet->slaveInstanceID;
+            reply->instanceID = slaveInstanceID;
             command.getNode()->send( *reply );
         }
 
-        if( packet->itemsRequested > commands.size( ))
-        {
-            QueueEmptyPacket reply( packet );
-            command.getNode()->send( reply );
-        }
+        if( itemsRequested > commands.size( ))
+            command.getNode()->send( CMD_QUEUE_EMPTY, PACKETTYPE_CO_OBJECT )
+                    << stream.getObjectID() << slaveInstanceID << requestID;
         return true;
     }
 

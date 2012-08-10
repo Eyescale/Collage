@@ -30,6 +30,7 @@
 #include "nodeOCommand.h"
 #include "objectCM.h"
 #include "objectDataIStream.h"
+#include "objectICommand.h"
 #include "objectPackets.h"
 
 #include <lunchbox/scopedMutex.h>
@@ -587,9 +588,9 @@ void ObjectStore::removeNode( NodePtr node )
 bool ObjectStore::dispatchObjectCommand( CommandPtr command )
 {
     LB_TS_THREAD( _receiverThread );
-    const ObjectPacket* packet = command->get< ObjectPacket >();
-    const UUID& id = packet->objectID;
-    const uint32_t instanceID = packet->instanceID;
+    ObjectICommand stream( command );
+    const UUID& id = stream.getObjectID();
+    const uint32_t instanceID = stream.getInstanceID();
 
     ObjectsHash::const_iterator i = _objects->find( id );
 
@@ -599,7 +600,7 @@ bool ObjectStore::dispatchObjectCommand( CommandPtr command )
         return ( instanceID == EQ_INSTANCE_NONE );
 
     const Objects& objects = i->second;
-    LBASSERTINFO( !objects.empty(), packet );
+    LBASSERT( !objects.empty( ));
 
     if( instanceID <= EQ_INSTANCE_MAX )
     {

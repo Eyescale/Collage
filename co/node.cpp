@@ -241,9 +241,9 @@ ConnectionPtr Node::getMulticast() const
     return _impl->outMulticast.data;
 }
 
-NodeOCommand Node::send( uint32_t cmd )
+NodeOCommand Node::send( uint32_t cmd, uint32_t type )
 {
-    return NodeOCommand( getConnection(), PACKETTYPE_CO_NODE, cmd );
+    return NodeOCommand( getConnection(), type, cmd );
 }
 
 const NodeID& Node::getNodeID() const

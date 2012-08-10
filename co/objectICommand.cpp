@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -15,24 +15,46 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_QUEUEPACKETS_H
-#define CO_QUEUEPACKETS_H
+#include "objectICommand.h"
 
-#include <co/packets.h> // base class
-#include <co/queueCommand.h> // CMD enums
+#include "command.h"
+
 
 namespace co
 {
-    struct QueueItemPacket : public ObjectPacket
-    {
-        QueueItemPacket()
-            : ObjectPacket()
-        {
-            command = CMD_QUEUE_ITEM;
-            size = sizeof( QueueItemPacket );
-        }
-    };
+
+namespace detail
+{
+
+class ObjectICommand
+{
+public:
+    UUID objectID;
+    uint32_t instanceID;
+};
+
 }
 
-#endif // CO_QUEUEPACKETS_H
+ObjectICommand::ObjectICommand( CommandPtr command )
+    : NodeICommand( command )
+    , _impl( new detail::ObjectICommand )
+{
+    *this >> _impl->objectID >> _impl->instanceID;
+}
 
+ObjectICommand::~ObjectICommand()
+{
+    delete _impl;
+}
+
+const UUID& ObjectICommand::getObjectID() const
+{
+    return _impl->objectID;
+}
+
+uint32_t ObjectICommand::getInstanceID() const
+{
+    return _impl->instanceID;
+}
+
+}

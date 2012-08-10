@@ -40,6 +40,8 @@ set(CO_PUBLIC_HEADERS
   object.h
   objectFactory.h
   objectHandler.h
+  objectICommand.h
+  objectOCommand.h
   objectMap.h
   objectVersion.h
   packets.h
@@ -117,6 +119,8 @@ set(CO_SOURCES
   objectDataIStream.cpp
   objectDataOStream.cpp
   objectDeltaDataOStream.cpp
+  objectICommand.cpp
+  objectOCommand.cpp
   objectInstanceDataOStream.cpp
   objectMap.cpp
   objectSlaveDataOStream.cpp

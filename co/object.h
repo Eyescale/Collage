@@ -326,6 +326,9 @@ namespace co
         /** Send a packet to peer object instance(s) on another node. */
         template< class T > bool
         send( NodePtr node, ObjectPacket& packet, const std::vector<T>& v );
+
+        ObjectOCommand send( NodePtr node, uint32_t cmd,
+                             const uint32_t instanceID /*= EQ_INSTANCE_ALL*/ );
         //@}
 
         /** @name Notifications */

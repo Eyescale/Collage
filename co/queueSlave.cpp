@@ -22,7 +22,9 @@
 #include "commandQueue.h"
 #include "dataIStream.h"
 #include "global.h"
-#include "queuePackets.h"
+#include "objectOCommand.h"
+#include "objectICommand.h"
+#include "queueCommand.h"
 
 namespace co
 {
@@ -85,12 +87,8 @@ CommandPtr QueueSlave::pop()
         const size_t queueSize = _impl->queue.getSize();
         if( queueSize <= _impl->prefetchMark )
         {
-            QueueGetItemPacket packet;
-            packet.itemsRequested = _impl->prefetchAmount;
-            packet.instanceID = _impl->masterInstanceID;
-            packet.slaveInstanceID = getInstanceID();
-            packet.requestID = request;
-            send( _impl->master, packet );
+            send( _impl->master, CMD_QUEUE_GET_ITEM, _impl->masterInstanceID )
+                    << _impl->prefetchAmount << getInstanceID() << request;
         }
 
         CommandPtr cmd = _impl->queue.pop();
@@ -98,8 +96,10 @@ CommandPtr QueueSlave::pop()
             return cmd;
     
         LBASSERT( (*cmd)->command == CMD_QUEUE_EMPTY );
-        const QueueEmptyPacket* packet = cmd->get< QueueEmptyPacket >();
-        if( packet->requestID == request )
+        ObjectICommand stream( cmd );
+        int32_t requestID;
+        stream >> requestID;
+        if( requestID == request )
             return 0;
         // else left-over or not our empty packet, discard and retry
     }
