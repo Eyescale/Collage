@@ -78,4 +78,9 @@
 #include <co/zeroconf.h>
 #include <lunchbox/lunchbox.h>
 
+#ifdef CO_IGNORE_ENDIANNESS
+namespace lunchbox
+{ template< class T > inline void byteswap( T& value ) { /*NOP*/ }}
+#endif
+
 #endif // CO_H
