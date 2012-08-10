@@ -21,6 +21,7 @@
 #include "log.h"
 #include "object.h"
 #include "objectDataIStream.h"
+#include "objectOCommand.h"
 #include "objectPackets.h"
 #include <lunchbox/scopedMutex.h>
 #include <limits>
@@ -178,9 +179,8 @@ void VersionedSlaveCM::_sendAck()
     if( maxVersion <= _version.low( )) // overflow: default unblocking commit
         return;
 
-    ObjectMaxVersionPacket packet( maxVersion, _object->getInstanceID( ));
-    packet.instanceID = _masterInstanceID;
-    _object->send( _master, packet );
+    _object->send( _master, CMD_OBJECT_MAX_VERSION, _masterInstanceID )
+            << maxVersion << _object->getInstanceID();
 }
 
 void VersionedSlaveCM::applyMapData( const uint128_t& version )

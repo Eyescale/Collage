@@ -62,7 +62,6 @@ set(CO_PUBLIC_HEADERS
 
 set(CO_HEADERS
   barrierCommand.h
-  barrierPackets.h
   commandCache.h
   connectionListener.h
   dataIStreamQueue.h

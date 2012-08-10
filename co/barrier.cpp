@@ -24,7 +24,9 @@
 #include "dataOStream.h"
 #include "global.h"
 #include "log.h"
-#include "barrierPackets.h"
+#include "objectICommand.h"
+#include "objectOCommand.h"
+#include "barrierCommand.h"
 #include "exception.h"
 
 #include <lunchbox/monitor.h>
@@ -176,11 +178,9 @@ void Barrier::enter( const uint32_t timeout )
 
     const uint32_t leaveVal = _impl->leaveNotify.get() + 1;
 
-    BarrierEnterPacket packet;
-    packet.version = getVersion();
-    packet.incarnation = _impl->leaveNotify.get();
-    packet.timeout = timeout;
-    send( _impl->master, packet );
+    send( _impl->master, CMD_BARRIER_ENTER ) << getVersion()
+                                             << _impl->leaveNotify.get()
+                                             << timeout;
 
     if( timeout == LB_TIMEOUT_INDEFINITE )
         _impl->leaveNotify.waitEQ( leaveVal );
@@ -196,17 +196,15 @@ bool Barrier::_cmdEnter( Command& command )
     LB_TS_THREAD( _thread );
     LBASSERTINFO( !_impl->master || _impl->master == getLocalNode(),
                   _impl->master );
-
-    BarrierEnterPacket* packet = command.getModifiable< BarrierEnterPacket >();
-    if( packet->handled )
-        return true;
-    packet->handled = true;
-
-    LBLOG( LOG_BARRIER ) << "handle barrier enter " << packet << " barrier v"
+    LBLOG( LOG_BARRIER ) << "handle barrier enter " << command << " barrier v"
                          << getVersion() << std::endl;
 
-    const uint128_t version = packet->version;
-    const uint64_t incarnation = packet->incarnation;
+    ObjectICommand stream( &command );
+    uint128_t version;
+    uint32_t incarnation;
+    uint32_t timeout;
+    stream >> version >> incarnation >> timeout;
+
     Request& request = _impl->enteredNodes[ version ];
  
     LBLOG( LOG_BARRIER ) << "enter barrier v" << version 
@@ -219,7 +217,7 @@ bool Barrier::_cmdEnter( Command& command )
     if( request.nodes.empty() )
     {
         request.incarnation = incarnation;
-        request.timeout = packet->timeout;
+        request.timeout = timeout;
     }
     else if( request.timeout != LB_TIMEOUT_INDEFINITE )
     {
@@ -235,7 +233,7 @@ bool Barrier::_cmdEnter( Command& command )
         {
             request.nodes.clear();
             request.incarnation = incarnation;
-            request.timeout = packet->timeout;
+            request.timeout = timeout;
         }
     }
     request.nodes.push_back( command.getNode( ));
@@ -255,7 +253,7 @@ bool Barrier::_cmdEnter( Command& command )
     
     // if it's an older version a timeout has been handled
     // for performance, send directly the order to unblock the caller.
-    if( packet->timeout != LB_TIMEOUT_INDEFINITE && version < getVersion( ))
+    if( timeout != LB_TIMEOUT_INDEFINITE && version < getVersion( ))
     {
         LBASSERT( incarnation == 0 );
         _sendNotify( version, command.getNode( ) );
@@ -300,8 +298,8 @@ void Barrier::_sendNotify( const uint128_t& version, NodePtr node )
     else
     {
         LBLOG( LOG_BARRIER ) << "Unlock " << node << std::endl;
-        BarrierEnterReplyPacket reply( getID(), version );
-        node->send( reply );
+        node->send( CMD_BARRIER_ENTER_REPLY, PACKETTYPE_CO_OBJECT )
+                << getID() << EQ_INSTANCE_ALL << version;
     }
 }
 
@@ -338,10 +336,11 @@ bool Barrier::_cmdEnterReply( Command& command )
 {
     LB_TS_THREAD( _thread );
     LBLOG( LOG_BARRIER ) << "Got ok, unlock local user(s)" << std::endl;
-    const BarrierEnterReplyPacket* reply =
-        command.get< BarrierEnterReplyPacket >();
+    ObjectICommand stream( &command );
+    uint128_t version;
+    stream >> version;
     
-    if( reply->version == getVersion( ))
+    if( version == getVersion( ))
         ++_impl->leaveNotify;
     
     return true;

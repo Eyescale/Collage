@@ -25,9 +25,6 @@ namespace co
         CMD_OBJECT_INSTANCE,
         CMD_OBJECT_DELTA,
         CMD_OBJECT_SLAVE_DELTA,
-        CMD_OBJECT_COMMIT,
-        CMD_OBJECT_PUSH,
-        CMD_OBJECT_OBSOLETE,
         CMD_OBJECT_MAX_VERSION
         // check that not more then CMD_OBJECT_CUSTOM have been defined!
     };

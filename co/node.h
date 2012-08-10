@@ -184,6 +184,7 @@ namespace detail { class Node; }
          * aka when it is running out of scope.
          *
          * @param cmd the node command to execute
+         * @param type the type of object that should handle this command
          * @return the stream object to pass additional data to
          */
         NodeOCommand send( uint32_t cmd, uint32_t type = PACKETTYPE_CO_NODE );

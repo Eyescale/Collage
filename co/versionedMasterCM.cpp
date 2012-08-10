@@ -22,6 +22,7 @@
 #include "nodePackets.h"
 #include "object.h"
 #include "objectPackets.h"
+#include "objectICommand.h"
 #include "objectDataIStream.h"
 
 namespace co
@@ -201,22 +202,25 @@ bool VersionedMasterCM::_cmdSlaveDelta( Command& command )
 
 bool VersionedMasterCM::_cmdMaxVersion( Command& command )
 {
-    const ObjectMaxVersionPacket* packet = 
-        command.get< ObjectMaxVersionPacket >();
+    ObjectICommand stream( &command );
+
+    uint64_t version;
+    uint32_t slaveID;
+    stream >> version >> slaveID;
 
     Mutex mutex( _slaves );
 
     // Update slave's max version
     SlaveData data;
     data.node = command.getNode();
-    data.instanceID = packet->slaveID;
+    data.instanceID = slaveID;
     SlaveDatasIter i = stde::find( _slaveData, data );
     if( i == _slaveData.end( ))
     {
         LBWARN << "Got max version from unmapped slave" << std::endl;
         return true;
     }
-    i->maxVersion = packet->version;
+    i->maxVersion = version;
 
     _updateMaxVersion();
     return true;
