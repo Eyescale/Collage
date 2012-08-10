@@ -187,16 +187,14 @@ NodeID ObjectStore::_findMasterNodeID( const UUID& identifier )
     for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
     {
         NodePtr node = *i;
-        NodeFindMasterNodeIDPacket packet;
-        packet.requestID = _localNode->registerRequest();
-        packet.identifier = identifier;
+        const uint32_t requestID = _localNode->registerRequest();
 
         LBLOG( LOG_OBJECTS ) << "Finding " << identifier << " on " << node
-                             << " req " << packet.requestID << std::endl;
-        node->send( packet );
+                             << " req " << requestID << std::endl;
+        node->send( CMD_NODE_FIND_MASTER_NODE_ID ) << identifier << requestID;
 
         NodeID masterNodeID = UUID::ZERO;
-        _localNode->waitRequest( packet.requestID, masterNodeID );
+        _localNode->waitRequest( requestID, masterNodeID );
 
         if( masterNodeID != UUID::ZERO )
         {
@@ -644,13 +642,13 @@ bool ObjectStore::_cmdFindMasterNodeID( Command& command )
 {
     LB_TS_THREAD( _commandThread );
 
-    const NodeFindMasterNodeIDPacket* packet = 
-          command.get<NodeFindMasterNodeIDPacket>();
-
-    const UUID& id = packet->identifier;
+    NodeDataIStream stream( &command );
+    UUID id;
+    uint32_t requestID;
+    stream >> id >> requestID;
     LBASSERT( id.isGenerated() );
 
-    NodeFindMasterNodeIDReplyPacket reply( packet );
+    NodeID masterNodeID;
     {
         lunchbox::ScopedFastRead mutex( _objects );
         ObjectsHashCIter i = _objects->find( id );
@@ -658,36 +656,39 @@ bool ObjectStore::_cmdFindMasterNodeID( Command& command )
         if( i != _objects->end( ))
         {
             const Objects& objects = i->second;
-            LBASSERTINFO( !objects.empty(), packet );
+            LBASSERT( !objects.empty( ));
 
             for( ObjectsCIter j = objects.begin(); j != objects.end(); ++j )
             {
                 Object* object = *j;
                 if( object->isMaster( ))
-                    reply.masterNodeID = _localNode->getNodeID();
+                    masterNodeID = _localNode->getNodeID();
                 else
                 {
                     NodePtr master = object->getMasterNode();
                     if( master.isValid( ))
-                        reply.masterNodeID = master->getNodeID();
+                        masterNodeID = master->getNodeID();
                 }
-                if( reply.masterNodeID != UUID::ZERO )
+                if( masterNodeID != UUID::ZERO )
                     break;
             }
         }
     }
 
-    LBLOG( LOG_OBJECTS ) << "Object " << id << " master " << reply.masterNodeID
-                         << " req " << reply.requestID << std::endl;
-    command.getNode()->send( reply );
+    LBLOG( LOG_OBJECTS ) << "Object " << id << " master " << masterNodeID
+                         << " req " << requestID << std::endl;
+    command.getNode()->send( CMD_NODE_FIND_MASTER_NODE_ID_REPLY )
+            << masterNodeID << requestID;
     return true;
 }
 
 bool ObjectStore::_cmdFindMasterNodeIDReply( Command& command )
 {
-    const NodeFindMasterNodeIDReplyPacket* packet =
-          command.get< NodeFindMasterNodeIDReplyPacket >();
-    _localNode->serveRequest( packet->requestID, packet->masterNodeID );
+    NodeDataIStream stream( &command );
+    NodeID masterNodeID;
+    uint32_t requestID;
+    stream >> masterNodeID >> requestID;
+    _localNode->serveRequest( requestID, masterNodeID );
     return true;
 }
 

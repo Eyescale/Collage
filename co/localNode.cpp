@@ -398,7 +398,6 @@ void LocalNode::addListener( ConnectionPtr connection )
     LBASSERT( connection->isListening( ));
 
     connection->ref( this );
-    NodeAddListenerPacket packet( connection );
 
     // Update everybody's description list of me
     // I will add the listener to myself in my handler
@@ -406,7 +405,8 @@ void LocalNode::addListener( ConnectionPtr connection )
     getNodes( nodes );
 
     for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
-        (*i)->send( packet, connection->getDescription()->toString( ));
+        (*i)->send( CMD_NODE_ADD_LISTENER )
+               << connection.get() << connection->getDescription()->toString();
 }
 
 void LocalNode::removeListeners( const Connections& connections )
@@ -436,14 +436,15 @@ uint32_t LocalNode::_removeListenerNB( ConnectionPtr connection )
     LBASSERTINFO( !connection->isConnected(), connection );
 
     connection->ref( this );
-    NodeRemoveListenerPacket packet( connection, registerRequest( ));
+    const uint32_t requestID = registerRequest();
     Nodes nodes;
     getNodes( nodes );
 
     for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
-        (*i)->send( packet, connection->getDescription()->toString( ));
+        (*i)->send( CMD_NODE_REMOVE_LISTENER ) << requestID << connection.get()
+                                    << connection->getDescription()->toString();
 
-    return packet.requestID;
+    return requestID;
 }
 
 void LocalNode::_addConnection( ConnectionPtr connection )
@@ -604,10 +605,7 @@ void LocalNode::ackRequest( NodePtr node, const uint32_t requestID )
     if( node == this ) // OPT
         serveRequest( requestID );
     else
-    {
-        NodeAckRequestPacket reply( requestID );
-        node->send( reply );
-    }
+        node->send( CMD_NODE_ACK_REQUEST ) << requestID;
 }
 
 void LocalNode::ping( NodePtr remoteNode )
@@ -762,15 +760,14 @@ LocalNode::SendToken LocalNode::acquireSendToken( NodePtr node )
     LBASSERT( !inCommandThread( ));
     LBASSERT( !_impl->inReceiverThread( ));
 
-    NodeAcquireSendTokenPacket packet;
-    packet.requestID = registerRequest();
-    node->send( packet );
+    const uint32_t requestID = registerRequest();
+    node->send( CMD_NODE_ACQUIRE_SEND_TOKEN ) << requestID;
 
     bool ret = false;
-    if( waitRequest( packet.requestID, ret, Global::getTimeout( )))
+    if( waitRequest( requestID, ret, Global::getTimeout( )))
         return node;
 
-    LBERROR << "Timeout while acquiring send token " << packet.requestID
+    LBERROR << "Timeout while acquiring send token " << requestID
             << std::endl;
     return 0;
 }
@@ -781,8 +778,7 @@ void LocalNode::releaseSendToken( SendToken& node )
     if( !node )
         return;
 
-    NodeReleaseSendTokenPacket packet;
-    node->send( packet );
+    node->send( CMD_NODE_RELEASE_SEND_TOKEN );
     node = 0; // In case app stores token in member variable
 }
 
@@ -1439,10 +1435,12 @@ bool LocalNode::_notifyCommandThreadIdle()
 
 bool LocalNode::_cmdAckRequest( Command& command )
 {
-    const NodeAckRequestPacket* packet = command.get< NodeAckRequestPacket >();
-    LBASSERT( packet->requestID != LB_UNDEFINED_UINT32 );
+    NodeDataIStream stream( &command );
+    uint32_t requestID;
+    stream >> requestID;
+    LBASSERT( requestID != LB_UNDEFINED_UINT32 );
 
-    serveRequest( packet->requestID );
+    serveRequest( requestID );
     return true;
 }
 
@@ -1806,18 +1804,19 @@ bool LocalNode::_cmdAcquireSendToken( Command& command )
 
     _impl->sendToken = false;
 
-    const NodeAcquireSendTokenPacket* packet =
-        command.get< NodeAcquireSendTokenPacket >();
-    NodeAcquireSendTokenReplyPacket reply( packet );
-    command.getNode()->send( reply );
+    NodeDataIStream stream( &command );
+    uint32_t requestID;
+    stream >> requestID;
+    command.getNode()->send( CMD_NODE_ACQUIRE_SEND_TOKEN_REPLY ) << requestID;
     return true;
 }
 
 bool LocalNode::_cmdAcquireSendTokenReply( Command& command )
 {
-    const NodeAcquireSendTokenReplyPacket* packet =
-        command.get< NodeAcquireSendTokenReplyPacket >();
-    serveRequest( packet->requestID );
+    NodeDataIStream stream( &command );
+    uint32_t requestID;
+    stream >> requestID;
+    serveRequest( requestID );
     return true;
 }
 
@@ -1837,28 +1836,30 @@ bool LocalNode::_cmdReleaseSendToken( Command& )
     CommandPtr request = _impl->sendTokenQueue.front();
     _impl->sendTokenQueue.pop_front();
 
-    const NodeAcquireSendTokenPacket* packet =
-        request->get< NodeAcquireSendTokenPacket >();
-    NodeAcquireSendTokenReplyPacket reply( packet );
-
-    request->getNode()->send( reply );
+    NodeDataIStream stream( request );
+    uint32_t requestID;
+    stream >> requestID;
+    request->getNode()->send( CMD_NODE_ACQUIRE_SEND_TOKEN_REPLY ) << requestID;
     return true;
 }
 
 bool LocalNode::_cmdAddListener( Command& command )
 {
-    NodeAddListenerPacket* packet =
-        command.getModifiable< NodeAddListenerPacket >();
-    std::string data( packet->connectionData );
+    ConnectionPtr connection;
+    std::string data;
+    {
+        NodeDataIStream stream( &command );
+        stream >> connection >> data;
+        LBASSERT( connection );
+        // scope ensures unref of connection inside command/stream
+    }
+
     ConnectionDescriptionPtr description = new ConnectionDescription( data );
     command.getNode()->addConnectionDescription( description );
 
     if( command.getNode() != this )
         return true;
 
-    LBASSERT( packet->connection );
-    ConnectionPtr connection = packet->connection;
-    packet->connection = 0;
     connection->unref( this );
 
     _impl->connectionNodes[ connection ] = this;
@@ -1873,10 +1874,16 @@ bool LocalNode::_cmdAddListener( Command& command )
 
 bool LocalNode::_cmdRemoveListener( Command& command )
 {
-    NodeRemoveListenerPacket* packet =
-        command.getModifiable< NodeRemoveListenerPacket >();
+    uint32_t requestID;
+    ConnectionPtr connection;
+    std::string data;
+    {
+        NodeDataIStream stream( &command );
+        stream >> requestID >> connection >> data;
+        LBASSERT( connection );
+        // scope ensures unref of connection inside command/stream
+    }
 
-    std::string data( packet->connectionData );
     ConnectionDescriptionPtr description = new ConnectionDescription( data );
     LBCHECK( command.getNode()->removeConnectionDescription( description ));
 
@@ -1885,9 +1892,6 @@ bool LocalNode::_cmdRemoveListener( Command& command )
 
     _initService(); // update zeroconf
 
-    LBASSERT( packet->connection );
-    ConnectionPtr connection = packet->connection;
-    packet->connection = 0;
     connection->unref( this );
 
     if( connection->getDescription()->type >= CONNECTIONTYPE_MULTICAST )
@@ -1897,7 +1901,7 @@ bool LocalNode::_cmdRemoveListener( Command& command )
     LBASSERT( _impl->connectionNodes.find( connection ) !=
               _impl->connectionNodes.end( ));
     _impl->connectionNodes.erase( connection );
-    serveRequest( packet->requestID );
+    serveRequest( requestID );
     return true;
 }
 
