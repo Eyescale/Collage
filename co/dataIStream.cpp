@@ -48,7 +48,7 @@ public:
     uint64_t inputSize;
 
     /** The current read position in the buffer */
-    uint64_t  position;
+    uint64_t position;
 
     CPUCompressor decompressor; //!< current decompressor
 
