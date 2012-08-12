@@ -1260,7 +1260,9 @@ bool LocalNode::_handleData()
     LBASSERT( size );
     LBASSERTINFO( bytes == sizeof( uint64_t ), bytes );
     if( !newPacket )
+    {
         LBASSERT( size > sizeof( size ));
+    }
 
     if( node )
         node->_setLastReceive( getTime64( ));
