@@ -29,62 +29,6 @@
 /** @cond IGNORE */
 namespace co
 {
-    struct NodeConnectPacket : public NodePacket
-    {
-        NodeConnectPacket( const LocalNodePtr node )
-                : nodeID( node->getNodeID( ))
-                , requestID( LB_UNDEFINED_UINT32 )
-                , nodeType( node->getType( ))
-            {
-                command = CMD_NODE_CONNECT;
-                size = sizeof( NodeConnectPacket ); 
-            }
-
-        const NodeID nodeID;
-        uint32_t requestID;
-        const uint32_t nodeType;
-        LB_ALIGN8( char nodeData[8] );
-    };
-
-    struct NodeConnectReplyPacket : public NodePacket
-    {
-        NodeConnectReplyPacket( const NodeConnectPacket* request ) 
-                : requestID( request->requestID )
-            {
-                command     = CMD_NODE_CONNECT_REPLY;
-                size        = sizeof( NodeConnectReplyPacket ); 
-                nodeData[0] = '\0';
-            }
-
-        NodeID nodeID;
-        const uint32_t requestID;
-        uint32_t nodeType;
-        LB_ALIGN8( char nodeData[8] );
-    };
-
-    struct NodeConnectAckPacket : public NodePacket
-    {
-        NodeConnectAckPacket() 
-            {
-                command     = CMD_NODE_CONNECT_ACK;
-                size        = sizeof( NodeConnectAckPacket ); 
-            }
-    };
-
-    struct NodeIDPacket : public NodePacket
-    {
-        NodeIDPacket() 
-            {
-                command     = CMD_NODE_ID;
-                size        = sizeof( NodeIDPacket ); 
-                data[0] = '\0';
-            }
-
-        NodeID   id;
-        uint32_t nodeType;
-        LB_ALIGN8( char data[8] );
-    };
-
     struct NodeMapObjectPacket : public NodePacket
     {
         NodeMapObjectPacket()
@@ -186,20 +130,6 @@ namespace co
     };
 
     //------------------------------------------------------------
-    inline std::ostream& operator << ( std::ostream& os, 
-                                       const NodeConnectPacket* packet )
-    {
-        os << (NodePacket*)packet << " req " << packet->requestID << " type "
-           << packet->nodeType << " data " << packet->nodeData;
-        return os;
-    }
-    inline std::ostream& operator << ( std::ostream& os, 
-                                       const NodeConnectReplyPacket* packet )
-    {
-        os << (NodePacket*)packet << " req " << packet->requestID << " type "
-           << packet->nodeType << " data " << packet->nodeData;
-        return os;
-    }
     inline std::ostream& operator << ( std::ostream& os, 
                                     const NodeMapObjectPacket* packet )
     {
