@@ -575,11 +575,9 @@ bool ObjectStore::notifyCommandThreadIdle()
 
 void ObjectStore::removeNode( NodePtr node )
 {
-    NodeRemoveNodePacket packet;
-    packet.node = node.get();
-    packet.requestID = _localNode->registerRequest( );
-    _localNode->send( packet );
-    _localNode->waitRequest( packet.requestID );
+    const uint32_t requestID = _localNode->registerRequest();
+    _localNode->send( CMD_NODE_REMOVE_NODE ) << node.get() << requestID;
+    _localNode->waitRequest( requestID );
 }
 
 //===========================================================================
@@ -1049,20 +1047,22 @@ bool ObjectStore::_cmdDisableSendOnRegister( Command& command )
 bool ObjectStore::_cmdRemoveNode( Command& command )
 {
     LB_TS_THREAD( _commandThread );
-    const NodeRemoveNodePacket* packet = command.get< NodeRemoveNodePacket >();
+    LBLOG( LOG_OBJECTS ) << "Cmd object  " << command << std::endl;
 
-    LBLOG( LOG_OBJECTS ) << "Cmd object  " << packet << std::endl;
+    NodeICommand stream( &command );
+    Node* node = stream.get< Node* >();
+    const uint32_t requestID = stream.get< uint32_t >();
 
     lunchbox::ScopedFastWrite mutex( _objects );
     for( ObjectsHashCIter i = _objects->begin(); i != _objects->end(); ++i )
     {
         const Objects& objects = i->second;
         for( ObjectsCIter j = objects.begin(); j != objects.end(); ++j )
-            (*j)->removeSlaves( packet->node );
+            (*j)->removeSlaves( node );
     }
 
-    if( packet->requestID != LB_UNDEFINED_UINT32 )
-        _localNode->serveRequest( packet->requestID );
+    if( requestID != LB_UNDEFINED_UINT32 )
+        _localNode->serveRequest( requestID );
 
     return true;
 }

@@ -242,4 +242,9 @@ namespace detail { class Node; }
     CO_API std::ostream& operator << ( std::ostream& os, const Node& node );
 }
 
+namespace lunchbox
+{
+template<> inline void byteswap( co::Node*& value ) { /*NOP*/ }
+}
+
 #endif // CO_NODE_H

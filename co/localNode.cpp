@@ -1910,11 +1910,12 @@ bool LocalNode::_cmdPing( Command& command )
 
 bool LocalNode::_cmdCommand( Command& command )
 {
-    const NodeCommandPacket* packet = command.get< NodeCommandPacket >();
+    NodeICommand stream( &command );
+    const uint128_t& commandID = stream.get< uint128_t >();
     CommandHandler func;
     {
         lunchbox::ScopedFastRead mutex( _impl->commandHandlers );
-        CommandHashCIter i = _impl->commandHandlers->find( packet->commandID );
+        CommandHashCIter i = _impl->commandHandlers->find( commandID );
         if( i == _impl->commandHandlers->end( ))
             return false;
 
@@ -1936,11 +1937,12 @@ bool LocalNode::_cmdCommand( Command& command )
 
 bool LocalNode::_cmdCommandAsync( Command& command )
 {
-    const NodeCommandPacket* packet = command.get< NodeCommandPacket >();
+    NodeICommand stream( &command );
+    const uint128_t& commandID = stream.get< uint128_t >();
     CommandHandler func;
     {
         lunchbox::ScopedFastRead mutex( _impl->commandHandlers );
-        CommandHashCIter i = _impl->commandHandlers->find( packet->commandID );
+        CommandHashCIter i = _impl->commandHandlers->find( commandID );
         LBASSERT( i != _impl->commandHandlers->end( ));
         if( i ==  _impl->commandHandlers->end( ))
             return true; // deregistered between dispatch and now
