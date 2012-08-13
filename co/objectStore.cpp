@@ -740,7 +740,7 @@ bool ObjectStore::_cmdRegisterObject( Command& command )
     LBLOG( LOG_OBJECTS ) << "Cmd register object " << command << std::endl;
 
     NodeICommand stream( &command );
-    Object* object = stream.get< Object* >();
+    Object* object = reinterpret_cast< Object* >( stream.get< void* >( ));
 
     const int32_t age = Global::getIAttribute(
                             Global::IATTR_NODE_SEND_QUEUE_AGE );
