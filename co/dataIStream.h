@@ -135,7 +135,6 @@ namespace detail { class DataIStream; }
 
         virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
                                     const void** chunkData, uint64_t* size )=0;
-
     private:
         detail::DataIStream* const _impl;
 

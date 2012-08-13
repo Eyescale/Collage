@@ -43,6 +43,30 @@
 #include <lunchbox/scopedMutex.h>
 #include <lunchbox/stdExt.h>
 
+//#define STATISTICS
+#ifdef STATISTICS
+typedef std::map< uint64_t, size_t > Histogram;
+typedef Histogram::const_iterator HistogramCIter;
+lunchbox::Lockable< Histogram, lunchbox::SpinLock > _histogram;
+
+#  define ADD_STATISTIC( x )                            \
+    {                                                   \
+        lunchbox::ScopedFastWrite mutex( _histogram );  \
+        ++(*_histogram)[ x ];                           \
+    }
+#  define DUMP_STATISTIC                                                \
+    {                                                                   \
+        lunchbox::ScopedFastRead mutex( _histogram );                   \
+        LBINFO << lunchbox::disableFlush << lunchbox::disableHeader;    \
+        for( HistogramCIter i=_histogram->begin(); i!=_histogram->end(); ++i) \
+            LBINFO << i->first << ", " << i->second << std::endl;       \
+        LBINFO << lunchbox::enableHeader << lunchbox::enableFlush <<std::endl; \
+    }
+#else
+#  define ADD_STATISTIC( x )
+#  define DUMP_STATISTIC
+#endif
+
 namespace co
 {
 namespace detail
@@ -102,6 +126,7 @@ Connection::~Connection()
 {
     delete _impl;
     LBVERB << "Delete Connection @" << (void*)this << std::endl;
+    DUMP_STATISTIC;
 }
 
 bool Connection::operator == ( const Connection& rhs ) const
@@ -348,6 +373,7 @@ void Connection::resetRecvData( void** buffer, uint64_t* bytes )
 bool Connection::send( const void* buffer, const uint64_t bytes,
                        const bool isLocked )
 {
+    ADD_STATISTIC( bytes );
     LBASSERT( bytes > 0 );
     if( bytes == 0 )
         return true;
