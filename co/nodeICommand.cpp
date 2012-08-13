@@ -41,11 +41,8 @@ NodeICommand::NodeICommand( CommandPtr command )
 {
     _impl->command = command;
 
-    PacketType type;
-    uint32_t cmd;
-    *this >> type >> cmd;
-    (*command)->type = type;
-    (*command)->command = cmd;
+    (*command)->type = get< PacketType >();
+    (*command)->command = get< uint32_t >();
 }
 
 NodeICommand::~NodeICommand()
