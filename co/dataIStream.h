@@ -122,7 +122,6 @@ namespace detail { class DataIStream; }
 
         virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
                                     const void** chunkData, uint64_t* size )=0;
-
     private:
         detail::DataIStream* const _impl;
 
@@ -159,7 +158,8 @@ namespace detail { class DataIStream; }
 #include <co/object.h>
 #include <co/objectVersion.h>
 
-namespace co{
+namespace co
+{
     /** @name Specialized input operators */
     //@{
     /** Read a std::string. */

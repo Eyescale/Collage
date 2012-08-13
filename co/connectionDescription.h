@@ -105,7 +105,7 @@ namespace co
             { return !( *this == rhs ); }
         //@}
 
-        /** @deprecated Data Access */
+        /** @deprecated @name Deprecated Data Access */
         //@{
         CO_API void setHostname( const std::string& hostname );
         CO_API const std::string& getHostname() const;
