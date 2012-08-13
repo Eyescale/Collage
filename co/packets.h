@@ -63,17 +63,6 @@ namespace co
         NodePacket() { type = PACKETTYPE_CO_NODE; }
     };
 
-    /** Packet sent to and handled by an co::Node. */
-    struct NodeCommandPacket : public NodePacket
-    {
-        NodeCommandPacket()
-        {
-            command = CMD_NODE_COMMAND;
-            size    = sizeof( NodeCommandPacket );
-        }
-        uint128_t commandID;
-    };
-
     /** Packet sent to and handled by an co::Object. */
     struct ObjectPacket : public NodePacket
     {
@@ -114,6 +103,12 @@ namespace co
            << "." << packet->instanceID;
         return os;
     }
+}
+
+namespace lunchbox
+{
+template<> inline void byteswap( co::PacketType& value )
+    { byteswap( reinterpret_cast< uint32_t& >( value )); }
 }
 
 #endif // CO_PACKETS_H

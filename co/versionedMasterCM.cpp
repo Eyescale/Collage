@@ -203,10 +203,8 @@ bool VersionedMasterCM::_cmdSlaveDelta( Command& command )
 bool VersionedMasterCM::_cmdMaxVersion( Command& command )
 {
     ObjectICommand stream( &command );
-
-    uint64_t version;
-    uint32_t slaveID;
-    stream >> version >> slaveID;
+    const uint64_t version = stream.get< uint64_t >();
+    const uint32_t slaveID = stream.get< uint32_t >();
 
     Mutex mutex( _slaves );
 

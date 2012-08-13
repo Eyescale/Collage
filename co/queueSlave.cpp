@@ -97,8 +97,7 @@ CommandPtr QueueSlave::pop()
     
         LBASSERT( (*cmd)->command == CMD_QUEUE_EMPTY );
         ObjectICommand stream( cmd );
-        int32_t requestID;
-        stream >> requestID;
+        const int32_t requestID = stream.get< int32_t >();
         if( requestID == request )
             return 0;
         // else left-over or not our empty packet, discard and retry

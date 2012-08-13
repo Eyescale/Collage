@@ -69,7 +69,7 @@ NodePtr NodeICommand::getMaster()
 }
 
 bool NodeICommand::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
-                                     const void** chunkData, uint64_t* size )
+                                  const void** chunkData, uint64_t* size )
 {
     if( !_impl->command )
         return false;

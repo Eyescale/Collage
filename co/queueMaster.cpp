@@ -38,10 +38,9 @@ public:
     bool cmdGetItem( Command& command )
     {
         co::ObjectICommand stream( &command );
-        uint32_t itemsRequested;
-        uint32_t slaveInstanceID;
-        int32_t requestID;
-        stream >> itemsRequested >> slaveInstanceID >> requestID;
+        const uint32_t itemsRequested = stream.get< uint32_t >();
+        const uint32_t slaveInstanceID = stream.get< uint32_t >();
+        const int32_t requestID = stream.get< int32_t >();
 
         Commands commands;
         queue.tryPop( itemsRequested, commands );

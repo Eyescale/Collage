@@ -427,4 +427,10 @@ namespace detail { class Connection; }
 #   include "connection.ipp" // template implementation
 
 }
+
+namespace lunchbox
+{
+template<> inline void byteswap( co::Connection*& value ) { /*NOP*/ }
+}
+
 #endif //CO_CONNECTION_H
