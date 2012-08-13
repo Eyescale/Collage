@@ -1195,13 +1195,8 @@ void LocalNode::_handleDisconnect()
     if( i != _impl->connectionNodes.end( ))
     {
         NodePtr node = i->second;
-        CommandPtr command = _impl->commandCache.alloc( node, this,
-                                                sizeof( NodeRemoveNodePacket ));
-        NodeRemoveNodePacket* packet =
-             command->getModifiable< NodeRemoveNodePacket >();
-        *packet = NodeRemoveNodePacket();
-        packet->node = node.get();
-        _dispatchCommand( command );
+        send( CMD_NODE_REMOVE_NODE ) << node.get()
+                                     << uint32_t( LB_UNDEFINED_UINT32 );
 
         if( node->getConnection() == connection )
             _closeNode( node );

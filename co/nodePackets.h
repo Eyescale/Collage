@@ -102,18 +102,6 @@ namespace co
         bool pad2[5];
     };
 
-    struct NodeRemoveNodePacket : public NodePacket
-    {
-        NodeRemoveNodePacket()
-             : requestID( LB_UNDEFINED_UINT32 )
-            {
-                command = CMD_NODE_REMOVE_NODE;
-                size    = sizeof( NodeRemoveNodePacket ); 
-            }
-        Node*        node;
-        uint32_t     requestID;
-    };
-
     struct NodeObjectPushPacket : public NodePacket
     {
         NodeObjectPushPacket( const uint128_t oID, const uint128_t gID,
