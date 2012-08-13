@@ -1845,14 +1845,10 @@ bool LocalNode::_cmdReleaseSendToken( Command& )
 
 bool LocalNode::_cmdAddListener( Command& command )
 {
-    ConnectionPtr connection;
+    NodeICommand stream( &command );
     std::string data;
-    {
-        NodeICommand stream( &command );
-        stream >> connection >> data;
-        LBASSERT( connection );
-        // scope ensures unref of connection inside command/stream
-    }
+    Connection* rawConnection;
+    stream >> rawConnection >> data;
 
     ConnectionDescriptionPtr description = new ConnectionDescription( data );
     command.getNode()->addConnectionDescription( description );
@@ -1860,7 +1856,8 @@ bool LocalNode::_cmdAddListener( Command& command )
     if( command.getNode() != this )
         return true;
 
-    connection->unref( this );
+    ConnectionPtr connection = rawConnection;
+    LBASSERT( connection );
 
     _impl->connectionNodes[ connection ] = this;
     _impl->incoming.addConnection( connection );
@@ -1874,15 +1871,11 @@ bool LocalNode::_cmdAddListener( Command& command )
 
 bool LocalNode::_cmdRemoveListener( Command& command )
 {
+    NodeICommand stream( &command );
     uint32_t requestID;
-    ConnectionPtr connection;
+    Connection* rawConnection;
     std::string data;
-    {
-        NodeICommand stream( &command );
-        stream >> requestID >> connection >> data;
-        LBASSERT( connection );
-        // scope ensures unref of connection inside command/stream
-    }
+    stream >> requestID >> rawConnection >> data;
 
     ConnectionDescriptionPtr description = new ConnectionDescription( data );
     LBCHECK( command.getNode()->removeConnectionDescription( description ));
@@ -1892,7 +1885,8 @@ bool LocalNode::_cmdRemoveListener( Command& command )
 
     _initService(); // update zeroconf
 
-    connection->unref( this );
+    ConnectionPtr connection = rawConnection;
+    LBASSERT( connection );
 
     if( connection->getDescription()->type >= CONNECTIONTYPE_MULTICAST )
         _removeMulticast( connection );

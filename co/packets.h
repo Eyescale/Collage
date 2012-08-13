@@ -116,5 +116,11 @@ namespace co
     }
 }
 
+namespace lunchbox
+{
+template<> inline void byteswap( co::PacketType& value )
+    { byteswap( reinterpret_cast< uint32_t& >( value )); }
+}
+
 #endif // CO_PACKETS_H
 
