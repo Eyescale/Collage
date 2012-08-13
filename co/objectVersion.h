@@ -88,6 +88,15 @@ namespace co
 
 }
 
+namespace lunchbox
+{
+template<> inline void byteswap( co::ObjectVersion& value )
+{
+    lunchbox::byteswap( value.identifier );
+    lunchbox::byteswap( value.version );
+}
+}
+
 LB_STDEXT_NAMESPACE_OPEN
 #ifdef LB_STDEXT_MSVC
     /** ObjectVersion hash function. */

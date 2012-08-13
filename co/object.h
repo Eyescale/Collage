@@ -22,6 +22,7 @@
 #include <co/localNode.h>     // used in RefPtr
 #include <co/types.h>         // for Nodes
 #include <co/version.h>       // used as default parameter
+#include <lunchbox/bitOperation.h> // byteswap inline impl
 
 namespace co
 {
@@ -457,4 +458,9 @@ namespace co
     }
 }
 
+namespace lunchbox
+{
+template<> inline void byteswap( co::Object::ChangeType& value )
+    { byteswap( reinterpret_cast< uint32_t& >( value )); }
+}
 #endif // CO_OBJECT_H

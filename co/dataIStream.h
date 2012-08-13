@@ -40,17 +40,26 @@ namespace detail { class DataIStream; }
 
         virtual uint128_t getVersion() const = 0; //!< @internal
         virtual void reset() { _reset(); } //!< @internal
+        void setSwapping( const bool onOff ); //!< @internal enable endian swap
         //@}
 
         /** @name Data input */
         //@{
         /** Read a plain data item. @version 1.0 */
         template< typename T > DataIStream& operator >> ( T& value )
-            { _read( &value, sizeof( value )); return *this; }
+            { _read( &value, sizeof( value )); _swap( value ); return *this; }
 
         /** Read a C array. @version 1.0 */
         template< typename T > DataIStream& operator >> ( Array< T > array )
-            { _read( array.data, array.getNumBytes( )); return *this; }
+            {
+                _read( array.data, array.getNumBytes( ));
+                _swap( array );
+                return *this;
+            }
+
+        /** Byte-swap a plain data item. @version 1.0 */
+        template< typename T > static void swap( T& value )
+            { lunchbox::byteswap( value ); }
 
         /** Read a std::vector of serializable items. @version 1.0 */
         template< typename T >
@@ -82,6 +91,10 @@ namespace detail { class DataIStream; }
 
         /**
          * Get the pointer to the remaining data in the current buffer.
+         *
+         * The usage of this method is discouraged, no endian conversion or
+         * bounds checking is performed by the DataIStream on the returned raw
+         * pointer.
          *
          * The buffer is advanced by the given size. If not enough data is
          * present, 0 is returned and the buffer is unchanged.
@@ -152,6 +165,22 @@ namespace detail { class DataIStream; }
                 (*this) >> Array< T >( &value.front(), nElems );
             return *this;
         }
+
+        CO_API bool _isSwapping() const;
+
+        /** Byte-swap a plain data item. @version 1.0 */
+        template< typename T > void _swap( T& value ) const 
+            { if( _isSwapping( )) swap( value ); }
+
+        /** Byte-swap a C array. @version 1.0 */
+        template< typename T > void _swap( Array< T > array ) const
+            {
+                if( !_isSwapping( ))
+                    return;
+#pragma omp parallel for
+                for( ssize_t i = 0; i < ssize_t( array.num ); ++i )
+                    swap( array.data[i] );
+            }
     };
 }
 
@@ -203,6 +232,8 @@ namespace co
     }
 
 /** @cond IGNORE */
+    template<> inline void DataIStream::_swap( Array< void > ) const { /*NOP*/ }
+
     template< typename O, typename C > inline void
     DataIStream::deserializeChildren( O* object, const std::vector< C* >& old_,
                                       std::vector< C* >& result )

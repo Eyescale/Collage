@@ -39,6 +39,7 @@ public:
             : input( 0 )
             , inputSize( 0 )
             , position( 0 )
+            , swap( false )
         {}
 
     /** The current input buffer */
@@ -51,8 +52,8 @@ public:
     uint64_t position;
 
     CPUCompressor decompressor; //!< current decompressor
-
     lunchbox::Bufferb data; //!< decompressed buffer
+    bool swap; //!< Invoke endian conversion
 };
 }
 
@@ -70,11 +71,22 @@ DataIStream::~DataIStream()
     delete _impl;
 }
 
+void DataIStream::setSwapping( const bool onOff )
+{
+    _impl->swap = onOff;
+}
+
+bool DataIStream::_isSwapping() const
+{
+    return _impl->swap;
+}
+
 void DataIStream::_reset()
 {
     _impl->input     = 0;
     _impl->inputSize = 0;
     _impl->position  = 0;
+    _impl->swap      = false;
 }
 
 void DataIStream::_read( void* data, uint64_t size )
