@@ -33,6 +33,13 @@ public:
     NodeICommand( CommandPtr command );
     virtual ~NodeICommand();
 
+    template< typename T > T get()
+    {
+        T value;
+        *this >> value;
+        return value;
+    }
+
 protected:
     virtual size_t nRemainingBuffers() const;
 

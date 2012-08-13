@@ -635,9 +635,8 @@ bool ObjectStore::_cmdFindMasterNodeID( Command& command )
     LB_TS_THREAD( _commandThread );
 
     NodeICommand stream( &command );
-    UUID id;
-    uint32_t requestID;
-    stream >> id >> requestID;
+    const UUID& id = stream.get< UUID >();
+    const uint32_t requestID = stream.get< uint32_t >();
     LBASSERT( id.isGenerated() );
 
     NodeID masterNodeID;
@@ -677,9 +676,8 @@ bool ObjectStore::_cmdFindMasterNodeID( Command& command )
 bool ObjectStore::_cmdFindMasterNodeIDReply( Command& command )
 {
     NodeICommand stream( &command );
-    NodeID masterNodeID;
-    uint32_t requestID;
-    stream >> masterNodeID >> requestID;
+    const NodeID& masterNodeID = stream.get< NodeID >();
+    const uint32_t requestID = stream.get< uint32_t >();
     _localNode->serveRequest( requestID, masterNodeID );
     return true;
 }
@@ -690,10 +688,9 @@ bool ObjectStore::_cmdAttachObject( Command& command )
     LBLOG( LOG_OBJECTS ) << "Cmd attach object " << command << std::endl;
 
     NodeICommand stream( &command );
-    UUID objectID;
-    uint32_t instanceID;
-    uint32_t requestID;
-    stream >> objectID >> instanceID >> requestID;
+    const UUID& objectID = stream.get< UUID >();
+    const uint32_t instanceID = stream.get< uint32_t >();
+    const uint32_t requestID = stream.get< uint32_t >();
 
     Object* object = static_cast< Object* >( _localNode->getRequestData( 
                                                  requestID ));
@@ -708,10 +705,9 @@ bool ObjectStore::_cmdDetachObject( Command& command )
     LBLOG( LOG_OBJECTS ) << "Cmd detach object " << command << std::endl;
 
     NodeICommand stream( &command );
-    UUID objectID;
-    uint32_t instanceID;
-    uint32_t requestID;
-    stream >> objectID >> instanceID >> requestID;
+    const UUID& objectID = stream.get< UUID >();
+    const uint32_t instanceID = stream.get< uint32_t >();
+    const uint32_t requestID = stream.get< uint32_t >();
 
     ObjectsHash::const_iterator i = _objects->find( objectID );
     if( i != _objects->end( ))
@@ -744,8 +740,7 @@ bool ObjectStore::_cmdRegisterObject( Command& command )
     LBLOG( LOG_OBJECTS ) << "Cmd register object " << command << std::endl;
 
     NodeICommand stream( &command );
-    void* object;   // don't want to call operator >> (Object*)
-    stream >> object;
+    Object* object = stream.get< Object* >();
 
     const int32_t age = Global::getIAttribute(
                             Global::IATTR_NODE_SEND_QUEUE_AGE );
@@ -769,8 +764,7 @@ bool ObjectStore::_cmdDeregisterObject( Command& command )
     LBLOG( LOG_OBJECTS ) << "Cmd deregister object " << command << std::endl;
 
     NodeICommand stream( &command );
-    uint32_t requestID;
-    stream >> requestID;
+    const uint32_t requestID = stream.get< uint32_t >();
 
     const void* object = _localNode->getRequestData( requestID );
 
@@ -912,11 +906,10 @@ bool ObjectStore::_cmdUnsubscribeObject( Command& command )
     LBLOG( LOG_OBJECTS ) << "Cmd unsubscribe object  " << command << std::endl;
 
     NodeICommand stream( &command );
-    UUID id;
-    uint32_t requestID;
-    uint32_t masterInstanceID;
-    uint32_t slaveInstanceID;
-    stream >> id >> requestID >> masterInstanceID >> slaveInstanceID;
+    const UUID& id = stream.get< UUID >();
+    const uint32_t requestID = stream.get< uint32_t >();
+    const uint32_t masterInstanceID = stream.get< uint32_t >();
+    const uint32_t slaveInstanceID = stream.get< uint32_t >();
 
     NodePtr node = command.getNode();
 
@@ -949,8 +942,7 @@ bool ObjectStore::_cmdUnmapObject( Command& command )
     LBLOG( LOG_OBJECTS ) << "Cmd unmap object " << command << std::endl;
 
     NodeICommand stream( &command );
-    UUID objectID;
-    stream >> objectID;
+    const UUID& objectID = stream.get< UUID >();
 
     if( _instanceCache )
         _instanceCache->erase( objectID );
@@ -1049,8 +1041,7 @@ bool ObjectStore::_cmdDisableSendOnRegister( Command& command )
     }
 
     NodeICommand stream( &command );
-    uint32_t requestID;
-    stream >> requestID;
+    const uint32_t requestID = stream.get< uint32_t >();
     _localNode->serveRequest( requestID );
     return true;
 }

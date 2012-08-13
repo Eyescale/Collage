@@ -200,10 +200,9 @@ bool Barrier::_cmdEnter( Command& command )
                          << getVersion() << std::endl;
 
     ObjectICommand stream( &command );
-    uint128_t version;
-    uint32_t incarnation;
-    uint32_t timeout;
-    stream >> version >> incarnation >> timeout;
+    const uint128_t version = stream.get< uint128_t >();
+    const uint32_t incarnation = stream.get< uint32_t >();
+    const uint32_t timeout = stream.get< uint32_t >();
 
     Request& request = _impl->enteredNodes[ version ];
  
@@ -337,8 +336,7 @@ bool Barrier::_cmdEnterReply( Command& command )
     LB_TS_THREAD( _thread );
     LBLOG( LOG_BARRIER ) << "Got ok, unlock local user(s)" << std::endl;
     ObjectICommand stream( &command );
-    uint128_t version;
-    stream >> version;
+    const uint128_t version = stream.get< uint128_t >();
     
     if( version == getVersion( ))
         ++_impl->leaveNotify;

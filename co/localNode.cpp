@@ -1439,8 +1439,7 @@ bool LocalNode::_notifyCommandThreadIdle()
 bool LocalNode::_cmdAckRequest( Command& command )
 {
     NodeICommand stream( &command );
-    uint32_t requestID;
-    stream >> requestID;
+    const uint32_t requestID = stream.get< uint32_t >();
     LBASSERT( requestID != LB_UNDEFINED_UINT32 );
 
     serveRequest( requestID );
@@ -1472,8 +1471,7 @@ bool LocalNode::_cmdStopCmd( Command& command )
 bool LocalNode::_cmdSetAffinity( Command& command )
 {
     NodeICommand stream( &command );
-    int32_t affinity;
-    stream >> affinity;
+    const int32_t affinity = stream.get< int32_t >();
 
     lunchbox::Thread::setAffinity( affinity );
     return true;
@@ -1486,11 +1484,10 @@ bool LocalNode::_cmdConnect( Command& command )
     LBVERB << "handle connect " << command << std::endl;
 
     NodeICommand stream( &command );
-    NodeID nodeID;
-    uint32_t requestID;
-    uint32_t nodeType;
-    std::string data;
-    stream >> nodeID >> requestID >> nodeType >> data;
+    const NodeID& nodeID = stream.get< NodeID >();
+    const uint32_t requestID = stream.get< uint32_t >();
+    const uint32_t nodeType = stream.get< uint32_t >();
+    std::string data = stream.get< std::string >();
 
     ConnectionPtr connection = _impl->incoming.getConnection();
 
@@ -1560,11 +1557,10 @@ bool LocalNode::_cmdConnectReply( Command& command )
     LBVERB << "handle connect reply " << command << std::endl;
 
     NodeICommand stream( &command );
-    NodeID nodeID;
-    uint32_t requestID;
-    uint32_t nodeType;
-    std::string data;
-    stream >> nodeID >> requestID >> nodeType >> data;
+    const NodeID& nodeID = stream.get< NodeID >();
+    const uint32_t requestID = stream.get< uint32_t >();
+    const uint32_t nodeType = stream.get< uint32_t >();
+    std::string data = stream.get< std::string >();
 
     ConnectionPtr connection = _impl->incoming.getConnection();
     LBASSERT( _impl->connectionNodes.find( connection ) ==
@@ -1650,10 +1646,9 @@ bool LocalNode::_cmdID( Command& command )
     LBASSERT( _impl->inReceiverThread( ));
 
     NodeICommand stream( &command );
-    NodeID nodeID;
-    uint32_t nodeType;
-    std::string data;
-    stream >> nodeID >> nodeType >> data;
+    const NodeID& nodeID = stream.get< NodeID >();
+    uint32_t nodeType = stream.get< uint32_t >();
+    std::string data = stream.get< std::string >();
 
     if( command.getNode().isValid( ))
     {
@@ -1712,8 +1707,7 @@ bool LocalNode::_cmdDisconnect( Command& command )
     LBASSERT( _impl->inReceiverThread( ));
 
     NodeICommand stream( &command );
-    uint32_t requestID;
-    stream >> requestID;
+    const uint32_t requestID = stream.get< uint32_t >();
 
     NodePtr node = static_cast<Node*>( getRequestData( requestID ));
     LBASSERT( node.isValid( ));
@@ -1729,9 +1723,8 @@ bool LocalNode::_cmdGetNodeData( Command& command )
     LBVERB << "cmd get node data: " << command << std::endl;
 
     NodeICommand stream( &command );
-    NodeID nodeID;
-    uint32_t requestID;
-    stream >> nodeID >> requestID;
+    const NodeID& nodeID = stream.get< NodeID >();
+    const uint32_t requestID = stream.get< uint32_t >();
 
     NodePtr node = getNode( nodeID );
     NodePtr toNode = command.getNode();
@@ -1762,11 +1755,10 @@ bool LocalNode::_cmdGetNodeDataReply( Command& command )
     LBVERB << "cmd get node data reply: " << command << std::endl;
 
     NodeICommand stream( &command );
-    NodeID nodeID;
-    uint32_t requestID;
-    uint32_t nodeType;
-    std::string nodeData;
-    stream >> nodeID >> requestID >> nodeType >> nodeData;
+    const NodeID& nodeID = stream.get< NodeID >();
+    const uint32_t requestID = stream.get< uint32_t >();
+    const uint32_t nodeType = stream.get< uint32_t >();
+    std::string nodeData = stream.get< std::string >();
 
     // No locking needed, only recv thread writes
     NodeHash::const_iterator i = _impl->nodes->find( nodeID );
@@ -1820,8 +1812,7 @@ bool LocalNode::_cmdAcquireSendToken( Command& command )
     _impl->sendToken = false;
 
     NodeICommand stream( &command );
-    uint32_t requestID;
-    stream >> requestID;
+    const uint32_t requestID = stream.get< uint32_t >();
     command.getNode()->send( CMD_NODE_ACQUIRE_SEND_TOKEN_REPLY ) << requestID;
     return true;
 }
@@ -1829,8 +1820,7 @@ bool LocalNode::_cmdAcquireSendToken( Command& command )
 bool LocalNode::_cmdAcquireSendTokenReply( Command& command )
 {
     NodeICommand stream( &command );
-    uint32_t requestID;
-    stream >> requestID;
+    const uint32_t requestID = stream.get< uint32_t >();
     serveRequest( requestID );
     return true;
 }
@@ -1852,8 +1842,7 @@ bool LocalNode::_cmdReleaseSendToken( Command& )
     _impl->sendTokenQueue.pop_front();
 
     NodeICommand stream( request );
-    uint32_t requestID;
-    stream >> requestID;
+    const uint32_t requestID = stream.get< uint32_t >();
     request->getNode()->send( CMD_NODE_ACQUIRE_SEND_TOKEN_REPLY ) << requestID;
     return true;
 }
@@ -1861,9 +1850,8 @@ bool LocalNode::_cmdReleaseSendToken( Command& )
 bool LocalNode::_cmdAddListener( Command& command )
 {
     NodeICommand stream( &command );
-    std::string data;
-    Connection* rawConnection;
-    stream >> rawConnection >> data;
+    Connection* rawConnection = stream.get< Connection* >();
+    std::string data = stream.get< std::string >();
 
     ConnectionDescriptionPtr description = new ConnectionDescription( data );
     command.getNode()->addConnectionDescription( description );
@@ -1887,10 +1875,9 @@ bool LocalNode::_cmdAddListener( Command& command )
 bool LocalNode::_cmdRemoveListener( Command& command )
 {
     NodeICommand stream( &command );
-    uint32_t requestID;
-    Connection* rawConnection;
-    std::string data;
-    stream >> requestID >> rawConnection >> data;
+    const uint32_t requestID = stream.get< uint32_t >();
+    Connection* rawConnection = stream.get< Connection* >();
+    std::string data = stream.get< std::string >();
 
     ConnectionDescriptionPtr description = new ConnectionDescription( data );
     LBCHECK( command.getNode()->removeConnectionDescription( description ));
