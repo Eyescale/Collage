@@ -34,7 +34,8 @@ namespace co
          * @internal
          * Construct a new plugin registry.
          *
-         * The plugin registry can be obtained using Global::getPluginRegistry().
+         * The internal plugin registry can be obtained using
+         * Global::getPluginRegistry().
          */
         PluginRegistry();
 

@@ -74,7 +74,6 @@ typename boost::enable_if<boost::is_floating_point<T> >::type
 DataIStreamArchive::load( T& t )
 {
     namespace fp = boost::spirit::math;
-
     typedef typename fp::detail::fp_traits<T>::type traits;
 
     // if you end here there are three possibilities:
@@ -91,7 +90,7 @@ DataIStreamArchive::load( T& t )
     traits::set_bits( t, bits );
 
     // if the no_infnan flag is set we must throw here
-    if( get_flags() & no_infnan && !fp::isfinite( t ))
+    if( get_flags() & serialization::no_infnan && !fp::isfinite( t ))
         throw DataStreamArchiveException( t );
 
     // if you end here your floating point type does not support

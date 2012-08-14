@@ -49,7 +49,7 @@
 
 namespace co
 {
-/** A boost.serialization archive for a co::DataIStream. */
+/** A boost.serialization archive reading from a co::DataIStream. */
 class DataIStreamArchive
     : public boost::archive::basic_binary_iarchive< DataIStreamArchive >
     , public boost::archive::detail::shared_ptr_helper
@@ -57,7 +57,7 @@ class DataIStreamArchive
     typedef boost::archive::basic_binary_iarchive< DataIStreamArchive > Super;
 
 public:
-    /** Construct a new deserialization archive. */
+    /** Construct a new deserialization archive. @version 1.0 */
     CO_API DataIStreamArchive( DataIStream& stream );
 
     /** @internal archives are expected to support this function */
