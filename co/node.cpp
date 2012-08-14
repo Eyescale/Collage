@@ -18,6 +18,7 @@
 #include "node.h"
 
 #include "connectionDescription.h"
+#include "nodeOCommand.h"
 #include "nodePackets.h"
 
 #include <lunchbox/scopedMutex.h>
@@ -133,11 +134,11 @@ ConnectionPtr Node::useMulticast()
     LBINFO << "Announcing id " << node->getNodeID() << " to multicast group "
            << data.connection->getDescription() << std::endl;
 
-    NodeIDPacket packet;
-    packet.id = node->getNodeID();
-    packet.nodeType = getType();
+    {
+        NodeOCommand packet( data.connection, PACKETTYPE_CO_NODE, CMD_NODE_ID );
+        packet << node->getNodeID() << getType() << node->serialize();
+    }
 
-    data.connection->send( packet, node->serialize( ));
     _impl->outMulticast.data = data.connection;
     return data.connection;
 }
@@ -238,6 +239,11 @@ ConnectionPtr Node::getConnection() const
 ConnectionPtr Node::getMulticast() const
 {
     return _impl->outMulticast.data;
+}
+
+NodeOCommand Node::send( uint32_t cmd, uint32_t type )
+{
+    return NodeOCommand( getConnection(), type, cmd );
 }
 
 const NodeID& Node::getNodeID() const

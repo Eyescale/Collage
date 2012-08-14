@@ -35,63 +35,6 @@
 /** @cond IGNORE */
 namespace co
 {
-    struct ObjectCommitPacket : public ObjectPacket
-    {
-        ObjectCommitPacket()
-            {
-                command        = CMD_OBJECT_COMMIT;
-                size           = sizeof( ObjectCommitPacket ); 
-            }
-        
-        uint32_t requestID;
-        uint32_t incarnation;
-    };
-
-    struct ObjectObsoletePacket : public ObjectPacket
-    {
-        ObjectObsoletePacket( const uint32_t c ) : count( c )
-            {
-                command        = CMD_OBJECT_OBSOLETE;
-                size           = sizeof( ObjectObsoletePacket ); 
-            }
-        
-        const uint32_t count;
-    };
-
-    struct ObjectPushPacket : public ObjectPacket
-    {
-        ObjectPushPacket( const uint32_t instanceID_, const uint32_t requestID_,
-                          const uint128_t& groupID_, const uint128_t& typeID_,
-                          const Nodes& nodes_ )
-                : groupID( groupID_ )
-                , typeID( typeID_ )
-                , requestID( requestID_ )
-                , nodes( &nodes_ )
-            {
-                command = CMD_OBJECT_PUSH;
-                instanceID = instanceID_;
-                size = sizeof( ObjectPushPacket ); 
-            }
-        
-        const uint128_t groupID;
-        const uint128_t typeID;
-        const uint32_t requestID;
-        const Nodes* nodes;
-    };
-
-    struct ObjectMaxVersionPacket : public ObjectPacket
-    {
-        ObjectMaxVersionPacket( const uint64_t version_,
-                                const uint32_t slaveInstanceID )
-                : version( version_ ), slaveID( slaveInstanceID )
-            {
-                command = CMD_OBJECT_MAX_VERSION;
-                size = sizeof( ObjectMaxVersionPacket );
-            }
-        const uint64_t version;
-        const uint32_t slaveID;
-    };
-
     struct ObjectDataPacket : public ObjectPacket
     {
         ObjectDataPacket()

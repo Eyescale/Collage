@@ -27,6 +27,7 @@
 #include "nodePackets.h"
 #include "nullCM.h"
 #include "objectCM.h"
+#include "objectOCommand.h"
 #include "staticMasterCM.h"
 #include "staticSlaveCM.h"
 #include "types.h"
@@ -101,13 +102,10 @@ void Object::notifyDetach()
     LBWARN << slaves.size() << " slaves subscribed during deregisterObject of "
            << lunchbox::className( this ) << " id " << _id << std::endl;
 
-    NodeUnmapObjectPacket packet;
-    packet.objectID = _id;
-
     for( NodesCIter i = slaves.begin(); i != slaves.end(); ++i )
     {
         NodePtr node = *i;
-        node->send( packet );
+        node->send( CMD_NODE_UNMAP_OBJECT ) << _id;
     }
 }
 
@@ -169,6 +167,13 @@ bool Object::send( NodePtr node, ObjectPacket& packet, const void* data,
     LBASSERT( isAttached() );
     packet.objectID  = _id;
     return node->send( packet, data, size );
+}
+
+ObjectOCommand Object::send( NodePtr node, uint32_t cmd,
+                             const uint32_t instanceID )
+{
+    return ObjectOCommand( node->getConnection(), PACKETTYPE_CO_OBJECT,
+                           cmd, _id, instanceID );
 }
 
 void Object::push( const uint128_t& groupID, const uint128_t& typeID,

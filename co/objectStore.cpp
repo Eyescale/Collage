@@ -26,8 +26,11 @@
 #include "instanceCache.h"
 #include "log.h"
 #include "nodePackets.h"
+#include "nodeICommand.h"
+#include "nodeOCommand.h"
 #include "objectCM.h"
 #include "objectDataIStream.h"
+#include "objectICommand.h"
 #include "objectPackets.h"
 
 #include <lunchbox/scopedMutex.h>
@@ -161,10 +164,9 @@ void ObjectStore::disableSendOnRegister()
 {
     if( Global::getIAttribute( Global::IATTR_NODE_SEND_QUEUE_SIZE ) > 0 )
     {
-        NodeDisableSendOnRegisterPacket packet;
-        packet.requestID = _localNode->registerRequest();
-        _localNode->send( packet );
-        _localNode->waitRequest( packet.requestID );
+        const uint32_t requestID = _localNode->registerRequest();
+        _localNode->send( CMD_NODE_DISABLE_SEND_ON_REGISTER ) << requestID;
+        _localNode->waitRequest( requestID );
     }
     else // OPT
         --_sendOnRegister;
@@ -185,16 +187,14 @@ NodeID ObjectStore::_findMasterNodeID( const UUID& identifier )
     for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
     {
         NodePtr node = *i;
-        NodeFindMasterNodeIDPacket packet;
-        packet.requestID = _localNode->registerRequest();
-        packet.identifier = identifier;
+        const uint32_t requestID = _localNode->registerRequest();
 
         LBLOG( LOG_OBJECTS ) << "Finding " << identifier << " on " << node
-                             << " req " << packet.requestID << std::endl;
-        node->send( packet );
+                             << " req " << requestID << std::endl;
+        node->send( CMD_NODE_FIND_MASTER_NODE_ID ) << identifier << requestID;
 
         NodeID masterNodeID = UUID::ZERO;
-        _localNode->waitRequest( packet.requestID, masterNodeID );
+        _localNode->waitRequest( requestID, masterNodeID );
 
         if( masterNodeID != UUID::ZERO )
         {
@@ -216,13 +216,9 @@ void ObjectStore::attachObject( Object* object, const UUID& id,
     LBASSERT( object );
     LB_TS_NOT_THREAD( _receiverThread );
 
-    NodeAttachObjectPacket packet;
-    packet.requestID = _localNode->registerRequest( object );
-    packet.objectID = id;
-    packet.objectInstanceID = instanceID;
-
-    _localNode->send( packet );
-    _localNode->waitRequest( packet.requestID );
+    const uint32_t requestID = _localNode->registerRequest( object );
+    _localNode->send( CMD_NODE_ATTACH_OBJECT ) << id << instanceID << requestID;
+    _localNode->waitRequest( requestID );
 }
 
 namespace
@@ -274,13 +270,11 @@ void ObjectStore::detachObject( Object* object )
     LBASSERT( object );
     LB_TS_NOT_THREAD( _receiverThread );
 
-    NodeDetachObjectPacket packet;
-    packet.requestID = _localNode->registerRequest();
-    packet.objectID  = object->getID();
-    packet.objectInstanceID  = object->getInstanceID();
-
-    _localNode->send( packet );
-    _localNode->waitRequest( packet.requestID );
+    const uint32_t requestID = _localNode->registerRequest();
+    _localNode->send( CMD_NODE_DETACH_OBJECT ) << object->getID()
+                                               << object->getInstanceID()
+                                               << requestID;
+    _localNode->waitRequest( requestID );
 }
 
 void ObjectStore::swapObject( Object* oldObject, Object* newObject )
@@ -469,14 +463,11 @@ void ObjectStore::unmapObject( Object* object )
 
         if( master && master->isReachable( ))
         {
-            NodeUnsubscribeObjectPacket packet;
-            packet.requestID = _localNode->registerRequest();
-            packet.objectID  = id;
-            packet.masterInstanceID = masterInstanceID;
-            packet.slaveInstanceID  = object->getInstanceID();
-            master->send( packet );
+            const uint32_t requestID = _localNode->registerRequest();
+            master->send( CMD_NODE_UNSUBSCRIBE_OBJECT )  << id << requestID
+                                 << masterInstanceID << object->getInstanceID();
 
-            _localNode->waitRequest( packet.requestID );
+            _localNode->waitRequest( requestID );
             object->notifyDetached();
             return;
         }
@@ -504,11 +495,7 @@ bool ObjectStore::registerObject( Object* object )
     attachObject( object, id, EQ_INSTANCE_INVALID );
 
     if( Global::getIAttribute( Global::IATTR_NODE_SEND_QUEUE_SIZE ) > 0 )
-    {
-        NodeRegisterObjectPacket packet;
-        packet.object = object;
-        _localNode->send( packet );
-    }
+        _localNode->send( CMD_NODE_REGISTER_OBJECT ) << object;
 
     object->notifyAttached();
 
@@ -530,10 +517,9 @@ void ObjectStore::deregisterObject( Object* object )
     if( Global::getIAttribute( Global::IATTR_NODE_SEND_QUEUE_SIZE ) > 0  )
     {
         // remove from send queue
-        NodeDeregisterObjectPacket packet;
-        packet.requestID = _localNode->registerRequest( object );
-        _localNode->send( packet );
-        _localNode->waitRequest( packet.requestID );
+        const uint32_t requestID = _localNode->registerRequest( object );
+        _localNode->send( CMD_NODE_DEREGISTER_OBJECT ) << requestID;
+        _localNode->waitRequest( requestID );
     }
 
     const UUID id = object->getID();
@@ -589,11 +575,9 @@ bool ObjectStore::notifyCommandThreadIdle()
 
 void ObjectStore::removeNode( NodePtr node )
 {
-    NodeRemoveNodePacket packet;
-    packet.node = node.get();
-    packet.requestID = _localNode->registerRequest( );
-    _localNode->send( packet );
-    _localNode->waitRequest( packet.requestID );
+    const uint32_t requestID = _localNode->registerRequest();
+    _localNode->send( CMD_NODE_REMOVE_NODE ) << node.get() << requestID;
+    _localNode->waitRequest( requestID );
 }
 
 //===========================================================================
@@ -602,9 +586,9 @@ void ObjectStore::removeNode( NodePtr node )
 bool ObjectStore::dispatchObjectCommand( CommandPtr command )
 {
     LB_TS_THREAD( _receiverThread );
-    const ObjectPacket* packet = command->get< ObjectPacket >();
-    const UUID& id = packet->objectID;
-    const uint32_t instanceID = packet->instanceID;
+    ObjectICommand stream( command );
+    const UUID& id = stream.getObjectID();
+    const uint32_t instanceID = stream.getInstanceID();
 
     ObjectsHash::const_iterator i = _objects->find( id );
 
@@ -614,7 +598,7 @@ bool ObjectStore::dispatchObjectCommand( CommandPtr command )
         return ( instanceID == EQ_INSTANCE_NONE );
 
     const Objects& objects = i->second;
-    LBASSERTINFO( !objects.empty(), packet );
+    LBASSERT( !objects.empty( ));
 
     if( instanceID <= EQ_INSTANCE_MAX )
     {
@@ -648,13 +632,12 @@ bool ObjectStore::_cmdFindMasterNodeID( Command& command )
 {
     LB_TS_THREAD( _commandThread );
 
-    const NodeFindMasterNodeIDPacket* packet = 
-          command.get<NodeFindMasterNodeIDPacket>();
-
-    const UUID& id = packet->identifier;
+    NodeICommand stream( &command );
+    const UUID& id = stream.get< UUID >();
+    const uint32_t requestID = stream.get< uint32_t >();
     LBASSERT( id.isGenerated() );
 
-    NodeFindMasterNodeIDReplyPacket reply( packet );
+    NodeID masterNodeID;
     {
         lunchbox::ScopedFastRead mutex( _objects );
         ObjectsHashCIter i = _objects->find( id );
@@ -662,62 +645,69 @@ bool ObjectStore::_cmdFindMasterNodeID( Command& command )
         if( i != _objects->end( ))
         {
             const Objects& objects = i->second;
-            LBASSERTINFO( !objects.empty(), packet );
+            LBASSERT( !objects.empty( ));
 
             for( ObjectsCIter j = objects.begin(); j != objects.end(); ++j )
             {
                 Object* object = *j;
                 if( object->isMaster( ))
-                    reply.masterNodeID = _localNode->getNodeID();
+                    masterNodeID = _localNode->getNodeID();
                 else
                 {
                     NodePtr master = object->getMasterNode();
                     if( master.isValid( ))
-                        reply.masterNodeID = master->getNodeID();
+                        masterNodeID = master->getNodeID();
                 }
-                if( reply.masterNodeID != UUID::ZERO )
+                if( masterNodeID != UUID::ZERO )
                     break;
             }
         }
     }
 
-    LBLOG( LOG_OBJECTS ) << "Object " << id << " master " << reply.masterNodeID
-                         << " req " << reply.requestID << std::endl;
-    command.getNode()->send( reply );
+    LBLOG( LOG_OBJECTS ) << "Object " << id << " master " << masterNodeID
+                         << " req " << requestID << std::endl;
+    command.getNode()->send( CMD_NODE_FIND_MASTER_NODE_ID_REPLY )
+            << masterNodeID << requestID;
     return true;
 }
 
 bool ObjectStore::_cmdFindMasterNodeIDReply( Command& command )
 {
-    const NodeFindMasterNodeIDReplyPacket* packet =
-          command.get< NodeFindMasterNodeIDReplyPacket >();
-    _localNode->serveRequest( packet->requestID, packet->masterNodeID );
+    NodeICommand stream( &command );
+    const NodeID& masterNodeID = stream.get< NodeID >();
+    const uint32_t requestID = stream.get< uint32_t >();
+    _localNode->serveRequest( requestID, masterNodeID );
     return true;
 }
 
 bool ObjectStore::_cmdAttachObject( Command& command )
 {
     LB_TS_THREAD( _receiverThread );
-    const NodeAttachObjectPacket* packet =
-        command.get< NodeAttachObjectPacket >();
-    LBLOG( LOG_OBJECTS ) << "Cmd attach object " << packet << std::endl;
+    LBLOG( LOG_OBJECTS ) << "Cmd attach object " << command << std::endl;
+
+    NodeICommand stream( &command );
+    const UUID& objectID = stream.get< UUID >();
+    const uint32_t instanceID = stream.get< uint32_t >();
+    const uint32_t requestID = stream.get< uint32_t >();
 
     Object* object = static_cast< Object* >( _localNode->getRequestData( 
-                                                 packet->requestID ));
-    _attachObject( object, packet->objectID, packet->objectInstanceID );
-    _localNode->serveRequest( packet->requestID );
+                                                 requestID ));
+    _attachObject( object, objectID, instanceID );
+    _localNode->serveRequest( requestID );
     return true;
 }
 
 bool ObjectStore::_cmdDetachObject( Command& command )
 {
     LB_TS_THREAD( _receiverThread );
-    const NodeDetachObjectPacket* packet =
-        command.get< NodeDetachObjectPacket >();
-    LBLOG( LOG_OBJECTS ) << "Cmd detach object " << packet << std::endl;
+    LBLOG( LOG_OBJECTS ) << "Cmd detach object " << command << std::endl;
 
-    const UUID& id = packet->objectID;
-    ObjectsHash::const_iterator i = _objects->find( id );
+    NodeICommand stream( &command );
+    const UUID& objectID = stream.get< UUID >();
+    const uint32_t instanceID = stream.get< uint32_t >();
+    const uint32_t requestID = stream.get< uint32_t >();
+
+    ObjectsHash::const_iterator i = _objects->find( objectID );
     if( i != _objects->end( ))
     {
         const Objects& objects = i->second;
@@ -726,7 +716,7 @@ bool ObjectStore::_cmdDetachObject( Command& command )
              j != objects.end(); ++j )
         {
             Object* object = *j;
-            if( object->getInstanceID() == packet->objectInstanceID )
+            if( object->getInstanceID() == instanceID )
             {
                 _detachObject( object );
                 break;
@@ -734,8 +724,8 @@ bool ObjectStore::_cmdDetachObject( Command& command )
         }
     }
 
-    LBASSERT( packet->requestID != LB_UNDEFINED_UINT32 );
-    _localNode->serveRequest( packet->requestID );
+    LBASSERT( requestID != LB_UNDEFINED_UINT32 );
+    _localNode->serveRequest( requestID );
     return true;
 }
 
@@ -745,16 +735,17 @@ bool ObjectStore::_cmdRegisterObject( Command& command )
     if( _sendOnRegister <= 0 )
         return true;
 
-    const NodeRegisterObjectPacket* packet = 
-        command.get< NodeRegisterObjectPacket >();
-    LBLOG( LOG_OBJECTS ) << "Cmd register object " << packet << std::endl;
+    LBLOG( LOG_OBJECTS ) << "Cmd register object " << command << std::endl;
+
+    NodeICommand stream( &command );
+    Object* object = reinterpret_cast< Object* >( stream.get< void* >( ));
 
     const int32_t age = Global::getIAttribute(
                             Global::IATTR_NODE_SEND_QUEUE_AGE );
     SendQueueItem item;
     item.age = age ? age + _localNode->getTime64() :
                      std::numeric_limits< int64_t >::max();
-    item.object = packet->object;
+    item.object = reinterpret_cast< Object* >( object );
     _sendQueue.push_back( item );
 
     const uint32_t size = Global::getIAttribute( 
@@ -768,11 +759,12 @@ bool ObjectStore::_cmdRegisterObject( Command& command )
 bool ObjectStore::_cmdDeregisterObject( Command& command )
 {
     LB_TS_THREAD( _commandThread );
-    const NodeDeregisterObjectPacket* packet = 
-        command.get< NodeDeregisterObjectPacket >();
-    LBLOG( LOG_OBJECTS ) << "Cmd deregister object " << packet << std::endl;
+    LBLOG( LOG_OBJECTS ) << "Cmd deregister object " << command << std::endl;
 
-    const void* object = _localNode->getRequestData( packet->requestID ); 
+    NodeICommand stream( &command );
+    const uint32_t requestID = stream.get< uint32_t >();
+
+    const void* object = _localNode->getRequestData( requestID );
 
     for( SendQueue::iterator i = _sendQueue.begin(); i < _sendQueue.end(); ++i )
     {
@@ -783,7 +775,7 @@ bool ObjectStore::_cmdDeregisterObject( Command& command )
         }
     }
 
-    _localNode->serveRequest( packet->requestID );
+    _localNode->serveRequest( requestID );
     return true;
 }
 
@@ -909,12 +901,15 @@ bool ObjectStore::_cmdMapObjectReply( Command& command )
 bool ObjectStore::_cmdUnsubscribeObject( Command& command )
 {
     LB_TS_THREAD( _commandThread );
-    const NodeUnsubscribeObjectPacket* packet =
-        command.get< NodeUnsubscribeObjectPacket >();
-    LBLOG( LOG_OBJECTS ) << "Cmd unsubscribe object  " << packet << std::endl;
+    LBLOG( LOG_OBJECTS ) << "Cmd unsubscribe object  " << command << std::endl;
+
+    NodeICommand stream( &command );
+    const UUID& id = stream.get< UUID >();
+    const uint32_t requestID = stream.get< uint32_t >();
+    const uint32_t masterInstanceID = stream.get< uint32_t >();
+    const uint32_t slaveInstanceID = stream.get< uint32_t >();
 
     NodePtr node = command.getNode();
-    const UUID& id = packet->objectID;
 
     {
         lunchbox::ScopedFastWrite mutex( _objects );
@@ -926,31 +921,31 @@ bool ObjectStore::_cmdUnsubscribeObject( Command& command )
             {
                 Object* object = *j;
                 if( object->isMaster() && 
-                    object->getInstanceID() == packet->masterInstanceID )
+                    object->getInstanceID() == masterInstanceID )
                 {
-                    object->removeSlave( node, packet->slaveInstanceID );
+                    object->removeSlave( node, slaveInstanceID );
                     break;
                 }
             }   
         }
     }
 
-    NodeDetachObjectPacket detachPacket( packet );
-    node->send( detachPacket );
+    node->send( CMD_NODE_DETACH_OBJECT ) << id << slaveInstanceID << requestID;
     return true;
 }
 
 bool ObjectStore::_cmdUnmapObject( Command& command )
 {
     LB_TS_THREAD( _receiverThread );
-    const NodeUnmapObjectPacket* packet = 
-        command.get< NodeUnmapObjectPacket >();
+    LBLOG( LOG_OBJECTS ) << "Cmd unmap object " << command << std::endl;
 
-    LBLOG( LOG_OBJECTS ) << "Cmd unmap object " << packet << std::endl;
+    NodeICommand stream( &command );
+    const UUID& objectID = stream.get< UUID >();
+
     if( _instanceCache )
-        _instanceCache->erase( packet->objectID );
+        _instanceCache->erase( objectID );
 
-    ObjectsHash::iterator i = _objects->find( packet->objectID );
+    ObjectsHash::iterator i = _objects->find( objectID );
     if( i == _objects->end( )) // nothing to do
         return true;
 
@@ -1043,29 +1038,33 @@ bool ObjectStore::_cmdDisableSendOnRegister( Command& command )
         }
     }
 
-    const NodeDisableSendOnRegisterPacket* packet =
-        command.get< NodeDisableSendOnRegisterPacket >();
-    _localNode->serveRequest( packet->requestID );
+    NodeICommand stream( &command );
+    const uint32_t requestID = stream.get< uint32_t >();
+    _localNode->serveRequest( requestID );
     return true;
 }
 
 bool ObjectStore::_cmdRemoveNode( Command& command )
 {
     LB_TS_THREAD( _commandThread );
-    const NodeRemoveNodePacket* packet = command.get< NodeRemoveNodePacket >();
+    LBLOG( LOG_OBJECTS ) << "Cmd object  " << command << std::endl;
 
-    LBLOG( LOG_OBJECTS ) << "Cmd object  " << packet << std::endl;
+    NodeICommand stream( &command );
+    Node* node = stream.get< Node* >();
+    const uint32_t requestID = stream.get< uint32_t >();
 
     lunchbox::ScopedFastWrite mutex( _objects );
     for( ObjectsHashCIter i = _objects->begin(); i != _objects->end(); ++i )
     {
         const Objects& objects = i->second;
         for( ObjectsCIter j = objects.begin(); j != objects.end(); ++j )
-            (*j)->removeSlaves( packet->node );
+            (*j)->removeSlaves( node );
     }
 
-    if( packet->requestID != LB_UNDEFINED_UINT32 )
-        _localNode->serveRequest( packet->requestID );
+    if( requestID != LB_UNDEFINED_UINT32 )
+        _localNode->serveRequest( requestID );
+    else
+        node->unref(); // node was ref'd before LocalNode::_handleDisconnect()
 
     return true;
 }

@@ -327,6 +327,22 @@ namespace co
         /** Send a packet to peer object instance(s) on another node. */
         template< class T > bool
         send( NodePtr node, ObjectPacket& packet, const std::vector<T>& v );
+
+        /**
+         * Send a command with optional data to object instance(s) on another
+         * node.
+         *
+         * The returned data stream can be used to pass additional data to the
+         * given command. The data will be send after the stream is destroyed,
+         * aka when it is running out of scope.
+         *
+         * @param node the node where to send the command to
+         * @param cmd the object command to execute
+         * @param instanceID the object instance which should handle the command
+         * @return the stream object to pass additional data to
+         */
+        ObjectOCommand send( NodePtr node, uint32_t cmd,
+                             const uint32_t instanceID = EQ_INSTANCE_ALL );
         //@}
 
         /** @name Notifications */

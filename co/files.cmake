@@ -36,10 +36,14 @@ set(CO_PUBLIC_HEADERS
   localNode.h
   log.h
   node.h
+  nodeICommand.h
+  nodeOCommand.h
   nodeType.h
   object.h
   objectFactory.h
   objectHandler.h
+  objectICommand.h
+  objectOCommand.h
   objectMap.h
   objectVersion.h
   packets.h
@@ -58,7 +62,6 @@ set(CO_PUBLIC_HEADERS
 
 set(CO_HEADERS
   barrierCommand.h
-  barrierPackets.h
   commandCache.h
   connectionListener.h
   dataIStreamQueue.h
@@ -108,11 +111,15 @@ set(CO_SOURCES
   instanceCache.cpp
   localNode.cpp
   node.cpp
+  nodeICommand.cpp
+  nodeOCommand.cpp
   object.cpp
   objectCM.cpp
   objectDataIStream.cpp
   objectDataOStream.cpp
   objectDeltaDataOStream.cpp
+  objectICommand.cpp
+  objectOCommand.cpp
   objectInstanceDataOStream.cpp
   objectMap.cpp
   objectSlaveDataOStream.cpp

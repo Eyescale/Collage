@@ -175,6 +175,19 @@ namespace detail { class Node; }
             ConnectionPtr connection = useMulticast();
             return connection ? connection->send( packet ) : false;
         }
+
+        /**
+         * Send a command with optional data to the node.
+         *
+         * The returned data stream can be used to pass additional data to the
+         * given command. The data will be send after the stream is destroyed,
+         * aka when it is running out of scope.
+         *
+         * @param cmd the node command to execute
+         * @param type the type of object that should handle this command
+         * @return the stream object to pass additional data to
+         */
+        NodeOCommand send( uint32_t cmd, uint32_t type = PACKETTYPE_CO_NODE );
         //@}
 
         CO_API const NodeID& getNodeID() const;
@@ -227,6 +240,11 @@ namespace detail { class Node; }
     };
 
     CO_API std::ostream& operator << ( std::ostream& os, const Node& node );
+}
+
+namespace lunchbox
+{
+template<> inline void byteswap( co::Node*& value ) { /*NOP*/ }
 }
 
 #endif // CO_NODE_H
