@@ -24,18 +24,17 @@
 
 namespace co
 {
-
-// this value is written to the top of the stream
-const signed char magicByte = 'c' | 'o';
-
-// flag for fp serialization
+namespace serialization
+{
+// @internal flag for fp serialization
 const unsigned no_infnan = 64;
+}
 
 /**
- * \brief Exception being thrown when serialization cannot proceed.
+ * \brief Exception thrown when serialization cannot proceed.
  *
  * There are several situations in which the DataStream archives may fail and
- * hence throw an exception:
+ * throw an exception:
  * -# deserialization of an integer value that exceeds the range of the type
  * -# (de)serialization of inf/nan through an archive with no_infnan flag set
  * -# deserialization of a denormalized value without the floating point type

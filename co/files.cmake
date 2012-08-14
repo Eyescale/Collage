@@ -21,6 +21,8 @@ set(CO_PUBLIC_HEADERS
   connectionType.h
   cpuCompressor.h
   dataIStream.h
+  dataIStreamArchive.h
+  dataIStreamArchive.ipp
   dataOStream.h
   dataOStreamArchive.h
   dataOStreamArchive.ipp
@@ -52,8 +54,6 @@ set(CO_PUBLIC_HEADERS
   worker.h
   worker.ipp
   zeroconf.h
-  dataIStreamArchive.h
-  dataIStreamArchive.ipp
   )
 
 set(CO_HEADERS
