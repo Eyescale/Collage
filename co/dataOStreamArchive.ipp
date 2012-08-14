@@ -75,7 +75,7 @@ DataOStreamArchive::save( const T& t )
     typedef typename fp::detail::fp_traits<T>::type traits;
 
     // if the no_infnan flag is set we must throw here
-    if( get_flags() & no_infnan && !fp::isfinite( t ))
+    if( get_flags() & serialization::no_infnan && !fp::isfinite( t ))
         throw DataStreamArchiveException( t );
 
     // if you end here there are three possibilities:

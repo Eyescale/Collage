@@ -19,6 +19,7 @@
 
 #include "array.h"
 #include "dataIStream.h"
+#include "dataStreamArchive.h"
 
 #include <boost/archive/detail/archive_serializer_map.hpp>
 #include <boost/archive/impl/archive_serializer_map.ipp>
@@ -27,7 +28,7 @@ namespace boost
 {
 namespace archive
 {
-template class CO_API detail::archive_serializer_map<co::DataIStreamArchive>;
+template class CO_API detail::archive_serializer_map< co::DataIStreamArchive >;
 }
 }
 
