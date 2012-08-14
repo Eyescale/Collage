@@ -1063,6 +1063,8 @@ bool ObjectStore::_cmdRemoveNode( Command& command )
 
     if( requestID != LB_UNDEFINED_UINT32 )
         _localNode->serveRequest( requestID );
+    else
+        node->unref(); // node was ref'd before LocalNode::_handleDisconnect()
 
     return true;
 }

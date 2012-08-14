@@ -1195,6 +1195,7 @@ void LocalNode::_handleDisconnect()
     if( i != _impl->connectionNodes.end( ))
     {
         NodePtr node = i->second;
+        node->ref(); // extend lifetime to give cmd handler a chance
         send( CMD_NODE_REMOVE_NODE ) << node.get()
                                      << uint32_t( LB_UNDEFINED_UINT32 );
 
