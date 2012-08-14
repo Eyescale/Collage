@@ -33,6 +33,10 @@ public:
     NodeICommand( CommandPtr command );
     virtual ~NodeICommand();
 
+    PacketType getType() const;
+
+    uint32_t getCommand() const;
+
     template< typename T > T get()
     {
         T value;

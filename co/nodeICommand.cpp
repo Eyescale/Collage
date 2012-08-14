@@ -31,6 +31,9 @@ class NodeICommand
 {
 public:
     CommandPtr command;
+
+    PacketType type;
+    uint32_t cmd;
 };
 
 }
@@ -41,13 +44,25 @@ NodeICommand::NodeICommand( CommandPtr command )
 {
     _impl->command = command;
 
-    (*command)->type = get< PacketType >();
-    (*command)->command = get< uint32_t >();
+    *this >> _impl->type >> _impl->cmd;
+
+    (*command)->type = _impl->type;
+    (*command)->command = _impl->cmd;
 }
 
 NodeICommand::~NodeICommand()
 {
     delete _impl;
+}
+
+PacketType NodeICommand::getType() const
+{
+    return _impl->type;
+}
+
+uint32_t NodeICommand::getCommand() const
+{
+    return _impl->cmd;
 }
 
 size_t NodeICommand::nRemainingBuffers() const

@@ -27,28 +27,63 @@ namespace detail
 class NodeOCommand
 {
 public:
-    NodeOCommand( ConnectionPtr connection_, uint32_t type_, uint32_t cmd_ )
-        : connection( connection_ )
-        , type( type_ )
+    NodeOCommand( const uint32_t type_, const uint32_t cmd_ )
+        : type( type_ )
         , cmd( cmd_ )
     {}
 
-    ConnectionPtr connection;
+    NodeOCommand( const NodeOCommand& rhs )
+        : type( rhs.type )
+        , cmd( rhs.cmd )
+    {}
+
     uint32_t type;
     uint32_t cmd;
 };
 
 }
 
-NodeOCommand::NodeOCommand( ConnectionPtr connection, uint32_t type,
-                            uint32_t cmd )
+NodeOCommand::NodeOCommand( ConnectionPtr connection, const uint32_t type,
+                            const uint32_t cmd )
     : DataOStream()
-    , _impl( new detail::NodeOCommand( connection, type, cmd ))
+    , _impl( new detail::NodeOCommand( type, cmd ))
 {
-    _setupConnection( _impl->connection );
+    _setupConnection( connection );
     enableSave();
     _enable();
     *this << type << cmd;
+}
+
+NodeOCommand::NodeOCommand( NodePtr receiver, const bool multicast,
+                            const uint32_t type, const uint32_t cmd )
+    : DataOStream()
+    , _impl( new detail::NodeOCommand( type, cmd ))
+{
+    _setupConnection( receiver, multicast );
+    enableSave();
+    _enable();
+    *this << type << cmd;
+}
+
+NodeOCommand::NodeOCommand( const Connections& connections, const uint32_t type,
+                            const uint32_t cmd )
+    : DataOStream()
+    , _impl( new detail::NodeOCommand( type, cmd ))
+{
+    _setupConnections( connections );
+    enableSave();
+    _enable();
+    *this << type << cmd;
+}
+
+NodeOCommand::NodeOCommand( NodeOCommand const& rhs )
+    : DataOStream()
+    , _impl( new detail::NodeOCommand( *rhs._impl ))
+{
+    _setupConnections( rhs.getConnections( ));
+    enableSave();
+    _enable();
+    *this << _impl->type << _impl->cmd;
 }
 
 NodeOCommand::~NodeOCommand()
@@ -63,14 +98,20 @@ void NodeOCommand::sendData( const void* buffer, const uint64_t size,
     LBASSERT( last );
     LBASSERT( size > 0 );
 
-    _impl->connection->lockSend();
-    // TEMP: signal new datastream 'packet' on the other side
-    uint64_t magicSize = 0;
-    _impl->connection->send( &magicSize, sizeof( uint64_t ), true );
+    for( ConnectionsCIter it = getConnections().begin();
+         it != getConnections().end(); ++it )
+    {
+        ConnectionPtr conn = *it;
 
-    _impl->connection->send( &size, sizeof( uint64_t ), true );
-    _impl->connection->send( buffer, size, true );
-    _impl->connection->unlockSend();
+        conn->lockSend();
+        // TEMP: signal new datastream 'packet' on the other side
+        uint64_t magicSize = 0;
+        conn->send( &magicSize, sizeof( uint64_t ), true );
+
+        conn->send( &size, sizeof( uint64_t ), true );
+        conn->send( buffer, size, true );
+        conn->unlockSend();
+    }
 }
 
 }

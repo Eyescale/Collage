@@ -172,7 +172,7 @@ bool Object::send( NodePtr node, ObjectPacket& packet, const void* data,
 ObjectOCommand Object::send( NodePtr node, uint32_t cmd,
                              const uint32_t instanceID )
 {
-    return ObjectOCommand( node->getConnection(), PACKETTYPE_CO_OBJECT,
+    return ObjectOCommand( node, false, PACKETTYPE_CO_OBJECT,
                            cmd, _id, instanceID );
 }
 

@@ -30,8 +30,17 @@ namespace detail { class NodeOCommand; }
 class NodeOCommand : public DataOStream
 {
 public:
-    NodeOCommand( ConnectionPtr connection, uint32_t type, uint32_t cmd );
+    NodeOCommand( ConnectionPtr connection, const uint32_t type,
+                  const uint32_t cmd );
+
+    NodeOCommand( NodePtr receiver, const bool multicast, const uint32_t type,
+                  const uint32_t cmd );
+
+    NodeOCommand( const Connections& connections, const uint32_t type,
+                  const uint32_t cmd );
+
     NodeOCommand( NodeOCommand const& rhs );
+
     virtual ~NodeOCommand();
 
 protected:

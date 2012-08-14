@@ -103,6 +103,8 @@ struct ObjectDataPacket;
          */
         void _setupConnections( const Nodes& receivers );
 
+        void _setupConnections( const Connections& connections );
+
         /** @internal Set up the connection (list) for one node. */
         void _setupConnection( NodePtr node, const bool useMulticast );
 
@@ -130,6 +132,19 @@ struct ObjectDataPacket;
         /** @internal Reset the whole stream. */
         virtual CO_API void reset();
 
+        const Connections& getConnections() const;
+
+        bool isUncompressed() const;
+
+        uint64_t getNumChunks() const;
+
+        /**
+         * Collect compressed data.
+         * @return the total size of the compressed data.
+         */
+        CO_API uint64_t _getCompressedData( void** chunks,
+                                            uint64_t* chunkSizes ) const;
+
     private:
         detail::DataOStream* const _impl;
 
@@ -156,13 +171,6 @@ struct ObjectDataPacket;
         }
         /** Send the trailing data (packet) to the receivers */
         void _sendFooter( const void* buffer, const uint64_t size );
-
-        /**
-         * Collect compressed data.
-         * @return the total size of the compressed data.
-         */
-        CO_API uint64_t _getCompressedData( void** chunks,
-                                            uint64_t* chunkSizes ) const;
     };
 
     std::ostream& operator << ( std::ostream&, const DataOStream& );

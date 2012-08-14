@@ -201,6 +201,11 @@ void DataOStream::_setupConnections( const Nodes& receivers )
     gatherConnections( receivers, _impl->connections );
 }
 
+void DataOStream::_setupConnections( const Connections& connections )
+{
+    _impl->connections = connections;
+}
+
 void DataOStream::_setupConnection( NodePtr node, const bool useMulticast )
 {
     LBASSERT( _impl->connections.empty( ));
@@ -365,6 +370,22 @@ void DataOStream::reset()
     _resetBuffer();
 }
 
+const Connections& DataOStream::getConnections() const
+{
+    return _impl->connections;
+}
+
+bool DataOStream::isUncompressed() const
+{
+    return _impl->state == STATE_UNCOMPRESSED ||
+           _impl->state == STATE_UNCOMPRESSIBLE;
+}
+
+uint64_t DataOStream::getNumChunks() const
+{
+    return _impl->compressor.getNumResults();
+}
+
 void DataOStream::_resetBuffer()
 {
     _impl->state = STATE_UNCOMPRESSED;
@@ -402,7 +423,7 @@ void DataOStream::sendPacket( ObjectDataPacket& packet, const void* buffer,
 {
     LBASSERT( last || size != 0 );
     if( _impl->connections.empty( ))
-            return;
+        return;
 
 #ifdef EQ_INSTRUMENT_DATAOSTREAM
     nBytesSent += (size * long(_impl->connections.size( )));

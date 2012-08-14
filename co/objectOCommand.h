@@ -30,8 +30,14 @@ namespace detail { class ObjectOCommand; }
 class ObjectOCommand : public NodeOCommand
 {
 public:
-    ObjectOCommand( ConnectionPtr connection, uint32_t type, uint32_t cmd,
-                    const UUID& id, const uint32_t instanceID );
+    ObjectOCommand( NodePtr receiver, const bool multicast, const uint32_t type,
+                    const uint32_t cmd, const UUID& id,
+                    const uint32_t instanceID );
+
+    ObjectOCommand( const Connections& receivers, const uint32_t type,
+                    const uint32_t cmd, const UUID& id,
+                    const uint32_t instanceID );
+
     virtual ~ObjectOCommand();
 
 private:
