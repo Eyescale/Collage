@@ -19,7 +19,7 @@
 
 #include "command.h"
 #include "commands.h"
-#include "objectPackets.h"
+#include "objectDataICommand.h"
 
 #include <co/plugins/compressor.h>
 
@@ -60,24 +60,28 @@ void ObjectDataIStream::addDataPacket( CommandPtr command )
     LB_TS_THREAD( _thread );
     LBASSERT( !isReady( ));
 
-    const ObjectDataPacket* packet = command->get< ObjectDataPacket >();
-#ifndef NDEBUG
+    ObjectDataICommand stream( command );
+#ifndef NDEBUG    
+    const uint128_t& version = stream.getVersion();
+    const uint32_t sequence = stream.getSequence();
+
     if( _commands.empty( ))
     {
-        LBASSERTINFO( packet->sequence == 0, packet );
+        LBASSERT( sequence == 0 );
     }
     else
     {
-        const ObjectDataPacket* previous = 
-            _commands.back()->get< ObjectDataPacket >();
-        LBASSERTINFO( packet->sequence == previous->sequence+1, 
-                      packet->sequence << ", " << previous->sequence );
-        LBASSERT( packet->version == previous->version );
+        ObjectDataICommand previous( _commands.back() );
+        const uint128_t& previousVersion = previous.getVersion();
+        const uint32_t previousSequence = previous.getSequence();
+        LBASSERTINFO( sequence == previousSequence+1,
+                      sequence << ", " << previousSequence );
+        LBASSERT( version == previousVersion );
     }
 #endif
 
     _commands.push_back( command );
-    if( packet->last )
+    if( stream.isLast( ))
         _setReady();
 }
 
@@ -108,8 +112,8 @@ size_t ObjectDataIStream::getDataSize() const
     for( CommandDequeCIter i = _commands.begin(); i != _commands.end(); ++i )
     {
         const CommandPtr command = *i;
-        const ObjectDataPacket* packet = command->get< ObjectDataPacket >();
-        size += packet->dataSize;
+        ObjectDataICommand stream( command );
+        size += stream.getDataSize();
     }
     return size;
 }
@@ -120,8 +124,8 @@ uint128_t ObjectDataIStream::getPendingVersion() const
         return VERSION_INVALID;
 
     const CommandPtr command = _commands.back();
-    const ObjectDataPacket* packet = command->get< ObjectDataPacket >();
-    return packet->version;
+    ObjectDataICommand stream( command );
+    return stream.getVersion();
 }
 
 const CommandPtr ObjectDataIStream::getNextCommand()
@@ -143,30 +147,32 @@ bool ObjectDataIStream::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
     if( !command )
         return false;
 
-    const ObjectDataPacket* packet = command->get< ObjectDataPacket >();
-    LBASSERT( packet->command == CMD_OBJECT_INSTANCE ||
-              packet->command == CMD_OBJECT_DELTA ||
-              packet->command == CMD_OBJECT_SLAVE_DELTA );
+    ObjectDataICommand stream( command );
 
-    if( packet->dataSize == 0 ) // empty packet
+    LBASSERT( stream.getCommand() == CMD_OBJECT_INSTANCE ||
+              stream.getCommand() == CMD_OBJECT_DELTA ||
+              stream.getCommand() == CMD_OBJECT_SLAVE_DELTA );
+
+    const uint64_t dataSize = stream.getDataSize();
+
+    if( dataSize == 0 ) // empty packet
         return getNextBuffer( compressor, nChunks, chunkData, size );
 
-    *size = packet->dataSize;
-    *compressor = packet->compressorName;
-    *nChunks = packet->nChunks;
-    *size = packet->dataSize;
-    switch( packet->command )
+    *size = dataSize;
+    *compressor = stream.getCompressor();
+    *nChunks = stream.getChunks();
+    switch( stream.getCommand( ))
     {
-      case CMD_OBJECT_INSTANCE:
-        *chunkData = command->get< ObjectInstancePacket >()->data;
+    case CMD_OBJECT_INSTANCE:
+        stream.get< NodeID >();
+        stream.get< uint32_t >();
         break;
-      case CMD_OBJECT_DELTA:
-        *chunkData = command->get< ObjectDeltaPacket >()->data;
-        break;
-      case CMD_OBJECT_SLAVE_DELTA:
-        *chunkData = command->get< ObjectSlaveDeltaPacket >()->data;
+    case CMD_OBJECT_SLAVE_DELTA:
+        stream.get< UUID >();
         break;
     }
+    *chunkData = stream.getRemainingBuffer( dataSize );
+
     return true;
 }
 

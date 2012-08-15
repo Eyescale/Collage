@@ -20,12 +20,10 @@
 #include "command.h"
 #include "log.h"
 #include "node.h"
-#include "nodePackets.h"
 #include "object.h"
 #include "objectDataIStream.h"
 #include "objectDeltaDataOStream.h"
 #include "objectInstanceDataOStream.h"
-#include "objectPackets.h"
 
 namespace co
 {

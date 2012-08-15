@@ -23,7 +23,6 @@
 #include "nodePackets.h"
 #include "object.h"
 #include "objectDataIStream.h"
-#include "objectPackets.h"
 
 //#define EQ_INSTRUMENT
 

@@ -31,7 +31,8 @@
 
 #include <lunchbox/thread.h>
 
-#include <co/objectPackets.h> // private header
+#include <co/objectDataOCommand.h> // private header
+#include <co/objectDataICommand.h> // private header
 #include <co/cpuCompressor.h> // private header
 
 // Tests the functionality of the DataOStream and DataIStream
@@ -49,8 +50,11 @@ protected:
     virtual void sendData( const void* buffer, const uint64_t size,
                            const bool last )
         {
-            co::ObjectDeltaPacket packet;
-            sendPacket( packet, buffer, size, last );
+            co::ObjectDataOCommand command( getConnections(),
+                                            co::PACKETTYPE_CO_OBJECT,
+                                            co::CMD_OBJECT_DELTA, co::UUID(),
+                                            0, co::uint128_t(), 0, size, last,
+                                            buffer, this );
         }
 };
 
@@ -75,14 +79,14 @@ protected:
             if( !command )
                 return false;
 
-            TESTINFO( (*command)->command == co::CMD_OBJECT_DELTA, *command );
+            co::ObjectDataICommand stream( command );
 
-            const co::ObjectDeltaPacket* packet =
-                command->get< co::ObjectDeltaPacket >();
-            *compressor = packet->compressorName;
-            *nChunks = packet->nChunks;
-            *size = packet->dataSize;
-            *chunkData = packet->data;
+            TEST( stream.getCommand() == co::CMD_OBJECT_DELTA );
+
+            *size = stream.getDataSize();
+            *compressor = stream.getCompressor();
+            *nChunks = stream.getChunks();
+            *chunkData = stream.getRemainingBuffer( *size );
             return true;
         }
 
@@ -154,12 +158,16 @@ int main( int argc, char **argv )
     while( receiving )
     {
         uint64_t size;
+        // TEMP: check for new datastream 'packet'
+        connection->recvNB( &size, sizeof( size ));
+        TEST( connection->recvSync( 0, 0 ));
+        TEST( size == 0 );
+
         connection->recvNB( &size, sizeof( size ));
         TEST( connection->recvSync( 0, 0 ));
         TEST( size );
 
         co::CommandPtr command = commandCache.alloc( 0, 0, size );
-        size -= sizeof( size );
 
         char* ptr = reinterpret_cast< char* >(
             command->getModifiable< co::Packet >( )) + sizeof( size );
@@ -169,11 +177,14 @@ int main( int argc, char **argv )
         
         switch( (*command)->command )
         {
-          case co::CMD_OBJECT_DELTA:
+            case co::CMD_OBJECT_DELTA:
+            {
                 stream.addDataCommand( command );
                 TEST( !command->isFree( ));
-                receiving = !command->get< co::ObjectDeltaPacket >()->last;
+                co::ObjectDataICommand streamPkg( command );
+                receiving = !streamPkg.isLast();
                 break;
+            }
             default:
                 TEST( false );
         }

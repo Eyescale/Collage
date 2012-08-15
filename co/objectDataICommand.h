@@ -15,37 +15,40 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_NODEOCOMMAND_H
-#define CO_NODEOCOMMAND_H
+#ifndef CO_OBJECTDATAICOMMAND_H
+#define CO_OBJECTDATAICOMMAND_H
 
-#include <co/dataOStream.h>   // base class
-#include <co/nodeCommand.h>   // CMD enums
+#include <co/objectICommand.h>   // base class
+#include <co/objectCommand.h>    // CMD enums
+
 
 namespace co
 {
 
-namespace detail { class NodeOCommand; }
+namespace detail { class ObjectDataICommand; }
 
-/** A DataOStream based command for co::Node. */
-class NodeOCommand : public DataOStream
+/** */
+class ObjectDataICommand : public ObjectICommand
 {
 public:
-    NodeOCommand( const Connections& connections, const uint32_t type,
-                  const uint32_t cmd );
+    ObjectDataICommand( CommandPtr command );
+    virtual ~ObjectDataICommand();
 
-    NodeOCommand( NodeOCommand const& rhs );
+    virtual uint128_t getVersion() const;
 
-    virtual ~NodeOCommand();
+    uint32_t getSequence() const;
 
-protected:
-    virtual void sendData( const void* buffer, const uint64_t size,
-                           const bool last );
+    uint64_t getDataSize() const;
+
+    uint32_t getCompressor() const;
+
+    uint32_t getChunks() const;
+
+    bool isLast() const;
 
 private:
-    detail::NodeOCommand* const _impl;
-
-    void _init();
+    detail::ObjectDataICommand* const _impl;
 };
 }
 
-#endif //CO_NODEOCOMMAND_H
+#endif //CO_OBJECTDATAICOMMAND_H

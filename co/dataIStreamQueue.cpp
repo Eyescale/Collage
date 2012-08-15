@@ -18,7 +18,6 @@
 #include "dataIStreamQueue.h"
 
 #include "command.h"
-#include "objectPackets.h"
 #include "objectDataIStream.h"
 
 namespace co

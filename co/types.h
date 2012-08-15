@@ -53,6 +53,7 @@ class Object;
 class ObjectFactory;
 class ObjectHandler;
 class ObjectDataIStream;
+class ObjectDataOCommand;
 class ObjectICommand;
 class ObjectOCommand;
 class Plugin;        //!< @internal

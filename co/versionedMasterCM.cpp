@@ -21,8 +21,7 @@
 #include "log.h"
 #include "nodePackets.h"
 #include "object.h"
-#include "objectPackets.h"
-#include "objectICommand.h"
+#include "objectDataICommand.h"
 #include "objectDataIStream.h"
 
 namespace co
@@ -192,10 +191,10 @@ void VersionedMasterCM::_updateMaxVersion()
 bool VersionedMasterCM::_cmdSlaveDelta( Command& command )
 {
     LB_TS_THREAD( _rcvThread );
-    const ObjectSlaveDeltaPacket* packet = 
-        command.get< ObjectSlaveDeltaPacket >();
 
-    if( _slaveCommits.addDataPacket( packet->commit, command ))
+    ObjectDataICommand stream( &command );
+
+    if( _slaveCommits.addDataPacket( stream.get< UUID >(), command ))
         _object->notifyNewVersion();
     return true;
 }

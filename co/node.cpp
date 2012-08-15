@@ -19,7 +19,6 @@
 
 #include "connectionDescription.h"
 #include "nodeOCommand.h"
-#include "nodePackets.h"
 
 #include <lunchbox/scopedMutex.h>
 
@@ -135,7 +134,8 @@ ConnectionPtr Node::useMulticast()
            << data.connection->getDescription() << std::endl;
 
     {
-        NodeOCommand packet( data.connection, PACKETTYPE_CO_NODE, CMD_NODE_ID );
+        NodeOCommand packet( Connections( 1, data.connection ),
+                             PACKETTYPE_CO_NODE, CMD_NODE_ID );
         packet << node->getNodeID() << getType() << node->serialize();
     }
 
@@ -243,7 +243,7 @@ ConnectionPtr Node::getMulticast() const
 
 NodeOCommand Node::send( uint32_t cmd, uint32_t type )
 {
-    return NodeOCommand( getConnection(), type, cmd );
+    return NodeOCommand( Connections( 1, getConnection( )), type, cmd );
 }
 
 const NodeID& Node::getNodeID() const

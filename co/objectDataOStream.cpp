@@ -20,7 +20,7 @@
 
 #include "log.h"
 #include "objectCM.h"
-#include "objectPackets.h"
+#include "objectDataOCommand.h"
 
 #include <co/plugins/compressorTypes.h>
 
@@ -54,16 +54,21 @@ void ObjectDataOStream::enableCommit( const uint128_t& version,
     _enable();
 }
 
-void ObjectDataOStream::sendData( ObjectDataPacket& packet, const void* buffer,
-                                  const uint64_t size, const bool last )
+ObjectDataOCommand ObjectDataOStream::send( const uint32_t cmd,
+                                            const uint32_t type,
+                                            const uint32_t instanceID,
+                                            const uint64_t size,
+                                            const bool last,
+                                            const void* buffer )
 {
     LBASSERT( _version != VERSION_INVALID );
-    packet.version = _version;
-    packet.sequence = _sequence++;
-    packet.objectID  = _cm->getObject()->getID();
-    DataOStream::sendPacket( packet, buffer, size, last );
+    uint32_t sequence = _sequence++;
     if( last )
         _sequence = 0;
+
+    return ObjectDataOCommand( getConnections(), type, cmd,
+                                _cm->getObject()->getID(), instanceID, _version,
+                                sequence, size, last, buffer, this );
 }
 
 }

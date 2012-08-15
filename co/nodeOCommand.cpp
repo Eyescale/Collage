@@ -43,37 +43,13 @@ public:
 
 }
 
-NodeOCommand::NodeOCommand( ConnectionPtr connection, const uint32_t type,
-                            const uint32_t cmd )
-    : DataOStream()
-    , _impl( new detail::NodeOCommand( type, cmd ))
-{
-    _setupConnection( connection );
-    enableSave();
-    _enable();
-    *this << type << cmd;
-}
-
-NodeOCommand::NodeOCommand( NodePtr receiver, const bool multicast,
-                            const uint32_t type, const uint32_t cmd )
-    : DataOStream()
-    , _impl( new detail::NodeOCommand( type, cmd ))
-{
-    _setupConnection( receiver, multicast );
-    enableSave();
-    _enable();
-    *this << type << cmd;
-}
-
 NodeOCommand::NodeOCommand( const Connections& connections, const uint32_t type,
                             const uint32_t cmd )
     : DataOStream()
     , _impl( new detail::NodeOCommand( type, cmd ))
 {
     _setupConnections( connections );
-    enableSave();
-    _enable();
-    *this << type << cmd;
+    _init();
 }
 
 NodeOCommand::NodeOCommand( NodeOCommand const& rhs )
@@ -81,15 +57,20 @@ NodeOCommand::NodeOCommand( NodeOCommand const& rhs )
     , _impl( new detail::NodeOCommand( *rhs._impl ))
 {
     _setupConnections( rhs.getConnections( ));
-    enableSave();
-    _enable();
-    *this << _impl->type << _impl->cmd;
+    _init();
 }
 
 NodeOCommand::~NodeOCommand()
 {
     disable();
     delete _impl;
+}
+
+void NodeOCommand::_init()
+{
+    enableSave();
+    _enable();
+    *this << _impl->type << _impl->cmd;
 }
 
 void NodeOCommand::sendData( const void* buffer, const uint64_t size,

@@ -30,15 +30,6 @@ class ObjectOCommand
 
 }
 
-ObjectOCommand::ObjectOCommand( NodePtr receiver, const bool multicast,
-                                const uint32_t type, const uint32_t cmd,
-                                const UUID& id, const uint32_t instanceID )
-    : NodeOCommand( receiver, multicast, type, cmd )
-    , _impl( new detail::ObjectOCommand )
-{
-    *this << id << instanceID;
-}
-
 ObjectOCommand::ObjectOCommand( const Connections& receivers,
                                 const uint32_t type, const uint32_t cmd,
                                 const UUID& id, const uint32_t instanceID )

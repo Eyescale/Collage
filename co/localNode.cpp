@@ -1025,7 +1025,8 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
 
     // send connect packet to peer
     {
-        NodeOCommand packet( connection, PACKETTYPE_CO_NODE, CMD_NODE_CONNECT );
+        NodeOCommand packet( Connections( 1, connection ), PACKETTYPE_CO_NODE,
+                             CMD_NODE_CONNECT );
         packet << getNodeID() << requestID << getType() << serialize();
     }
 
@@ -1506,8 +1507,8 @@ bool LocalNode::_cmdConnect( Command& command )
 
             // refuse connection
             {
-                NodeOCommand reply( connection, PACKETTYPE_CO_NODE,
-                                    CMD_NODE_CONNECT_REPLY );
+                NodeOCommand reply( Connections( 1, connection ),
+                                    PACKETTYPE_CO_NODE, CMD_NODE_CONNECT_REPLY);
                 reply << nodeID << requestID << nodeType;
             }
 
@@ -1538,7 +1539,7 @@ bool LocalNode::_cmdConnect( Command& command )
 
     // send our information as reply
     {
-        NodeOCommand reply( connection, PACKETTYPE_CO_NODE,
+        NodeOCommand reply( Connections( 1, connection ), PACKETTYPE_CO_NODE,
                             CMD_NODE_CONNECT_REPLY );
         reply << getNodeID() << requestID << getType() << serialize();
     }

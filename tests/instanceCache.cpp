@@ -30,7 +30,6 @@
 #include <lunchbox/rng.h>
 #include <lunchbox/thread.h>
 
-#include <co/objectPackets.h> // private header
 
 // Tests the functionality of the instance cache
 
@@ -84,16 +83,16 @@ int main( int argc, char **argv )
     co::CommandCache commandCache;
     co::LocalNodePtr node = new co::LocalNode;
 
-    co::ObjectInstancePacket pkg( co::NodeID::ZERO, 0 );
-    pkg.last = true;
-    pkg.dataSize = PACKET_SIZE;
-    pkg.version = 1;
-    pkg.sequence = 0;
+//    co::ObjectInstancePacket pkg( co::NodeID::ZERO, 0 );
+//    pkg.last = true;
+//    pkg.dataSize = PACKET_SIZE;
+//    pkg.version = 1;
+//    pkg.sequence = 0;
 
     co::CommandPtr command = commandCache.alloc( node, node, PACKET_SIZE );
-    co::ObjectInstancePacket* packet =
-        command->getModifiable< co::ObjectInstancePacket >();
-    memcpy( packet, &pkg, sizeof( pkg ));
+//    co::ObjectInstancePacket* packet =
+//        command->getModifiable< co::ObjectInstancePacket >();
+//    memcpy( packet, &pkg, sizeof( pkg ));
 
     Reader** readers = static_cast< Reader** >( 
         alloca( N_READER * sizeof( Reader* )));

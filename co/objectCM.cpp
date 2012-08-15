@@ -23,7 +23,7 @@
 #include "nodePackets.h"
 #include "object.h"
 #include "objectInstanceDataOStream.h"
-#include "objectPackets.h"
+#include "objectDataOCommand.h"
 
 co::ObjectCM* co::ObjectCM::ZERO = new co::NullCM;
 
@@ -50,8 +50,10 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
     os.enablePush( getVersion(), nodes );
     _object->getInstanceData( os );
 
-    NodeObjectPushPacket pushPacket( _object->getID(), groupID, typeID );
-    os.disable( pushPacket );
+    NodeOCommand cmd( os.getConnections(), PACKETTYPE_CO_NODE,
+                      CMD_NODE_OBJECT_PUSH );
+    cmd << _object->getID() << groupID << typeID;
+    os.disable();
 }
 
 void ObjectCM::_addSlave( Command& command, const uint128_t& version )
@@ -146,16 +148,15 @@ void ObjectCM::_sendEmptyVersion( NodePtr node, const uint32_t instanceID,
                                   const uint128_t& version,
                                   const bool multicast )
 {
-    ObjectInstancePacket packet( NodeID::ZERO, _object->getInstanceID( ));
-    packet.type = PACKETTYPE_CO_OBJECT;
-    packet.command = CMD_OBJECT_INSTANCE;
-    packet.last = true;
-    packet.version = version;
-    packet.objectID = _object->getID();
-    packet.instanceID = instanceID;
+    ConnectionPtr connection = multicast ? node->useMulticast() : 0;
+    if( !connection )
+        connection = node->getConnection();
+    Connections connections( 1, connection );
 
-    if( !multicast || !node->multicast( packet ))
-        node->send( packet );
+    ObjectDataOCommand command( connections, PACKETTYPE_CO_OBJECT,
+                                CMD_OBJECT_INSTANCE, _object->getID(),
+                                instanceID, version, 0, 0, true, 0, 0 );
+    command << NodeID::ZERO << _object->getInstanceID();
 }
 
 }

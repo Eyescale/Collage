@@ -30,8 +30,8 @@
 #include "nodeOCommand.h"
 #include "objectCM.h"
 #include "objectDataIStream.h"
+#include "objectDataICommand.h"
 #include "objectICommand.h"
-#include "objectPackets.h"
 
 #include <lunchbox/scopedMutex.h>
 
@@ -968,48 +968,49 @@ bool ObjectStore::_cmdInstance( Command& command )
 {
     LB_TS_THREAD( _receiverThread );
     LBASSERT( _localNode );
+    LBLOG( LOG_OBJECTS ) << "Cmd instance " << command << std::endl;
 
-    ObjectInstancePacket* packet =
-        command.getModifiable< ObjectInstancePacket >();
-    LBLOG( LOG_OBJECTS ) << "Cmd instance " << packet << std::endl;
+    ObjectDataICommand stream( &command );
 
-    const uint32_t type = packet->command;
+    const NodeID& nodeID = stream.get< NodeID >();
+    const uint32_t masterInstanceID = stream.get< uint32_t >();
+    const uint32_t instanceID = stream.getInstanceID();
 
-    packet->type = PACKETTYPE_CO_OBJECT;
-    packet->command = CMD_OBJECT_INSTANCE;
-    const ObjectVersion rev( packet->objectID, packet->version ); 
+    command->type = PACKETTYPE_CO_OBJECT;
+    command->command = CMD_OBJECT_INSTANCE;
 
     if( _instanceCache )
     {
+        const ObjectVersion rev( stream.getObjectID(), stream.getVersion( ));
 #ifndef CO_AGGRESSIVE_CACHING // Issue #82: 
         if( type != CMD_NODE_OBJECT_INSTANCE_PUSH )
 #endif
-            _instanceCache->add( rev, packet->masterInstanceID, &command, 0 );
+            _instanceCache->add( rev, masterInstanceID, &command, 0 );
     }
 
-    switch( type )
+    switch( stream.getCommand( ))
     {
       case CMD_NODE_OBJECT_INSTANCE:
-        LBASSERT( packet->nodeID == NodeID::ZERO );
-        LBASSERT( packet->instanceID == EQ_INSTANCE_NONE );
+        LBASSERT( nodeID == NodeID::ZERO );
+        LBASSERT( instanceID == EQ_INSTANCE_NONE );
         return true;
 
       case CMD_NODE_OBJECT_INSTANCE_MAP:
-        if( packet->nodeID != _localNode->getNodeID( )) // not for me
+        if( nodeID != _localNode->getNodeID( )) // not for me
             return true;
 
-        LBASSERT( packet->instanceID <= EQ_INSTANCE_MAX );
+        LBASSERT( instanceID <= EQ_INSTANCE_MAX );
         return dispatchObjectCommand( &command );
 
       case CMD_NODE_OBJECT_INSTANCE_COMMIT:
-        LBASSERT( packet->nodeID == NodeID::ZERO );
-        LBASSERT( packet->instanceID == EQ_INSTANCE_NONE );
+        LBASSERT( nodeID == NodeID::ZERO );
+        LBASSERT( instanceID == EQ_INSTANCE_NONE );
         return dispatchObjectCommand( &command );
 
       case CMD_NODE_OBJECT_INSTANCE_PUSH:
-        LBASSERT( packet->nodeID == NodeID::ZERO );
-        LBASSERT( packet->instanceID == EQ_INSTANCE_NONE );
-        _pushData.addDataPacket( packet->objectID, command );
+        LBASSERT( nodeID == NodeID::ZERO );
+        LBASSERT( instanceID == EQ_INSTANCE_NONE );
+        _pushData.addDataPacket( stream.getObjectID(), command );
         return true;
 
       default:
@@ -1072,11 +1073,15 @@ bool ObjectStore::_cmdRemoveNode( Command& command )
 bool ObjectStore::_cmdObjectPush( Command& command )
 {
     LB_TS_THREAD( _commandThread );
-    const NodeObjectPushPacket* packet = command.get< NodeObjectPushPacket >();
-    ObjectDataIStream* is = _pushData.pull( packet->objectID );
+
+    NodeICommand stream( &command );
+    const uint128_t& objectID = stream.get< uint128_t >();
+    const uint128_t& groupID = stream.get< uint128_t >();
+    const uint128_t& typeID = stream.get< uint128_t >();
+
+    ObjectDataIStream* is = _pushData.pull( objectID );
     
-    _localNode->objectPush( packet->groupID, packet->typeID, packet->objectID,
-                            *is );
+    _localNode->objectPush( groupID, typeID, objectID, *is );
     _pushData.recycle( is );
     return true;
 }

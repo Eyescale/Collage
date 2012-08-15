@@ -147,32 +147,12 @@ void Object::setID( const UUID& identifier )
     _id = identifier;
 }
 
-bool Object::send( NodePtr node, ObjectPacket& packet )
-{
-    LBASSERT( isAttached( ));
-    packet.objectID = _id;
-    return node->send( packet );
-}
-
-bool Object::send( NodePtr node, ObjectPacket& packet, const std::string& string)
-{
-    LBASSERT( isAttached() );
-    packet.objectID  = _id;
-    return node->send( packet, string );
-}
-
-bool Object::send( NodePtr node, ObjectPacket& packet, const void* data,
-                   const uint64_t size )
-{
-    LBASSERT( isAttached() );
-    packet.objectID  = _id;
-    return node->send( packet, data, size );
-}
-
 ObjectOCommand Object::send( NodePtr node, uint32_t cmd,
                              const uint32_t instanceID )
 {
-    return ObjectOCommand( node, false, PACKETTYPE_CO_OBJECT,
+    LBASSERT( isAttached() );
+    Connections connections( 1, node->getConnection() );
+    return ObjectOCommand( connections, PACKETTYPE_CO_OBJECT,
                            cmd, _id, instanceID );
 }
 

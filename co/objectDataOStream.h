@@ -23,8 +23,6 @@
 
 namespace co
 {
-    struct ObjectDataPacket;
-
     /** The DataOStream for object data. */
     class ObjectDataOStream : public DataOStream
     {
@@ -41,8 +39,9 @@ namespace co
         uint128_t getVersion() const { return _version; }
 
     protected:
-        void sendData( ObjectDataPacket& packet, const void* buffer,
-                       const uint64_t size, const bool last );
+        ObjectDataOCommand send( const uint32_t cmd, const uint32_t type,
+                                 const uint32_t instanceID, const uint64_t size,
+                                 const bool last, const void* buffer );
 
         const ObjectCM* _cm;
         uint128_t _version;

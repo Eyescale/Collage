@@ -21,8 +21,7 @@
 #include "log.h"
 #include "object.h"
 #include "objectDataIStream.h"
-#include "objectOCommand.h"
-#include "objectPackets.h"
+#include "objectDataOCommand.h"
 #include <lunchbox/scopedMutex.h>
 #include <limits>
 

@@ -31,7 +31,6 @@ namespace co
 {
 namespace detail { class DataOStream; }
 namespace DataStreamTest { class Sender; }
-struct ObjectDataPacket;
 
     /**
      * A std::ostream-like interface for object serialization.
@@ -58,6 +57,23 @@ struct ObjectDataPacket;
 
         /** @internal @return if data was sent since the last enable() */
         CO_API bool hasSentData() const;
+
+        /** @internal */
+        const Connections& getConnections() const;
+
+        /** @internal */
+        uint32_t getCompressor() const;
+
+        /** @internal */
+        uint32_t getNumChunks() const;
+
+        /**
+         * Collect compressed data.
+         * @return the total size of the compressed data.
+         * @internal
+         */
+        CO_API uint64_t getCompressedData( void** chunks,
+                                            uint64_t* chunkSizes ) const;
         //@}
 
         /** @name Data output */
@@ -124,26 +140,10 @@ struct ObjectDataPacket;
         virtual void sendData( const void* buffer, const uint64_t size,
                                const bool last ) = 0;
 
-        /** @internal */
-        CO_API void sendPacket( ObjectDataPacket& packet, const void* buffer,
-                                const uint64_t size, const bool last );
         //@}
 
         /** @internal Reset the whole stream. */
         virtual CO_API void reset();
-
-        const Connections& getConnections() const;
-
-        bool isUncompressed() const;
-
-        uint64_t getNumChunks() const;
-
-        /**
-         * Collect compressed data.
-         * @return the total size of the compressed data.
-         */
-        CO_API uint64_t _getCompressedData( void** chunks,
-                                            uint64_t* chunkSizes ) const;
 
     private:
         detail::DataOStream* const _impl;

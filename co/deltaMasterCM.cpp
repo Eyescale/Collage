@@ -23,7 +23,6 @@
 #include "node.h"
 #include "object.h"
 #include "objectDataIStream.h"
-#include "objectPackets.h"
 
 namespace co
 {
