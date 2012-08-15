@@ -25,6 +25,7 @@ namespace plugin
 {
 namespace
 {
+#ifndef __xlC__
 static void _getInfo( EqCompressorInfo* const info )
 {
     info->version = EQ_COMPRESSOR_VERSION;
@@ -48,6 +49,7 @@ static bool _register()
 }
 
 static const bool _initialized = _register();
+#endif
 }
 
 void CompressorSnappy::compress( const void* const inData,

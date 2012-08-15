@@ -844,7 +844,7 @@ static bool InternalUncompress(Source* r,
 }
 
 template <typename Writer>
-static bool InternalUncompressAllTags(SnappyDecompressor* decompressor,
+bool InternalUncompressAllTags(SnappyDecompressor* decompressor,
                                       Writer* writer,
                                       uint32 uncompressed_len,
                                       uint32 max_len) {
