@@ -94,7 +94,7 @@ CommandPtr QueueSlave::pop()
         CommandPtr cmd = _impl->queue.pop();
         if( (*cmd)->command == CMD_QUEUE_ITEM )
             return cmd;
-    
+
         LBASSERT( (*cmd)->command == CMD_QUEUE_EMPTY );
         ObjectICommand stream( cmd );
         const int32_t requestID = stream.get< int32_t >();

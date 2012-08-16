@@ -22,8 +22,9 @@
 #include "commandCache.h"
 #include "dataOStream.h"
 #include "objectICommand.h"
-#include "nodeOCommand.h"
-#include "queuePackets.h"
+#include "objectOCommand.h"
+#include "queueCommand.h"
+#include "queueItem.h"
 
 #include <lunchbox/mtQueue.h>
 
@@ -34,6 +35,11 @@ namespace detail
 class QueueMaster : public co::Dispatcher
 {
 public:
+    QueueMaster( const UUID& masterID_ )
+        : co::Dispatcher()
+        , masterID( masterID_ )
+    {}
+
     /** The command handler functions. */
     bool cmdGetItem( Command& command )
     {
@@ -42,32 +48,38 @@ public:
         const uint32_t slaveInstanceID = stream.get< uint32_t >();
         const int32_t requestID = stream.get< int32_t >();
 
-        Commands commands;
-        queue.tryPop( itemsRequested, commands );
+        typedef std::vector< lunchbox::Bufferb* > Items;
+        Items items;
+        queue.tryPop( itemsRequested, items );
 
-        for( CommandsCIter i = commands.begin(); i != commands.end(); ++i )
+        for( Items::const_iterator i = items.begin(); i != items.end(); ++i )
         {
-            CommandPtr item = *i;
-            ObjectPacket* reply = item->getModifiable< ObjectPacket >();
-            reply->instanceID = slaveInstanceID;
-            command.getNode()->send( *reply );
+            Connections connections( 1, command.getNode()->getConnection( ));
+            co::ObjectOCommand cmd( connections, PACKETTYPE_CO_OBJECT,
+                                    CMD_QUEUE_ITEM, masterID, slaveInstanceID );
+
+            const lunchbox::Bufferb* item = *i;
+            if( !item->isEmpty( ))
+                cmd << Array< const void >( item->getData(), item->getSize( ));
+            delete item;
         }
 
-        if( itemsRequested > commands.size( ))
+        if( itemsRequested > items.size( ))
             command.getNode()->send( CMD_QUEUE_EMPTY, PACKETTYPE_CO_OBJECT )
                     << stream.getObjectID() << slaveInstanceID << requestID;
         return true;
     }
 
-    typedef lunchbox::MTQueue< CommandPtr > PacketQueue;
+    typedef lunchbox::MTQueue< lunchbox::Bufferb* > ItemQueue;
 
-    PacketQueue queue;
+    const UUID& masterID;
+    ItemQueue queue;
     co::CommandCache cache;
 };
 }
 
 QueueMaster::QueueMaster()
-        : _impl( new detail::QueueMaster )
+    : _impl( new detail::QueueMaster( getID( )) )
 {
 }
 
@@ -98,18 +110,15 @@ void QueueMaster::getInstanceData( co::DataOStream& os )
     os << getInstanceID() << getLocalNode()->getNodeID();
 }
 
-void QueueMaster::push( const QueueItemPacket& packet )
+QueueItem QueueMaster::push()
 {
-    LBASSERT( packet.size >= sizeof( QueueItemPacket ));
-    LBASSERT( packet.command == CMD_QUEUE_ITEM );
+    return QueueItem( *this );
+}
 
-    CommandPtr command = _impl->cache.alloc( getLocalNode(), getLocalNode(),
-                                             packet.size );
-    QueueItemPacket* queuePacket = command->getModifiable< QueueItemPacket >();
-
-    memcpy( queuePacket, &packet, packet.size );
-    queuePacket->objectID = getID();
-    _impl->queue.push( command );
+void QueueMaster::_addItem( QueueItem& item )
+{
+    lunchbox::Bufferb* newBuffer = new lunchbox::Bufferb( item.getBuffer( ));
+    _impl->queue.push( newBuffer );
 }
 
 } // co

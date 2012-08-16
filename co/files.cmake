@@ -53,7 +53,7 @@ set(CO_PUBLIC_HEADERS
   pluginRegistry.h
   queueCommand.h
   queueMaster.h
-  queuePackets.h
+  queueItem.h
   queueSlave.h
   serializable.h
   types.h
@@ -132,6 +132,7 @@ set(CO_SOURCES
   pipeConnection.cpp
   plugin.cpp
   pluginRegistry.cpp
+  queueItem.cpp
   queueMaster.cpp
   queueSlave.cpp
   serializable.cpp

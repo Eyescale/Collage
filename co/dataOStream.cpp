@@ -426,6 +426,11 @@ uint64_t DataOStream::getCompressedData( void** chunks, uint64_t* chunkSizes )
     return dataSize;
 }
 
+lunchbox::Bufferb& DataOStream::getBuffer()
+{
+    return _impl->buffer;
+}
+
 std::ostream& operator << ( std::ostream& os, const DataOStream& dataOStream )
 {
     os << "DataOStream "

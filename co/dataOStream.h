@@ -74,6 +74,9 @@ namespace DataStreamTest { class Sender; }
          */
         CO_API uint64_t getCompressedData( void** chunks,
                                             uint64_t* chunkSizes ) const;
+
+        /** @internal */
+        lunchbox::Bufferb& getBuffer();
         //@}
 
         /** @name Data output */

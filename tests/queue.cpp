@@ -22,8 +22,9 @@
 #include <co/connectionDescription.h>
 #include <co/init.h>
 #include <co/node.h>
+#include <co/objectICommand.h>
+#include <co/queueItem.h>
 #include <co/queueMaster.h>
-#include <co/queuePackets.h>
 #include <co/queueSlave.h>
 #include <lunchbox/sleep.h>
 
@@ -41,11 +42,10 @@ int main( int argc, char **argv )
     node->registerObject(qm);
     node->mapObject(qs, qm->getID(), co::VERSION_FIRST);
 
-    co::QueueItemPacket p1, p2, p3, p4;
-    qm->push(p1);
-    qm->push(p2);
-    qm->push(p3);
-    qm->push(p4);
+    qm->push();
+    qm->push() << 42u;
+    qm->push() << std::string( "hallo" );
+    qm->push() << 1.5f << false << co::VERSION_FIRST;
 
     {
         co::CommandPtr c1 = qs->pop();
@@ -56,8 +56,16 @@ int main( int argc, char **argv )
 
         TEST( c1 );
         TEST( c2 );
+        co::ObjectICommand c2cmd( c2 );
+        TEST( c2cmd.get< uint32_t >() == 42 )
         TEST( c3 );
+        co::ObjectICommand c3cmd( c3 );
+        TEST( c3cmd.get< std::string >() == "hallo" )
         TEST( c4 );
+        co::ObjectICommand c4cmd( c4 );
+        TEST( c4cmd.get< float >() == 1.5f )
+        TEST( c4cmd.get< bool >() == false )
+        TEST( c4cmd.get< co::uint128_t >() == co::VERSION_FIRST )
         TEST( !c5 );
     }
 
