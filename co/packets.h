@@ -63,23 +63,6 @@ namespace co
         NodePacket() { type = PACKETTYPE_CO_NODE; }
     };
 
-    /** Packet sent to and handled by an co::Object. */
-    struct ObjectPacket : public NodePacket
-    {
-        ObjectPacket()
-                : instanceID( EQ_INSTANCE_ALL )
-                , pad( 0 ) // valgrind: write points to uninitialised byte(s)
-            {
-                type = PACKETTYPE_CO_OBJECT; 
-            }
-        UUID objectID;
-        uint32_t instanceID;
-        const uint32_t pad; // pad to multiple-of-eight
-
-    private:
-        ObjectPacket& operator= ( ObjectPacket const& );
-    };
-
     //------------------------------------------------------------
     // ostream operators
     //------------------------------------------------------------
@@ -94,13 +77,6 @@ namespace co
                                        const NodePacket* packet )
     {
         os << (Packet*)packet;
-        return os;
-    }
-    inline std::ostream& operator << ( std::ostream& os, 
-                                       const ObjectPacket* packet )
-    {
-        os << (NodePacket*)packet << " object " << packet->objectID
-           << "." << packet->instanceID;
         return os;
     }
 }

@@ -130,10 +130,6 @@ std::ostream& operator << ( std::ostream& os, const Command& command )
                 os << static_cast< const NodePacket* >( packet );
                 break;
 
-            case PACKETTYPE_CO_OBJECT:
-                os << static_cast< const ObjectPacket* >( packet );
-                break;
-
             default:
                 os << packet;
         }
