@@ -19,7 +19,7 @@
 #define CO_NODEOCOMMAND_H
 
 #include <co/dataOStream.h>   // base class
-#include <co/nodeCommand.h>   // CMD enums
+
 
 namespace co
 {

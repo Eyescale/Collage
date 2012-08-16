@@ -237,20 +237,6 @@ void DataOStream::disable()
     _impl->connections.clear();
 }
 
-
-void DataOStream::disable( const Packet& packet )
-{
-    if( !_disable( ))
-        return;
-    _send( packet );
-    _impl->connections.clear();
-}
-
-void DataOStream::_send( const Packet& packet )
-{
-    Connection::send( _impl->connections, packet );
-}
-
 void DataOStream::_clearConnections()
 {
     _impl->connections.clear();

@@ -102,69 +102,6 @@ namespace detail { class Node; }
         }
 
         /** 
-         * Sends a packet with a string to the node.
-         * 
-         * The data is send as a new packet containing the original packet and
-         * the string, so that it is received as one packet by the node.
-         *
-         * It is assumed that the last 8 bytes in the packet are usable for the
-         * string.  This is used for optimising the send of short strings and on
-         * the receiver side to access the string. The node implementation gives
-         * examples of this usage.
-         *
-         * @param packet the packet.
-         * @param string the string.
-         * @return the success status of the transaction.
-         */
-        bool send( Packet& packet, const std::string& string )
-        {
-            ConnectionPtr connection = _getConnection();
-            return connection ? connection->send( packet, string ) : false;
-        }
-
-        /** 
-         * Sends a packet with additional data to the node.
-         * 
-         * The data is send as a new packet containing the original packet and
-         * the string, so that it is received as one packet by the node.
-         *
-         * It is assumed that the last item in the packet is of sizeof(T) and
-         * usable for the data.
-         *
-         * @param packet the packet.
-         * @param data the vector containing the data.
-         * @return the success status of the transaction.
-         */
-        template< class T >
-        bool send( Packet& packet, const std::vector<T>& data )
-        {
-            ConnectionPtr connection = _getConnection();
-            return connection ? connection->send( packet, data ) : false;
-        }
-
-        /** 
-         * Sends a packet with additional data to the node.
-         * 
-         * The data is send as a new packet containing the original packet and
-         * the data, so that it is received as one packet by the node.
-         *
-         * It is assumed that the last 8 bytes in the packet are usable for the
-         * data.  This is used for optimising the send of short data and on
-         * the receiver side to access the data. The node implementation gives
-         * examples of this usage.
-         *
-         * @param packet the packet.
-         * @param data the data.
-         * @param size the size of the data in bytes.
-         * @return the success status of the transaction.
-         */
-        bool send( Packet& packet, const void* data, const uint64_t size )
-        {
-            ConnectionPtr connection = _getConnection();
-            return connection ? connection->send( packet, data, size ) : false;
-        }
-
-        /** 
          * Multicasts a packet to the multicast group of this node.
          * 
          * @param packet the packet.

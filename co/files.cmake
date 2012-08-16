@@ -15,7 +15,6 @@ set(CO_PUBLIC_HEADERS
   compressor.h
   compressorInfo.h
   connection.h
-  connection.ipp
   connectionDescription.h
   connectionSet.h
   connectionType.h

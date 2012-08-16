@@ -19,10 +19,12 @@
 #include "objectInstanceDataOStream.h"
 
 #include "log.h"
-#include "versionedMasterCM.h"
+#include "nodeCommand.h"
 #include "object.h"
 #include "objectDataIStream.h"
 #include "objectDataOCommand.h"
+#include "versionedMasterCM.h"
+
 
 namespace co
 {

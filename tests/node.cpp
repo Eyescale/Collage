@@ -22,7 +22,8 @@
 #include <co/connectionDescription.h>
 #include <co/init.h>
 #include <co/node.h>
-#include <co/packets.h>
+#include <co/nodeOCommand.h>
+#include <co/nodeICommand.h>
 #include <lunchbox/clock.h>
 #include <lunchbox/monitor.h>
 #include <lunchbox/rng.h>
@@ -39,17 +40,6 @@ static const std::string message =
 #define NMESSAGES 1000
 }
 
-struct DataPacket : public co::NodePacket
-{
-    DataPacket()
-        {
-            command  = co::CMD_NODE_CUSTOM;
-            size     = sizeof( DataPacket );
-            data[0]  = '\0';
-        }
-    
-    char     data[8];
-};
 
 class Server : public co::LocalNode
 {
@@ -73,8 +63,9 @@ protected:
             TEST( cmd->command == co::CMD_NODE_CUSTOM );
             TEST( _messagesLeft > 0 );
 
-            const DataPacket* packet = cmd.get< DataPacket >();
-            TESTINFO( message == packet->data, packet->data );
+            co::NodeICommand stream( &cmd );
+            const std::string& data = stream.get< std::string >();
+            TESTINFO( message == data, data );
 
             --_messagesLeft;
             if( !_messagesLeft )
@@ -116,14 +107,12 @@ int main( int argc, char **argv )
     TEST( client->listen( ));
     TEST( client->connect( serverProxy ));
 
-    DataPacket packet;
-
     lunchbox::Clock clock;
     for( unsigned i = 0; i < NMESSAGES; ++i )
-        serverProxy->send( packet, message );
+        serverProxy->send( co::CMD_NODE_CUSTOM ) << message;
     const float time = clock.getTimef();
 
-    const size_t size = NMESSAGES * ( packet.size + message.length() - 7 );
+    const size_t size = NMESSAGES * ( /*packet.size +*/ message.length() - 7 );
     std::cout << "Send " << size << " bytes using " << NMESSAGES
               << " packets in " << time << "ms" << " (" 
               << size / 1024. * 1000.f / time << " KB/s)" << std::endl;

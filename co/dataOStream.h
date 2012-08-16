@@ -46,9 +46,6 @@ namespace DataStreamTest { class Sender; }
         /** @internal Disable and flush the output to the current receivers. */
         CO_API void disable();
 
-        /** @internal Disable, then send the packet to the current receivers. */
-        void disable( const Packet& packet );
-
         /** @internal Enable copying of all data into a saved buffer. */
         void enableSave();
 
@@ -134,7 +131,6 @@ namespace DataStreamTest { class Sender; }
         /** @internal Resend the saved buffer to all enabled connections. */
         void _resend();
 
-        void _send( const Packet& packet ); //!< @internal
         void _clearConnections(); //!< @internal
 
         /** @internal @name Packet sending, used by the subclasses */

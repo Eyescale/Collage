@@ -18,6 +18,7 @@
 #include "node.h"
 
 #include "connectionDescription.h"
+#include "nodeCommand.h"
 #include "nodeOCommand.h"
 
 #include <lunchbox/scopedMutex.h>
