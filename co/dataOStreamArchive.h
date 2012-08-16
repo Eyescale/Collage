@@ -46,14 +46,14 @@
 namespace co
 {
 
-/** A boost.serialization archive for a co::DataOStream. */
+/** A boost.serialization archive writing to a co::DataOStream. */
 class DataOStreamArchive
     : public boost::archive::basic_binary_oarchive< DataOStreamArchive >
 {
     typedef boost::archive::basic_binary_oarchive< DataOStreamArchive > Super;
 
 public:
-    /** Construct a new serialization archive. */
+    /** Construct a new serialization archive. @version 1.0 */
     CO_API DataOStreamArchive( DataOStream& stream );
 
     /** @internal archives are expected to support this function. */
