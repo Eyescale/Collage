@@ -228,44 +228,6 @@ namespace detail { class Connection; }
         /** Unlock the connection. @version 1.0 */
         CO_API void unlockSend() const;
 
-        /**
-         * Sends a packaged message using the connection.
-         *
-         * @param packet the message packet.
-         * @return true if all data has been read, false if not.
-         * @version 1.0
-         */
-        bool send( const Packet& packet )
-            { return send( &packet, packet.size ); }
-
-        /**
-         * Sends a packaged message including a string using the connection.
-         *
-         * The packet has to define a 8-byte-aligned, 8-char array at the end
-         * of the packet. When the packet is sent the whole string is appended
-         * to the packet, so that the receiver has to do nothing special to
-         * receive and use the full packet.
-         *
-         * @param packet the message packet.
-         * @param string the string.
-         * @return true if all data has been read, false if not.
-         * @version 1.0
-         */
-        bool send( Packet& packet, const std::string& string )
-            { return send( packet, string.c_str(), string.size()+1 ); }
-
-        /**
-         * Sends a packaged message including additional data.
-         *
-         * @param packet the message packet.
-         * @param data the data.
-         * @param size the data size in bytes.
-         * @return true if all data has been read, false if not.
-         * @version 1.0
-         */
-        CO_API bool send( Packet& packet, const void* data,
-                          const uint64_t size );
-
         /** @internal Finish all pending send operations. */
         virtual void finish() { LBUNIMPLEMENTED; }
         //@}

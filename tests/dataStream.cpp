@@ -158,11 +158,6 @@ int main( int argc, char **argv )
     while( receiving )
     {
         uint64_t size;
-        // TEMP: check for new datastream 'packet'
-        connection->recvNB( &size, sizeof( size ));
-        TEST( connection->recvSync( 0, 0 ));
-        TEST( size == 0 );
-
         connection->recvNB( &size, sizeof( size ));
         TEST( connection->recvSync( 0, 0 ));
         TEST( size );

@@ -24,7 +24,7 @@
 #include "deltaMasterCM.h"
 #include "fullMasterCM.h"
 #include "log.h"
-#include "nodePackets.h"
+#include "nodeCommand.h"
 #include "nullCM.h"
 #include "objectCM.h"
 #include "objectOCommand.h"

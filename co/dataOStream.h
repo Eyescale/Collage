@@ -133,7 +133,7 @@ namespace DataStreamTest { class Sender; }
 
         void _clearConnections(); //!< @internal
 
-        /** @internal @name Packet sending, used by the subclasses */
+        /** @internal @name Data sending, used by the subclasses */
         //@{
         /** @internal Send a data buffer (packet) to the receivers. */
         virtual void sendData( const void* buffer, const uint64_t size,

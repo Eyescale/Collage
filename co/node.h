@@ -89,30 +89,6 @@ namespace detail { class Node; }
 
         /** @name Messaging API */
         //@{
-        /** 
-         * Sends a packet to this node.
-         * 
-         * @param packet the packet.
-         * @return the success status of the transaction.
-         */
-        bool send( const Packet& packet )
-        {
-            ConnectionPtr connection = _getConnection();
-            return connection ? connection->send( packet ) : false;
-        }
-
-        /** 
-         * Multicasts a packet to the multicast group of this node.
-         * 
-         * @param packet the packet.
-         * @return the success status of the transaction.
-         */
-        bool multicast( const Packet& packet )
-        {
-            ConnectionPtr connection = useMulticast();
-            return connection ? connection->send( packet ) : false;
-        }
-
         /**
          * Send a command with optional data to the node.
          *
@@ -122,9 +98,11 @@ namespace detail { class Node; }
          *
          * @param cmd the node command to execute
          * @param type the type of object that should handle this command
+         * @param multicast prefer multicast connection for sending
          * @return the stream object to pass additional data to
          */
-        NodeOCommand send( uint32_t cmd, uint32_t type = PACKETTYPE_CO_NODE );
+        NodeOCommand send( uint32_t cmd, uint32_t type = PACKETTYPE_CO_NODE,
+                           bool multicast = false );
         //@}
 
         CO_API const NodeID& getNodeID() const;

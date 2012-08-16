@@ -85,10 +85,6 @@ void NodeOCommand::sendData( const void* buffer, const uint64_t size,
         ConnectionPtr conn = *it;
 
         conn->lockSend();
-        // TEMP: signal new datastream 'packet' on the other side
-        uint64_t magicSize = 0;
-        conn->send( &magicSize, sizeof( uint64_t ), true );
-
         conn->send( &size, sizeof( uint64_t ), true );
         conn->send( buffer, size, true );
         conn->unlockSend();

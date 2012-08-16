@@ -70,7 +70,6 @@ set(CO_HEADERS
   eventConnection.h
   fullMasterCM.h
   nodeCommand.h
-  nodePackets.h
   nullCM.h
   objectCM.h
   objectDataIStream.h

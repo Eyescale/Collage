@@ -64,10 +64,11 @@ public:
         }
 };
 
-struct Packet : public co::NodePacket
+struct Packet : public co::Packet
 {
     Packet()
         {
+            type = co::PACKETTYPE_CO_NODE;
             command = co::CMD_NODE_CUSTOM;
             size = sizeof( Packet ); 
         }

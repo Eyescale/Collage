@@ -439,46 +439,6 @@ bool Connection::send( const void* buffer, const uint64_t bytes,
     return true;
 }
 
-bool Connection::send( Packet& packet, const void* data,
-                       const uint64_t dataSize )
-{
-    if( dataSize == 0 )
-        return send( packet );
-
-    if( dataSize <= 8 ) // fits in existing packet
-    {
-#ifndef NDEBUG // fill all eight bytes in debug to keep valgrind happy
-        *(uint64_t*)((char*)(&packet) + packet.size - 8) = 0;
-#endif
-        memcpy( (char*)(&packet) + packet.size - 8, data, dataSize );
-        return send( packet );
-    }
-    // else
-
-    const uint64_t headerSize  = packet.size - 8;
-    const uint64_t size        = headerSize + dataSize;
-    if( size > EQ_ASSEMBLE_THRESHOLD )
-    {
-        // OPT: lock the connection and use two send() to avoid big memcpy
-        packet.size = size;
-
-        lockSend();
-        const bool ret = ( send( &packet, headerSize, true ) &&
-                           send( data,    dataSize,   true ));
-        unlockSend();
-        return ret;
-    }
-    // else
-
-    char* buffer = (char*)alloca( size );
-
-    memcpy( buffer,              &packet, headerSize );
-    memcpy( buffer + headerSize, data,    dataSize );
-
-    ((Packet*)buffer)->size = size;
-    return send( buffer, size );
-}
-
 ConstConnectionDescriptionPtr Connection::getDescription() const
 {
     return _impl->description;

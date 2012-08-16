@@ -20,7 +20,7 @@
 #include "command.h"
 #include "log.h"
 #include "node.h"
-#include "nodePackets.h"
+#include "nodeICommand.h"
 #include "object.h"
 #include "objectDataIStream.h"
 
@@ -164,9 +164,8 @@ void FullMasterCM::_obsolete()
 }
 
 void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
-                               const NodeMapObjectPacket* packet,
-                               NodeMapObjectSuccessPacket& success,
-                               NodeMapObjectReplyPacket& reply )
+                               Command& command, uint128_t replyVersion,
+                               bool replyUseCache )
 {
     _checkConsistency();
 
@@ -181,20 +180,31 @@ void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
                << version << std::endl;
 #endif
 
-    reply.version = start;
-    if( reply.useCache )
+    NodeICommand stream( &command );
+    /*const uint128_t& requested = */stream.get< uint128_t >();
+    const uint128_t& minCachedVersion = stream.get< uint128_t >();
+    const uint128_t& maxCachedVersion = stream.get< uint128_t >();
+    const UUID& id = stream.get< UUID >();
+    /*const uint64_t maxVersion = */stream.get< uint64_t >();
+    const uint32_t requestID = stream.get< uint32_t >();
+    const uint32_t instanceID = stream.get< uint32_t >();
+    /*const uint32_t masterInstanceID = */stream.get< uint32_t >();
+    const bool useCache = stream.get< bool >();
+
+    replyVersion = start;
+    if( replyUseCache )
     {
-        if( packet->minCachedVersion <= start &&
-            packet->maxCachedVersion >= start )
+        if( minCachedVersion <= start &&
+            maxCachedVersion >= start )
         {
 #ifdef EQ_INSTRUMENT_MULTICAST
-            _hit += packet->maxCachedVersion + 1 - start;
+            _hit += maxCachedVersion + 1 - start;
 #endif
-            start = packet->maxCachedVersion + 1;
+            start = maxCachedVersion + 1;
         }
-        else if( packet->maxCachedVersion == end )
+        else if( maxCachedVersion == end )
         {
-            end = LB_MAX( start, packet->minCachedVersion - 1 );
+            end = LB_MAX( start, minCachedVersion - 1 );
 #ifdef EQ_INSTRUMENT_MULTICAST
             _hit += _version - end;
 #endif
@@ -223,14 +233,13 @@ void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
     {
         if( !dataSent )
         {
-            if( !node->multicast( success ))
-                node->send( success );
+            _sendMapSuccess( node, id, requestID, instanceID, true );
             dataSent = true;
         }
 
         InstanceData* data = *i;
         LBASSERT( data );
-        data->os.sendMapData( node, packet->instanceID );
+        data->os.sendMapData( node, instanceID );
 
 #ifdef EQ_INSTRUMENT_MULTICAST
         ++_miss;
@@ -239,11 +248,13 @@ void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
 
     if( !dataSent )
     {
-        node->send( success );
-        node->send( reply );
+        _sendMapSuccess( node, id, requestID, instanceID, false );
+        _sendMapReply( node, id, requestID, replyVersion, true, useCache,
+                       replyUseCache, false );
     }
-    else if( !node->multicast( reply ))
-        node->send( reply );
+    else
+        _sendMapReply( node, id, requestID, replyVersion, true, useCache,
+                       replyUseCache, true );
 
 #ifdef EQ_INSTRUMENT_MULTICAST
     if( _miss % 100 == 0 )

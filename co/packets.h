@@ -57,11 +57,6 @@ namespace co
     // whole string is appended to the packet, so that the receiver has to do
     // nothing special to receive and use the full packet.
 
-    /** Packet sent to and handled by an co::Node. */
-    struct NodePacket: public Packet
-    {
-        NodePacket() { type = PACKETTYPE_CO_NODE; }
-    };
 
     //------------------------------------------------------------
     // ostream operators
@@ -71,12 +66,6 @@ namespace co
     {
         os << "packet dt " << packet->type << " cmd "
            << packet->command;
-        return os;
-    }
-    inline std::ostream& operator << ( std::ostream& os, 
-                                       const NodePacket* packet )
-    {
-        os << (Packet*)packet;
         return os;
     }
 }

@@ -25,7 +25,7 @@
 #include "global.h"
 #include "instanceCache.h"
 #include "log.h"
-#include "nodePackets.h"
+#include "nodeCommand.h"
 #include "nodeICommand.h"
 #include "nodeOCommand.h"
 #include "objectCM.h"
@@ -388,12 +388,11 @@ uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
         return LB_UNDEFINED_UINT32;
     }
 
-    NodeMapObjectPacket packet;
-    packet.requestID        = _localNode->registerRequest( object );
-    packet.objectID         = id;
-    packet.requestedVersion = version;
-    packet.maxVersion       = object->getMaxVersions();
-    packet.instanceID       = _genNextID( _instanceIDs );
+    const uint32_t requestID = _localNode->registerRequest( object );
+    uint128_t minCachedVersion = VERSION_HEAD;
+    uint128_t maxCachedVersion = VERSION_NONE;
+    uint32_t masterInstanceID = 0;
+    bool useCache = false;
 
     if( _instanceCache )
     {
@@ -402,19 +401,23 @@ uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
         {
             const ObjectDataIStreamDeque& versions = cached.versions;
             LBASSERT( !cached.versions.empty( ));
-            packet.useCache = true;
-            packet.masterInstanceID = cached.masterInstanceID;
-            packet.minCachedVersion = versions.front()->getVersion();
-            packet.maxCachedVersion = versions.back()->getVersion();
+            useCache = true;
+            masterInstanceID = cached.masterInstanceID;
+            minCachedVersion = versions.front()->getVersion();
+            maxCachedVersion = versions.back()->getVersion();
             LBLOG( LOG_OBJECTS ) << "Object " << id << " have v"
-                                 << packet.minCachedVersion << ".."
-                                 << packet.maxCachedVersion << std::endl;
+                                 << minCachedVersion << ".."
+                                 << maxCachedVersion << std::endl;
         }
     }
 
     object->notifyAttach();
-    master->send( packet );
-    return packet.requestID;
+    master->send( CMD_NODE_MAP_OBJECT ) << version << minCachedVersion
+                                        << maxCachedVersion << id
+                                        << object->getMaxVersions() << requestID
+                                        << _genNextID( _instanceIDs )
+                                        << masterInstanceID << useCache;
+    return requestID;
 }
 
 bool ObjectStore::mapObjectSync( const uint32_t requestID )
@@ -782,11 +785,19 @@ bool ObjectStore::_cmdDeregisterObject( Command& command )
 bool ObjectStore::_cmdMapObject( Command& command )
 {
     LB_TS_THREAD( _commandThread );
-    const NodeMapObjectPacket* packet = command.get< NodeMapObjectPacket >();
-    LBLOG( LOG_OBJECTS ) << "Cmd map object " << packet << std::endl;
+    LBLOG( LOG_OBJECTS ) << "Cmd map object " << command << std::endl;
 
-    NodePtr node = command.getNode();
-    const UUID& id = packet->objectID;
+    NodeICommand stream( &command );
+    const uint128_t& version = stream.get< uint128_t >();
+    /*const uint128_t& minCachedVersion = */stream.get< uint128_t >();
+    /*const uint128_t& maxCachedVersion = */stream.get< uint128_t >();
+    const UUID& id = stream.get< UUID >();
+    /*const uint64_t maxVersion = */stream.get< uint64_t >();
+    const uint32_t requestID = stream.get< uint32_t >();
+    /*const uint32_t instanceID = */stream.get< uint32_t >();
+    /*const uint32_t masterInstanceID = */stream.get< uint32_t >();
+    const bool useCache = stream.get< bool >();
+
     Object* master = 0;
     {
         lunchbox::ScopedFastRead mutex( _objects );
@@ -813,9 +824,10 @@ bool ObjectStore::_cmdMapObject( Command& command )
     {
         LBWARN << "Can't find master object to map " << id << std::endl;
 
-        NodeMapObjectReplyPacket reply( packet );
-        reply.nodeID = node->getNodeID();
-        node->send( reply );
+        NodePtr node = command.getNode();
+        node->send( CMD_NODE_MAP_OBJECT_REPLY ) << node->getNodeID() << id
+                                                << version << requestID << false
+                                                << useCache << false;
     }
     return true;
 }
@@ -823,78 +835,91 @@ bool ObjectStore::_cmdMapObject( Command& command )
 bool ObjectStore::_cmdMapObjectSuccess( Command& command )
 {
     LB_TS_THREAD( _receiverThread );
-    const NodeMapObjectSuccessPacket* packet = 
-        command.get<NodeMapObjectSuccessPacket>();
+
+    NodeICommand stream( &command );
+    const UUID& nodeID = stream.get< UUID >();
+    const UUID& objectID = stream.get< UUID >();
+    const uint32_t requestID = stream.get< uint32_t >();
+    const uint32_t instanceID = stream.get< uint32_t >();
+    const Object::ChangeType changeType = stream.get< Object::ChangeType >();
+    const uint32_t masterInstanceID = stream.get< uint32_t >();
 
     // Map success packets are potentially multicasted (see above)
     // verify that we are the intended receiver
-    if( packet->nodeID != _localNode->getNodeID( ))
+    if( nodeID != _localNode->getNodeID( ))
         return true;
 
-    LBLOG( LOG_OBJECTS ) << "Cmd map object success " << packet << std::endl;
+    LBLOG( LOG_OBJECTS ) << "Cmd map object success " << command << std::endl;
 
     // set up change manager and attach object to dispatch table
     Object* object = static_cast<Object*>( _localNode->getRequestData( 
-                                               packet->requestID ));    
+                                                                   requestID ));
     LBASSERT( object );
     LBASSERT( !object->isMaster( ));
 
-    object->setupChangeManager( Object::ChangeType( packet->changeType ), false,
-                                _localNode, packet->masterInstanceID );
-    _attachObject( object, packet->objectID, packet->instanceID );
+    object->setupChangeManager( Object::ChangeType( changeType ), false,
+                                _localNode, masterInstanceID );
+    _attachObject( object, objectID, instanceID );
     return true;
 }
 
 bool ObjectStore::_cmdMapObjectReply( Command& command )
 {
     LB_TS_THREAD( _receiverThread );
-    const NodeMapObjectReplyPacket* packet = 
-        command.get< NodeMapObjectReplyPacket >();
-    LBLOG( LOG_OBJECTS ) << "Cmd map object reply " << packet << std::endl;
+    LBLOG( LOG_OBJECTS ) << "Cmd map object reply " << command << std::endl;
+
+    NodeICommand stream( &command );
+    const UUID& nodeID = stream.get< UUID >();
+    const UUID& objectID = stream.get< UUID >();
+    const uint128_t& version = stream.get< uint128_t >();
+    const uint32_t requestID = stream.get< uint32_t >();
+    const bool result = stream.get< bool >();
+    const bool releaseCache = stream.get< bool >();
+    const bool useCache = stream.get< bool >();
 
     // Map reply packets are potentially multicasted (see above)
     // verify that we are the intended receiver
-    if( packet->nodeID != _localNode->getNodeID( ))
+    if( nodeID != _localNode->getNodeID( ))
         return true;
 
-    LBASSERT( _localNode->getRequestData( packet->requestID ));
+    LBASSERT( _localNode->getRequestData( requestID ));
 
-    if( packet->result )
+    if( result )
     {
         Object* object = static_cast<Object*>( 
-            _localNode->getRequestData( packet->requestID ));    
+            _localNode->getRequestData( requestID ));
         LBASSERT( object );
         LBASSERT( !object->isMaster( ));
 
         object->setMasterNode( command.getNode( ));
 
-        if( packet->useCache )
+        if( useCache )
         {
-            LBASSERT( packet->releaseCache );
+            LBASSERT( releaseCache );
             LBASSERT( _instanceCache );
 
-            const UUID& id = packet->objectID;
+            const UUID& id = objectID;
             const InstanceCache::Data& cached = (*_instanceCache)[ id ];
             LBASSERT( cached != InstanceCache::Data::NONE );
             LBASSERT( !cached.versions.empty( ));
 
-            object->addInstanceDatas( cached.versions, packet->version );
+            object->addInstanceDatas( cached.versions, version );
             LBCHECK( _instanceCache->release( id, 2 ));
         }
-        else if( packet->releaseCache )
+        else if( releaseCache )
         {
-            LBCHECK( _instanceCache->release( packet->objectID, 1 ));
+            LBCHECK( _instanceCache->release( objectID, 1 ));
         }
     }
     else
     {
-        if( packet->releaseCache )
-            _instanceCache->release( packet->objectID, 1 );
+        if( releaseCache )
+            _instanceCache->release( objectID, 1 );
 
-        LBWARN << "Could not map object " << packet->objectID << std::endl;
+        LBWARN << "Could not map object " << objectID << std::endl;
     }
 
-    _localNode->serveRequest( packet->requestID, packet->version );
+    _localNode->serveRequest( requestID, version );
     return true;
 }
 

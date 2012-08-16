@@ -124,16 +124,7 @@ std::ostream& operator << ( std::ostream& os, const Command& command )
     {
         os << lunchbox::disableFlush << "command< ";
         const Packet* packet = command.get< Packet >() ;
-        switch( packet->type )
-        {
-            case PACKETTYPE_CO_NODE:
-                os << static_cast< const NodePacket* >( packet );
-                break;
-
-            default:
-                os << packet;
-        }
-
+        os << packet;
         os << ", " << command.getNode() << " >" << lunchbox::enableFlush;
     }
     else

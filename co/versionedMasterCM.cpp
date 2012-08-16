@@ -19,7 +19,6 @@
 
 #include "command.h"
 #include "log.h"
-#include "nodePackets.h"
 #include "object.h"
 #include "objectDataICommand.h"
 #include "objectDataIStream.h"
@@ -104,12 +103,20 @@ void VersionedMasterCM::addSlave( Command& command )
 {
     LB_TS_THREAD( _cmdThread );
     Mutex mutex( _slaves );
-    const NodeMapObjectPacket* packet = command.get< NodeMapObjectPacket >();
+
+    NodeICommand stream( &command );
+    /*const uint128_t& version = */stream.get< uint128_t >();
+    /*const uint128_t& minCachedVersion = */stream.get< uint128_t >();
+    /*const uint128_t& maxCachedVersion = */stream.get< uint128_t >();
+    /*const UUID& id = */stream.get< UUID >();
+    const uint64_t maxVersion = stream.get< uint64_t >();
+    /*const uint32_t requestID = */stream.get< uint32_t >();
+    const uint32_t instanceID = stream.get< uint32_t >();
 
     SlaveData data;
     data.node = command.getNode();
-    data.instanceID = packet->instanceID;
-    data.maxVersion = packet->maxVersion;
+    data.instanceID = instanceID;
+    data.maxVersion = maxVersion;
     if( data.maxVersion == 0 )
         data.maxVersion = std::numeric_limits< uint64_t >::max();
     else if( data.maxVersion < std::numeric_limits< uint64_t >::max( ))

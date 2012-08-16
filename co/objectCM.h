@@ -29,10 +29,6 @@
 
 namespace co
 {
-    struct NodeMapObjectPacket;
-    struct NodeMapObjectReplyPacket;
-    struct NodeMapObjectSuccessPacket;
-
     /**
      * @internal
      * The object change manager base class.
@@ -164,9 +160,15 @@ namespace co
 
         void _addSlave( Command& command, const uint128_t& version );
         virtual void _initSlave( NodePtr node, const uint128_t& version,
-                                 const NodeMapObjectPacket* packet,
-                                 NodeMapObjectSuccessPacket& success,
-                                 NodeMapObjectReplyPacket& reply );
+                                 Command& command, uint128_t replyVersion,
+                                 bool replyUseCache );
+        void _sendMapSuccess( NodePtr node, const UUID& objectID,
+                              const uint32_t requestID,
+                              const uint32_t instanceID,  bool multicast );
+        void _sendMapReply( NodePtr node, const UUID& objectID,
+                            const uint32_t requestID, const uint128_t& version,
+                            bool result, bool releaseCache, bool useCache,
+                            bool multicast );
         void _sendEmptyVersion( NodePtr node, const uint32_t instanceID,
                                 const uint128_t& version, const bool multicast);
     };

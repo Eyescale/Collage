@@ -26,9 +26,9 @@
 #include "dataIStream.h"
 #include "exception.h"
 #include "global.h"
+#include "nodeCommand.h"
 #include "nodeICommand.h"
 #include "nodeOCommand.h"
-#include "nodePackets.h"
 #include "object.h"
 #include "objectStore.h"
 #include "pipeConnection.h"
@@ -1247,22 +1247,8 @@ bool LocalNode::_handleData()
         return false;
     }
 
-    // TEMP: check for new datastream 'packet'
-    const bool newPacket = size == 0;
-    if( newPacket )
-    {
-        // get actual size of datastream 'packet'
-        connection->recvNB( sizePtr, sizeof( uint64_t ));
-        connection->recvSync( &sizePtr, &bytes, false );
-        size = *reinterpret_cast< uint64_t* >( sizePtr );
-    }
-
     LBASSERT( size );
     LBASSERTINFO( bytes == sizeof( uint64_t ), bytes );
-    if( !newPacket )
-    {
-        LBASSERT( size > sizeof( size ));
-    }
 
     if( node )
         node->_setLastReceive( getTime64( ));
@@ -1271,10 +1257,7 @@ bool LocalNode::_handleData()
     uint8_t* ptr = reinterpret_cast< uint8_t* >(
         command->getModifiable< Packet >()) + sizeof( uint64_t );
 
-    if( newPacket )
-        connection->recvNB( ptr, size );
-    else
-        connection->recvNB( ptr, size - sizeof( uint64_t ));
+    connection->recvNB( ptr, size );
     const bool gotData = connection->recvSync( 0, 0 );
 
     LBASSERT( gotData );
@@ -1290,9 +1273,8 @@ bool LocalNode::_handleData()
         return false;
     }
 
-    if( newPacket )
-        // will update type & command inside the command for dispatching
-        NodeICommand stream( command );
+    // will update type & command inside the command for dispatching
+    NodeICommand stream( command );
 
     // This is one of the initial packets during the connection handshake, at
     // this point the remote node is not yet available.

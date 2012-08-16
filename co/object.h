@@ -311,7 +311,7 @@ namespace co
         virtual void unpack( DataIStream& is ) { applyInstanceData( is ); }
         //@}
 
-        /** @name Packet Transmission */
+        /** @name Messaging API */
         //@{
         /**
          * Send a command with optional data to object instance(s) on another

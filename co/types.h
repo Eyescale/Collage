@@ -66,7 +66,6 @@ struct CompressorInfo; //!< @internal
 template< class Q > class WorkerThread;
 struct ObjectVersion;
 struct Packet;
-struct QueueItemPacket;
 
 using lunchbox::UUID;
 using lunchbox::uint128_t;
