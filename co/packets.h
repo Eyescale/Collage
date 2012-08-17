@@ -47,9 +47,6 @@ namespace co
             uint64_t paddingPacket; // pad to multiple-of-8
         };
 #endif
-
-        static size_t minSize;
-        bool exceedsMinSize() const { return (size > minSize); }
     };
 
     // String transmission: the packets define a 8-char string at the end of the

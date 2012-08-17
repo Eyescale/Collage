@@ -19,7 +19,6 @@
 #define CO_CONNECTION_H
 
 #include <co/api.h>
-#include <co/packets.h>               // used in inline method
 #include <co/types.h>
 
 #include <lunchbox/referenced.h>   // base class

@@ -42,6 +42,11 @@ public:
 };
 }
 
+size_t Command::getMinSize()
+{
+    return 4096;
+}
+
 Command::Command( lunchbox::a_int32_t& freeCounter )
     : lunchbox::Referenced()
     , _impl( new detail::Command( freeCounter ))
@@ -75,14 +80,14 @@ size_t Command::alloc_( NodePtr node, const uint64_t size )
     size_t allocated = 0;
     if( !_data )
     {
-        _impl->_dataSize = LB_MAX( Packet::minSize, size );
+        _impl->_dataSize = LB_MAX( getMinSize(), size );
         _data = static_cast< Packet* >( malloc( _impl->_dataSize ));
         allocated = _impl->_dataSize;
     }
     else if( size > _impl->_dataSize )
     {
         allocated =  size - _impl->_dataSize;
-        _impl->_dataSize = LB_MAX( Packet::minSize, size );
+        _impl->_dataSize = LB_MAX( getMinSize(), size );
         ::free( _data );
         _data = static_cast< Packet* >( malloc( _impl->_dataSize ));
     }

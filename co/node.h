@@ -22,6 +22,7 @@
 #include <co/dispatcher.h>        // base class
 #include <co/connection.h>        // used in inline template method
 #include <co/nodeType.h>          // for NODETYPE_CO_NODE enum
+#include <co/packets.h>           // for PACKETTYPE_CO_NODE enum
 #include <co/types.h>
 
 namespace co

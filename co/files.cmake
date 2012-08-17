@@ -126,7 +126,6 @@ set(CO_SOURCES
   objectSlaveDataOStream.cpp
   objectStore.cpp
   objectVersion.cpp
-  packets.cpp
   pipeConnection.cpp
   plugin.cpp
   pluginRegistry.cpp

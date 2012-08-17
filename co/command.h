@@ -95,6 +95,8 @@ namespace detail { class Command; }
 
         void free(); //!< @internal
 
+        static size_t getMinSize(); //! @internal
+
     private:
         detail::Command* const _impl;
 

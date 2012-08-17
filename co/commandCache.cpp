@@ -254,7 +254,7 @@ CommandPtr CommandCache::alloc( NodePtr node, const uint64_t size )
     LBASSERTINFO( size < LB_BIT48,
                   "Out-of-sync network stream: packet size " << size << "?" );
 
-    const Cache which = (size > Packet::minSize) ? CACHE_BIG : CACHE_SMALL;
+    const Cache which = (size >Command::getMinSize()) ? CACHE_BIG : CACHE_SMALL;
     CommandPtr command = _impl->newCommand( which );
 
     command->alloc_( node, size );
@@ -265,8 +265,8 @@ CommandPtr CommandCache::clone( CommandPtr from )
 {
     LB_TS_THREAD( _thread );
 
-    const Cache which = ( (*from)->size > Packet::minSize ) ? CACHE_BIG :
-                                                              CACHE_SMALL;
+    const Cache which = ( (*from)->size > Command::getMinSize( )) ? CACHE_BIG :
+                                                                    CACHE_SMALL;
     CommandPtr command = _impl->newCommand( which );
 
     command->clone_( from );
