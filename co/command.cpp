@@ -21,18 +21,38 @@
 
 namespace co
 {
-
-Command::Command( lunchbox::a_int32_t& freeCounter ) 
-        : _packet( 0 )
-        , _data( 0 )
+namespace detail
+{
+class Command
+{
+public:
+    Command( lunchbox::a_int32_t& freeCounter )
+        : _node()
         , _dataSize( 0 )
+        , _master()
         , _freeCount( freeCounter )
         , _func( 0, 0 )
+    {}
+
+    NodePtr _node; //!< The node sending the packet
+    uint64_t _dataSize; //!< The size of the allocation
+    CommandPtr _master;
+    lunchbox::a_int32_t& _freeCount;
+    co::Dispatcher::Func _func;
+};
+}
+
+Command::Command( lunchbox::a_int32_t& freeCounter )
+    : lunchbox::Referenced()
+    , _impl( new detail::Command( freeCounter ))
+    , _packet( 0 )
+    , _data( 0 )
 {}
 
 Command::~Command() 
 {
-    free(); 
+    free();
+    delete _impl;
 }
 
 void Command::deleteReferenced( const Referenced* object ) const
@@ -40,38 +60,38 @@ void Command::deleteReferenced( const Referenced* object ) const
     Command* command = const_cast< Command* >( this );
     // DON'T 'command->_master = 0;', command is already reusable and _master
     // may be set any time. alloc or clone_ will free old master.
-    ++command->_freeCount;
+    ++command->_impl->_freeCount;
 }
 
 size_t Command::alloc_( NodePtr node, const uint64_t size )
 {
     LB_TS_THREAD( _writeThread );
     LBASSERT( getRefCount() == 1 ); // caller CommandCache
-    LBASSERTINFO( !_func.isValid(), *this );
-    LBASSERT( _freeCount > 0 );
+    LBASSERTINFO( !_impl->_func.isValid(), *this );
+    LBASSERT( _impl->_freeCount > 0 );
 
-    --_freeCount;
+    --_impl->_freeCount;
 
     size_t allocated = 0;
     if( !_data )
     {
-        _dataSize = LB_MAX( Packet::minSize, size );
-        _data = static_cast< Packet* >( malloc( _dataSize ));
-        allocated = _dataSize;
+        _impl->_dataSize = LB_MAX( Packet::minSize, size );
+        _data = static_cast< Packet* >( malloc( _impl->_dataSize ));
+        allocated = _impl->_dataSize;
     }
-    else if( size > _dataSize )
+    else if( size > _impl->_dataSize )
     {
-        allocated =  size - _dataSize;
-        _dataSize = LB_MAX( Packet::minSize, size );
+        allocated =  size - _impl->_dataSize;
+        _impl->_dataSize = LB_MAX( Packet::minSize, size );
         ::free( _data );
-        _data = static_cast< Packet* >( malloc( _dataSize ));
+        _data = static_cast< Packet* >( malloc( _impl->_dataSize ));
     }
 
-    _node = node;
-    _func.clear();
+    _impl->_node = node;
+    _impl->_func.clear();
     _packet = _data;
     _packet->size = size;
-    _master = 0;
+    _impl->_master = 0;
 
     return allocated;
 }
@@ -81,36 +101,52 @@ void Command::clone_( CommandPtr from )
     LB_TS_THREAD( _writeThread );
     LBASSERT( getRefCount() == 1 ); // caller CommandCache
     LBASSERT( from->getRefCount() > 1 ); // caller CommandCache, self
-    LBASSERTINFO( !_func.isValid(), *this );
-    LBASSERT( _freeCount > 0 );
+    LBASSERTINFO( !_impl->_func.isValid(), *this );
+    LBASSERT( _impl->_freeCount > 0 );
 
-    --_freeCount;
+    --_impl->_freeCount;
 
-    _node = from->_node;
+    _impl->_node = from->_impl->_node;
     _packet = from->_packet;
-    _master = from;
+    _impl->_master = from;
 }
 
 void Command::free()
 {
     LB_TS_THREAD( _writeThread );
-    LBASSERT( !_func.isValid( ));
+    LBASSERT( !_impl->_func.isValid( ));
 
     if( _data )
         ::free( _data );
 
     _data = 0;
-    _dataSize = 0;
+    _impl->_dataSize = 0;
     _packet = 0;
-    _node = 0;
-    _master = 0;
+    _impl->_node = 0;
+    _impl->_master = 0;
+}
+
+NodePtr Command::getNode() const
+{
+    return _impl->_node;
+}
+
+uint64_t Command::getAllocationSize() const
+{
+    return _impl->_dataSize;
+}
+
+void Command::setDispatchFunction( const Dispatcher::Func& func )
+{
+    LBASSERT( !_impl->_func.isValid( ));
+    _impl->_func = func;
 }
 
 bool Command::operator()()
 {
-    LBASSERT( _func.isValid( ));
-    Dispatcher::Func func = _func;
-    _func.clear();
+    LBASSERT( _impl->_func.isValid( ));
+    Dispatcher::Func func = _impl->_func;
+    _impl->_func.clear();
     return func( this );
 }
 
@@ -126,8 +162,8 @@ std::ostream& operator << ( std::ostream& os, const Command& command )
     else
         os << "command< empty >";
 
-    if( command._func.isValid( ))
-        os << ' ' << command._func << std::endl;
+    if( command._impl->_func.isValid( ))
+        os << ' ' << command._impl->_func << std::endl;
     return os;
 }
 }

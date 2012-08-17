@@ -41,7 +41,7 @@ public:
     {}
 
     /** The command handler functions. */
-    bool cmdGetItem( Command& command )
+    bool cmdGetItem( co::Command& command )
     {
         co::ObjectICommand stream( &command );
         const uint32_t itemsRequested = stream.get< uint32_t >();

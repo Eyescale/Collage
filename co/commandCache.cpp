@@ -61,7 +61,7 @@ public:
         {
             for( size_t i = 0; i < CACHE_ALL; ++i )
             {
-                cache[i].push_back( new Command( free[i] ));
+                cache[i].push_back( new co::Command( free[i] ));
                 position[i] = cache[i].begin();
                 free[i] = 1;
                 maxFree[i] = _minFree[i];
@@ -90,7 +90,7 @@ public:
 
                 for( DataCIter j = cache_.begin(); j != cache_.end(); ++j )
                 {
-                    Command* command = *j;
+                    co::Command* command = *j;
                     LBASSERTINFO( command->isFree(),
                                   *command << " rc " << command->getRefCount( ));
                     delete command;
@@ -99,7 +99,7 @@ public:
                               free[i] << " != " << cache_.size() );
 
                 cache_.clear();
-                cache_.push_back( new Command( free[i] ));
+                cache_.push_back( new co::Command( free[i] ));
                 free[i] = 1;
                 maxFree[i] = _minFree[i];
                 position[i] = cache_.begin();
@@ -131,7 +131,7 @@ public:
 #ifdef PROFILE
                     ++_lookups;
 #endif
-                    Command* command = *i;
+                    co::Command* command = *i;
                     if( command->isFree( ))
                     {
 #ifdef PROFILE
@@ -168,7 +168,7 @@ public:
 
             const uint32_t add = (cacheSize >> 3) + 1;
             for( size_t j = 0; j < add; ++j )
-                cache_.push_back( new Command( freeCounter ));
+                cache_.push_back( new co::Command( freeCounter ));
 
             freeCounter += add;
             const int32_t num = int32_t( cache_.size() >> _freeShift );
@@ -208,7 +208,7 @@ private:
             Data& cache_ = cache[ which ];
             for( Data::iterator i = cache_.begin(); i != cache_.end(); )
             {
-                const Command* cmd = *i;
+                const co::Command* cmd = *i;
                 if( cmd->isFree( ))
                 {
                     LBASSERT( currentFree > 0 );

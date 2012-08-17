@@ -18,14 +18,16 @@
 #ifndef CO_COMMAND_H
 #define CO_COMMAND_H
 
+#include <lunchbox/referenced.h>    // base class
+
 #include <co/api.h>
 #include <co/node.h>
 
-#include <lunchbox/atomic.h> // member
-#include <lunchbox/refPtr.h> // NodePtr member
 
 namespace co
-{    
+{
+namespace detail { class Command; }
+
     /**
      * A class managing received command packets.
      *
@@ -51,7 +53,7 @@ namespace co
             { LBASSERT( _packet ); return static_cast<P*>( _packet ); }
 
         /** @return the sending node proxy instance. @version 1.0 */
-        NodePtr getNode() const { return _node; }
+        NodePtr getNode() const;
 
         /** Access the packet directly. @version 1.0 */
         Packet* operator->() { LBASSERT(_packet); return _packet; }
@@ -63,14 +65,13 @@ namespace co
         bool isValid() const { return ( _packet!=0 ); }
 
         /** @internal @return the amount of memory currently allocated. */
-        uint64_t getAllocationSize() const { return _dataSize; }
+        uint64_t getAllocationSize() const;
         //@}
 
         /** @internal @name Dispatch command functions.. */
         //@{
         /** @internal Set the function to which the packet is dispatched. */
-        void setDispatchFunction( const Dispatcher::Func& func )
-            { LBASSERT( !_func.isValid( )); _func = func; }
+        void setDispatchFunction( const Dispatcher::Func& func );
 
         /** Invoke and clear the command function of a dispatched command. */
         CO_API bool operator()();
@@ -95,21 +96,15 @@ namespace co
         void free(); //!< @internal
 
     private:
+        detail::Command* const _impl;
+
         Command& operator = ( Command& rhs ); // disable assignment
         Command( const Command& from );       // disable copy
         Command();                            // disable default ctor
 
+        Packet* _packet;    //!< The packet (this or master _data)
+        Packet* _data;      //!< Our allocated data
 
-        NodePtr       _node;      //!< The node sending the packet
-        Packet*       _packet;    //!< The packet (this or master _data)
-
-        Packet*  _data;     //!< Our allocated data
-        uint64_t _dataSize; //!< The size of the allocation
-
-        CommandPtr _master;
-        lunchbox::a_int32_t& _freeCount;
-
-        Dispatcher::Func _func;
         friend CO_API std::ostream& operator << (std::ostream&, const Command&);
 
         virtual void deleteReferenced( const Referenced* object ) const;
