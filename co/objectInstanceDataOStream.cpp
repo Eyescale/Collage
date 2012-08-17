@@ -74,11 +74,8 @@ void ObjectInstanceDataOStream::push( const Nodes& receivers,
     _setupConnections( receivers );
 
     _resend();
-    {
-        NodeOCommand cmd( getConnections(), PACKETTYPE_CO_NODE,
-                          CMD_NODE_OBJECT_PUSH );
-        cmd << objectID << groupID << typeID;
-    }
+    NodeOCommand( getConnections(), PACKETTYPE_CO_NODE, CMD_NODE_OBJECT_PUSH )
+        << objectID << groupID << typeID;
 
     _clearConnections();
 }
@@ -122,8 +119,8 @@ void ObjectInstanceDataOStream::sendData( const void* buffer,
     LBASSERT( _command );
 
     ObjectDataOStream::send( _command, PACKETTYPE_CO_NODE, _instanceID, size,
-                             last, buffer ) << _nodeID
-                                           << _cm->getObject()->getInstanceID();
+                             last, buffer )
+        << _nodeID << _cm->getObject()->getInstanceID();
 }
 
 }

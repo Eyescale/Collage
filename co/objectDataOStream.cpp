@@ -62,7 +62,7 @@ ObjectDataOCommand ObjectDataOStream::send( const uint32_t cmd,
                                             const void* buffer )
 {
     LBASSERT( _version != VERSION_INVALID );
-    uint32_t sequence = _sequence++;
+    const uint32_t sequence = _sequence++;
     if( last )
         _sequence = 0;
 
