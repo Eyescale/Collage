@@ -22,6 +22,7 @@
 #include <co/commandQueue.h>
 #include <co/dispatcher.h>
 #include <co/init.h>
+#include <co/localNode.h>
 #include <lunchbox/clock.h>
 
 // Tests the functionality of the network packet cache
@@ -103,7 +104,7 @@ int main( int argc, char **argv )
         lunchbox::Clock clock;
         while( clock.getTime64() < RUNTIME )
         {
-            co::CommandPtr command = cache.alloc( node, node, sizeof( Packet ));
+            co::CommandPtr command = cache.alloc( node, sizeof( Packet ));
             Packet* packet = command->getModifiable< Packet >();
             *packet = Packet();
 
@@ -126,7 +127,7 @@ int main( int argc, char **argv )
 
         for( size_t i = 0; i < N_READER; ++i )
         {
-            co::CommandPtr command = cache.alloc( node, node, sizeof( Packet ));
+            co::CommandPtr command = cache.alloc( node, sizeof( Packet ));
             Packet* packet = command->getModifiable< Packet >();
             *packet = Packet();
             packet->command = 1;

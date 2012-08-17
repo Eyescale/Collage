@@ -19,7 +19,7 @@
 #define CO_COMMAND_H
 
 #include <co/api.h>
-#include <co/localNode.h> // NodePtr members
+#include <co/node.h>
 
 #include <lunchbox/atomic.h> // member
 #include <lunchbox/refPtr.h> // NodePtr member
@@ -53,9 +53,6 @@ namespace co
         /** @return the sending node proxy instance. @version 1.0 */
         NodePtr getNode() const { return _node; }
 
-        /** @return the receiving node. @version 1.0 */
-        LocalNodePtr getLocalNode() const { return _localNode; }
-
         /** Access the packet directly. @version 1.0 */
         Packet* operator->() { LBASSERT(_packet); return _packet; }
 
@@ -83,8 +80,7 @@ namespace co
         bool isFree() const { return getRefCount() == 0; }
 
         /** @internal @return the number of newly allocated bytes. */
-        size_t alloc_( NodePtr node, LocalNodePtr localNode,
-                       const uint64_t size );
+        size_t alloc_( NodePtr node, const uint64_t size );
 
         /** 
          * @internal Clone the from command into this command.
@@ -105,7 +101,6 @@ namespace co
 
 
         NodePtr       _node;      //!< The node sending the packet
-        LocalNodePtr  _localNode; //!< The node receiving the packet
         Packet*       _packet;    //!< The packet (this or master _data)
 
         Packet*  _data;     //!< Our allocated data

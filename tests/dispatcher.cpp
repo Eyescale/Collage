@@ -124,7 +124,7 @@ int main( int argc, char **argv )
 {
     co::CommandCache cache;
     co::LocalNodePtr node = new co::LocalNode;
-    co::CommandPtr command = cache.alloc( node, node, sizeof( Packet ));
+    co::CommandPtr command = cache.alloc( node, sizeof( Packet ));
     Packet* packet = command->getModifiable< Packet >();
 
     *packet = Packet();

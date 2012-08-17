@@ -162,7 +162,7 @@ int main( int argc, char **argv )
         TEST( connection->recvSync( 0, 0 ));
         TEST( size );
 
-        co::CommandPtr command = commandCache.alloc( 0, 0, size );
+        co::CommandPtr command = commandCache.alloc( 0, size );
 
         char* ptr = reinterpret_cast< char* >(
             command->getModifiable< co::Packet >( )) + sizeof( size );

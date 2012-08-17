@@ -1253,7 +1253,7 @@ bool LocalNode::_handleData()
     if( node )
         node->_setLastReceive( getTime64( ));
 
-    CommandPtr command = _impl->commandCache.alloc( node, this, size );
+    CommandPtr command = _impl->commandCache.alloc( node, size );
     uint8_t* ptr = reinterpret_cast< uint8_t* >(
         command->getModifiable< Packet >()) + sizeof( uint64_t );
 
@@ -1292,7 +1292,7 @@ bool LocalNode::_handleData()
 CommandPtr LocalNode::allocCommand( const uint64_t size )
 {
     LBASSERT( _impl->inReceiverThread( ));
-    return _impl->commandCache.alloc( this, this, size );
+    return _impl->commandCache.alloc( this, size );
 }
 
 void LocalNode::_dispatchCommand( CommandPtr command )

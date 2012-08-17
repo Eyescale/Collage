@@ -248,8 +248,7 @@ void CommandCache::flush()
     _impl->flush();
 }
 
-CommandPtr CommandCache::alloc( NodePtr node, LocalNodePtr localNode,
-                                const uint64_t size )
+CommandPtr CommandCache::alloc( NodePtr node, const uint64_t size )
 {
     LB_TS_THREAD( _thread );
     LBASSERTINFO( size < LB_BIT48,
@@ -258,7 +257,7 @@ CommandPtr CommandCache::alloc( NodePtr node, LocalNodePtr localNode,
     const Cache which = (size > Packet::minSize) ? CACHE_BIG : CACHE_SMALL;
     CommandPtr command = _impl->newCommand( which );
 
-    command->alloc_( node, localNode, size );
+    command->alloc_( node, size );
     return command;
 }
 

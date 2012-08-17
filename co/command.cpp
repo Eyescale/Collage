@@ -43,8 +43,7 @@ void Command::deleteReferenced( const Referenced* object ) const
     ++command->_freeCount;
 }
 
-size_t Command::alloc_( NodePtr node, LocalNodePtr localNode,
-                        const uint64_t size )
+size_t Command::alloc_( NodePtr node, const uint64_t size )
 {
     LB_TS_THREAD( _writeThread );
     LBASSERT( getRefCount() == 1 ); // caller CommandCache
@@ -69,7 +68,6 @@ size_t Command::alloc_( NodePtr node, LocalNodePtr localNode,
     }
 
     _node = node;
-    _localNode = localNode;
     _func.clear();
     _packet = _data;
     _packet->size = size;
@@ -89,7 +87,6 @@ void Command::clone_( CommandPtr from )
     --_freeCount;
 
     _node = from->_node;
-    _localNode = from->_localNode;
     _packet = from->_packet;
     _master = from;
 }
@@ -106,9 +103,8 @@ void Command::free()
     _dataSize = 0;
     _packet = 0;
     _node = 0;
-    _localNode = 0;
     _master = 0;
-}        
+}
 
 bool Command::operator()()
 {

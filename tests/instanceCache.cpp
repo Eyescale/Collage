@@ -25,6 +25,7 @@
 #include <co/commandCache.h>
 #include <co/init.h>
 #include <co/instanceCache.h>
+#include <co/localNode.h>
 #include <co/objectVersion.h>
 
 #include <lunchbox/rng.h>
@@ -89,7 +90,7 @@ int main( int argc, char **argv )
 //    pkg.version = 1;
 //    pkg.sequence = 0;
 
-    co::CommandPtr command = commandCache.alloc( node, node, PACKET_SIZE );
+    co::CommandPtr command = commandCache.alloc( node, PACKET_SIZE );
 //    co::ObjectInstancePacket* packet =
 //        command->getModifiable< co::ObjectInstancePacket >();
 //    memcpy( packet, &pkg, sizeof( pkg ));

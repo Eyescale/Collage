@@ -39,8 +39,7 @@ namespace detail { class CommandCache; }
         CO_API ~CommandCache();
 
         /** @return a new command. */
-        CO_API CommandPtr alloc( NodePtr node, LocalNodePtr localNode,
-                                 const uint64_t size );
+        CO_API CommandPtr alloc( NodePtr node, const uint64_t size );
 
         /** @return a clone of a command. */
         CO_API CommandPtr clone( CommandPtr from );
