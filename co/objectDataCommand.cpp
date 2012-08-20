@@ -15,8 +15,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "objectDataICommand.h"
+#include "objectDataCommand.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "plugins/compressorTypes.h"
 
@@ -27,10 +28,10 @@ namespace co
 namespace detail
 {
 
-class ObjectDataICommand
+class ObjectDataCommand
 {
 public:
-    ObjectDataICommand()
+    ObjectDataCommand()
         : version( 0, 0 )
         , sequence( 0 )
         , datasize( 0 )
@@ -48,45 +49,46 @@ public:
 
 }
 
-ObjectDataICommand::ObjectDataICommand( CommandPtr command )
-    : ObjectICommand( command )
-    , _impl( new detail::ObjectDataICommand )
+ObjectDataCommand::ObjectDataCommand( BufferPtr buffer )
+    : ObjectCommand( buffer )
+    , _impl( new detail::ObjectDataCommand )
 {
-    *this >> _impl->version >> _impl->sequence >> _impl->datasize
-          >> _impl->isLast >> _impl->compressor >> _impl->chunks;
+    if( buffer )
+        *this >> _impl->version >> _impl->sequence >> _impl->datasize
+              >> _impl->isLast >> _impl->compressor >> _impl->chunks;
 }
 
-ObjectDataICommand::~ObjectDataICommand()
+ObjectDataCommand::~ObjectDataCommand()
 {
     delete _impl;
 }
 
-uint128_t ObjectDataICommand::getVersion() const
+uint128_t ObjectDataCommand::getVersion() const
 {
     return _impl->version;
 }
 
-uint32_t ObjectDataICommand::getSequence() const
+uint32_t ObjectDataCommand::getSequence() const
 {
     return _impl->sequence;
 }
 
-uint64_t ObjectDataICommand::getDataSize() const
+uint64_t ObjectDataCommand::getDataSize() const
 {
     return _impl->datasize;
 }
 
-uint32_t ObjectDataICommand::getCompressor() const
+uint32_t ObjectDataCommand::getCompressor() const
 {
     return _impl->compressor;
 }
 
-uint32_t ObjectDataICommand::getChunks() const
+uint32_t ObjectDataCommand::getChunks() const
 {
     return _impl->chunks;
 }
 
-bool ObjectDataICommand::isLast() const
+bool ObjectDataCommand::isLast() const
 {
     return _impl->isLast;
 }

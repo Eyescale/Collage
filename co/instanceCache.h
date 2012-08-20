@@ -47,12 +47,12 @@ namespace co
          *
          * @param rev the object identifier and version.
          * @param instanceID the master instance ID.
-         * @param command The command to add.
+         * @param buffer The buffer to add.
          * @param usage pre-set usage count.
          * @return true if the command was entered, false if not.
          */
         CO_API bool add( const ObjectVersion& rev, const uint32_t instanceID, 
-                         CommandPtr command, const uint32_t usage = 0 );
+                         BufferPtr buffer, const uint32_t usage = 0 );
 
         /** Remove all items from the given node. */
         void remove( const NodeID& node );

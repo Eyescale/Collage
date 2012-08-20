@@ -35,7 +35,7 @@ namespace co
         ObjectDataIStream( const ObjectDataIStream& from );
         virtual ~ObjectDataIStream();
 
-        void addDataPacket( CommandPtr command );
+        void addDataPacket( BufferPtr buffer );
         size_t getDataSize() const;
 
         virtual uint128_t getVersion() const { return _version.get(); }
@@ -44,7 +44,7 @@ namespace co
         void waitReady() const { _version.waitNE( VERSION_INVALID ); }
         bool isReady() const { return _version != VERSION_INVALID; }
 
-        virtual size_t nRemainingBuffers() const { return _commands.size(); }
+        virtual size_t nRemainingBuffers() const { return _buffers.size(); }
 
         virtual void reset();
 
@@ -52,15 +52,15 @@ namespace co
         CO_API virtual NodePtr getMaster();
 
     protected:
-        const CommandPtr getNextCommand();
+        const BufferPtr _getNextBuffer();
         virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
                                     const void** chunkData, uint64_t* size );
 
     private:
         /** All data command packets for this istream. */
-        CommandDeque _commands;
+        BufferDeque _buffers;
 
-        CommandPtr _usedCommand; //!< Currently used buffer
+        BufferPtr _usedBuffer; //!< Currently used buffer
 
         /** The object version associated with this input stream. */
         lunchbox::Monitor< uint128_t > _version;

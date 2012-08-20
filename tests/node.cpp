@@ -23,7 +23,6 @@
 #include <co/init.h>
 #include <co/node.h>
 #include <co/nodeOCommand.h>
-#include <co/nodeICommand.h>
 #include <lunchbox/clock.h>
 #include <lunchbox/monitor.h>
 #include <lunchbox/rng.h>
@@ -60,11 +59,10 @@ public:
 protected:
     bool command( co::Command& cmd )
         {
-            TEST( cmd->command == co::CMD_NODE_CUSTOM );
+            TEST( cmd.getCommand() == co::CMD_NODE_CUSTOM );
             TEST( _messagesLeft > 0 );
 
-            co::NodeICommand stream( &cmd );
-            const std::string& data = stream.get< std::string >();
+            const std::string& data = cmd.get< std::string >();
             TESTINFO( message == data, data );
 
             --_messagesLeft;

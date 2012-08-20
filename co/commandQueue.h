@@ -42,10 +42,10 @@ namespace detail { class CommandQueue; }
          * @param packet the command packet.
          * @version 1.0
          */
-        CO_API virtual void push( CommandPtr packet );
+        CO_API virtual void push( BufferPtr packet );
 
         /** Push a command to the front of the queue. @version 1.0 */
-        CO_API virtual void pushFront( CommandPtr packet );
+        CO_API virtual void pushFront( BufferPtr packet );
 
         /** 
          * Pop a command from the queue.
@@ -55,7 +55,7 @@ namespace detail { class CommandQueue; }
          * @throw Exception on timeout.
          * @version 1.0
          */
-        CO_API virtual CommandPtr pop( const uint32_t timeout =
+        CO_API virtual BufferPtr pop( const uint32_t timeout =
                                        LB_TIMEOUT_INDEFINITE );
 
         /** 
@@ -64,7 +64,7 @@ namespace detail { class CommandQueue; }
          * @return the next command in the queue, or 0 if no command is queued.
          * @version 1.0
          */
-        CO_API virtual CommandPtr tryPop();
+        CO_API virtual BufferPtr tryPop();
 
         /** 
          * @return <code>true</code> if the command queue is empty,

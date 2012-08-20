@@ -17,10 +17,11 @@
 
 #include "versionedMasterCM.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "log.h"
 #include "object.h"
-#include "objectDataICommand.h"
+#include "objectDataCommand.h"
 #include "objectDataIStream.h"
 
 namespace co
@@ -99,19 +100,20 @@ uint128_t VersionedMasterCM::_apply( ObjectDataIStream* is )
     return version;
 }
 
-void VersionedMasterCM::addSlave( Command& command )
+void VersionedMasterCM::addSlave( Command& comd )
 {
     LB_TS_THREAD( _cmdThread );
     Mutex mutex( _slaves );
 
-    NodeICommand stream( &command );
-    /*const uint128_t& version = */stream.get< uint128_t >();
-    /*const uint128_t& minCachedVersion = */stream.get< uint128_t >();
-    /*const uint128_t& maxCachedVersion = */stream.get< uint128_t >();
-    /*const UUID& id = */stream.get< UUID >();
-    const uint64_t maxVersion = stream.get< uint64_t >();
-    /*const uint32_t requestID = */stream.get< uint32_t >();
-    const uint32_t instanceID = stream.get< uint32_t >();
+    Command command( comd.getBuffer( ));
+
+    /*const uint128_t& version = */command.get< uint128_t >();
+    /*const uint128_t& minCachedVersion = */command.get< uint128_t >();
+    /*const uint128_t& maxCachedVersion = */command.get< uint128_t >();
+    /*const UUID& id = */command.get< UUID >();
+    const uint64_t maxVersion = command.get< uint64_t >();
+    /*const uint32_t requestID = */command.get< uint32_t >();
+    const uint32_t instanceID = command.get< uint32_t >();
 
     SlaveData data;
     data.node = command.getNode();
@@ -195,22 +197,26 @@ void VersionedMasterCM::_updateMaxVersion()
 //---------------------------------------------------------------------------
 // command handlers
 //---------------------------------------------------------------------------
-bool VersionedMasterCM::_cmdSlaveDelta( Command& command )
+bool VersionedMasterCM::_cmdSlaveDelta( Command& cmd )
 {
+    ObjectDataCommand command( cmd.getBuffer( ));
+
     LB_TS_THREAD( _rcvThread );
 
-    ObjectDataICommand stream( &command );
-
-    if( _slaveCommits.addDataPacket( stream.get< UUID >(), command ))
+    if( _slaveCommits.addDataPacket( command.get< UUID >(),
+                                     command.getBuffer( )))
+    {
         _object->notifyNewVersion();
+    }
     return true;
 }
 
-bool VersionedMasterCM::_cmdMaxVersion( Command& command )
+bool VersionedMasterCM::_cmdMaxVersion( Command& cmd )
 {
-    ObjectICommand stream( &command );
-    const uint64_t version = stream.get< uint64_t >();
-    const uint32_t slaveID = stream.get< uint32_t >();
+    ObjectCommand command( cmd.getBuffer( ));
+
+    const uint64_t version = command.get< uint64_t >();
+    const uint32_t slaveID = command.get< uint32_t >();
 
     Mutex mutex( _slaves );
 

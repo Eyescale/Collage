@@ -17,12 +17,12 @@
 
 #include "objectCM.h"
 
-#include "command.h"
+#include "buffer.h"
 #include "nodeCommand.h"
-#include "nodeICommand.h"
 #include "nullCM.h"
 #include "node.h"
 #include "object.h"
+#include "objectDataCommand.h"
 #include "objectInstanceDataOStream.h"
 #include "objectDataOCommand.h"
 
@@ -51,30 +51,31 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
     os.enablePush( getVersion(), nodes );
     _object->getInstanceData( os );
 
-    NodeOCommand cmd( os.getConnections(), PACKETTYPE_CO_NODE,
+    NodeOCommand cmd( os.getConnections(), COMMANDTYPE_CO_NODE,
                       CMD_NODE_OBJECT_PUSH );
     cmd << _object->getID() << groupID << typeID;
     os.disable();
 }
 
-void ObjectCM::_addSlave( Command& command, const uint128_t& version )
+void ObjectCM::_addSlave( Command& comd, const uint128_t& version )
 {
+    Command command( comd.getBuffer( ));
+
     LBASSERT( version != VERSION_NONE );
-    LBASSERT( command->type == PACKETTYPE_CO_NODE );
-    LBASSERT( command->command == CMD_NODE_MAP_OBJECT );
+    LBASSERT( command.getType() == COMMANDTYPE_CO_NODE );
+    LBASSERT( command.getCommand() == CMD_NODE_MAP_OBJECT );
 
     NodePtr node = command.getNode();
 
-    NodeICommand stream( &command );
-    const uint128_t& requested = stream.get< uint128_t >();
-    /*const uint128_t& minCachedVersion = */stream.get< uint128_t >();
-    /*const uint128_t& maxCachedVersion = */stream.get< uint128_t >();
-    const UUID& id = stream.get< UUID >();
-    /*const uint64_t maxVersion = */stream.get< uint64_t >();
-    const uint32_t requestID = stream.get< uint32_t >();
-    const uint32_t instanceID = stream.get< uint32_t >();
-    const uint32_t masterInstanceID = stream.get< uint32_t >();
-    const bool useCache = stream.get< bool >();
+    const uint128_t& requested = command.get< uint128_t >();
+    /*const uint128_t& minCachedVersion = */command.get< uint128_t >();
+    /*const uint128_t& maxCachedVersion = */command.get< uint128_t >();
+    const UUID& id = command.get< UUID >();
+    /*const uint64_t maxVersion = */command.get< uint64_t >();
+    const uint32_t requestID = command.get< uint32_t >();
+    const uint32_t instanceID = command.get< uint32_t >();
+    const uint32_t masterInstanceID = command.get< uint32_t >();
+    const bool useCache = command.get< bool >();
 
     // process request
     if( requested == VERSION_NONE ) // no data to send, send empty version
@@ -93,7 +94,7 @@ void ObjectCM::_addSlave( Command& command, const uint128_t& version )
 }
 
 void ObjectCM::_initSlave( NodePtr node, const uint128_t& version,
-                           Command& command, uint128_t replyVersion,
+                           Command& comd, uint128_t replyVersion,
                            bool replyUseCache )
 {
 #if 0
@@ -108,16 +109,17 @@ void ObjectCM::_initSlave( NodePtr node, const uint128_t& version,
                << version << std::endl;
 #endif
 
-    NodeICommand stream( &command );
-    /*const uint128_t& requested = */stream.get< uint128_t >();
-    const uint128_t& minCachedVersion = stream.get< uint128_t >();
-    const uint128_t& maxCachedVersion = stream.get< uint128_t >();
-    const UUID& id = stream.get< UUID >();
-    /*const uint64_t maxVersion = */stream.get< uint64_t >();
-    const uint32_t requestID = stream.get< uint32_t >();
-    const uint32_t instanceID = stream.get< uint32_t >();
-    /*const uint32_t masterInstanceID = */stream.get< uint32_t >();
-    const bool useCache = stream.get< bool >();
+    Command command( comd.getBuffer( ));
+
+    /*const uint128_t& requested = */command.get< uint128_t >();
+    const uint128_t& minCachedVersion = command.get< uint128_t >();
+    const uint128_t& maxCachedVersion = command.get< uint128_t >();
+    const UUID& id = command.get< UUID >();
+    /*const uint64_t maxVersion = */command.get< uint64_t >();
+    const uint32_t requestID = command.get< uint32_t >();
+    const uint32_t instanceID = command.get< uint32_t >();
+    /*const uint32_t masterInstanceID = */command.get< uint32_t >();
+    const bool useCache = command.get< bool >();
 
     if( replyUseCache &&
         minCachedVersion <= replyVersion &&
@@ -157,7 +159,7 @@ void ObjectCM::_sendMapSuccess( NodePtr node, const UUID& objectID,
                                 const uint32_t requestID,
                                 const uint32_t instanceID,  bool multicast )
 {
-    node->send( CMD_NODE_MAP_OBJECT_SUCCESS, PACKETTYPE_CO_NODE, multicast )
+    node->send( CMD_NODE_MAP_OBJECT_SUCCESS, COMMANDTYPE_CO_NODE, multicast )
             << node->getNodeID() << objectID << requestID << instanceID
             << _object->getChangeType() << _object->getInstanceID();
 }
@@ -167,7 +169,7 @@ void ObjectCM::_sendMapReply( NodePtr node, const UUID& objectID,
                               const uint128_t& version, bool result,
                               bool releaseCache, bool useCache, bool multicast )
 {
-    node->send( CMD_NODE_MAP_OBJECT_REPLY, PACKETTYPE_CO_NODE, multicast )
+    node->send( CMD_NODE_MAP_OBJECT_REPLY, COMMANDTYPE_CO_NODE, multicast )
             << node->getNodeID() << objectID << version << requestID << result
             << releaseCache << useCache;
 }
@@ -181,7 +183,7 @@ void ObjectCM::_sendEmptyVersion( NodePtr node, const uint32_t instanceID,
         connection = node->getConnection();
     Connections connections( 1, connection );
 
-    ObjectDataOCommand command( connections, PACKETTYPE_CO_OBJECT,
+    ObjectDataOCommand command( connections, COMMANDTYPE_CO_OBJECT,
                                 CMD_OBJECT_INSTANCE, _object->getID(),
                                 instanceID, version, 0, 0, true, 0, 0 );
     command << NodeID::ZERO << _object->getInstanceID();

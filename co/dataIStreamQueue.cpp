@@ -17,7 +17,8 @@
 
 #include "dataIStreamQueue.h"
 
-#include "command.h"
+#include "buffer.h"
+#include "objectDataCommand.h"
 #include "objectDataIStream.h"
 
 namespace co
@@ -73,7 +74,7 @@ void DataIStreamQueue::recycle( ObjectDataIStream* stream )
 #endif
 }
 
-bool DataIStreamQueue::addDataPacket( const uint128_t& key, Command& command )
+bool DataIStreamQueue::addDataPacket( const uint128_t& key, BufferPtr buffer )
 {
     LB_TS_THREAD( _thread );
     LBASSERTINFO( _pending.size() < 100, "More than 100 pending commits");
@@ -85,7 +86,7 @@ bool DataIStreamQueue::addDataPacket( const uint128_t& key, Command& command )
     else
         istream = i->second;
 
-    istream->addDataPacket( &command );
+    istream->addDataPacket( buffer );
     if( istream->isReady( ))
     {
         if( i != _pending.end( ))

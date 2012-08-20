@@ -28,7 +28,7 @@ namespace co
 namespace detail { class ObjectDataOCommand; }
 
 /** A DataOStream based command for co::ObjectDataOStream. */
-class ObjectDataOCommand : protected ObjectOCommand
+class ObjectDataOCommand : public ObjectOCommand
 {
 public:
     ObjectDataOCommand( const Connections& receivers, const uint32_t type,

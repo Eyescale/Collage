@@ -20,9 +20,9 @@
 #define CO_NODE_H
 
 #include <co/dispatcher.h>        // base class
+#include <co/commands.h>          // for COMMANDTYPE_CO_NODE enum
 #include <co/connection.h>        // used in inline template method
 #include <co/nodeType.h>          // for NODETYPE_CO_NODE enum
-#include <co/packets.h>           // for PACKETTYPE_CO_NODE enum
 #include <co/types.h>
 
 namespace co
@@ -102,7 +102,7 @@ namespace detail { class Node; }
          * @param multicast prefer multicast connection for sending
          * @return the stream object to pass additional data to
          */
-        NodeOCommand send( uint32_t cmd, uint32_t type = PACKETTYPE_CO_NODE,
+        NodeOCommand send( uint32_t cmd, uint32_t type = COMMANDTYPE_CO_NODE,
                            bool multicast = false );
         //@}
 

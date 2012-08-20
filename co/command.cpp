@@ -17,7 +17,10 @@
 
 #include "command.h"
 
+#include "buffer.h"
 #include "node.h"
+#include "plugins/compressorTypes.h"
+
 
 namespace co
 {
@@ -26,133 +29,134 @@ namespace detail
 class Command
 {
 public:
-    Command( lunchbox::a_int32_t& freeCounter )
-        : _node()
-        , _dataSize( 0 )
-        , _master()
-        , _freeCount( freeCounter )
-        , _func( 0, 0 )
+    Command( BufferPtr buffer )
+        : _func( 0, 0 )
+        , _buffer( buffer )
+        , _type()
+        , _cmd()
     {}
 
-    NodePtr _node; //!< The node sending the packet
-    uint64_t _dataSize; //!< The size of the allocation
-    CommandPtr _master;
-    lunchbox::a_int32_t& _freeCount;
+    Command( const Command& rhs )
+        : _func( rhs._func )
+        , _buffer( rhs._buffer )
+        , _type()
+        , _cmd()
+    {}
+
+    void operator=( const Command& rhs )
+    {
+        _func = rhs._func;
+        _buffer = rhs._buffer;
+        _type = rhs._type;
+        _cmd = rhs._cmd;
+    }
+
     co::Dispatcher::Func _func;
+    BufferPtr _buffer;
+    CommandType _type;
+    uint32_t _cmd;
 };
 }
 
-size_t Command::getMinSize()
+Command::Command( BufferPtr buffer )
+    : DataIStream( )
+    , _impl( new detail::Command( buffer ))
 {
-    return 4096;
+    if( _impl->_buffer )
+        *this >> _impl->_type >> _impl->_cmd;
 }
 
-Command::Command( lunchbox::a_int32_t& freeCounter )
-    : lunchbox::Referenced()
-    , _impl( new detail::Command( freeCounter ))
-    , _packet( 0 )
-    , _data( 0 )
-{}
+Command::Command( const Command& rhs )
+    : DataIStream( )
+    , _impl( new detail::Command( *rhs._impl ))
+{
+    if( _impl->_buffer )
+        *this >> _impl->_type >> _impl->_cmd;
+}
+
+Command& Command::operator = ( const Command& rhs )
+{
+    if( this != &rhs )
+        *_impl = *rhs._impl;
+    return *this;
+}
 
 Command::~Command() 
 {
-    free();
     delete _impl;
 }
 
-void Command::deleteReferenced( const Referenced* object ) const
+CommandType Command::getType() const
 {
-    Command* command = const_cast< Command* >( this );
-    // DON'T 'command->_master = 0;', command is already reusable and _master
-    // may be set any time. alloc or clone_ will free old master.
-    ++command->_impl->_freeCount;
+    return _impl->_type;
 }
 
-size_t Command::alloc_( NodePtr node, const uint64_t size )
+uint32_t Command::getCommand() const
 {
-    LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller CommandCache
-    LBASSERTINFO( !_impl->_func.isValid(), *this );
-    LBASSERT( _impl->_freeCount > 0 );
-
-    --_impl->_freeCount;
-
-    size_t allocated = 0;
-    if( !_data )
-    {
-        _impl->_dataSize = LB_MAX( getMinSize(), size );
-        _data = static_cast< Packet* >( malloc( _impl->_dataSize ));
-        allocated = _impl->_dataSize;
-    }
-    else if( size > _impl->_dataSize )
-    {
-        allocated =  size - _impl->_dataSize;
-        _impl->_dataSize = LB_MAX( getMinSize(), size );
-        ::free( _data );
-        _data = static_cast< Packet* >( malloc( _impl->_dataSize ));
-    }
-
-    _impl->_node = node;
-    _impl->_func.clear();
-    _packet = _data;
-    _packet->size = size;
-    _impl->_master = 0;
-
-    return allocated;
+    return _impl->_cmd;
 }
 
-void Command::clone_( CommandPtr from )
+void Command::setType( const CommandType type )
 {
-    LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller CommandCache
-    LBASSERT( from->getRefCount() > 1 ); // caller CommandCache, self
-    LBASSERTINFO( !_impl->_func.isValid(), *this );
-    LBASSERT( _impl->_freeCount > 0 );
-
-    --_impl->_freeCount;
-
-    _impl->_node = from->_impl->_node;
-    _packet = from->_packet;
-    _impl->_master = from;
+    _impl->_type = type;
+    memcpy( _impl->_buffer->getData(), &type, sizeof( type ));
 }
 
-void Command::free()
+void Command::setCommand( const uint32_t cmd )
 {
-    LB_TS_THREAD( _writeThread );
-    LBASSERT( !_impl->_func.isValid( ));
+    _impl->_cmd = cmd;
+    memcpy( _impl->_buffer->getData() + sizeof( CommandType ),
+            &cmd, sizeof( cmd ));
+}
 
-    if( _data )
-        ::free( _data );
+BufferPtr Command::getBuffer()
+{
+    return _impl->_buffer;
+}
 
-    _data = 0;
-    _impl->_dataSize = 0;
-    _packet = 0;
-    _impl->_node = 0;
-    _impl->_master = 0;
+size_t Command::nRemainingBuffers() const
+{
+    return _impl->_buffer ? 1 : 0;
+}
+
+uint128_t Command::getVersion() const
+{
+    return uint128_t( 0, 0 );
+}
+
+NodePtr Command::getMaster()
+{
+    return getNode();
+}
+
+bool Command::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
+                             const void** chunkData, uint64_t* size )
+{
+    if( !_impl->_buffer )
+        return false;
+
+    *chunkData = _impl->_buffer->getData();
+    *size = _impl->_buffer->getDataSize();
+    *compressor = EQ_COMPRESSOR_NONE;
+    *nChunks = 1;
+
+    return true;
 }
 
 NodePtr Command::getNode() const
 {
-    return _impl->_node;
+    return _impl->_buffer->getNode();
 }
 
-uint64_t Command::getAllocationSize() const
+bool Command::isValid() const
 {
-    return _impl->_dataSize;
-}
-
-void Command::setDispatchFunction( const Dispatcher::Func& func )
-{
-    LBASSERT( !_impl->_func.isValid( ));
-    _impl->_func = func;
+    return _impl->_buffer;
 }
 
 bool Command::operator()()
 {
-    LBASSERT( _impl->_func.isValid( ));
-    Dispatcher::Func func = _impl->_func;
-    _impl->_func.clear();
-    return func( this );
+    Dispatcher::Func func = _impl->_buffer->getDispatchFunction();
+    return func( *this );
 }
 
 std::ostream& operator << ( std::ostream& os, const Command& command )
@@ -160,8 +164,8 @@ std::ostream& operator << ( std::ostream& os, const Command& command )
     if( command.isValid( ))
     {
         os << lunchbox::disableFlush << "command< ";
-        const Packet* packet = command.get< Packet >() ;
-        os << packet;
+        os << " type " << uint32_t( command.getType( ))
+           << " cmd " << command.getCommand();
         os << ", " << command.getNode() << " >" << lunchbox::enableFlush;
     }
     else

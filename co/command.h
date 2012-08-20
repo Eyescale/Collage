@@ -18,10 +18,8 @@
 #ifndef CO_COMMAND_H
 #define CO_COMMAND_H
 
-#include <lunchbox/referenced.h>    // base class
-
 #include <co/api.h>
-#include <co/node.h>
+#include <co/dataIStream.h>         // base class
 
 
 namespace co
@@ -36,82 +34,73 @@ namespace detail { class Command; }
      * to be instantiated by applications. It is the applications responsible to
      * provide the correct packet type to the templated get methods.
      */
-    class Command : public lunchbox::Referenced
+    class Command : public DataIStream
     {
     public:
-        explicit Command( lunchbox::a_int32_t& freeCounter ); //!< @internal
-        ~Command(); //!< @internal
+        Command( BufferPtr buffer );
+
+        Command( const Command& rhs );
+
+        Command& operator = ( const Command& rhs );
+
+        virtual ~Command();
 
         /** @name Data Access */
         //@{
-        /** @return a const pointer to the packet. @version 1.0 */
-        template< class P > const P* get() const
-            { LBASSERT( _packet ); return static_cast<P*>( _packet ); }
+        /** @return the command type. @version 1.0 */
+        CommandType getType() const;
 
-        /** @return a modifiable pointer to the packet. @version 1.0 */
-        template< class P > P* getModifiable()
-            { LBASSERT( _packet ); return static_cast<P*>( _packet ); }
+        /** @return the command. @version 1.0 */
+        uint32_t getCommand() const;
+
+        /** */
+        void setType( const CommandType type );
+
+        /**  */
+        void setCommand( const uint32_t cmd );
+
+        BufferPtr getBuffer();
+
+        template< typename T > T get()
+        {
+            T value;
+            *this >> value;
+            return value;
+        }
 
         /** @return the sending node proxy instance. @version 1.0 */
         NodePtr getNode() const;
 
-        /** Access the packet directly. @version 1.0 */
-        Packet* operator->() { LBASSERT(_packet); return _packet; }
-
-        /** Access the packet directly. @version 1.0 */
-        const Packet* operator->() const { LBASSERT(_packet); return _packet; }
-
         /** @internal @return true if the command has a valid packet. */
-        bool isValid() const { return ( _packet!=0 ); }
+        bool isValid() const;
 
-        /** @internal @return the amount of memory currently allocated. */
-        uint64_t getAllocationSize() const;
+        /** @internal */
+        //uint8_t* getData();
         //@}
 
         /** @internal @name Dispatch command functions.. */
         //@{
-        /** @internal Set the function to which the packet is dispatched. */
-        void setDispatchFunction( const Dispatcher::Func& func );
-
         /** Invoke and clear the command function of a dispatched command. */
         CO_API bool operator()();
         //@}
 
-        /** @internal @return true if the packet is no longer in use. */
-        bool isFree() const { return getRefCount() == 0; }
-
-        /** @internal @return the number of newly allocated bytes. */
-        size_t alloc_( NodePtr node, const uint64_t size );
-
-        /** 
-         * @internal Clone the from command into this command.
-         * 
-         * The command will share all data but the dispatch function. The
-         * command's allocation size will be 0 and it will never delete the
-         * shared data. The command will release its reference to the from
-         * command when it is released.
-         */
-        void clone_( CommandPtr from );
-
         void free(); //!< @internal
-
-        static size_t getMinSize(); //! @internal
 
     private:
         detail::Command* const _impl;
 
-        Command& operator = ( Command& rhs ); // disable assignment
-        Command( const Command& from );       // disable copy
         Command();                            // disable default ctor
 
-        Packet* _packet;    //!< The packet (this or master _data)
-        Packet* _data;      //!< Our allocated data
+        friend CO_API std::ostream& operator << (std::ostream&, const Command&);        
 
-        friend CO_API std::ostream& operator << (std::ostream&, const Command&);
-
-        virtual void deleteReferenced( const Referenced* object ) const;
-
-        LB_TS_VAR( _writeThread );
+        /** @internal @name DataIStream functions. */
+        //@{
+        virtual size_t nRemainingBuffers() const;
+        virtual uint128_t getVersion() const;
+        virtual NodePtr getMaster();
+        virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
+                                    const void** chunkData, uint64_t* size );
+        //@}
     };
 
     CO_API std::ostream& operator << ( std::ostream& os, const Command& );

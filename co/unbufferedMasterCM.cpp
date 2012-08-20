@@ -27,7 +27,6 @@
 
 namespace co
 {
-typedef CommandFunc<UnbufferedMasterCM> CmdFunc;
 
 UnbufferedMasterCM::UnbufferedMasterCM( Object* object )
         : VersionedMasterCM( object )

@@ -68,8 +68,6 @@ Object::~Object()
     _cm = 0;
 }
 
-typedef CommandFunc<Object> CmdFunc;
-
 void Object::attach( const UUID& id, const uint32_t instanceID )
 {
     LBASSERT( !isAttached() );
@@ -152,7 +150,7 @@ ObjectOCommand Object::send( NodePtr node, uint32_t cmd,
 {
     LBASSERT( isAttached() );
     Connections connections( 1, node->getConnection() );
-    return ObjectOCommand( connections, PACKETTYPE_CO_OBJECT,
+    return ObjectOCommand( connections, COMMANDTYPE_CO_OBJECT,
                            cmd, _id, instanceID );
 }
 

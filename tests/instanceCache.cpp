@@ -21,11 +21,14 @@
 
 #include <test.h>
 
+#include <co/buffer.h>
 #include <co/command.h>
 #include <co/commandCache.h>
 #include <co/init.h>
 #include <co/instanceCache.h>
+#include <co/nodeCommand.h>
 #include <co/localNode.h>
+#include <co/objectDataOCommand.h>
 #include <co/objectVersion.h>
 
 #include <lunchbox/rng.h>
@@ -81,19 +84,15 @@ private:
 int main( int argc, char **argv )
 {
     co::init( argc, argv );
+
     co::CommandCache commandCache;
     co::LocalNodePtr node = new co::LocalNode;
+    co::BufferPtr buffer = commandCache.alloc( node, PACKET_SIZE );
 
-//    co::ObjectInstancePacket pkg( co::NodeID::ZERO, 0 );
-//    pkg.last = true;
-//    pkg.dataSize = PACKET_SIZE;
-//    pkg.version = 1;
-//    pkg.sequence = 0;
-
-    co::CommandPtr command = commandCache.alloc( node, PACKET_SIZE );
-//    co::ObjectInstancePacket* packet =
-//        command->getModifiable< co::ObjectInstancePacket >();
-//    memcpy( packet, &pkg, sizeof( pkg ));
+    co::ObjectDataOCommand packet( co::Connections(), co::COMMANDTYPE_CO_NODE,
+                                   co::CMD_NODE_OBJECT_INSTANCE, co::UUID(), 0,
+                                   1, 0, PACKET_SIZE, true, 0, 0 );
+    buffer->swap( packet.getBuffer( ));
 
     Reader** readers = static_cast< Reader** >( 
         alloca( N_READER * sizeof( Reader* )));
@@ -105,7 +104,7 @@ int main( int argc, char **argv )
     size_t ops = 0;
 
     for( lunchbox::UUID key; key.low() < 65536; ++key ) // Fill cache
-        if( !cache.add( co::ObjectVersion( key, 1 ), 1, command ))
+        if( !cache.add( co::ObjectVersion( key, 1 ), 1, buffer ))
             break;
 
     _clock.reset();
@@ -125,12 +124,12 @@ int main( int argc, char **argv )
             ++ops;
             if( cache.erase( key.identifier ))
             {
-                TEST( cache.add( key, 1, command ));
+                TEST( cache.add( key, 1, buffer ));
                 ops += 2;
                 hits += 2;
             }
         }
-        else if( cache.add( key, 1, command ))
+        else if( cache.add( key, 1, buffer ))
             ++hits;
         ++ops;
     }
@@ -164,8 +163,8 @@ int main( int argc, char **argv )
     std::cout << cache << std::endl;
 
     TESTINFO( cache.getSize() == 0, cache.getSize( ));
-    TEST( command->getRefCount() ==  1 );
-    command = 0;
+    TEST( buffer->getRefCount() ==  1 );
+    buffer = 0;
 
     TEST( co::exit( ));
     return EXIT_SUCCESS;

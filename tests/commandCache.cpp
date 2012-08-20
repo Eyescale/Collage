@@ -17,6 +17,7 @@
 
 #include <test.h>
 
+#include <co/buffer.h>
 #include <co/command.h>
 #include <co/commandCache.h>
 #include <co/commandQueue.h>
@@ -32,15 +33,6 @@
 
 uint64_t rTime = 1;
 lunchbox::SpinLock _lock;
-
-struct Packet : public co::Packet
-{
-    Packet()
-        {
-            command        = 0;
-            size           = sizeof( Packet ); 
-        }
-};
 
 class Reader : public co::Dispatcher, public lunchbox::Thread
 {
@@ -68,13 +60,16 @@ protected:
             _running = true;
             while( _running )
             {
-                co::CommandPtr command = _queue.pop();
-                TEST( command->getRefCount() > 0 );
+                co::BufferPtr buffer = _queue.pop();
+                TEST( buffer->getRefCount() > 0 );
                 // Writer callstack + self reference
-                TESTINFO( index == 0 || command->getRefCount() < 5,
-                          index << ", " << command->getRefCount() );
-                TEST( (*command)( ));
-                TEST( command->getRefCount() > 0 );
+                TESTINFO( index == 0 || buffer->getRefCount() < 7,
+                          index << ", " << buffer->getRefCount() );
+                {
+                    co::Command command( buffer );
+                    TEST( command( ));
+                }
+                TEST( buffer->getRefCount() > 0 );
             }
             TEST( _queue.isEmpty( ));
             lunchbox::ScopedFastWrite mutex( _lock );
@@ -104,20 +99,20 @@ int main( int argc, char **argv )
         lunchbox::Clock clock;
         while( clock.getTime64() < RUNTIME )
         {
-            co::CommandPtr command = cache.alloc( node, sizeof( Packet ));
-            Packet* packet = command->getModifiable< Packet >();
-            *packet = Packet();
+            co::BufferPtr buffer = cache.alloc( node, 8 );
+            co::Command command( buffer );
+            command.setCommand( 0 );
 
-            readers[0].dispatchCommand( command );
+            readers[0].dispatchCommand( buffer );
 
             for( size_t i = 1; i < N_READER; ++i )
             {
-#if 1
-                co::CommandPtr clone = cache.clone( command );
+#if 0
+                co::BufferPtr clone = cache.clone( buffer );
 #else
-                co::CommandPtr clone = cache.alloc( node, node, sizeof( Packet));
-                Packet* packet2 = clone->getModifiable< Packet >();
-                *packet2 = Packet();
+                co::BufferPtr clone = cache.alloc( node, 8 );
+                co::Command cloneCommand( clone );
+                cloneCommand.setCommand( 0 );
 #endif
                 readers[i].dispatchCommand( clone );
             }
@@ -127,12 +122,11 @@ int main( int argc, char **argv )
 
         for( size_t i = 0; i < N_READER; ++i )
         {
-            co::CommandPtr command = cache.alloc( node, sizeof( Packet ));
-            Packet* packet = command->getModifiable< Packet >();
-            *packet = Packet();
-            packet->command = 1;
+            co::BufferPtr buffer = cache.alloc( node, 8 );
+            co::Command command( buffer );
+            command.setCommand( 1 );
 
-            readers[i].dispatchCommand( command );
+            readers[i].dispatchCommand( buffer );
             readers[i].join();
         }
 

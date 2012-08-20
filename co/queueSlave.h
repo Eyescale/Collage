@@ -63,7 +63,7 @@ public:
      * @return an item from the distributed queue, or 0 if the queue is empty.
      * @version 1.1.6
      */
-    CO_API CommandPtr pop();
+    CO_API ObjectCommand pop();
 
 private:
     detail::QueueSlave* const _impl;

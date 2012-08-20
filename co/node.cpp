@@ -136,7 +136,7 @@ ConnectionPtr Node::useMulticast()
 
     {
         NodeOCommand packet( Connections( 1, data.connection ),
-                             PACKETTYPE_CO_NODE, CMD_NODE_ID );
+                             COMMANDTYPE_CO_NODE, CMD_NODE_ID );
         packet << node->getNodeID() << getType() << node->serialize();
     }
 

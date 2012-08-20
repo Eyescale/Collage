@@ -15,24 +15,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_OBJECTDATAICOMMAND_H
-#define CO_OBJECTDATAICOMMAND_H
+#ifndef CO_OBJECTDATACOMMAND_H
+#define CO_OBJECTDATACOMMAND_H
 
-#include <co/objectICommand.h>   // base class
-#include <co/objectCommand.h>    // CMD enums
+#include <co/objectCommand.h>   // base class
 
 
 namespace co
 {
 
-namespace detail { class ObjectDataICommand; }
+namespace detail { class ObjectDataCommand; }
 
 /** */
-class ObjectDataICommand : public ObjectICommand
+class ObjectDataCommand : public ObjectCommand
 {
 public:
-    ObjectDataICommand( CommandPtr command );
-    virtual ~ObjectDataICommand();
+    ObjectDataCommand( BufferPtr buffer );
+    ~ObjectDataCommand();
 
     virtual uint128_t getVersion() const;
 
@@ -47,8 +46,8 @@ public:
     bool isLast() const;
 
 private:
-    detail::ObjectDataICommand* const _impl;
+    detail::ObjectDataCommand* const _impl;
 };
 }
 
-#endif //CO_OBJECTDATAICOMMAND_H
+#endif //CO_OBJECTDATACOMMAND_H

@@ -19,12 +19,12 @@
 #pragma warning( disable: 4407 )
 
 #include <test.h>
+#include <co/buffer.h>
 #include <co/command.h>
 #include <co/commandCache.h>
 #include <co/commandFunc.h>
 #include <co/dispatcher.h>
 #include <co/localNode.h>
-#include <co/packets.h>
 
 size_t calls = 0;
 
@@ -61,16 +61,6 @@ public:
             TESTINFO( getBars() == 13, getBars( ));
             ++calls;
             return true;
-        }
-};
-
-struct Packet : public co::Packet
-{
-    Packet()
-        {
-            type = co::PACKETTYPE_CO_NODE;
-            command = co::CMD_NODE_CUSTOM;
-            size = sizeof( Packet ); 
         }
 };
 
@@ -124,18 +114,19 @@ int main( int argc, char **argv )
 {
     co::CommandCache cache;
     co::LocalNodePtr node = new co::LocalNode;
-    co::CommandPtr command = cache.alloc( node, sizeof( Packet ));
-    Packet* packet = command->getModifiable< Packet >();
+    co::BufferPtr buffer = cache.alloc( node, 8 );
 
-    *packet = Packet();
+    co::Command command( buffer );
+    command.setType( co::COMMANDTYPE_CO_NODE );
+    command.setCommand( co::CMD_NODE_CUSTOM );
 
     Bar bar;
     FooBar fooBar;
     BarFoo barFoo;
 
-    bar.dispatchCommand( command );
-    fooBar.dispatchCommand( command );
-    barFoo.dispatchCommand ( command );
+    bar.dispatchCommand( buffer );
+    fooBar.dispatchCommand( buffer );
+    barFoo.dispatchCommand ( buffer );
     TESTINFO( calls == 3, calls );
 
     return EXIT_SUCCESS;

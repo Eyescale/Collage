@@ -20,19 +20,19 @@
 #include <co/dataIStream.h>
 #include <co/dataOStream.h>
 
+#include <co/buffer.h>
 #include <co/connectionDescription.h>
 #include <co/command.h>
 #include <co/commandCache.h>
 #include <co/commandQueue.h>
 #include <co/connection.h>
 #include <co/init.h>
-#include <co/packets.h>
 #include <co/types.h>
 
 #include <lunchbox/thread.h>
 
 #include <co/objectDataOCommand.h> // private header
-#include <co/objectDataICommand.h> // private header
+#include <co/objectDataCommand.h> // private header
 #include <co/cpuCompressor.h> // private header
 
 // Tests the functionality of the DataOStream and DataIStream
@@ -51,7 +51,7 @@ protected:
                            const bool last )
         {
             co::ObjectDataOCommand command( getConnections(),
-                                            co::PACKETTYPE_CO_OBJECT,
+                                            co::COMMANDTYPE_CO_OBJECT,
                                             co::CMD_OBJECT_DELTA, co::UUID(),
                                             0, co::uint128_t(), 0, size, last,
                                             buffer, this );
@@ -61,10 +61,11 @@ protected:
 class DataIStream : public co::DataIStream
 {
 public:
-    void addDataCommand( co::CommandPtr command )
+    void addDataCommand( co::BufferPtr buffer )
         {
-            TESTINFO( (*command)->command == co::CMD_OBJECT_DELTA, command );
-            _commands.push( command );
+            co::ObjectDataCommand command( buffer );
+            TESTINFO( command.getCommand() == co::CMD_OBJECT_DELTA, command );
+            _commands.push( buffer );
         }
 
     virtual size_t nRemainingBuffers() const { return _commands.getSize(); }
@@ -75,18 +76,18 @@ protected:
     virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
                                 const void** chunkData, uint64_t* size )
         {
-            co::CommandPtr command = _commands.tryPop();
-            if( !command )
+            co::BufferPtr buffer = _commands.tryPop();
+            if( !buffer )
                 return false;
 
-            co::ObjectDataICommand stream( command );
+            co::ObjectDataCommand command( buffer );
 
-            TEST( stream.getCommand() == co::CMD_OBJECT_DELTA );
+            TEST( command.getCommand() == co::CMD_OBJECT_DELTA );
 
-            *size = stream.getDataSize();
-            *compressor = stream.getCompressor();
-            *nChunks = stream.getChunks();
-            *chunkData = stream.getRemainingBuffer( *size );
+            *size = command.getDataSize();
+            *compressor = command.getCompressor();
+            *nChunks = command.getChunks();
+            *chunkData = command.getRemainingBuffer( *size );
             return true;
         }
 
@@ -162,22 +163,19 @@ int main( int argc, char **argv )
         TEST( connection->recvSync( 0, 0 ));
         TEST( size );
 
-        co::CommandPtr command = commandCache.alloc( 0, size );
-
-        char* ptr = reinterpret_cast< char* >(
-            command->getModifiable< co::Packet >( )) + sizeof( size );
-        connection->recvNB( ptr, size );
+        co::BufferPtr buffer = commandCache.alloc( 0, size );
+        connection->recvNB( buffer->getData(), size );
         TEST( connection->recvSync( 0, 0 ) );
-        TEST( command.isValid( ));
-        
-        switch( (*command)->command )
+        TEST( buffer->isValid( ));
+
+        co::ObjectDataCommand command( buffer );
+        switch( command.getCommand( ))
         {
             case co::CMD_OBJECT_DELTA:
             {
-                stream.addDataCommand( command );
-                TEST( !command->isFree( ));
-                co::ObjectDataICommand streamPkg( command );
-                receiving = !streamPkg.isLast();
+                stream.addDataCommand( buffer );
+                TEST( !buffer->isFree( ));
+                receiving = !command.isLast();
                 break;
             }
             default:

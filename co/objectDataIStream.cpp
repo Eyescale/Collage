@@ -17,9 +17,10 @@
 
 #include "objectDataIStream.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "commands.h"
-#include "objectDataICommand.h"
+#include "objectDataCommand.h"
 
 #include <co/plugins/compressor.h>
 
@@ -37,7 +38,7 @@ ObjectDataIStream::~ObjectDataIStream()
 
 ObjectDataIStream::ObjectDataIStream( const ObjectDataIStream& from )
         : DataIStream( from )
-        , _commands( from._commands )
+        , _buffers( from._buffers )
         , _version( from._version )
 {
 }
@@ -50,28 +51,29 @@ void ObjectDataIStream::reset()
 
 void ObjectDataIStream::_reset()
 {
-    _usedCommand = 0;
-    _commands.clear();
+    _usedBuffer = 0;
+    _buffers.clear();
     _version = VERSION_INVALID;
 }
 
-void ObjectDataIStream::addDataPacket( CommandPtr command )
+void ObjectDataIStream::addDataPacket( BufferPtr buffer )
 {
     LB_TS_THREAD( _thread );
     LBASSERT( !isReady( ));
 
-    ObjectDataICommand stream( command );
-#ifndef NDEBUG    
-    const uint128_t& version = stream.getVersion();
-    const uint32_t sequence = stream.getSequence();
 
-    if( _commands.empty( ))
+    ObjectDataCommand command( buffer );
+#ifndef NDEBUG
+    const uint128_t& version = command.getVersion();
+    const uint32_t sequence = command.getSequence();
+
+    if( _buffers.empty( ))
     {
         LBASSERT( sequence == 0 );
     }
     else
     {
-        ObjectDataICommand previous( _commands.back() );
+        ObjectDataCommand previous( _buffers.back() );
         const uint128_t& previousVersion = previous.getVersion();
         const uint32_t previousSequence = previous.getSequence();
         LBASSERTINFO( sequence == previousSequence+1,
@@ -80,98 +82,98 @@ void ObjectDataIStream::addDataPacket( CommandPtr command )
     }
 #endif
 
-    _commands.push_back( command );
-    if( stream.isLast( ))
+    _buffers.push_back( buffer );
+    if( command.isLast( ))
         _setReady();
 }
 
 bool ObjectDataIStream::hasInstanceData() const
 {
-    if( !_usedCommand && _commands.empty( ))
+    if( !_usedBuffer && _buffers.empty( ))
     {
         LBUNREACHABLE;
         return false;
     }
 
-    const CommandPtr command = _usedCommand ? _usedCommand : _commands.front();
-    return( (*command)->command == CMD_OBJECT_INSTANCE );
+    const BufferPtr buffer = _usedBuffer ? _usedBuffer : _buffers.front();
+    ObjectDataCommand cmd( buffer );
+    return( cmd.getCommand() == CMD_OBJECT_INSTANCE );
 }
 
 NodePtr ObjectDataIStream::getMaster()
 {
-    if( !_usedCommand && _commands.empty( ))
+    if( !_usedBuffer && _buffers.empty( ))
         return 0;
 
-    const CommandPtr command = _usedCommand ? _usedCommand : _commands.front();
-    return command->getNode();
+    const BufferPtr buffer = _usedBuffer ? _usedBuffer : _buffers.front();
+    return buffer->getNode();
 }
 
 size_t ObjectDataIStream::getDataSize() const
 {
     size_t size = 0;
-    for( CommandDequeCIter i = _commands.begin(); i != _commands.end(); ++i )
+    for( BufferDequeCIter i = _buffers.begin(); i != _buffers.end(); ++i )
     {
-        const CommandPtr command = *i;
-        ObjectDataICommand stream( command );
-        size += stream.getDataSize();
+        const BufferPtr buffer = *i;
+        size += buffer->getDataSize();
     }
     return size;
 }
 
 uint128_t ObjectDataIStream::getPendingVersion() const
 {
-    if( _commands.empty( ))
+    if( _buffers.empty( ))
         return VERSION_INVALID;
 
-    const CommandPtr command = _commands.back();
-    ObjectDataICommand stream( command );
-    return stream.getVersion();
+    const BufferPtr buffer = _buffers.back();
+    ObjectDataCommand cmd( buffer );
+    return cmd.getVersion();
 }
 
-const CommandPtr ObjectDataIStream::getNextCommand()
+const BufferPtr ObjectDataIStream::_getNextBuffer()
 {
-    if( _commands.empty( ))
-        _usedCommand = 0;
+    if( _buffers.empty( ))
+        _usedBuffer = 0;
     else
     {
-        _usedCommand = _commands.front();
-        _commands.pop_front();
+        _usedBuffer = _buffers.front();
+        _buffers.pop_front();
     }
-    return _usedCommand;
+    return _usedBuffer;
 }
 
 bool ObjectDataIStream::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
                                        const void** chunkData, uint64_t* size )
 {
-    const CommandPtr command = getNextCommand();
-    if( !command )
+    BufferPtr buffer = _getNextBuffer();
+    if( !buffer )
         return false;
 
-    ObjectDataICommand stream( command );
+    ObjectDataCommand command( buffer );
 
-    LBASSERT( stream.getCommand() == CMD_OBJECT_INSTANCE ||
-              stream.getCommand() == CMD_OBJECT_DELTA ||
-              stream.getCommand() == CMD_OBJECT_SLAVE_DELTA );
+    LBASSERT( command.getCommand() == CMD_OBJECT_INSTANCE ||
+              command.getCommand() == CMD_OBJECT_DELTA ||
+              command.getCommand() == CMD_OBJECT_SLAVE_DELTA );
 
-    const uint64_t dataSize = stream.getDataSize();
+    const uint64_t dataSize = command.getDataSize();
 
     if( dataSize == 0 ) // empty packet
         return getNextBuffer( compressor, nChunks, chunkData, size );
 
     *size = dataSize;
-    *compressor = stream.getCompressor();
-    *nChunks = stream.getChunks();
-    switch( stream.getCommand( ))
+    *compressor = command.getCompressor();
+    *nChunks = command.getChunks();
+    switch( command.getCommand( ))
     {
     case CMD_OBJECT_INSTANCE:
-        stream.get< NodeID >();
-        stream.get< uint32_t >();
+        command.get< NodeID >();
+        command.get< uint32_t >();
         break;
     case CMD_OBJECT_SLAVE_DELTA:
-        stream.get< UUID >();
+        command.get< UUID >();
         break;
     }
-    *chunkData = stream.getRemainingBuffer( dataSize );
+    *chunkData = command.getRemainingBuffer( dataSize );
 
     return true;
 }

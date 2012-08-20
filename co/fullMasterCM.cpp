@@ -17,10 +17,10 @@
 
 #include "fullMasterCM.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "log.h"
 #include "node.h"
-#include "nodeICommand.h"
 #include "object.h"
 #include "objectDataIStream.h"
 
@@ -34,8 +34,6 @@ namespace
 lunchbox::a_int32_t _bytesBuffered;
 #endif
 }
-
-typedef CommandFunc<FullMasterCM> CmdFunc;
 
 FullMasterCM::FullMasterCM( Object* object )
         : VersionedMasterCM( object )
@@ -164,9 +162,11 @@ void FullMasterCM::_obsolete()
 }
 
 void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
-                               Command& command, uint128_t replyVersion,
+                               Command& comd, uint128_t replyVersion,
                                bool replyUseCache )
 {
+    Command command( comd.getBuffer( ));
+
     _checkConsistency();
 
     const uint128_t oldest = _instanceDatas.front()->os.getVersion();
@@ -180,16 +180,15 @@ void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
                << version << std::endl;
 #endif
 
-    NodeICommand stream( &command );
-    /*const uint128_t& requested = */stream.get< uint128_t >();
-    const uint128_t& minCachedVersion = stream.get< uint128_t >();
-    const uint128_t& maxCachedVersion = stream.get< uint128_t >();
-    const UUID& id = stream.get< UUID >();
-    /*const uint64_t maxVersion = */stream.get< uint64_t >();
-    const uint32_t requestID = stream.get< uint32_t >();
-    const uint32_t instanceID = stream.get< uint32_t >();
-    /*const uint32_t masterInstanceID = */stream.get< uint32_t >();
-    const bool useCache = stream.get< bool >();
+    /*const uint128_t& requested = */command.get< uint128_t >();
+    const uint128_t& minCachedVersion = command.get< uint128_t >();
+    const uint128_t& maxCachedVersion = command.get< uint128_t >();
+    const UUID& id = command.get< UUID >();
+    /*const uint64_t maxVersion = */command.get< uint64_t >();
+    const uint32_t requestID = command.get< uint32_t >();
+    const uint32_t instanceID = command.get< uint32_t >();
+    /*const uint32_t masterInstanceID = */command.get< uint32_t >();
+    const bool useCache = command.get< bool >();
 
     replyVersion = start;
     if( replyUseCache )

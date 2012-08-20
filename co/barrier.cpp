@@ -18,13 +18,14 @@
 
 #include "barrier.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "connection.h"
 #include "dataIStream.h"
 #include "dataOStream.h"
 #include "global.h"
 #include "log.h"
-#include "objectICommand.h"
+#include "objectCommand.h"
 #include "objectOCommand.h"
 #include "barrierCommand.h"
 #include "exception.h"
@@ -191,18 +192,19 @@ void Barrier::enter( const uint32_t timeout )
                          << ", height " << _impl->height << std::endl;
 }
 
-bool Barrier::_cmdEnter( Command& command )
+bool Barrier::_cmdEnter( Command& cmd )
 {
+    ObjectCommand command( cmd.getBuffer( ));
+
     LB_TS_THREAD( _thread );
     LBASSERTINFO( !_impl->master || _impl->master == getLocalNode(),
                   _impl->master );
     LBLOG( LOG_BARRIER ) << "handle barrier enter " << command << " barrier v"
                          << getVersion() << std::endl;
 
-    ObjectICommand stream( &command );
-    const uint128_t version = stream.get< uint128_t >();
-    const uint32_t incarnation = stream.get< uint32_t >();
-    const uint32_t timeout = stream.get< uint32_t >();
+    const uint128_t version = command.get< uint128_t >();
+    const uint32_t incarnation = command.get< uint32_t >();
+    const uint32_t timeout = command.get< uint32_t >();
 
     Request& request = _impl->enteredNodes[ version ];
  
@@ -297,7 +299,7 @@ void Barrier::_sendNotify( const uint128_t& version, NodePtr node )
     else
     {
         LBLOG( LOG_BARRIER ) << "Unlock " << node << std::endl;
-        node->send( CMD_BARRIER_ENTER_REPLY, PACKETTYPE_CO_OBJECT )
+        node->send( CMD_BARRIER_ENTER_REPLY, COMMANDTYPE_CO_OBJECT )
                 << getID() << EQ_INSTANCE_ALL << version;
     }
 }
@@ -331,12 +333,12 @@ void Barrier::_cleanup( const uint64_t time )
     }
 }
 
-bool Barrier::_cmdEnterReply( Command& command )
+bool Barrier::_cmdEnterReply( Command& cmd )
 {
+    ObjectCommand command( cmd.getBuffer( ));
     LB_TS_THREAD( _thread );
     LBLOG( LOG_BARRIER ) << "Got ok, unlock local user(s)" << std::endl;
-    ObjectICommand stream( &command );
-    const uint128_t version = stream.get< uint128_t >();
+    const uint128_t version = command.get< uint128_t >();
     
     if( version == getVersion( ))
         ++_impl->leaveNotify;

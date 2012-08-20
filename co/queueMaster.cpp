@@ -18,10 +18,11 @@
 
 #include "queueMaster.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "commandCache.h"
 #include "dataOStream.h"
-#include "objectICommand.h"
+#include "objectCommand.h"
 #include "objectOCommand.h"
 #include "queueCommand.h"
 #include "queueItem.h"
@@ -41,12 +42,13 @@ public:
     {}
 
     /** The command handler functions. */
-    bool cmdGetItem( co::Command& command )
+    bool cmdGetItem( co::Command& comd )
     {
-        co::ObjectICommand stream( &command );
-        const uint32_t itemsRequested = stream.get< uint32_t >();
-        const uint32_t slaveInstanceID = stream.get< uint32_t >();
-        const int32_t requestID = stream.get< int32_t >();
+        co::ObjectCommand command( comd.getBuffer( ));
+
+        const uint32_t itemsRequested = command.get< uint32_t >();
+        const uint32_t slaveInstanceID = command.get< uint32_t >();
+        const int32_t requestID = command.get< int32_t >();
 
         typedef std::vector< lunchbox::Bufferb* > Items;
         Items items;
@@ -55,7 +57,7 @@ public:
         for( Items::const_iterator i = items.begin(); i != items.end(); ++i )
         {
             Connections connections( 1, command.getNode()->getConnection( ));
-            co::ObjectOCommand cmd( connections, PACKETTYPE_CO_OBJECT,
+            co::ObjectOCommand cmd( connections, COMMANDTYPE_CO_OBJECT,
                                     CMD_QUEUE_ITEM, masterID, slaveInstanceID );
 
             const lunchbox::Bufferb* item = *i;
@@ -65,8 +67,8 @@ public:
         }
 
         if( itemsRequested > items.size( ))
-            command.getNode()->send( CMD_QUEUE_EMPTY, PACKETTYPE_CO_OBJECT )
-                    << stream.getObjectID() << slaveInstanceID << requestID;
+            command.getNode()->send( CMD_QUEUE_EMPTY, COMMANDTYPE_CO_OBJECT )
+                    << command.getObjectID() << slaveInstanceID << requestID;
         return true;
     }
 

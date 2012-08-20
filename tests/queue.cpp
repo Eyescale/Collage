@@ -22,7 +22,7 @@
 #include <co/connectionDescription.h>
 #include <co/init.h>
 #include <co/node.h>
-#include <co/objectICommand.h>
+#include <co/objectCommand.h>
 #include <co/queueItem.h>
 #include <co/queueMaster.h>
 #include <co/queueSlave.h>
@@ -48,25 +48,22 @@ int main( int argc, char **argv )
     qm->push() << 1.5f << false << co::VERSION_FIRST;
 
     {
-        co::CommandPtr c1 = qs->pop();
-        co::CommandPtr c2 = qs->pop();
-        co::CommandPtr c3 = qs->pop();
-        co::CommandPtr c4 = qs->pop();
-        co::CommandPtr c5 = qs->pop();
+        co::ObjectCommand c1 = qs->pop();
+        co::ObjectCommand c2 = qs->pop();
+        co::ObjectCommand c3 = qs->pop();
+        co::ObjectCommand c4 = qs->pop();
+        co::ObjectCommand c5 = qs->pop();
 
-        TEST( c1 );
-        TEST( c2 );
-        co::ObjectICommand c2cmd( c2 );
-        TEST( c2cmd.get< uint32_t >() == 42 )
-        TEST( c3 );
-        co::ObjectICommand c3cmd( c3 );
-        TEST( c3cmd.get< std::string >() == "hallo" )
-        TEST( c4 );
-        co::ObjectICommand c4cmd( c4 );
-        TEST( c4cmd.get< float >() == 1.5f )
-        TEST( c4cmd.get< bool >() == false )
-        TEST( c4cmd.get< co::uint128_t >() == co::VERSION_FIRST )
-        TEST( !c5 );
+        TEST( c1.isValid( ));
+        TEST( c2.isValid( ));
+        TEST( c2.get< uint32_t >() == 42u )
+        TEST( c3.isValid( ));
+        TEST( c3.get< std::string >() == "hallo" )
+        TEST( c4.isValid( ));
+        TEST( c4.get< float >() == 1.5f )
+        TEST( c4.get< bool >() == false )
+        TEST( c4.get< co::uint128_t >() == co::VERSION_FIRST )
+        TEST( !c5.isValid( ));
     }
 
     lunchbox::sleep(10);

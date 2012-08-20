@@ -27,8 +27,6 @@
 namespace co
 {
 
-typedef CommandFunc<DeltaMasterCM> CmdFunc;
-
 DeltaMasterCM::DeltaMasterCM( Object* object )
         : FullMasterCM( object )
 #pragma warning(push)
