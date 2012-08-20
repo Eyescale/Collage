@@ -50,11 +50,6 @@ Buffer::Buffer( lunchbox::a_int32_t& freeCounter )
 {
 }
 
-//Buffer::Buffer( const uint64_t size )
-//    : lunchbox::Bufferb( size )
-//{
-//}
-
 Buffer::~Buffer()
 {
 }
@@ -74,7 +69,7 @@ bool Buffer::isValid() const
     return getSize() > 0;
 }
 
-size_t Buffer::alloc_( NodePtr node, const uint64_t size )
+size_t Buffer::alloc( NodePtr node, const uint64_t size )
 {
     LB_TS_THREAD( _writeThread );
     LBASSERT( getRefCount() == 1 ); // caller CommandCache
@@ -91,7 +86,7 @@ size_t Buffer::alloc_( NodePtr node, const uint64_t size )
     return getSize();
 }
 
-void Buffer::clone_( BufferPtr from )
+void Buffer::clone( BufferPtr from )
 {
     LB_TS_THREAD( _writeThread );
     LBASSERT( getRefCount() == 1 ); // caller CommandCache

@@ -27,7 +27,7 @@ namespace co
 namespace detail { class CommandCache; }
     
     /**
-     * A command cache handles the reuse of allocated packets for a node.
+     * A command cache handles the reuse of allocated buffers for a node.
      *
      * Commands are retained and released whenever they are not directly
      * processed, e.g., when pushed to another thread using a CommandQueue.

@@ -257,7 +257,7 @@ BufferPtr CommandCache::alloc( NodePtr node, const uint64_t size )
 
     const Cache which = (size >Buffer::getMinSize()) ? CACHE_BIG : CACHE_SMALL;
     BufferPtr buffer = _impl->newCommand( which );
-    buffer->alloc_( node, size );
+    buffer->alloc( node, size );
     return buffer;
 }
 
@@ -268,7 +268,7 @@ BufferPtr CommandCache::clone( BufferPtr from )
     const Cache which = ( from->getSize() > Buffer::getMinSize( ))
                                 ? CACHE_BIG : CACHE_SMALL;
     BufferPtr buffer = _impl->newCommand( which );
-    buffer->clone_( from );
+    buffer->clone( from );
     return buffer;
 }
 

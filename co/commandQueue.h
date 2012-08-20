@@ -26,7 +26,7 @@ namespace co
 {
 namespace detail { class CommandQueue; }
 
-    /** A thread-safe queue for Command packets. */
+    /** A thread-safe queue for Command buffers. */
     class CommandQueue : public lunchbox::NonCopyable
     {
     public:
@@ -39,13 +39,13 @@ namespace detail { class CommandQueue; }
         /** 
          * Push a command to the queue.
          * 
-         * @param packet the command packet.
+         * @param buffer the command buffer.
          * @version 1.0
          */
-        CO_API virtual void push( BufferPtr packet );
+        CO_API virtual void push( BufferPtr buffer );
 
         /** Push a command to the front of the queue. @version 1.0 */
-        CO_API virtual void pushFront( BufferPtr packet );
+        CO_API virtual void pushFront( BufferPtr buffer );
 
         /** 
          * Pop a command from the queue.

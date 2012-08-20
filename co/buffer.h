@@ -33,38 +33,40 @@ namespace detail { class Buffer; }
 class Buffer : public lunchbox::Bufferb, public lunchbox::Referenced
 {
 public:
-    Buffer( lunchbox::a_int32_t& freeCounter );
+    Buffer( lunchbox::a_int32_t& freeCounter ); //!< @internal
+    virtual ~Buffer(); //!< @internal
 
-    virtual ~Buffer();
-
+    /** @internal */
     NodePtr getNode() const;
 
-    /** @internal @return true if the packet is no longer in use. */
+    /** @internal @return the actual size of the buffers content. */
+    uint64_t getDataSize() const;
+
+    /** @internal @return true if the buffer has a valid data. */
+    bool isValid() const;
+
+    /** @internal @return true if the buffer is no longer in use. */
     bool isFree() const { return getRefCount() == 0; }
 
     /** @internal @return the number of newly allocated bytes. */
-    size_t alloc_( NodePtr node, const uint64_t size );
-
-    uint64_t getDataSize() const;
-
-    /** @internal @return true if the command has a valid packet. */
-    bool isValid() const;
+    size_t alloc( NodePtr node, const uint64_t size );
 
     /**
-     * @internal Clone the from command into this command.
+     * @internal Clone the from buffer into this buffer.
      *
      * The command will share all data but the dispatch function. The
      * command's allocation size will be 0 and it will never delete the
      * shared data. The command will release its reference to the from
      * command when it is released.
      */
-    void clone_( BufferPtr from );
+    void clone( BufferPtr from );
 
     void free(); //!< @internal
 
-    /** @internal Set the function to which the packet is dispatched. */
+    /** @internal Set the function to which the buffer is dispatched. */
     void setDispatchFunction( const Dispatcher::Func& func );
 
+    /** @internal @return the function to which the buffer is dispatched. */
     Dispatcher::Func getDispatchFunction() const;
 
     static size_t getMinSize(); //! @internal

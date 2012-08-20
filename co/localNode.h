@@ -472,7 +472,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         void   _redispatchCommands();
 
         /** The command functions. */
-        bool _cmdAckRequest( Command& packet );
+        bool _cmdAckRequest( Command& command );
         bool _cmdStopRcv( Command& command );
         bool _cmdStopCmd( Command& command );
         bool _cmdSetAffinity( Command& command );

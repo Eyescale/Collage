@@ -27,12 +27,12 @@ namespace co
 namespace detail { class Command; }
 
     /**
-     * A class managing received command packets.
+     * A class managing received commands.
      *
-     * This class is used by the LocalNode to pass received packets to the
+     * This class is used by the LocalNode to pass received buffers to the
      * Dispatcher and ultimately command handler functions. It is not intended
      * to be instantiated by applications. It is the applications responsible to
-     * provide the correct packet type to the templated get methods.
+     * provide the correct command type to the templated get methods.
      */
     class Command : public DataIStream
     {
@@ -53,14 +53,10 @@ namespace detail { class Command; }
         /** @return the command. @version 1.0 */
         uint32_t getCommand() const;
 
-        /** */
-        void setType( const CommandType type );
-
-        /**  */
-        void setCommand( const uint32_t cmd );
-
+        /** @internal @return the buffer containing the command data. */
         BufferPtr getBuffer();
 
+        /** @return a value from the command. */
         template< typename T > T get()
         {
             T value;
@@ -71,25 +67,26 @@ namespace detail { class Command; }
         /** @return the sending node proxy instance. @version 1.0 */
         NodePtr getNode() const;
 
-        /** @internal @return true if the command has a valid packet. */
+        /** @internal @return true if the command has a valid buffer. */
         bool isValid() const;
-
-        /** @internal */
-        //uint8_t* getData();
         //@}
 
         /** @internal @name Dispatch command functions.. */
         //@{
+        /** @internal Change the command type for subsequent dispatching. */
+        void setType( const CommandType type );
+
+        /** @internal Change the command for subsequent dispatching. */
+        void setCommand( const uint32_t cmd );
+
         /** Invoke and clear the command function of a dispatched command. */
         CO_API bool operator()();
         //@}
 
-        void free(); //!< @internal
-
     private:
         detail::Command* const _impl;
 
-        Command();                            // disable default ctor
+        Command(); // disable default ctor
 
         friend CO_API std::ostream& operator << (std::ostream&, const Command&);        
 

@@ -985,7 +985,9 @@ bool ObjectStore::_cmdInstance( Command& comd )
 
     const NodeID nodeID = command.get< NodeID >();
     const uint32_t masterInstanceID = command.get< uint32_t >();
+#ifndef NDEBUG
     const uint32_t instanceID = command.getInstanceID();
+#endif
     const uint32_t cmd = command.getCommand();
 
     command.setType( COMMANDTYPE_CO_OBJECT );
