@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -53,7 +53,7 @@ public:
 
     co::Dispatcher::Func _func;
     BufferPtr _buffer;
-    CommandType _type;
+    uint32_t _type;
     uint32_t _cmd;
 };
 }
@@ -81,12 +81,12 @@ Command& Command::operator = ( const Command& rhs )
     return *this;
 }
 
-Command::~Command() 
+Command::~Command()
 {
     delete _impl;
 }
 
-CommandType Command::getType() const
+uint32_t Command::getType() const
 {
     return _impl->_type;
 }

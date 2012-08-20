@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -48,7 +48,7 @@ namespace detail { class Command; }
         /** @name Data Access */
         //@{
         /** @return the command type. @version 1.0 */
-        CommandType getType() const;
+        uint32_t getType() const;
 
         /** @return the command. @version 1.0 */
         uint32_t getCommand() const;
@@ -88,7 +88,7 @@ namespace detail { class Command; }
 
         Command(); // disable default ctor
 
-        friend CO_API std::ostream& operator << (std::ostream&, const Command&);        
+        friend CO_API std::ostream& operator << (std::ostream&, const Command&);
 
         /** @internal @name DataIStream functions. */
         //@{
