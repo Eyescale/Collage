@@ -134,7 +134,7 @@ ConnectionPtr Node::useMulticast()
     LBINFO << "Announcing id " << node->getNodeID() << " to multicast group "
            << data.connection->getDescription() << std::endl;
 
-    NodeOCommand( Connections( 1, data.connection ), PACKETTYPE_CO_NODE,
+    NodeOCommand( Connections( 1, data.connection ), COMMANDTYPE_CO_NODE,
                   CMD_NODE_ID ) << node->getNodeID() << getType() 
                                 << node->serialize();
 

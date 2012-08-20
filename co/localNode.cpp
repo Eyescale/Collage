@@ -1025,7 +1025,7 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
     const uint32_t requestID = registerRequest( node.get( ));
 
     // send connect packet to peer
-    NodeOCommand( Connections( 1, connection ), PACKETTYPE_CO_NODE,
+    NodeOCommand( Connections( 1, connection ), COMMANDTYPE_CO_NODE,
                   CMD_NODE_CONNECT ) << getNodeID() << requestID << getType()
                                      << serialize();
 
@@ -1480,7 +1480,7 @@ bool LocalNode::_cmdConnect( Command& command )
                    << std::endl;
 
             // refuse connection
-            NodeOCommand( Connections( 1, connection ), PACKETTYPE_CO_NODE,
+            NodeOCommand( Connections( 1, connection ), COMMANDTYPE_CO_NODE,
                           CMD_NODE_CONNECT_REPLY) << nodeID << requestID
                                                   << nodeType;
 
@@ -1510,7 +1510,7 @@ bool LocalNode::_cmdConnect( Command& command )
     LBVERB << "Added node " << nodeID << std::endl;
 
     // send our information as reply
-    NodeOCommand( Connections( 1, connection ), PACKETTYPE_CO_NODE,
+    NodeOCommand( Connections( 1, connection ), COMMANDTYPE_CO_NODE,
                   CMD_NODE_CONNECT_REPLY ) << getNodeID() << requestID
                                            << getType() << serialize();
     return true;
