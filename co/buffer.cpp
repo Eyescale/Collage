@@ -52,6 +52,7 @@ Buffer::Buffer( lunchbox::a_int32_t& freeCounter )
 
 Buffer::~Buffer()
 {
+    free();
 }
 
 NodePtr Buffer::getNode() const
@@ -95,9 +96,8 @@ void Buffer::clone( BufferPtr from )
 
     --_impl->_freeCount;
 
-    // need clone() func in lunchbox::Buffer
-    //_data = from->getData();
-    //_size = from->getSize();
+    _data = from->getData();
+    _size = from->getSize();
 
     _impl->_dataSize = from->_impl->_dataSize;
     _impl->_node = from->_impl->_node;
@@ -108,6 +108,13 @@ void Buffer::free()
 {
     LB_TS_THREAD( _writeThread );
 
+    // if this buffer is a clone, don't dare to free the owner's data
+    if( _impl->_master )
+    {
+        _data = 0;
+        _size = 0;
+    }
+    _impl->_dataSize = 0;
     _impl->_node = 0;
     _impl->_master = 0;
 }
@@ -122,7 +129,6 @@ void Buffer::deleteReferenced( const Referenced* object ) const
 
 void Buffer::setDispatchFunction( const Dispatcher::Func& func )
 {
-    //LBASSERT( !_impl->_func.isValid( ));
     _impl->_func = func;
 }
 

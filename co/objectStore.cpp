@@ -5,12 +5,12 @@
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -49,7 +49,7 @@ typedef CommandFunc<ObjectStore> CmdFunc;
 ObjectStore::ObjectStore( LocalNode* localNode )
         : _localNode( localNode )
         , _instanceIDs( -0x7FFFFFFF )
-        , _instanceCache( new InstanceCache( Global::getIAttribute( 
+        , _instanceCache( new InstanceCache( Global::getIAttribute(
                               Global::IATTR_INSTANCE_CACHE_SIZE ) * LB_1MB ) )
 {
     LBASSERT( localNode );
@@ -96,20 +96,20 @@ ObjectStore::ObjectStore( LocalNode* localNode )
 ObjectStore::~ObjectStore()
 {
     LBVERB << "Delete ObjectStore @" << (void*)this << std::endl;
-    
+
 #ifndef NDEBUG
     if( !_objects->empty( ))
     {
         LBWARN << _objects->size() << " attached objects in destructor"
                << std::endl;
-        
+
         for( ObjectsHash::const_iterator i = _objects->begin();
              i != _objects->end(); ++i )
         {
             const Objects& objects = i->second;
-            LBWARN << "  " << objects.size() << " objects with id " 
+            LBWARN << "  " << objects.size() << " objects with id "
                    << i->first << std::endl;
-            
+
             for( Objects::const_iterator j = objects.begin();
                  j != objects.end(); ++j )
             {
@@ -146,13 +146,13 @@ void ObjectStore::disableInstanceCache()
 void ObjectStore::expireInstanceData( const int64_t age )
 {
     if( _instanceCache )
-        _instanceCache->expire( age ); 
+        _instanceCache->expire( age );
 }
 
 void ObjectStore::removeInstanceData( const NodeID& nodeID )
 {
     if( _instanceCache )
-        _instanceCache->remove( nodeID ); 
+        _instanceCache->remove( nodeID );
 }
 
 void ObjectStore::enableSendOnRegister()
@@ -182,7 +182,7 @@ NodeID ObjectStore::_findMasterNodeID( const UUID& identifier )
     // OPT: look up locally first?
     Nodes nodes;
     _localNode->getNodes( nodes );
-    
+
     // OPT: send to multiple nodes at once?
     for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
     {
@@ -210,7 +210,7 @@ NodeID ObjectStore::_findMasterNodeID( const UUID& identifier )
 //---------------------------------------------------------------------------
 // object mapping
 //---------------------------------------------------------------------------
-void ObjectStore::attachObject( Object* object, const UUID& id, 
+void ObjectStore::attachObject( Object* object, const UUID& id,
                                 const uint32_t instanceID )
 {
     LBASSERT( object );
@@ -238,7 +238,7 @@ uint32_t _genNextID( lunchbox::a_int32_t& val )
 }
 }
 
-void ObjectStore::_attachObject( Object* object, const UUID& id, 
+void ObjectStore::_attachObject( Object* object, const UUID& id,
                                  const uint32_t inInstanceID )
 {
     LBASSERT( object );
@@ -261,7 +261,7 @@ void ObjectStore::_attachObject( Object* object, const UUID& id,
 
     _localNode->flushCommands(); // redispatch pending commands
 
-    LBLOG( LOG_OBJECTS ) << "attached " << *object << " @" 
+    LBLOG( LOG_OBJECTS ) << "attached " << *object << " @"
                          << static_cast< void* >( object ) << std::endl;
 }
 
@@ -349,7 +349,7 @@ uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
     return LB_UNDEFINED_UINT32;
 }
 
-uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id, 
+uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
                                    const uint128_t& version, NodePtr master )
 {
     if( !master )
@@ -423,7 +423,7 @@ bool ObjectStore::mapObjectSync( const uint32_t requestID )
     if( requestID == LB_UNDEFINED_UINT32 )
         return false;
 
-    void* data = _localNode->getRequestData( requestID );    
+    void* data = _localNode->getRequestData( requestID );
     if( data == 0 )
         return false;
 
@@ -447,7 +447,7 @@ void ObjectStore::unmapObject( Object* object )
         return;
 
     const UUID& id = object->getID();
-    
+
     LBLOG( LOG_OBJECTS ) << "Unmap " << object << std::endl;
 
     object->notifyDetach();
@@ -455,7 +455,7 @@ void ObjectStore::unmapObject( Object* object )
     // send unsubscribe to master, master will send detach packet.
     LBASSERT( !object->isMaster( ));
     LB_TS_NOT_THREAD( _commandThread );
-    
+
     const uint32_t masterInstanceID = object->getMasterInstanceID();
     if( masterInstanceID != EQ_INSTANCE_INVALID )
     {
@@ -632,7 +632,7 @@ bool ObjectStore::dispatchObjectCommand( BufferPtr buffer )
 bool ObjectStore::_cmdFindMasterNodeID( Command& command )
 {
     LB_TS_THREAD( _commandThread );
-;
+
     const UUID& id = command.get< UUID >();
     const uint32_t requestID = command.get< uint32_t >();
     LBASSERT( id.isGenerated() );
@@ -688,7 +688,7 @@ bool ObjectStore::_cmdAttachObject( Command& command )
     const uint32_t instanceID = command.get< uint32_t >();
     const uint32_t requestID = command.get< uint32_t >();
 
-    Object* object = static_cast< Object* >( _localNode->getRequestData( 
+    Object* object = static_cast< Object* >( _localNode->getRequestData(
                                                  requestID ));
     _attachObject( object, objectID, instanceID );
     _localNode->serveRequest( requestID );
@@ -744,7 +744,7 @@ bool ObjectStore::_cmdRegisterObject( Command& command )
     item.object = object;
     _sendQueue.push_back( item );
 
-    const uint32_t size = Global::getIAttribute( 
+    const uint32_t size = Global::getIAttribute(
                              Global::IATTR_NODE_SEND_QUEUE_SIZE );
     while( _sendQueue.size() > size )
         _sendQueue.pop_front();
@@ -841,7 +841,7 @@ bool ObjectStore::_cmdMapObjectSuccess( Command& command )
     LBLOG( LOG_OBJECTS ) << "Cmd map object success " << command << std::endl;
 
     // set up change manager and attach object to dispatch table
-    Object* object = static_cast<Object*>( _localNode->getRequestData( 
+    Object* object = static_cast<Object*>( _localNode->getRequestData(
                                                                    requestID ));
     LBASSERT( object );
     LBASSERT( !object->isMaster( ));
@@ -874,7 +874,7 @@ bool ObjectStore::_cmdMapObjectReply( Command& command )
 
     if( result )
     {
-        Object* object = static_cast<Object*>( 
+        Object* object = static_cast<Object*>(
             _localNode->getRequestData( requestID ));
         LBASSERT( object );
         LBASSERT( !object->isMaster( ));
@@ -932,13 +932,13 @@ bool ObjectStore::_cmdUnsubscribeObject( Command& command )
             for( ObjectsCIter j = objects.begin(); j != objects.end(); ++j )
             {
                 Object* object = *j;
-                if( object->isMaster() && 
+                if( object->isMaster() &&
                     object->getInstanceID() == masterInstanceID )
                 {
                     object->removeSlave( node, slaveInstanceID );
                     break;
                 }
-            }   
+            }
         }
     }
 
@@ -996,7 +996,7 @@ bool ObjectStore::_cmdInstance( Command& comd )
     if( _instanceCache )
     {
         const ObjectVersion rev( command.getObjectID(), command.getVersion( ));
-#ifndef CO_AGGRESSIVE_CACHING // Issue #82: 
+#ifndef CO_AGGRESSIVE_CACHING // Issue #82:
         if( type != CMD_NODE_OBJECT_INSTANCE_PUSH )
 #endif
             _instanceCache->add( rev, masterInstanceID,
@@ -1092,7 +1092,7 @@ bool ObjectStore::_cmdObjectPush( Command& command )
     const uint128_t& typeID = command.get< uint128_t >();
 
     ObjectDataIStream* is = _pushData.pull( objectID );
-    
+
     _localNode->objectPush( groupID, typeID, objectID, *is );
     _pushData.recycle( is );
     return true;
@@ -1105,7 +1105,7 @@ std::ostream& operator << ( std::ostream& os, ObjectStore* objectStore )
         os << "NULL objectStore";
         return os;
     }
-    
+
     os << "objectStore (" << (void*)objectStore << ")";
 
     return os;
