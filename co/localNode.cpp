@@ -1025,11 +1025,9 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
     const uint32_t requestID = registerRequest( node.get( ));
 
     // send connect packet to peer
-    {
-        NodeOCommand packet( Connections( 1, connection ), COMMANDTYPE_CO_NODE,
-                             CMD_NODE_CONNECT );
-        packet << getNodeID() << requestID << getType() << serialize();
-    }
+    NodeOCommand( Connections( 1, connection ), PACKETTYPE_CO_NODE,
+                  CMD_NODE_CONNECT ) << getNodeID() << requestID << getType()
+                                     << serialize();
 
     bool connected = false;
     if( !waitRequest( requestID, connected, 10000 /*ms*/ ))
@@ -1198,8 +1196,8 @@ void LocalNode::_handleDisconnect()
     {
         NodePtr node = i->second;
         node->ref(); // extend lifetime to give cmd handler a chance
-        send( CMD_NODE_REMOVE_NODE ) << node.get()
-                                     << uint32_t( LB_UNDEFINED_UINT32 );
+        send( CMD_NODE_REMOVE_NODE )
+            << node.get() << uint32_t( LB_UNDEFINED_UINT32 );
 
         if( node->getConnection() == connection )
             _closeNode( node );
@@ -1239,7 +1237,7 @@ bool LocalNode::_handleData()
     }
 
     LBASSERT( sizePtr );
-    uint64_t size = *reinterpret_cast< uint64_t* >( sizePtr );
+    const uint64_t size = *reinterpret_cast< uint64_t* >( sizePtr );
     if( bytes == 0 ) // fluke signal
     {
         LBWARN << "Erronous network event on " << connection->getDescription()
@@ -1482,11 +1480,9 @@ bool LocalNode::_cmdConnect( Command& command )
                    << std::endl;
 
             // refuse connection
-            {
-                NodeOCommand reply( Connections( 1, connection ),
-                                    COMMANDTYPE_CO_NODE, CMD_NODE_CONNECT_REPLY);
-                reply << nodeID << requestID << nodeType;
-            }
+            NodeOCommand( Connections( 1, connection ), PACKETTYPE_CO_NODE,
+                          CMD_NODE_CONNECT_REPLY) << nodeID << requestID
+                                                  << nodeType;
 
             // NOTE: There is no close() here. The reply packet above has to be
             // received by the peer first, before closing the connection.
@@ -1514,12 +1510,9 @@ bool LocalNode::_cmdConnect( Command& command )
     LBVERB << "Added node " << nodeID << std::endl;
 
     // send our information as reply
-    {
-        NodeOCommand reply( Connections( 1, connection ), COMMANDTYPE_CO_NODE,
-                            CMD_NODE_CONNECT_REPLY );
-        reply << getNodeID() << requestID << getType() << serialize();
-    }
-
+    NodeOCommand( Connections( 1, connection ), PACKETTYPE_CO_NODE,
+                  CMD_NODE_CONNECT_REPLY ) << getNodeID() << requestID
+                                           << getType() << serialize();
     return true;
 }
 
@@ -1698,7 +1691,7 @@ bool LocalNode::_cmdGetNodeData( Command& command )
     NodePtr node = getNode( nodeID );
     NodePtr toNode = command.getNode();
 
-    uint32_t nodeType;
+    uint32_t nodeType = NODETYPE_CO_INVALID;
     std::string nodeData;
     if( node.isValid( ))
     {
@@ -1707,14 +1700,9 @@ bool LocalNode::_cmdGetNodeData( Command& command )
         LBINFO << "Sent node data '" << nodeData << "' for " << nodeID << " to "
                << toNode << std::endl;
     }
-    else
-    {
-        LBVERB << "Node " << nodeID << " unknown" << std::endl;
-        nodeType = NODETYPE_CO_INVALID;
-    }
 
-    toNode->send( CMD_NODE_GET_NODE_DATA_REPLY ) << nodeID << requestID
-                                                 << nodeType << nodeData;
+    toNode->send( CMD_NODE_GET_NODE_DATA_REPLY )
+        << nodeID << requestID << nodeType << nodeData;
     return true;
 }
 

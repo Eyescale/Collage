@@ -271,9 +271,8 @@ void ObjectStore::detachObject( Object* object )
     LB_TS_NOT_THREAD( _receiverThread );
 
     const uint32_t requestID = _localNode->registerRequest();
-    _localNode->send( CMD_NODE_DETACH_OBJECT ) << object->getID()
-                                               << object->getInstanceID()
-                                               << requestID;
+    _localNode->send( CMD_NODE_DETACH_OBJECT )
+        << object->getID() << object->getInstanceID() << requestID;
     _localNode->waitRequest( requestID );
 }
 
@@ -412,11 +411,10 @@ uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
     }
 
     object->notifyAttach();
-    master->send( CMD_NODE_MAP_OBJECT ) << version << minCachedVersion
-                                        << maxCachedVersion << id
-                                        << object->getMaxVersions() << requestID
-                                        << _genNextID( _instanceIDs )
-                                        << masterInstanceID << useCache;
+    master->send( CMD_NODE_MAP_OBJECT )
+        << version << minCachedVersion << maxCachedVersion << id
+        << object->getMaxVersions() << requestID << _genNextID( _instanceIDs )
+        << masterInstanceID << useCache;
     return requestID;
 }
 
@@ -743,7 +741,7 @@ bool ObjectStore::_cmdRegisterObject( Command& command )
     SendQueueItem item;
     item.age = age ? age + _localNode->getTime64() :
                      std::numeric_limits< int64_t >::max();
-    item.object = reinterpret_cast< Object* >( object );
+    item.object = object;
     _sendQueue.push_back( item );
 
     const uint32_t size = Global::getIAttribute( 
@@ -816,11 +814,10 @@ bool ObjectStore::_cmdMapObject( Command& command )
     else
     {
         LBWARN << "Can't find master object to map " << id << std::endl;
-
         NodePtr node = command.getNode();
-        node->send( CMD_NODE_MAP_OBJECT_REPLY ) << node->getNodeID() << id
-                                                << version << requestID << false
-                                                << useCache << false;
+        node->send( CMD_NODE_MAP_OBJECT_REPLY )
+            << node->getNodeID() << id << version << requestID << false
+            << useCache << false;
     }
     return true;
 }

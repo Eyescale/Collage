@@ -179,9 +179,8 @@ void Barrier::enter( const uint32_t timeout )
 
     const uint32_t leaveVal = _impl->leaveNotify.get() + 1;
 
-    send( _impl->master, CMD_BARRIER_ENTER ) << getVersion()
-                                             << _impl->leaveNotify.get()
-                                             << timeout;
+    send( _impl->master, CMD_BARRIER_ENTER )
+        << getVersion() << _impl->leaveNotify.get() << timeout;
 
     if( timeout == LB_TIMEOUT_INDEFINITE )
         _impl->leaveNotify.waitEQ( leaveVal );
@@ -299,8 +298,7 @@ void Barrier::_sendNotify( const uint128_t& version, NodePtr node )
     else
     {
         LBLOG( LOG_BARRIER ) << "Unlock " << node << std::endl;
-        node->send( CMD_BARRIER_ENTER_REPLY, COMMANDTYPE_CO_OBJECT )
-                << getID() << EQ_INSTANCE_ALL << version;
+        send( node, CMD_BARRIER_ENTER_REPLY ) << version;
     }
 }
 
