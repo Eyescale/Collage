@@ -100,8 +100,9 @@ void Buffer::clone_( BufferPtr from )
 
     --_impl->_freeCount;
 
-    _data = from->getData();
-    _size = from->getSize();
+    // need clone() func in lunchbox::Buffer
+    //_data = from->getData();
+    //_size = from->getSize();
 
     _impl->_dataSize = from->_impl->_dataSize;
     _impl->_node = from->_impl->_node;
