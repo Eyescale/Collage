@@ -17,6 +17,7 @@
 
 #include "buffer.h"
 
+#include "localNode.h"
 #include "node.h"
 
 
@@ -30,6 +31,7 @@ public:
     Buffer( lunchbox::a_int32_t& freeCounter )
         : _freeCount( freeCounter )
         , _node()
+        , _localNode()
         , _master()
         , _dataSize( 0 )
         , _func( 0, 0 )
@@ -37,6 +39,7 @@ public:
 
     lunchbox::a_int32_t& _freeCount;
     NodePtr _node; //!< The node sending the packet
+    LocalNodePtr  _localNode; //!< The node receiving the packet
     BufferPtr _master;
     uint64_t _dataSize;
     co::Dispatcher::Func _func;
@@ -61,6 +64,11 @@ NodePtr Buffer::getNode() const
     return _impl->_node;
 }
 
+LocalNodePtr Buffer::getLocalNode() const
+{
+    return _impl->_localNode;
+}
+
 uint64_t Buffer::getDataSize() const
 {
     return _impl->_dataSize;
@@ -71,7 +79,7 @@ bool Buffer::isValid() const
     return getSize() > 0;
 }
 
-size_t Buffer::alloc( NodePtr node, const uint64_t size )
+size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
 {
     LB_TS_THREAD( _writeThread );
     LBASSERT( getRefCount() == 1 ); // caller CommandCache
@@ -88,6 +96,7 @@ size_t Buffer::alloc( NodePtr node, const uint64_t size )
     --_impl->_freeCount;
     _impl->_dataSize = size;
     _impl->_node = node;
+    _impl->_localNode = localNode;
     _impl->_master = 0;
 
     reset( LB_MAX( getMinSize(), size ));
@@ -111,6 +120,7 @@ void Buffer::clone( BufferPtr from )
 
     _impl->_dataSize = from->_impl->_dataSize;
     _impl->_node = from->_impl->_node;
+    _impl->_localNode = from->_impl->_localNode;
     _impl->_master = from;
 }
 
@@ -130,6 +140,7 @@ void Buffer::free()
 
     _impl->_dataSize = 0;
     _impl->_node = 0;
+    _impl->_localNode = 0;
     _impl->_master = 0;
 }
 

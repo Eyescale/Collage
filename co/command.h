@@ -67,6 +67,9 @@ namespace detail { class Command; }
         /** @return the sending node proxy instance. @version 1.0 */
         NodePtr getNode() const;
 
+        /** @return the receiving node. @version 1.0 */
+        LocalNodePtr getLocalNode() const;
+
         /** @internal @return true if the command has a valid buffer. */
         bool isValid() const;
         //@}

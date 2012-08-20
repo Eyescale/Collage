@@ -1252,7 +1252,7 @@ bool LocalNode::_handleData()
     if( node )
         node->_setLastReceive( getTime64( ));
 
-    BufferPtr buffer = _impl->commandCache.alloc( node, size );
+    BufferPtr buffer = _impl->commandCache.alloc( node, this, size );
     LBASSERT( buffer->getRefCount() == 1 );
     connection->recvNB( buffer->getData(), size );
     const bool gotData = connection->recvSync( 0, 0 );
@@ -1287,7 +1287,7 @@ bool LocalNode::_handleData()
 BufferPtr LocalNode::allocCommand( const uint64_t size )
 {
     LBASSERT( _impl->inReceiverThread( ));
-    return _impl->commandCache.alloc( this, size );
+    return _impl->commandCache.alloc( this, this, size );
 }
 
 void LocalNode::_dispatchCommand( BufferPtr buffer )

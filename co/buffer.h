@@ -39,6 +39,9 @@ public:
     /** @internal */
     NodePtr getNode() const;
 
+    /** @internal */
+    LocalNodePtr getLocalNode() const;
+
     /** @internal @return the actual size of the buffers content. */
     uint64_t getDataSize() const;
 
@@ -49,7 +52,7 @@ public:
     bool isFree() const { return getRefCount() == 0; }
 
     /** @internal @return the number of newly allocated bytes. */
-    size_t alloc( NodePtr node, const uint64_t size );
+    size_t alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size );
 
     /**
      * @internal Clone the from buffer into this buffer.

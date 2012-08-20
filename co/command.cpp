@@ -148,6 +148,11 @@ NodePtr Command::getNode() const
     return _impl->_buffer->getNode();
 }
 
+LocalNodePtr Command::getLocalNode() const
+{
+    return _impl->_buffer->getLocalNode();
+}
+
 bool Command::isValid() const
 {
     return _impl->_buffer;
