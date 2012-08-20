@@ -107,7 +107,7 @@ int main( int argc, char **argv )
 
             for( size_t i = 1; i < N_READER; ++i )
             {
-#if 0
+#if 1
                 co::BufferPtr clone = cache.clone( buffer );
 #else
                 co::BufferPtr clone = cache.alloc( node, 8 );

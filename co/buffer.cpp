@@ -53,6 +53,7 @@ Buffer::Buffer( lunchbox::a_int32_t& freeCounter )
 Buffer::~Buffer()
 {
     free();
+    delete _impl;
 }
 
 NodePtr Buffer::getNode() const
@@ -76,13 +77,20 @@ size_t Buffer::alloc( NodePtr node, const uint64_t size )
     LBASSERT( getRefCount() == 1 ); // caller CommandCache
     LBASSERT( _impl->_freeCount > 0 );
 
+    // 'unclone' ourselves
+    if( _impl->_master )
+    {
+        _data = 0;
+        _size = 0;
+        _maxSize = 0;
+    }
+
     --_impl->_freeCount;
-
-    reset( LB_MAX( getMinSize(), size ));
-
     _impl->_dataSize = size;
     _impl->_node = node;
     _impl->_master = 0;
+
+    reset( LB_MAX( getMinSize(), size ));
 
     return getSize();
 }
@@ -93,6 +101,8 @@ void Buffer::clone( BufferPtr from )
     LBASSERT( getRefCount() == 1 ); // caller CommandCache
     LBASSERT( from->getRefCount() > 1 ); // caller CommandCache, self
     LBASSERT( _impl->_freeCount > 0 );
+
+    free();
 
     --_impl->_freeCount;
 
@@ -113,7 +123,11 @@ void Buffer::free()
     {
         _data = 0;
         _size = 0;
+        _maxSize = 0;
     }
+    else
+        clear();
+
     _impl->_dataSize = 0;
     _impl->_node = 0;
     _impl->_master = 0;
