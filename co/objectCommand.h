@@ -41,6 +41,11 @@ class ObjectCommand : public Command
 public:
     /** @internal */
     ObjectCommand( BufferPtr buffer );
+
+    ObjectCommand( const ObjectCommand& rhs );
+
+    ObjectCommand& operator = ( const ObjectCommand& rhs );
+
     virtual ~ObjectCommand();
 
     const UUID& getObjectID() const;
