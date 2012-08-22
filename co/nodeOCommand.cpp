@@ -30,15 +30,21 @@ public:
     NodeOCommand( const uint32_t type_, const uint32_t cmd_ )
         : type( type_ )
         , cmd( cmd_ )
+        , lockSend( true )
+        , size( 0 )
     {}
 
     NodeOCommand( const NodeOCommand& rhs )
         : type( rhs.type )
         , cmd( rhs.cmd )
+        , lockSend( rhs.lockSend )
+        , size( rhs.size )
     {}
 
     uint32_t type;
     uint32_t cmd;
+    bool lockSend;
+    uint64_t size;
 };
 
 }
@@ -66,6 +72,13 @@ NodeOCommand::~NodeOCommand()
     delete _impl;
 }
 
+void NodeOCommand::sendUnlocked( const uint64_t additionalSize )
+{
+    _impl->lockSend = false;
+    _impl->size = additionalSize;
+    disable();
+}
+
 void NodeOCommand::_init()
 {
     enableSave();
@@ -79,16 +92,23 @@ void NodeOCommand::sendData( const void* buffer, const uint64_t size,
     LBASSERT( last );
     LBASSERT( size > 0 );
 
+    _impl->size += size;
+
     for( ConnectionsCIter it = getConnections().begin();
          it != getConnections().end(); ++it )
     {
         ConnectionPtr conn = *it;
 
-        conn->lockSend();
-        conn->send( &size, sizeof( uint64_t ), true );
-        conn->send( buffer, size, true );
-        conn->unlockSend();
+        if( _impl->lockSend )
+            conn->lockSend();
+        conn->send( &_impl->size, sizeof( uint64_t ), _impl->lockSend );
+        conn->send( buffer, size, _impl->lockSend );
+        if( _impl->lockSend )
+            conn->unlockSend();
     }
+
+    _impl->lockSend = true;
+    _impl->size = 0;
 }
 
 }

@@ -37,6 +37,8 @@ public:
 
     virtual ~NodeOCommand();
 
+    void sendUnlocked( const uint64_t additionalSize );
+
 protected:
     virtual void sendData( const void* buffer, const uint64_t size,
                            const bool last );
