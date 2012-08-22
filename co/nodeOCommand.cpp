@@ -101,8 +101,8 @@ void NodeOCommand::sendData( const void* buffer, const uint64_t size,
 
         if( _impl->lockSend )
             conn->lockSend();
-        conn->send( &_impl->size, sizeof( uint64_t ), _impl->lockSend );
-        conn->send( buffer, size, _impl->lockSend );
+        conn->send( &_impl->size, sizeof( uint64_t ), true );
+        conn->send( buffer, size, true );
         if( _impl->lockSend )
             conn->unlockSend();
     }
