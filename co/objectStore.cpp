@@ -997,7 +997,7 @@ bool ObjectStore::_cmdInstance( Command& comd )
     {
         const ObjectVersion rev( command.getObjectID(), command.getVersion( ));
 #ifndef CO_AGGRESSIVE_CACHING // Issue #82:
-        if( type != CMD_NODE_OBJECT_INSTANCE_PUSH )
+        if( cmd != CMD_NODE_OBJECT_INSTANCE_PUSH )
 #endif
             _instanceCache->add( rev, masterInstanceID,
                                  command.getBuffer(), 0 );
