@@ -18,12 +18,13 @@
 
 #include "queueSlave.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "commandQueue.h"
 #include "dataIStream.h"
 #include "global.h"
 #include "objectOCommand.h"
-#include "objectICommand.h"
+#include "objectCommand.h"
 #include "queueCommand.h"
 
 namespace co
@@ -77,7 +78,7 @@ void QueueSlave::applyInstanceData( co::DataIStream& is )
     _impl->master = localNode->connect( masterNodeID );
 }
 
-CommandPtr QueueSlave::pop()
+ObjectCommand QueueSlave::pop()
 {
     static lunchbox::a_int32_t _request;
     const int32_t request = ++_request;
@@ -91,15 +92,14 @@ CommandPtr QueueSlave::pop()
                     << _impl->prefetchAmount << getInstanceID() << request;
         }
 
-        CommandPtr cmd = _impl->queue.pop();
-        if( (*cmd)->command == CMD_QUEUE_ITEM )
-            return cmd;
-    
-        LBASSERT( (*cmd)->command == CMD_QUEUE_EMPTY );
-        ObjectICommand stream( cmd );
-        const int32_t requestID = stream.get< int32_t >();
+        ObjectCommand cmd( _impl->queue.pop( ));
+        if( cmd.getCommand() == CMD_QUEUE_ITEM )
+            return ObjectCommand( cmd.getBuffer( ));
+
+        LBASSERT( cmd.getCommand() == CMD_QUEUE_EMPTY );
+        const int32_t requestID = cmd.get< int32_t >();
         if( requestID == request )
-            return 0;
+            return ObjectCommand( 0 );
         // else left-over or not our empty packet, discard and retry
     }
 }

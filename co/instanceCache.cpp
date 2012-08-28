@@ -17,7 +17,8 @@
 
 #include "instanceCache.h"
 
-#include "command.h"
+#include "buffer.h"
+#include "objectDataCommand.h"
 #include "objectDataIStream.h"
 #include "objectVersion.h"
 
@@ -83,13 +84,13 @@ InstanceCache::Item::Item()
 {}
 
 bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
-                         CommandPtr command, const uint32_t usage )
+                         BufferPtr buffer, const uint32_t usage )
 {
 #ifdef EQ_INSTRUMENT_CACHE
     ++nWrite;
 #endif
 
-    const NodeID nodeID = command->getNode()->getNodeID();
+    const NodeID nodeID = buffer->getNode()->getNodeID();
 
     lunchbox::ScopedMutex<> mutex( _items );
     ItemHash::const_iterator i = _items->find( rev.identifier );
@@ -164,7 +165,7 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
     LBASSERT( !item.data.versions.empty( ));
     ObjectDataIStream* stream = item.data.versions.back();
 
-    stream->addDataPacket( command );
+    stream->addDataPacket( buffer );
     
     if( stream->isReady( ))
         _size += stream->getDataSize();

@@ -15,44 +15,50 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_NODEICOMMAND_H
-#define CO_NODEICOMMAND_H
+#include "queueItem.h"
 
-#include <co/dataIStream.h>   // base class
+#include "queueMaster.h"
 
 
 namespace co
 {
-
-namespace detail { class NodeICommand; }
-
-/** A DataIStream based command for co::Node. */
-class NodeICommand : public DataIStream
+namespace detail
+{
+class QueueItem
 {
 public:
-    NodeICommand( CommandPtr command );
-    virtual ~NodeICommand();
+    QueueItem( co::QueueMaster& queueMaster_ )
+        : queueMaster( queueMaster_ )
+    {}
 
-    template< typename T > T get()
-    {
-        T value;
-        *this >> value;
-        return value;
-    }
+    QueueItem( const QueueItem& rhs )
+        : queueMaster( rhs.queueMaster )
+    {}
 
-protected:
-    virtual size_t nRemainingBuffers() const;
-
-    virtual uint128_t getVersion() const;
-
-    virtual NodePtr getMaster();
-
-    virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
-                                const void** chunkData, uint64_t* size );
-
-private:
-    detail::NodeICommand* const _impl;
+    co::QueueMaster& queueMaster;
 };
 }
 
-#endif //CO_NODEICOMMAND_H
+QueueItem::QueueItem( QueueMaster& master )
+    : DataOStream()
+    , _impl( new detail::QueueItem( master ))
+{
+    enableSave();
+    _enable();
+}
+
+QueueItem::QueueItem( const QueueItem& rhs )
+    : DataOStream()
+    , _impl( new detail::QueueItem( *rhs._impl ))
+{
+    enableSave();
+    _enable();
+}
+
+QueueItem::~QueueItem()
+{
+    _impl->queueMaster._addItem( *this );
+    disable();
+}
+
+}

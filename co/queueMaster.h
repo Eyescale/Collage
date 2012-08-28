@@ -19,11 +19,12 @@
 #ifndef CO_QUEUEMASTER_H
 #define CO_QUEUEMASTER_H
 
-#include "object.h" // base class
-#include "api.h"
+#include <co/object.h> // base class
+
 
 namespace co
 {
+class QueueItem;
 namespace detail { class QueueMaster; }
 
 /**
@@ -43,17 +44,16 @@ public:
     virtual CO_API ~QueueMaster();
 
     /**
-     * Enqueue a new item.
+     * Enqueue a new queue item.
      *
-     * The enqueued item has to inherit from QueueItemPacket and be a flat
-     * structure, that is, it should only contain POD data and no pointers. The
-     * packet is copied as is over the network, using the packet's size
-     * parameter. The packet is copied by this method.
+     * The returned queue item can be enhanced with additional using the stream
+     * operators provided by DataOStream. Note that the item is enqueued if the
+     * returned item object is destroyed, i.e. if it runs out of scope.
      *
-     * @param packet the item to enqueue.
-     * @version 1.1.6
+     * @return the item to enqueue.
+     * @version 1.0
      */
-    CO_API void push( const QueueItemPacket& packet );
+    CO_API QueueItem push();
 
     /** Remove all enqueued items. @version 1.1.6 */
     CO_API void clear();
@@ -61,11 +61,14 @@ public:
 private:
     detail::QueueMaster* const _impl;
 
-    CO_API virtual void attach(const UUID& id, const uint32_t instanceID);
+    CO_API virtual void attach( const UUID& id, const uint32_t instanceID );
 
     virtual ChangeType getChangeType() const { return STATIC; }
     virtual void getInstanceData( co::DataOStream& os );
     virtual void applyInstanceData( co::DataIStream& ) { LBDONTCALL }
+
+    friend class QueueItem;
+    void _addItem( QueueItem& item );
 };
 
 } // co

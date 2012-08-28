@@ -17,7 +17,7 @@
 
 #include "commandQueue.h"
 
-#include "command.h"
+#include "buffer.h"
 #include "exception.h"
 #include "node.h"
 
@@ -30,8 +30,8 @@ namespace detail
 class CommandQueue
 {
 public:
-    /** Thread-safe command queue. */
-    lunchbox::MTQueue< CommandPtr > commands;
+    /** Thread-safe buffer queue. */
+    lunchbox::MTQueue< BufferPtr > buffers;
 };
 }
 
@@ -51,47 +51,47 @@ void CommandQueue::flush()
     if( !isEmpty( ))
         LBWARN << "Flushing non-empty command queue" << std::endl;
 
-    _impl->commands.clear();
+    _impl->buffers.clear();
 }
 
 bool CommandQueue::isEmpty() const
 {
-    return _impl->commands.isEmpty();
+    return _impl->buffers.isEmpty();
 }
 
 size_t CommandQueue::getSize() const
 {
-    return _impl->commands.getSize();
+    return _impl->buffers.getSize();
 }
 
-void CommandQueue::push( CommandPtr command )
+void CommandQueue::push( BufferPtr buffer )
 {
-    _impl->commands.push( command );
+    _impl->buffers.push( buffer );
 }
 
-void CommandQueue::pushFront( CommandPtr command )
+void CommandQueue::pushFront( BufferPtr buffer )
 {
-    LBASSERT( command->isValid( ));
-    _impl->commands.pushFront( command );
+    LBASSERT( buffer->isValid( ));
+    _impl->buffers.pushFront( buffer );
 }
 
-CommandPtr CommandQueue::pop( const uint32_t timeout )
+BufferPtr CommandQueue::pop( const uint32_t timeout )
 {
     LB_TS_THREAD( _thread );
 
-    CommandPtr command;
-    if( !_impl->commands.timedPop( timeout, command ))
+    BufferPtr buffer;
+    if( !_impl->buffers.timedPop( timeout, buffer ))
         throw Exception( Exception::TIMEOUT_COMMANDQUEUE );
 
-    return command;
+    return buffer;
 }
 
-CommandPtr CommandQueue::tryPop()
+BufferPtr CommandQueue::tryPop()
 {
     LB_TS_THREAD( _thread );
-    CommandPtr command;
-    _impl->commands.tryPop( command );
-    return command;
+    BufferPtr buffer;
+    _impl->buffers.tryPop( buffer );
+    return buffer;
 }
 
 }

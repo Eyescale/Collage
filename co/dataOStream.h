@@ -31,7 +31,6 @@ namespace co
 {
 namespace detail { class DataOStream; }
 namespace DataStreamTest { class Sender; }
-struct ObjectDataPacket;
 
     /**
      * A std::ostream-like interface for object serialization.
@@ -47,9 +46,6 @@ struct ObjectDataPacket;
         /** @internal Disable and flush the output to the current receivers. */
         CO_API void disable();
 
-        /** @internal Disable, then send the packet to the current receivers. */
-        void disable( const Packet& packet );
-
         /** @internal Enable copying of all data into a saved buffer. */
         void enableSave();
 
@@ -58,6 +54,24 @@ struct ObjectDataPacket;
 
         /** @internal @return if data was sent since the last enable() */
         CO_API bool hasSentData() const;
+
+        /** @internal */
+        CO_API const Connections& getConnections() const;
+
+        /** @internal */
+        uint32_t getCompressor() const;
+
+        /** @internal */
+        uint32_t getNumChunks() const;
+
+        /** @internal */
+        CO_API lunchbox::Bufferb& getBuffer();
+
+        /** @internal */
+        void sendCompressedData( ConnectionPtr connection );
+
+        /** @internal */
+        uint64_t getCompressedDataSize() const;
         //@}
 
         /** @name Data output */
@@ -103,6 +117,8 @@ struct ObjectDataPacket;
          */
         void _setupConnections( const Nodes& receivers );
 
+        void _setupConnections( const Connections& connections );
+
         /** @internal Set up the connection (list) for one node. */
         void _setupConnection( NodePtr node, const bool useMulticast );
 
@@ -113,18 +129,14 @@ struct ObjectDataPacket;
         /** @internal Resend the saved buffer to all enabled connections. */
         void _resend();
 
-        void _send( const Packet& packet ); //!< @internal
         void _clearConnections(); //!< @internal
 
-        /** @internal @name Packet sending, used by the subclasses */
+        /** @internal @name Data sending, used by the subclasses */
         //@{
         /** @internal Send a data buffer (packet) to the receivers. */
         virtual void sendData( const void* buffer, const uint64_t size,
                                const bool last ) = 0;
 
-        /** @internal */
-        CO_API void sendPacket( ObjectDataPacket& packet, const void* buffer,
-                                const uint64_t size, const bool last );
         //@}
 
         /** @internal Reset the whole stream. */
@@ -132,6 +144,10 @@ struct ObjectDataPacket;
 
     private:
         detail::DataOStream* const _impl;
+
+        /** Collect compressed data. */
+        CO_API uint64_t _getCompressedData( void** chunks,
+                                            uint64_t* chunkSizes ) const;
 
         /** Write a number of bytes from data into the stream. */
         CO_API void _write( const void* data, uint64_t size );
@@ -156,13 +172,6 @@ struct ObjectDataPacket;
         }
         /** Send the trailing data (packet) to the receivers */
         void _sendFooter( const void* buffer, const uint64_t size );
-
-        /**
-         * Collect compressed data.
-         * @return the total size of the compressed data.
-         */
-        CO_API uint64_t _getCompressedData( void** chunks,
-                                            uint64_t* chunkSizes ) const;
     };
 
     std::ostream& operator << ( std::ostream&, const DataOStream& );

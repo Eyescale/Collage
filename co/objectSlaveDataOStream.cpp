@@ -22,7 +22,7 @@
 #include "versionedMasterCM.h"
 #include "object.h"
 #include "objectDataIStream.h"
-#include "objectPackets.h"
+#include "objectDataOCommand.h"
 
 namespace co
 {
@@ -44,10 +44,9 @@ void ObjectSlaveDataOStream::enableCommit( NodePtr node )
 void ObjectSlaveDataOStream::sendData( const void* buffer, const uint64_t size,
                                        const bool last )
 {
-    ObjectSlaveDeltaPacket packet;
-    packet.commit = _commit;
-    packet.instanceID = _cm->getObject()->getMasterInstanceID();
-    ObjectDataOStream::sendData( packet, buffer, size, last );
+    ObjectDataOStream::send( CMD_OBJECT_SLAVE_DELTA, COMMANDTYPE_CO_OBJECT,
+                             _cm->getObject()->getMasterInstanceID(), size,
+                             last, buffer ) << _commit;
 
     if( last )
         _commit = UUID( true /* generate */ );

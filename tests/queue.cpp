@@ -22,8 +22,9 @@
 #include <co/connectionDescription.h>
 #include <co/init.h>
 #include <co/node.h>
+#include <co/objectCommand.h>
+#include <co/queueItem.h>
 #include <co/queueMaster.h>
-#include <co/queuePackets.h>
 #include <co/queueSlave.h>
 #include <lunchbox/sleep.h>
 
@@ -41,24 +42,28 @@ int main( int argc, char **argv )
     node->registerObject(qm);
     node->mapObject(qs, qm->getID(), co::VERSION_FIRST);
 
-    co::QueueItemPacket p1, p2, p3, p4;
-    qm->push(p1);
-    qm->push(p2);
-    qm->push(p3);
-    qm->push(p4);
+    qm->push();
+    qm->push() << 42u;
+    qm->push() << std::string( "hallo" );
+    qm->push() << 1.5f << false << co::VERSION_FIRST;
 
     {
-        co::CommandPtr c1 = qs->pop();
-        co::CommandPtr c2 = qs->pop();
-        co::CommandPtr c3 = qs->pop();
-        co::CommandPtr c4 = qs->pop();
-        co::CommandPtr c5 = qs->pop();
+        co::ObjectCommand c1 = qs->pop();
+        co::ObjectCommand c2 = qs->pop();
+        co::ObjectCommand c3 = qs->pop();
+        co::ObjectCommand c4 = qs->pop();
+        co::ObjectCommand c5 = qs->pop();
 
-        TEST( c1 );
-        TEST( c2 );
-        TEST( c3 );
-        TEST( c4 );
-        TEST( !c5 );
+        TEST( c1.isValid( ));
+        TEST( c2.isValid( ));
+        TEST( c2.get< uint32_t >() == 42u )
+        TEST( c3.isValid( ));
+        TEST( c3.get< std::string >() == "hallo" )
+        TEST( c4.isValid( ));
+        TEST( c4.get< float >() == 1.5f )
+        TEST( c4.get< bool >() == false )
+        TEST( c4.get< co::uint128_t >() == co::VERSION_FIRST )
+        TEST( !c5.isValid( ));
     }
 
     lunchbox::sleep(10);

@@ -17,6 +17,7 @@
 
 #include "worker.h"
 
+#include "buffer.h"
 #include "command.h"
 
 namespace co
@@ -25,10 +26,11 @@ template< class Q > void WorkerThread< Q >::run()
 {
     while( !stopRunning( ))
     {
-        CommandPtr command = _commands.pop();
-        LBASSERT( command->isValid( ));
+        BufferPtr buffer = _commands.pop();
+        LBASSERT( buffer->isValid( ));
 
-        if( !(*command)( ))
+        Command command( buffer );
+        if( !command( ))
         {
             LBABORT( "Error handling " << command );
         }

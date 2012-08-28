@@ -27,28 +27,46 @@ namespace detail
 class NodeOCommand
 {
 public:
-    NodeOCommand( ConnectionPtr connection_, uint32_t type_, uint32_t cmd_ )
-        : connection( connection_ )
-        , type( type_ )
+    NodeOCommand( const uint32_t type_, const uint32_t cmd_ )
+        : type( type_ )
         , cmd( cmd_ )
+        , lockSend( true )
+        , size( 0 )
     {}
 
-    ConnectionPtr connection;
+    // #145 eile
+    // Shouldn't this have move semantics? Otherwise creating a copy will send
+    // two packets? Alternatively disable copy ctor and return auto_ptr?
+    NodeOCommand( const NodeOCommand& rhs )
+        : type( rhs.type )
+        , cmd( rhs.cmd )
+        , lockSend( rhs.lockSend )
+        , size( rhs.size )
+    {}
+
     uint32_t type;
     uint32_t cmd;
+    bool lockSend;
+    uint64_t size;
 };
 
 }
 
-NodeOCommand::NodeOCommand( ConnectionPtr connection, uint32_t type,
-                            uint32_t cmd )
+NodeOCommand::NodeOCommand( const Connections& connections, const uint32_t type,
+                            const uint32_t cmd )
     : DataOStream()
-    , _impl( new detail::NodeOCommand( connection, type, cmd ))
+    , _impl( new detail::NodeOCommand( type, cmd ))
 {
-    _setupConnection( _impl->connection );
-    enableSave();
-    _enable();
-    *this << type << cmd;
+    _setupConnections( connections );
+    _init();
+}
+
+NodeOCommand::NodeOCommand( NodeOCommand const& rhs )
+    : DataOStream()
+    , _impl( new detail::NodeOCommand( *rhs._impl ))
+{
+    _setupConnections( rhs.getConnections( ));
+    _init();
 }
 
 NodeOCommand::~NodeOCommand()
@@ -57,20 +75,43 @@ NodeOCommand::~NodeOCommand()
     delete _impl;
 }
 
+void NodeOCommand::sendUnlocked( const uint64_t additionalSize )
+{
+    _impl->lockSend = false;
+    _impl->size = additionalSize;
+    disable();
+}
+
+void NodeOCommand::_init()
+{
+    enableSave();
+    _enable();
+    *this << _impl->type << _impl->cmd;
+}
+
 void NodeOCommand::sendData( const void* buffer, const uint64_t size,
                              const bool last )
 {
     LBASSERT( last );
     LBASSERT( size > 0 );
 
-    _impl->connection->lockSend();
-    // TEMP: signal new datastream 'packet' on the other side
-    uint64_t magicSize = 0;
-    _impl->connection->send( &magicSize, sizeof( uint64_t ), true );
+    _impl->size += size;
 
-    _impl->connection->send( &size, sizeof( uint64_t ), true );
-    _impl->connection->send( buffer, size, true );
-    _impl->connection->unlockSend();
+    for( ConnectionsCIter it = getConnections().begin();
+         it != getConnections().end(); ++it )
+    {
+        ConnectionPtr conn = *it;
+
+        if( _impl->lockSend )
+            conn->lockSend();
+        conn->send( &_impl->size, sizeof( uint64_t ), true );
+        conn->send( buffer, size, true );
+        if( _impl->lockSend )
+            conn->unlockSend();
+    }
+
+    _impl->lockSend = true;
+    _impl->size = 0;
 }
 
 }

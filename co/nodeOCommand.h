@@ -30,9 +30,14 @@ namespace detail { class NodeOCommand; }
 class NodeOCommand : public DataOStream
 {
 public:
-    NodeOCommand( ConnectionPtr connection, uint32_t type, uint32_t cmd );
+    CO_API NodeOCommand( const Connections& connections, const uint32_t type,
+                         const uint32_t cmd );
+
     NodeOCommand( NodeOCommand const& rhs );
-    virtual ~NodeOCommand();
+
+    CO_API virtual ~NodeOCommand();
+
+    void sendUnlocked( const uint64_t additionalSize );
 
 protected:
     virtual void sendData( const void* buffer, const uint64_t size,
@@ -40,6 +45,8 @@ protected:
 
 private:
     detail::NodeOCommand* const _impl;
+
+    void _init();
 };
 }
 

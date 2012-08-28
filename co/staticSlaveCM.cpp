@@ -17,10 +17,10 @@
 
 #include "staticSlaveCM.h"
 
-#include "command.h"
+#include "buffer.h"
 #include "log.h"
 #include "object.h"
-#include "objectCommand.h"
+#include "objectDataCommand.h"
 #include "objectDataIStream.h"
 
 #include <lunchbox/scopedMutex.h>
@@ -101,7 +101,7 @@ bool StaticSlaveCM::_cmdInstance( Command& command )
 {
     LB_TS_THREAD( _rcvThread );
     LBASSERT( _currentIStream );
-    _currentIStream->addDataPacket( &command );
+    _currentIStream->addDataPacket( command.getBuffer( ));
 
     if( _currentIStream->isReady( ))
         LBLOG( LOG_OBJECTS ) << "id " << _object->getID() << "." 
