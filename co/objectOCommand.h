@@ -30,11 +30,11 @@ namespace detail { class ObjectOCommand; }
 class ObjectOCommand : public NodeOCommand
 {
 public:
-    ObjectOCommand( const Connections& receivers, const uint32_t type,
-                    const uint32_t cmd, const UUID& id,
-                    const uint32_t instanceID );
+    CO_API ObjectOCommand( const Connections& receivers, const uint32_t type,
+                           const uint32_t cmd, const UUID& id,
+                           const uint32_t instanceID );
 
-    virtual ~ObjectOCommand();
+    CO_API virtual ~ObjectOCommand();
 
 private:
     detail::ObjectOCommand* const _impl;

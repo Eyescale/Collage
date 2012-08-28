@@ -56,7 +56,7 @@ namespace DataStreamTest { class Sender; }
         CO_API bool hasSentData() const;
 
         /** @internal */
-        const Connections& getConnections() const;
+        CO_API const Connections& getConnections() const;
 
         /** @internal */
         uint32_t getCompressor() const;
@@ -65,7 +65,7 @@ namespace DataStreamTest { class Sender; }
         uint32_t getNumChunks() const;
 
         /** @internal */
-        lunchbox::Bufferb& getBuffer();
+        CO_API lunchbox::Bufferb& getBuffer();
 
         /** @internal */
         void sendCompressedData( ConnectionPtr connection );

@@ -102,8 +102,9 @@ namespace detail { class Node; }
          * @param multicast prefer multicast connection for sending
          * @return the stream object to pass additional data to
          */
-        NodeOCommand send( uint32_t cmd, uint32_t type = COMMANDTYPE_CO_NODE,
-                           bool multicast = false );
+        CO_API NodeOCommand send( uint32_t cmd,
+                                  uint32_t type = COMMANDTYPE_CO_NODE,
+                                  bool multicast = false );
         //@}
 
         CO_API const NodeID& getNodeID() const;

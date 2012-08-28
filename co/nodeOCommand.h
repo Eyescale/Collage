@@ -30,12 +30,12 @@ namespace detail { class NodeOCommand; }
 class NodeOCommand : public DataOStream
 {
 public:
-    NodeOCommand( const Connections& connections, const uint32_t type,
-                  const uint32_t cmd );
+    CO_API NodeOCommand( const Connections& connections, const uint32_t type,
+                         const uint32_t cmd );
 
     NodeOCommand( NodeOCommand const& rhs );
 
-    virtual ~NodeOCommand();
+    CO_API virtual ~NodeOCommand();
 
     void sendUnlocked( const uint64_t additionalSize );
 

@@ -326,8 +326,8 @@ namespace co
          * @param instanceID the object instance which should handle the command
          * @return the stream object to pass additional data to
          */
-        ObjectOCommand send( NodePtr node, uint32_t cmd,
-                             const uint32_t instanceID = EQ_INSTANCE_ALL );
+        CO_API ObjectOCommand send( NodePtr node, uint32_t cmd,
+                                  const uint32_t instanceID = EQ_INSTANCE_ALL );
         //@}
 
         /** @name Notifications */

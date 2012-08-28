@@ -46,7 +46,7 @@ public:
     uint64_t getDataSize() const;
 
     /** @internal @return true if the buffer has a valid data. */
-    bool isValid() const;
+    CO_API bool isValid() const;
 
     /** @internal @return true if the buffer is no longer in use. */
     bool isFree() const { return getRefCount() == 0; }

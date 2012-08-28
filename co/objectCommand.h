@@ -46,7 +46,7 @@ public:
 
     ObjectCommand& operator = ( const ObjectCommand& rhs );
 
-    virtual ~ObjectCommand();
+    CO_API virtual ~ObjectCommand();
 
     const UUID& getObjectID() const;
 

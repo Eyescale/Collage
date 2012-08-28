@@ -37,21 +37,21 @@ namespace detail { class Command; }
     class Command : public DataIStream
     {
     public:
-        Command( BufferPtr buffer );
+        CO_API Command( BufferPtr buffer );
 
         Command( const Command& rhs );
 
         Command& operator = ( const Command& rhs );
 
-        virtual ~Command();
+        CO_API virtual ~Command();
 
         /** @name Data Access */
         //@{
         /** @return the command type. @version 1.0 */
-        uint32_t getType() const;
+        CO_API uint32_t getType() const;
 
         /** @return the command. @version 1.0 */
-        uint32_t getCommand() const;
+        CO_API uint32_t getCommand() const;
 
         /** @internal @return the buffer containing the command data. */
         BufferPtr getBuffer() const;
@@ -65,22 +65,22 @@ namespace detail { class Command; }
         }
 
         /** @return the sending node proxy instance. @version 1.0 */
-        NodePtr getNode() const;
+        CO_API NodePtr getNode() const;
 
         /** @return the receiving node. @version 1.0 */
-        LocalNodePtr getLocalNode() const;
+        CO_API LocalNodePtr getLocalNode() const;
 
         /** @internal @return true if the command has a valid buffer. */
-        bool isValid() const;
+        CO_API bool isValid() const;
         //@}
 
         /** @internal @name Dispatch command functions.. */
         //@{
         /** @internal Change the command type for subsequent dispatching. */
-        void setType( const CommandType type );
+        CO_API void setType( const CommandType type );
 
         /** @internal Change the command for subsequent dispatching. */
-        void setCommand( const uint32_t cmd );
+        CO_API void setCommand( const uint32_t cmd );
 
         /** Invoke and clear the command function of a dispatched command. */
         CO_API bool operator()();

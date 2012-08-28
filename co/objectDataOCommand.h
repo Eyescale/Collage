@@ -31,14 +31,15 @@ namespace detail { class ObjectDataOCommand; }
 class ObjectDataOCommand : public ObjectOCommand
 {
 public:
-    ObjectDataOCommand( const Connections& receivers, const uint32_t type,
-                        const uint32_t cmd, const UUID& id,
-                        const uint32_t instanceID, const uint128_t& version,
-                        const uint32_t sequence, const uint64_t dataSize,
-                        const bool isLast, const void* buffer,
-                        DataOStream* stream );
+    CO_API ObjectDataOCommand( const Connections& receivers,
+                               const uint32_t type, const uint32_t cmd,
+                               const UUID& id, const uint32_t instanceID,
+                               const uint128_t& version,
+                               const uint32_t sequence,
+                               const uint64_t dataSize, const bool isLast,
+                               const void* buffer, DataOStream* stream );
 
-    virtual ~ObjectDataOCommand();
+    CO_API virtual ~ObjectDataOCommand();
 
     template< typename T > ObjectDataOCommand& operator << ( const T& value )
         { _addUserData( &value, sizeof( value )); return *this; }

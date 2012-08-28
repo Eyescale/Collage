@@ -30,20 +30,20 @@ namespace detail { class ObjectDataCommand; }
 class ObjectDataCommand : public ObjectCommand
 {
 public:
-    ObjectDataCommand( BufferPtr buffer );
-    ~ObjectDataCommand();
+    CO_API ObjectDataCommand( BufferPtr buffer );
+    CO_API ~ObjectDataCommand();
 
     virtual uint128_t getVersion() const;
 
     uint32_t getSequence() const;
 
-    uint64_t getDataSize() const;
+    CO_API uint64_t getDataSize() const;
 
-    uint32_t getCompressor() const;
+    CO_API uint32_t getCompressor() const;
 
-    uint32_t getChunks() const;
+    CO_API uint32_t getChunks() const;
 
-    bool isLast() const;
+    CO_API bool isLast() const;
 
 private:
     detail::ObjectDataCommand* const _impl;
