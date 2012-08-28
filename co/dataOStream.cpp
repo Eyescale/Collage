@@ -26,9 +26,6 @@
 #include "node.h"
 #include "types.h"
 
-#ifdef EQ_INSTRUMENT_DATAOSTREAM
-#  include <lunchbox/clock.h>
-#endif
 
 namespace co
 {
@@ -61,7 +58,7 @@ public:
     CompressorState state;
 
     /** The buffer used for saving and buffering */
-    lunchbox::Bufferb  buffer;
+    lunchbox::Bufferb buffer;
 
     /** The start position of the buffering, always 0 if !_save */
     uint64_t bufferStart;
@@ -392,7 +389,7 @@ void DataOStream::_resetBuffer()
     }
 }
 
-uint64_t DataOStream::getCompressedData( void** chunks, uint64_t* chunkSizes )
+uint64_t DataOStream::_getCompressedData( void** chunks, uint64_t* chunkSizes )
     const
 {
     LBASSERT( _impl->state != STATE_UNCOMPRESSED &&
@@ -415,6 +412,31 @@ uint64_t DataOStream::getCompressedData( void** chunks, uint64_t* chunkSizes )
 lunchbox::Bufferb& DataOStream::getBuffer()
 {
     return _impl->buffer;
+}
+
+void DataOStream::sendCompressedData( ConnectionPtr connection )
+{
+#ifdef EQ_INSTRUMENT_DATAOSTREAM
+    nBytesSent += _impl->buffer.getSize();
+#endif
+    const uint32_t nChunks = _impl->compressor.getNumResults();
+    uint64_t* chunkSizes =static_cast< uint64_t* >
+                               ( alloca (nChunks * sizeof( uint64_t )));
+    void** chunks = static_cast< void ** >
+                                  ( alloca( nChunks * sizeof( void* )));
+
+#ifdef EQ_INSTRUMENT_DATAOSTREAM
+    const uint64_t compressedSize = _getCompressedData( chunks, chunkSizes );
+    nBytesSaved += _impl->buffer.getSize() - compressedSize;
+#else
+    _getCompressedData( chunks, chunkSizes );
+#endif
+
+    for( size_t j = 0; j < nChunks; ++j )
+    {
+        connection->send( &chunkSizes[j], sizeof( uint64_t ), true );
+        connection->send( chunks[j], chunkSizes[j], true );
+    }
 }
 
 std::ostream& operator << ( std::ostream& os, const DataOStream& dataOStream )

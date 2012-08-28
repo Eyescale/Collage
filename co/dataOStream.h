@@ -64,16 +64,11 @@ namespace DataStreamTest { class Sender; }
         /** @internal */
         uint32_t getNumChunks() const;
 
-        /**
-         * Collect compressed data.
-         * @return the total size of the compressed data.
-         * @internal
-         */
-        CO_API uint64_t getCompressedData( void** chunks,
-                                            uint64_t* chunkSizes ) const;
-
         /** @internal */
         lunchbox::Bufferb& getBuffer();
+
+        /** @internal */
+        void sendCompressedData( ConnectionPtr connection );
         //@}
 
         /** @name Data output */
@@ -146,6 +141,10 @@ namespace DataStreamTest { class Sender; }
 
     private:
         detail::DataOStream* const _impl;
+
+        /** Collect compressed data. */
+        CO_API uint64_t _getCompressedData( void** chunks,
+                                            uint64_t* chunkSizes ) const;
 
         /** Write a number of bytes from data into the stream. */
         CO_API void _write( const void* data, uint64_t size );

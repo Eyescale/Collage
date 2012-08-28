@@ -83,7 +83,7 @@ void ObjectDataOCommand::sendData( const void* buffer, const uint64_t size,
     LBASSERT( size > 0 );
 
     const uint64_t finalSize = size +                        // packet header
-                               _impl->userBuffer.getSize() + // userBuffer                               
+                               _impl->userBuffer.getSize() + // userBuffer
                                _impl->dataSize;              // objectBuffer
 
     for( ConnectionsCIter it = getConnections().begin();
@@ -97,33 +97,17 @@ void ObjectDataOCommand::sendData( const void* buffer, const uint64_t size,
         if( !_impl->userBuffer.isEmpty( ))
             conn->send( _impl->userBuffer.getData(),
                         _impl->userBuffer.getSize(), true );
-        if( !_impl->stream )
+        if( !_impl->stream || _impl->dataSize == 0 )
         {
             conn->unlockSend();
             continue;
         }
 
         if( _impl->stream->getCompressor() == EQ_COMPRESSOR_NONE )
-        {
-            if( _impl->dataSize > 0 )
-                conn->send( _impl->objectBuffer, _impl->dataSize, true );
-        }
+            conn->send( _impl->objectBuffer, _impl->dataSize, true );
         else
-        {
-            const uint32_t nChunks = _impl->stream->getNumChunks();
-            uint64_t* chunkSizes =static_cast< uint64_t* >
-                                       ( alloca (nChunks * sizeof( uint64_t )));
-            void** chunks = static_cast< void ** >
-                                          ( alloca( nChunks * sizeof( void* )));
+            _impl->stream->sendCompressedData( conn );
 
-            _impl->stream->getCompressedData( chunks, chunkSizes );
-
-            for( size_t j = 0; j < nChunks; ++j )
-            {
-                conn->send( &chunkSizes[j], sizeof( uint64_t ), true );
-                conn->send( chunks[j], chunkSizes[j], true );
-            }
-        }
         conn->unlockSend();
     }
 }
