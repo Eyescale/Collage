@@ -17,6 +17,7 @@
 
 #include "dispatcher.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "commandQueue.h"
 #include "node.h"
@@ -80,13 +81,16 @@ void Dispatcher::_registerCommand( const uint32_t command, const Func& func,
 }
 
 
-bool Dispatcher::dispatchCommand( CommandPtr command )
+bool Dispatcher::dispatchCommand( BufferPtr buffer )
 {
-    LBASSERT( command->isValid( ));
+    LBASSERT( buffer->isValid( ));
+
+    Command command( buffer );
+
     LBVERB << "dispatch " << command << " on " << lunchbox::className( this )
            << std::endl;
 
-    const uint32_t which = (*command)->command;
+    const uint32_t which = command.getCommand();
 #ifndef NDEBUG
     if( which >= _impl->qTable.size( ))
     {
@@ -101,8 +105,8 @@ bool Dispatcher::dispatchCommand( CommandPtr command )
     CommandQueue* queue = _impl->qTable[which];
     if( queue )
     {
-        command->setDispatchFunction( _impl->fTable[which] );
-        queue->push( command );
+        buffer->setDispatchFunction( _impl->fTable[which] );
+        queue->push( buffer );
         return true;
     }
     // else

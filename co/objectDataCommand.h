@@ -15,31 +15,39 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_OBJECTICOMMAND_H
-#define CO_OBJECTICOMMAND_H
+#ifndef CO_OBJECTDATACOMMAND_H
+#define CO_OBJECTDATACOMMAND_H
 
-#include <co/nodeICommand.h>   // base class
+#include <co/objectCommand.h>   // base class
 
 
 namespace co
 {
 
-namespace detail { class ObjectICommand; }
+namespace detail { class ObjectDataCommand; }
 
-/** A DataIStream based command for co::Object. */
-class ObjectICommand : public NodeICommand
+/** */
+class ObjectDataCommand : public ObjectCommand
 {
 public:
-    ObjectICommand( CommandPtr command );
-    virtual ~ObjectICommand();
+    CO_API ObjectDataCommand( BufferPtr buffer );
+    CO_API ~ObjectDataCommand();
 
-    const UUID& getObjectID() const;
+    virtual uint128_t getVersion() const;
 
-    uint32_t getInstanceID() const;
+    uint32_t getSequence() const;
+
+    CO_API uint64_t getDataSize() const;
+
+    CO_API uint32_t getCompressor() const;
+
+    CO_API uint32_t getChunks() const;
+
+    CO_API bool isLast() const;
 
 private:
-    detail::ObjectICommand* const _impl;
+    detail::ObjectDataCommand* const _impl;
 };
 }
 
-#endif //CO_OBJECTICOMMAND_H
+#endif //CO_OBJECTDATACOMMAND_H

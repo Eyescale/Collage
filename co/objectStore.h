@@ -56,7 +56,7 @@ namespace co
          * @param packet the command packet.
          * @return true if the command was dispatched, false otherwise.
          */
-        bool dispatchObjectCommand( CommandPtr packet );
+        bool dispatchObjectCommand( BufferPtr packet );
         //@}
 
         /** @name Object Registration */

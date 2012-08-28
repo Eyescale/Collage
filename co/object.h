@@ -311,23 +311,8 @@ namespace co
         virtual void unpack( DataIStream& is ) { applyInstanceData( is ); }
         //@}
 
-        /** @name Packet Transmission */
+        /** @name Messaging API */
         //@{
-        /** Send a packet to peer object instance(s) on another node. */
-        CO_API bool send( NodePtr node, ObjectPacket& packet );
-
-        /** Send a packet to peer object instance(s) on another node. */
-        CO_API bool send( NodePtr node, ObjectPacket& packet,
-                          const std::string& string );
-
-        /** Send a packet to peer object instance(s) on another node. */
-        CO_API bool send( NodePtr node, ObjectPacket& packet, 
-                          const void* data, const uint64_t size );
-
-        /** Send a packet to peer object instance(s) on another node. */
-        template< class T > bool
-        send( NodePtr node, ObjectPacket& packet, const std::vector<T>& v );
-
         /**
          * Send a command with optional data to object instance(s) on another
          * node.
@@ -341,8 +326,8 @@ namespace co
          * @param instanceID the object instance which should handle the command
          * @return the stream object to pass additional data to
          */
-        ObjectOCommand send( NodePtr node, uint32_t cmd,
-                             const uint32_t instanceID = EQ_INSTANCE_ALL );
+        CO_API ObjectOCommand send( NodePtr node, uint32_t cmd,
+                                  const uint32_t instanceID = EQ_INSTANCE_ALL );
         //@}
 
         /** @name Notifications */
@@ -464,14 +449,6 @@ namespace co
         LB_TS_VAR( _thread );
     };
     CO_API std::ostream& operator << ( std::ostream&, const Object& );
-
-    template< class T > inline bool
-    Object::send( NodePtr node, ObjectPacket& packet, const std::vector<T>& v )
-    {
-        LBASSERT( isAttached() );
-        packet.objectID  = _id;
-        return node->send( packet, v );
-    }
 }
 
 namespace lunchbox

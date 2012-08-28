@@ -19,11 +19,12 @@
 #include "objectInstanceDataOStream.h"
 
 #include "log.h"
-#include "versionedMasterCM.h"
-#include "nodePackets.h"
+#include "nodeCommand.h"
 #include "object.h"
 #include "objectDataIStream.h"
-#include "objectPackets.h"
+#include "objectDataOCommand.h"
+#include "versionedMasterCM.h"
+
 
 namespace co
 {
@@ -73,8 +74,8 @@ void ObjectInstanceDataOStream::push( const Nodes& receivers,
     _setupConnections( receivers );
 
     _resend();
-    NodeObjectPushPacket packet( objectID, groupID, typeID );
-    _send( packet );
+    NodeOCommand( getConnections(), COMMANDTYPE_CO_NODE, CMD_NODE_OBJECT_PUSH )
+        << objectID << groupID << typeID;
 
     _clearConnections();
 }
@@ -117,11 +118,9 @@ void ObjectInstanceDataOStream::sendData( const void* buffer,
 {
     LBASSERT( _command );
 
-    ObjectInstancePacket packet( _nodeID, _cm->getObject()->getInstanceID( ));
-    packet.command = _command;
-    packet.instanceID = _instanceID;
-
-    ObjectDataOStream::sendData( packet, buffer, size, last );
+    ObjectDataOStream::send( _command, COMMANDTYPE_CO_NODE, _instanceID, size,
+                             last, buffer )
+        << _nodeID << _cm->getObject()->getInstanceID();
 }
 
 }

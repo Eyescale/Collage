@@ -23,12 +23,9 @@
 #include "node.h"
 #include "object.h"
 #include "objectDataIStream.h"
-#include "objectPackets.h"
 
 namespace co
 {
-
-typedef CommandFunc<DeltaMasterCM> CmdFunc;
 
 DeltaMasterCM::DeltaMasterCM( Object* object )
         : FullMasterCM( object )

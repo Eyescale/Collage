@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -25,9 +25,9 @@
 namespace co
 {
 namespace detail { class CommandCache; }
-    
+
     /**
-     * A command cache handles the reuse of allocated packets for a node.
+     * A command cache handles the reuse of allocated buffers for a node.
      *
      * Commands are retained and released whenever they are not directly
      * processed, e.g., when pushed to another thread using a CommandQueue.
@@ -39,11 +39,11 @@ namespace detail { class CommandCache; }
         CO_API ~CommandCache();
 
         /** @return a new command. */
-        CO_API CommandPtr alloc( NodePtr node, LocalNodePtr localNode,
-                                 const uint64_t size );
+        CO_API BufferPtr alloc( NodePtr node, LocalNodePtr localNode,
+                                const uint64_t size );
 
         /** @return a clone of a command. */
-        CO_API CommandPtr clone( CommandPtr from );
+        CO_API BufferPtr clone( BufferPtr from );
 
         /** Flush all allocated commands. */
         void flush();

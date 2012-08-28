@@ -20,6 +20,13 @@
 
 namespace co
 {
+    enum CommandType
+    {
+        COMMANDTYPE_CO_NODE,
+        COMMANDTYPE_CO_OBJECT,
+        COMMANDTYPE_CO_CUSTOM = 1<<7
+    };
+
     enum
     {
         CMD_NODE_COMMAND, //!< A custom node command
@@ -27,6 +34,12 @@ namespace co
         CMD_NODE_CUSTOM = 50,  //!< Commands for subclasses of Node start here
         CMD_OBJECT_CUSTOM = 10 //!< Commands for subclasses of Object start here
     };
+}
+
+namespace lunchbox
+{
+template<> inline void byteswap( co::CommandType& value )
+    { byteswap( reinterpret_cast< uint32_t& >( value )); }
 }
 
 #endif // CO_COMMANDS_H

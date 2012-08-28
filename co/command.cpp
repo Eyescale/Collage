@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -17,105 +17,153 @@
 
 #include "command.h"
 
+#include "buffer.h"
 #include "node.h"
+#include "plugins/compressorTypes.h"
+
 
 namespace co
 {
-
-Command::Command( lunchbox::a_int32_t& freeCounter ) 
-        : _packet( 0 )
-        , _data( 0 )
-        , _dataSize( 0 )
-        , _freeCount( freeCounter )
-        , _func( 0, 0 )
-{}
-
-Command::~Command() 
+namespace detail
 {
-    free(); 
-}
-
-void Command::deleteReferenced( const Referenced* object ) const
+class Command
 {
-    Command* command = const_cast< Command* >( this );
-    // DON'T 'command->_master = 0;', command is already reusable and _master
-    // may be set any time. alloc or clone_ will free old master.
-    ++command->_freeCount;
-}
+public:
+    Command( BufferPtr buffer )
+        : _func( 0, 0 )
+        , _buffer( buffer )
+        , _type()
+        , _cmd()
+    {}
 
-size_t Command::alloc_( NodePtr node, LocalNodePtr localNode,
-                        const uint64_t size )
-{
-    LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller CommandCache
-    LBASSERTINFO( !_func.isValid(), *this );
-    LBASSERT( _freeCount > 0 );
+    Command( const Command& rhs )
+        : _func( rhs._func )
+        , _buffer( rhs._buffer )
+        , _type()
+        , _cmd()
+    {}
 
-    --_freeCount;
-
-    size_t allocated = 0;
-    if( !_data )
+    void operator=( const Command& rhs )
     {
-        _dataSize = LB_MAX( Packet::minSize, size );
-        _data = static_cast< Packet* >( malloc( _dataSize ));
-        allocated = _dataSize;
-    }
-    else if( size > _dataSize )
-    {
-        allocated =  size - _dataSize;
-        _dataSize = LB_MAX( Packet::minSize, size );
-        ::free( _data );
-        _data = static_cast< Packet* >( malloc( _dataSize ));
+        _func = rhs._func;
+        _buffer = rhs._buffer;
+        _type = rhs._type;
+        _cmd = rhs._cmd;
     }
 
-    _node = node;
-    _localNode = localNode;
-    _func.clear();
-    _packet = _data;
-    _packet->size = size;
-    _master = 0;
-
-    return allocated;
+    co::Dispatcher::Func _func;
+    BufferPtr _buffer;
+    uint32_t _type;
+    uint32_t _cmd;
+};
 }
 
-void Command::clone_( CommandPtr from )
+Command::Command( BufferPtr buffer )
+    : DataIStream( )
+    , _impl( new detail::Command( buffer ))
 {
-    LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller CommandCache
-    LBASSERT( from->getRefCount() > 1 ); // caller CommandCache, self
-    LBASSERTINFO( !_func.isValid(), *this );
-    LBASSERT( _freeCount > 0 );
-
-    --_freeCount;
-
-    _node = from->_node;
-    _localNode = from->_localNode;
-    _packet = from->_packet;
-    _master = from;
+    if( _impl->_buffer )
+        *this >> _impl->_type >> _impl->_cmd;
 }
 
-void Command::free()
+Command::Command( const Command& rhs )
+    : DataIStream( )
+    , _impl( new detail::Command( *rhs._impl ))
 {
-    LB_TS_THREAD( _writeThread );
-    LBASSERT( !_func.isValid( ));
+    if( _impl->_buffer )
+        *this >> _impl->_type >> _impl->_cmd;
+}
 
-    if( _data )
-        ::free( _data );
+Command& Command::operator = ( const Command& rhs )
+{
+    if( this != &rhs )
+        *_impl = *rhs._impl;
+    return *this;
+}
 
-    _data = 0;
-    _dataSize = 0;
-    _packet = 0;
-    _node = 0;
-    _localNode = 0;
-    _master = 0;
-}        
+Command::~Command()
+{
+    delete _impl;
+}
+
+uint32_t Command::getType() const
+{
+    return _impl->_type;
+}
+
+uint32_t Command::getCommand() const
+{
+    return _impl->_cmd;
+}
+
+void Command::setType( const CommandType type )
+{
+    _impl->_type = type;
+    // #145 cleaner way??
+    memcpy( _impl->_buffer->getData(), &type, sizeof( type ));
+}
+
+void Command::setCommand( const uint32_t cmd )
+{
+    _impl->_cmd = cmd;
+    // #145 cleaner way??
+    memcpy( _impl->_buffer->getData() + sizeof( CommandType ),
+            &cmd, sizeof( cmd ));
+}
+
+BufferPtr Command::getBuffer() const
+{
+    return _impl->_buffer;
+}
+
+size_t Command::nRemainingBuffers() const
+{
+    return _impl->_buffer ? 1 : 0;
+}
+
+uint128_t Command::getVersion() const
+{
+    return uint128_t( 0, 0 );
+}
+
+NodePtr Command::getMaster()
+{
+    return getNode();
+}
+
+bool Command::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
+                             const void** chunkData, uint64_t* size )
+{
+    if( !_impl->_buffer )
+        return false;
+
+    *chunkData = _impl->_buffer->getData();
+    *size = _impl->_buffer->getDataSize();
+    *compressor = EQ_COMPRESSOR_NONE;
+    *nChunks = 1;
+
+    return true;
+}
+
+NodePtr Command::getNode() const
+{
+    return _impl->_buffer->getNode();
+}
+
+LocalNodePtr Command::getLocalNode() const
+{
+    return _impl->_buffer->getLocalNode();
+}
+
+bool Command::isValid() const
+{
+    return _impl->_buffer;
+}
 
 bool Command::operator()()
 {
-    LBASSERT( _func.isValid( ));
-    Dispatcher::Func func = _func;
-    _func.clear();
-    return func( this );
+    Dispatcher::Func func = _impl->_buffer->getDispatchFunction();
+    return func( *this );
 }
 
 std::ostream& operator << ( std::ostream& os, const Command& command )
@@ -123,28 +171,15 @@ std::ostream& operator << ( std::ostream& os, const Command& command )
     if( command.isValid( ))
     {
         os << lunchbox::disableFlush << "command< ";
-        const Packet* packet = command.get< Packet >() ;
-        switch( packet->type )
-        {
-            case PACKETTYPE_CO_NODE:
-                os << static_cast< const NodePacket* >( packet );
-                break;
-
-            case PACKETTYPE_CO_OBJECT:
-                os << static_cast< const ObjectPacket* >( packet );
-                break;
-
-            default:
-                os << packet;
-        }
-
+        os << " type " << uint32_t( command.getType( ))
+           << " cmd " << command.getCommand();
         os << ", " << command.getNode() << " >" << lunchbox::enableFlush;
     }
     else
         os << "command< empty >";
 
-    if( command._func.isValid( ))
-        os << ' ' << command._func << std::endl;
+    if( command._impl->_func.isValid( ))
+        os << ' ' << command._impl->_func << std::endl;
     return os;
 }
 }
