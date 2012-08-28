@@ -63,9 +63,8 @@ namespace co
         };
         
         virtual void _initSlave( NodePtr node, const uint128_t& version,
-                                 const NodeMapObjectPacket* packet,
-                                 NodeMapObjectSuccessPacket& success,
-                                 NodeMapObjectReplyPacket& reply );
+                                 Command& command, uint128_t replyVersion,
+                                 bool replyUseCache );
 
         InstanceData* _newInstanceData();
         void _addInstanceData( InstanceData* data );

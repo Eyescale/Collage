@@ -15,48 +15,50 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_OBJECTICOMMAND_H
-#define CO_OBJECTICOMMAND_H
+#include "queueItem.h"
 
-#include <co/command.h>   // base class
+#include "queueMaster.h"
 
 
 namespace co
 {
-
-enum ObjectCommands
+namespace detail
 {
-    CMD_OBJECT_INSTANCE,
-    CMD_OBJECT_DELTA,
-    CMD_OBJECT_SLAVE_DELTA,
-    CMD_OBJECT_MAX_VERSION
-    // check that not more then CMD_OBJECT_CUSTOM have been defined!
-};
-
-namespace detail { class ObjectCommand; }
-
-/** A DataIStream based command for co::Object. */
-class ObjectCommand : public Command
+class QueueItem
 {
 public:
-    /** @internal */
-    ObjectCommand( BufferPtr buffer );
+    QueueItem( co::QueueMaster& queueMaster_ )
+        : queueMaster( queueMaster_ )
+    {}
 
-    ObjectCommand( const ObjectCommand& rhs );
+    QueueItem( const QueueItem& rhs )
+        : queueMaster( rhs.queueMaster )
+    {}
 
-    ObjectCommand& operator = ( const ObjectCommand& rhs );
-
-    virtual ~ObjectCommand();
-
-    const UUID& getObjectID() const;
-
-    uint32_t getInstanceID() const;
-
-private:
-    detail::ObjectCommand* const _impl;
-
+    co::QueueMaster& queueMaster;
 };
-
 }
 
-#endif //CO_OBJECTICOMMAND_H
+QueueItem::QueueItem( QueueMaster& master )
+    : DataOStream()
+    , _impl( new detail::QueueItem( master ))
+{
+    enableSave();
+    _enable();
+}
+
+QueueItem::QueueItem( const QueueItem& rhs )
+    : DataOStream()
+    , _impl( new detail::QueueItem( *rhs._impl ))
+{
+    enableSave();
+    _enable();
+}
+
+QueueItem::~QueueItem()
+{
+    _impl->queueMaster._addItem( *this );
+    disable();
+}
+
+}

@@ -18,6 +18,7 @@
 
 #include "localNode.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "commandCache.h"
 #include "commandQueue.h"
@@ -26,8 +27,10 @@
 #include "dataIStream.h"
 #include "exception.h"
 #include "global.h"
-#include "nodePackets.h"
+#include "nodeCommand.h"
+#include "nodeOCommand.h"
 #include "object.h"
+#include "objectCommand.h"
 #include "objectStore.h"
 #include "pipeConnection.h"
 #include "worker.h"
@@ -50,7 +53,7 @@ namespace co
 namespace
 {
 typedef CommandFunc<LocalNode> CmdFunc;
-typedef std::list< CommandPtr > CommandList;
+typedef std::list< BufferPtr > BufferList;
 typedef lunchbox::RefPtrHash< Connection, NodePtr > ConnectionNodeHash;
 typedef ConnectionNodeHash::const_iterator ConnectionNodeHashCIter;
 typedef ConnectionNodeHash::iterator ConnectionNodeHashIter;
@@ -133,14 +136,14 @@ public:
     bool inReceiverThread() const { return receiverThread->isCurrent(); }
 
     /** Commands re-scheduled for dispatch. */
-    CommandList  pendingCommands;
+    BufferList  pendingCommands;
 
     /** The command 'allocator' */
     co::CommandCache commandCache;
 
     bool sendToken; //!< send token availability.
     uint64_t lastSendToken; //!< last used time for timeout detection
-    std::deque< CommandPtr > sendTokenQueue; //!< pending requests
+    std::deque< co::Command > sendTokenQueue; //!< pending requests
 
     /** Manager of distributed object */
     ObjectStore* objectStore;
@@ -347,8 +350,7 @@ bool LocalNode::close()
     if( !isListening() )
         return false;
 
-    NodeStopPacket packet;
-    send( packet );
+    send( CMD_NODE_STOP_RCV );
 
     LBCHECK( _impl->receiverThread->join( ));
     _cleanup();
@@ -371,12 +373,8 @@ bool LocalNode::close()
 
 void LocalNode::setAffinity( const int32_t affinity )
 {
-    NodeAffinityPacket packet;
-    packet.affinity = affinity;
-    send( packet );
-
-    packet.command = CMD_NODE_SET_AFFINITY_CMD;
-    send( packet );
+    send( CMD_NODE_SET_AFFINITY_RCV ) << affinity;
+    send( CMD_NODE_SET_AFFINITY_CMD ) << affinity;
 
     lunchbox::Thread::setAffinity( affinity );
 }
@@ -401,7 +399,6 @@ void LocalNode::addListener( ConnectionPtr connection )
     LBASSERT( connection->isListening( ));
 
     connection->ref( this );
-    NodeAddListenerPacket packet( connection );
 
     // Update everybody's description list of me
     // I will add the listener to myself in my handler
@@ -409,7 +406,8 @@ void LocalNode::addListener( ConnectionPtr connection )
     getNodes( nodes );
 
     for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
-        (*i)->send( packet, connection->getDescription()->toString( ));
+        (*i)->send( CMD_NODE_ADD_LISTENER )
+               << connection.get() << connection->getDescription()->toString();
 }
 
 void LocalNode::removeListeners( const Connections& connections )
@@ -439,14 +437,15 @@ uint32_t LocalNode::_removeListenerNB( ConnectionPtr connection )
     LBASSERTINFO( !connection->isConnected(), connection );
 
     connection->ref( this );
-    NodeRemoveListenerPacket packet( connection, registerRequest( ));
+    const uint32_t requestID = registerRequest();
     Nodes nodes;
     getNodes( nodes );
 
     for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
-        (*i)->send( packet, connection->getDescription()->toString( ));
+        (*i)->send( CMD_NODE_REMOVE_LISTENER ) << requestID << connection.get()
+                                    << connection->getDescription()->toString();
 
-    return packet.requestID;
+    return requestID;
 }
 
 void LocalNode::_addConnection( ConnectionPtr connection )
@@ -591,11 +590,10 @@ bool LocalNode::disconnect( NodePtr node )
 
     LBASSERT( !inCommandThread( ));
 
-    NodeDisconnectPacket packet;
-    packet.requestID = registerRequest( node.get( ));
-    send( packet );
+    const uint32_t requestID = registerRequest( node.get( ));
+    send( CMD_NODE_DISCONNECT ) << requestID;
 
-    waitRequest( packet.requestID );
+    waitRequest( requestID );
     _impl->objectStore->removeNode( node );
     return true;
 }
@@ -608,17 +606,13 @@ void LocalNode::ackRequest( NodePtr node, const uint32_t requestID )
     if( node == this ) // OPT
         serveRequest( requestID );
     else
-    {
-        NodeAckRequestPacket reply( requestID );
-        node->send( reply );
-    }
+        node->send( CMD_NODE_ACK_REQUEST ) << requestID;
 }
 
 void LocalNode::ping( NodePtr remoteNode )
 {
     LBASSERT( !_impl->inReceiverThread( ) );
-    NodePingPacket packet;
-    remoteNode->send( packet );
+    remoteNode->send( CMD_NODE_PING );
 }
 
 bool LocalNode::pingIdleNodes()
@@ -636,8 +630,7 @@ bool LocalNode::pingIdleNodes()
         {
             LBINFO << " Ping Node: " <<  node->getNodeID() << " last seen "
                    << node->getLastReceiveTime() << std::endl;
-            NodePingPacket packet;
-            node->send( packet );
+            node->send( CMD_NODE_PING );
             pinged = true;
         }
     }
@@ -766,15 +759,14 @@ LocalNode::SendToken LocalNode::acquireSendToken( NodePtr node )
     LBASSERT( !inCommandThread( ));
     LBASSERT( !_impl->inReceiverThread( ));
 
-    NodeAcquireSendTokenPacket packet;
-    packet.requestID = registerRequest();
-    node->send( packet );
+    const uint32_t requestID = registerRequest();
+    node->send( CMD_NODE_ACQUIRE_SEND_TOKEN ) << requestID;
 
     bool ret = false;
-    if( waitRequest( packet.requestID, ret, Global::getTimeout( )))
+    if( waitRequest( requestID, ret, Global::getTimeout( )))
         return node;
 
-    LBERROR << "Timeout while acquiring send token " << packet.requestID
+    LBERROR << "Timeout while acquiring send token " << requestID
             << std::endl;
     return 0;
 }
@@ -785,8 +777,7 @@ void LocalNode::releaseSendToken( SendToken& node )
     if( !node )
         return;
 
-    NodeReleaseSendTokenPacket packet;
-    node->send( packet );
+    node->send( CMD_NODE_RELEASE_SEND_TOKEN );
     node = 0; // In case app stores token in member variable
 }
 
@@ -877,13 +868,11 @@ NodePtr LocalNode::_connect( const NodeID& nodeID, NodePtr peer )
     }
     LBASSERT( getNodeID() != nodeID );
 
-    NodeGetNodeDataPacket packet;
-    packet.requestID = registerRequest();
-    packet.nodeID    = nodeID;
-    peer->send( packet );
+    const uint32_t requestID = registerRequest();
+    peer->send( CMD_NODE_GET_NODE_DATA ) << nodeID << requestID;
 
     void* result = 0;
-    waitRequest( packet.requestID, result );
+    waitRequest( requestID, result );
 
     if( !result )
     {
@@ -1033,13 +1022,15 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
 
     _addConnection( connection );
 
+    const uint32_t requestID = registerRequest( node.get( ));
+
     // send connect packet to peer
-    NodeConnectPacket packet( this );
-    packet.requestID = registerRequest( node.get( ));
-    connection->send( packet, serialize( ));
+    NodeOCommand( Connections( 1, connection ), COMMANDTYPE_CO_NODE,
+                  CMD_NODE_CONNECT ) << getNodeID() << requestID << getType()
+                                     << serialize();
 
     bool connected = false;
-    if( !waitRequest( packet.requestID, connected, 10000 /*ms*/ ))
+    if( !waitRequest( requestID, connected, 10000 /*ms*/ ))
     {
         LBWARN << "Node connection handshake timeout - " << node
                << " not a Collage node?" << std::endl;
@@ -1096,7 +1087,7 @@ void LocalNode::flushCommands()
     _impl->incoming.interrupt();
 }
 
-CommandPtr LocalNode::cloneCommand( CommandPtr command )
+BufferPtr LocalNode::cloneCommand( BufferPtr command )
 {
     return _impl->commandCache.clone( command );
 }
@@ -1204,13 +1195,9 @@ void LocalNode::_handleDisconnect()
     if( i != _impl->connectionNodes.end( ))
     {
         NodePtr node = i->second;
-        CommandPtr command = _impl->commandCache.alloc( node, this,
-                                                sizeof( NodeRemoveNodePacket ));
-        NodeRemoveNodePacket* packet =
-             command->getModifiable< NodeRemoveNodePacket >();
-        *packet = NodeRemoveNodePacket();
-        packet->node = node.get();
-        _dispatchCommand( command );
+        node->ref(); // extend lifetime to give cmd handler a chance
+        send( CMD_NODE_REMOVE_NODE )
+            << node.get() << uint32_t( LB_UNDEFINED_UINT32 );
 
         if( node->getConnection() == connection )
             _closeNode( node );
@@ -1261,21 +1248,19 @@ bool LocalNode::_handleData()
 
     LBASSERT( size );
     LBASSERTINFO( bytes == sizeof( uint64_t ), bytes );
-    LBASSERT( size > sizeof( size ));
 
     if( node )
         node->_setLastReceive( getTime64( ));
 
-    CommandPtr command = _impl->commandCache.alloc( node, this, size );
-    uint8_t* ptr = reinterpret_cast< uint8_t* >(
-        command->getModifiable< Packet >()) + sizeof( uint64_t );
-
-    connection->recvNB( ptr, size - sizeof( uint64_t ));
+    BufferPtr buffer = _impl->commandCache.alloc( node, this, size );
+    LBASSERT( buffer->getRefCount() == 1 );
+    connection->recvNB( buffer->getData(), size );
     const bool gotData = connection->recvSync( 0, 0 );
 
+    Command command( buffer );
+
     LBASSERT( gotData );
-    LBASSERT( command->isValid( ));
-    LBASSERT( command->getRefCount() == 1 );
+    LBASSERT( command.isValid( ));
 
     // start next receive
     connection->recvNB( sizePtr, sizeof( uint64_t ));
@@ -1289,51 +1274,51 @@ bool LocalNode::_handleData()
     // This is one of the initial packets during the connection handshake, at
     // this point the remote node is not yet available.
     LBASSERTINFO( node.isValid() ||
-                 ( (*command)->type == PACKETTYPE_CO_NODE &&
-                  ( (*command)->command == CMD_NODE_CONNECT  ||
-                    (*command)->command == CMD_NODE_CONNECT_REPLY ||
-                    (*command)->command == CMD_NODE_ID )),
+                 ( command.getType() == COMMANDTYPE_CO_NODE &&
+                  ( command.getCommand() == CMD_NODE_CONNECT  ||
+                    command.getCommand() == CMD_NODE_CONNECT_REPLY ||
+                    command.getCommand() == CMD_NODE_ID )),
                   command << " connection " << connection );
 
-    _dispatchCommand( command );
+    _dispatchCommand( buffer );
     return true;
 }
 
-CommandPtr LocalNode::allocCommand( const uint64_t size )
+BufferPtr LocalNode::allocCommand( const uint64_t size )
 {
     LBASSERT( _impl->inReceiverThread( ));
     return _impl->commandCache.alloc( this, this, size );
 }
 
-void LocalNode::_dispatchCommand( CommandPtr command )
+void LocalNode::_dispatchCommand( BufferPtr buffer )
 {
-    LBASSERT( command->isValid( ));
+    LBASSERT( buffer->isValid( ));
 
-    if( dispatchCommand( command ))
+    if( dispatchCommand( buffer ))
         _redispatchCommands();
     else
     {
         _redispatchCommands();
-        _impl->pendingCommands.push_back( command );
+        _impl->pendingCommands.push_back( buffer );
     }
 }
 
-bool LocalNode::dispatchCommand( CommandPtr command )
+bool LocalNode::dispatchCommand( BufferPtr buffer )
 {
-    LBVERB << "dispatch " << command << " by " << getNodeID() << std::endl;
-    LBASSERT( command->isValid( ));
+    LBASSERT( buffer->isValid( ));
 
-    const uint32_t type = (*command)->type;
+    Command command( buffer );
+    LBVERB << "dispatch " << command << " by " << getNodeID() << std::endl;
+
+    const uint32_t type = command.getType();
     switch( type )
     {
-        case PACKETTYPE_CO_NODE:
-            LBCHECK( Dispatcher::dispatchCommand( command ));
+        case COMMANDTYPE_CO_NODE:
+            LBCHECK( Dispatcher::dispatchCommand( buffer ));
             return true;
 
-        case PACKETTYPE_CO_OBJECT:
-        {
-            return _impl->objectStore->dispatchObjectCommand( command );
-        }
+        case COMMANDTYPE_CO_OBJECT:
+            return _impl->objectStore->dispatchObjectCommand( buffer );
 
         default:
             LBABORT( "Unknown packet type " << type << " for " << command );
@@ -1348,13 +1333,13 @@ void LocalNode::_redispatchCommands()
     {
         changes = false;
 
-        for( CommandList::iterator i = _impl->pendingCommands.begin();
+        for( BufferList::iterator i = _impl->pendingCommands.begin();
              i != _impl->pendingCommands.end(); ++i )
         {
-            CommandPtr command = *i;
-            LBASSERT( command->isValid( ));
+            BufferPtr buffer = *i;
+            LBASSERT( buffer->isValid( ));
 
-            if( dispatchCommand( command ))
+            if( dispatchCommand( buffer ))
             {
                 _impl->pendingCommands.erase( i );
                 changes = true;
@@ -1427,10 +1412,10 @@ bool LocalNode::_notifyCommandThreadIdle()
 
 bool LocalNode::_cmdAckRequest( Command& command )
 {
-    const NodeAckRequestPacket* packet = command.get< NodeAckRequestPacket >();
-    LBASSERT( packet->requestID != LB_UNDEFINED_UINT32 );
+    const uint32_t requestID = command.get< uint32_t >();
+    LBASSERT( requestID != LB_UNDEFINED_UINT32 );
 
-    serveRequest( packet->requestID );
+    serveRequest( requestID );
     return true;
 }
 
@@ -1442,8 +1427,8 @@ bool LocalNode::_cmdStopRcv( Command& command )
     _exitService();
     _setClosing(); // causes rcv thread exit
 
-    command->command = CMD_NODE_STOP_CMD; // causes cmd thread exit
-    _dispatchCommand( &command );
+    command.setCommand( CMD_NODE_STOP_CMD ); // causes cmd thread exit
+    _dispatchCommand( command.getBuffer( ));
     return true;
 }
 
@@ -1458,9 +1443,9 @@ bool LocalNode::_cmdStopCmd( Command& command )
 
 bool LocalNode::_cmdSetAffinity( Command& command )
 {
-    const NodeAffinityPacket* packet = command.get< NodeAffinityPacket >();
+    const int32_t affinity = command.get< int32_t >();
 
-    lunchbox::Thread::setAffinity( packet->affinity );
+    lunchbox::Thread::setAffinity( affinity );
     return true;
 }
 
@@ -1468,12 +1453,15 @@ bool LocalNode::_cmdConnect( Command& command )
 {
     LBASSERT( !command.getNode().isValid( ));
     LBASSERT( _impl->inReceiverThread( ));
+    LBVERB << "handle connect " << command << std::endl;
 
-    const NodeConnectPacket* packet = command.get< NodeConnectPacket >();
+    const NodeID& nodeID = command.get< NodeID >();
+    const uint32_t requestID = command.get< uint32_t >();
+    const uint32_t nodeType = command.get< uint32_t >();
+    std::string data = command.get< std::string >();
+
     ConnectionPtr connection = _impl->incoming.getConnection();
-    const NodeID& nodeID = packet->nodeID;
 
-    LBVERB << "handle connect " << packet << std::endl;
     LBASSERT( nodeID != getNodeID() );
     LBASSERT( _impl->connectionNodes.find( connection ) ==
               _impl->connectionNodes.end( ));
@@ -1492,8 +1480,9 @@ bool LocalNode::_cmdConnect( Command& command )
                    << std::endl;
 
             // refuse connection
-            NodeConnectReplyPacket reply( packet );
-            connection->send( reply );
+            NodeOCommand( Connections( 1, connection ), COMMANDTYPE_CO_NODE,
+                          CMD_NODE_CONNECT_REPLY) << nodeID << requestID
+                                                  << nodeType;
 
             // NOTE: There is no close() here. The reply packet above has to be
             // received by the peer first, before closing the connection.
@@ -1504,9 +1493,8 @@ bool LocalNode::_cmdConnect( Command& command )
 
     // create and add connected node
     if( !remoteNode )
-        remoteNode = createNode( packet->nodeType );
+        remoteNode = createNode( nodeType );
 
-    std::string data = packet->nodeData;
     if( !remoteNode->deserialize( data ))
         LBWARN << "Error during node initialization" << std::endl;
     LBASSERTINFO( data.empty(), data );
@@ -1522,11 +1510,9 @@ bool LocalNode::_cmdConnect( Command& command )
     LBVERB << "Added node " << nodeID << std::endl;
 
     // send our information as reply
-    NodeConnectReplyPacket reply( packet );
-    reply.nodeID    = getNodeID();
-    reply.nodeType  = getType();
-
-    connection->send( reply, serialize( ));
+    NodeOCommand( Connections( 1, connection ), COMMANDTYPE_CO_NODE,
+                  CMD_NODE_CONNECT_REPLY ) << getNodeID() << requestID
+                                           << getType() << serialize();
     return true;
 }
 
@@ -1534,12 +1520,14 @@ bool LocalNode::_cmdConnectReply( Command& command )
 {
     LBASSERT( !command.getNode( ));
     LBASSERT( _impl->inReceiverThread( ));
+    LBVERB << "handle connect reply " << command << std::endl;
 
-    const NodeConnectReplyPacket* packet =command.get<NodeConnectReplyPacket>();
+    const NodeID& nodeID = command.get< NodeID >();
+    const uint32_t requestID = command.get< uint32_t >();
+    const uint32_t nodeType = command.get< uint32_t >();
+    std::string data = command.get< std::string >();
+
     ConnectionPtr connection = _impl->incoming.getConnection();
-    const NodeID& nodeID = packet->nodeID;
-
-    LBVERB << "handle connect reply " << packet << std::endl;
     LBASSERT( _impl->connectionNodes.find( connection ) ==
               _impl->connectionNodes.end( ));
 
@@ -1550,7 +1538,7 @@ bool LocalNode::_cmdConnectReply( Command& command )
                << std::endl;
 
         _removeConnection( connection );
-        serveRequest( packet->requestID, false );
+        serveRequest( requestID, false );
         return true;
     }
 
@@ -1567,27 +1555,26 @@ bool LocalNode::_cmdConnectReply( Command& command )
         _removeConnection( connection );
 
         _closeNode( peer );
-        serveRequest( packet->requestID, false );
+        serveRequest( requestID, false );
         return true;
     }
 
     // create and add node
     if( !peer )
     {
-        if( packet->requestID != LB_UNDEFINED_UINT32 )
+        if( requestID != LB_UNDEFINED_UINT32 )
         {
-            void* ptr = getRequestData( packet->requestID );
+            void* ptr = getRequestData( requestID );
             LBASSERT( dynamic_cast< Node* >( (Dispatcher*)ptr ));
             peer = static_cast< Node* >( ptr );
         }
         else
-            peer = createNode( packet->nodeType );
+            peer = createNode( nodeType );
     }
 
-    LBASSERT( peer->getType() == packet->nodeType );
+    LBASSERT( peer->getType() == nodeType );
     LBASSERT( peer->isClosed( ));
 
-    std::string data = packet->nodeData;
     if( !peer->deserialize( data ))
         LBWARN << "Error during node initialization" << std::endl;
     LBASSERT( data.empty( ));
@@ -1601,10 +1588,9 @@ bool LocalNode::_cmdConnectReply( Command& command )
     }
     LBVERB << "Added node " << nodeID << std::endl;
 
-    serveRequest( packet->requestID, true );
+    serveRequest( requestID, true );
 
-    NodeConnectAckPacket ack;
-    peer->send( ack );
+    peer->send( CMD_NODE_CONNECT_ACK );
     _connectMulticast( peer );
     return true;
 }
@@ -1624,8 +1610,9 @@ bool LocalNode::_cmdID( Command& command )
 {
     LBASSERT( _impl->inReceiverThread( ));
 
-    const NodeIDPacket* packet = command.get< NodeIDPacket >();
-    NodeID nodeID = packet->id;
+    const NodeID& nodeID = command.get< NodeID >();
+    uint32_t nodeType = command.get< uint32_t >();
+    std::string data = command.get< std::string >();
 
     if( command.getNode().isValid( ))
     {
@@ -1634,7 +1621,7 @@ bool LocalNode::_cmdID( Command& command )
         return true;
     }
 
-    LBINFO << "handle ID " << packet << " node " << nodeID << std::endl;
+    LBINFO << "handle ID " << command << " node " << nodeID << std::endl;
 
     ConnectionPtr connection = _impl->incoming.getConnection();
     LBASSERT( connection->getDescription()->type >= CONNECTIONTYPE_MULTICAST );
@@ -1652,8 +1639,7 @@ bool LocalNode::_cmdID( Command& command )
         if( i == _impl->nodes->end( ))
         {
             // unknown node: create and add unconnected node
-            node = createNode( packet->nodeType );
-            std::string data = packet->data;
+            node = createNode( nodeType );
 
             if( !node->deserialize( data ))
                 LBWARN << "Error during node initialization" << std::endl;
@@ -1684,55 +1670,51 @@ bool LocalNode::_cmdDisconnect( Command& command )
 {
     LBASSERT( _impl->inReceiverThread( ));
 
-    const NodeDisconnectPacket* packet = command.get< NodeDisconnectPacket >();
+    const uint32_t requestID = command.get< uint32_t >();
 
-    NodePtr node = static_cast<Node*>( getRequestData( packet->requestID ));
+    NodePtr node = static_cast<Node*>( getRequestData( requestID ));
     LBASSERT( node.isValid( ));
 
     _closeNode( node );
     LBASSERT( node->isClosed( ));
-    serveRequest( packet->requestID );
+    serveRequest( requestID );
     return true;
 }
 
-bool LocalNode::_cmdGetNodeData( Command& command)
+bool LocalNode::_cmdGetNodeData( Command& command )
 {
-    const NodeGetNodeDataPacket* packet = command.get<NodeGetNodeDataPacket>();
-    LBVERB << "cmd get node data: " << packet << std::endl;
+    LBVERB << "cmd get node data: " << command << std::endl;
 
-    const NodeID& nodeID = packet->nodeID;
+    const NodeID& nodeID = command.get< NodeID >();
+    const uint32_t requestID = command.get< uint32_t >();
+
     NodePtr node = getNode( nodeID );
     NodePtr toNode = command.getNode();
-    NodeGetNodeDataReplyPacket reply( packet );
 
+    uint32_t nodeType = NODETYPE_CO_INVALID;
     std::string nodeData;
     if( node.isValid( ))
     {
-        reply.nodeType = node->getType();
+        nodeType = node->getType();
         nodeData = node->serialize();
         LBINFO << "Sent node data '" << nodeData << "' for " << nodeID << " to "
                << toNode << std::endl;
     }
-    else
-    {
-        LBVERB << "Node " << nodeID << " unknown" << std::endl;
-        reply.nodeType = NODETYPE_CO_INVALID;
-    }
 
-    toNode->send( reply, nodeData );
+    toNode->send( CMD_NODE_GET_NODE_DATA_REPLY )
+        << nodeID << requestID << nodeType << nodeData;
     return true;
 }
 
 bool LocalNode::_cmdGetNodeDataReply( Command& command )
 {
     LBASSERT( _impl->inReceiverThread( ));
+    LBVERB << "cmd get node data reply: " << command << std::endl;
 
-    const NodeGetNodeDataReplyPacket* packet =
-        command.get< NodeGetNodeDataReplyPacket >();
-    LBVERB << "cmd get node data reply: " << packet << std::endl;
-
-    const uint32_t requestID = packet->requestID;
-    const NodeID& nodeID = packet->nodeID;
+    const NodeID& nodeID = command.get< NodeID >();
+    const uint32_t requestID = command.get< uint32_t >();
+    const uint32_t nodeType = command.get< uint32_t >();
+    std::string nodeData = command.get< std::string >();
 
     // No locking needed, only recv thread writes
     NodeHash::const_iterator i = _impl->nodes->find( nodeID );
@@ -1746,20 +1728,19 @@ bool LocalNode::_cmdGetNodeDataReply( Command& command )
         return true;
     }
 
-    if( packet->nodeType == NODETYPE_CO_INVALID )
+    if( nodeType == NODETYPE_CO_INVALID )
     {
         serveRequest( requestID, (void*)0 );
         return true;
     }
 
     // new node: create and add unconnected node
-    NodePtr node = createNode( packet->nodeType );
+    NodePtr node = createNode( nodeType );
     LBASSERT( node.isValid( ));
 
-    std::string data = packet->nodeData;
-    if( !node->deserialize( data ))
+    if( !node->deserialize( nodeData ))
         LBWARN << "Failed to initialize node data" << std::endl;
-    LBASSERT( data.empty( ));
+    LBASSERT( nodeData.empty( ));
 
     node->ref( this );
     serveRequest( requestID, node.get( ));
@@ -1775,7 +1756,7 @@ bool LocalNode::_cmdAcquireSendToken( Command& command )
         if( timeout == LB_TIMEOUT_INDEFINITE ||
             ( getTime64() - _impl->lastSendToken <= timeout ))
         {
-            _impl->sendTokenQueue.push_back( &command );
+            _impl->sendTokenQueue.push_back( command );
             return true;
         }
 
@@ -1786,18 +1767,15 @@ bool LocalNode::_cmdAcquireSendToken( Command& command )
 
     _impl->sendToken = false;
 
-    const NodeAcquireSendTokenPacket* packet =
-        command.get< NodeAcquireSendTokenPacket >();
-    NodeAcquireSendTokenReplyPacket reply( packet );
-    command.getNode()->send( reply );
+    const uint32_t requestID = command.get< uint32_t >();
+    command.getNode()->send( CMD_NODE_ACQUIRE_SEND_TOKEN_REPLY ) << requestID;
     return true;
 }
 
 bool LocalNode::_cmdAcquireSendTokenReply( Command& command )
 {
-    const NodeAcquireSendTokenReplyPacket* packet =
-        command.get< NodeAcquireSendTokenReplyPacket >();
-    serveRequest( packet->requestID );
+    const uint32_t requestID = command.get< uint32_t >();
+    serveRequest( requestID );
     return true;
 }
 
@@ -1814,32 +1792,27 @@ bool LocalNode::_cmdReleaseSendToken( Command& )
         return true;
     }
 
-    CommandPtr request = _impl->sendTokenQueue.front();
+    Command& request = _impl->sendTokenQueue.front();
     _impl->sendTokenQueue.pop_front();
 
-    const NodeAcquireSendTokenPacket* packet =
-        request->get< NodeAcquireSendTokenPacket >();
-    NodeAcquireSendTokenReplyPacket reply( packet );
-
-    request->getNode()->send( reply );
+    const uint32_t requestID = request.get< uint32_t >();
+    request.getNode()->send( CMD_NODE_ACQUIRE_SEND_TOKEN_REPLY ) << requestID;
     return true;
 }
 
 bool LocalNode::_cmdAddListener( Command& command )
 {
-    NodeAddListenerPacket* packet =
-        command.getModifiable< NodeAddListenerPacket >();
-    std::string data( packet->connectionData );
+    Connection* rawConnection = command.get< Connection* >();
+    std::string data = command.get< std::string >();
+
     ConnectionDescriptionPtr description = new ConnectionDescription( data );
     command.getNode()->addConnectionDescription( description );
 
     if( command.getNode() != this )
         return true;
 
-    LBASSERT( packet->connection );
-    ConnectionPtr connection = packet->connection;
-    packet->connection = 0;
-    connection->unref( this );
+    ConnectionPtr connection = rawConnection;
+    LBASSERT( connection );
 
     _impl->connectionNodes[ connection ] = this;
     _impl->incoming.addConnection( connection );
@@ -1853,10 +1826,10 @@ bool LocalNode::_cmdAddListener( Command& command )
 
 bool LocalNode::_cmdRemoveListener( Command& command )
 {
-    NodeRemoveListenerPacket* packet =
-        command.getModifiable< NodeRemoveListenerPacket >();
+    const uint32_t requestID = command.get< uint32_t >();
+    Connection* rawConnection = command.get< Connection* >();
+    std::string data = command.get< std::string >();
 
-    std::string data( packet->connectionData );
     ConnectionDescriptionPtr description = new ConnectionDescription( data );
     LBCHECK( command.getNode()->removeConnectionDescription( description ));
 
@@ -1865,10 +1838,8 @@ bool LocalNode::_cmdRemoveListener( Command& command )
 
     _initService(); // update zeroconf
 
-    LBASSERT( packet->connection );
-    ConnectionPtr connection = packet->connection;
-    packet->connection = 0;
-    connection->unref( this );
+    ConnectionPtr connection = rawConnection;
+    LBASSERT( connection );
 
     if( connection->getDescription()->type >= CONNECTIONTYPE_MULTICAST )
         _removeMulticast( connection );
@@ -1877,34 +1848,33 @@ bool LocalNode::_cmdRemoveListener( Command& command )
     LBASSERT( _impl->connectionNodes.find( connection ) !=
               _impl->connectionNodes.end( ));
     _impl->connectionNodes.erase( connection );
-    serveRequest( packet->requestID );
+    serveRequest( requestID );
     return true;
 }
 
 bool LocalNode::_cmdPing( Command& command )
 {
     LBASSERT( inCommandThread( ));
-    NodePingReplyPacket reply;
-    command.getNode()->send( reply );
+    command.getNode()->send( CMD_NODE_PING_REPLY );
     return true;
 }
 
 bool LocalNode::_cmdCommand( Command& command )
 {
-    const NodeCommandPacket* packet = command.get< NodeCommandPacket >();
+    const uint128_t& commandID = command.get< uint128_t >();
     CommandHandler func;
     {
         lunchbox::ScopedFastRead mutex( _impl->commandHandlers );
-        CommandHashCIter i = _impl->commandHandlers->find( packet->commandID );
+        CommandHashCIter i = _impl->commandHandlers->find( commandID );
         if( i == _impl->commandHandlers->end( ))
             return false;
 
         CommandQueue* queue = i->second.second;
         if( queue )
         {
-            command.setDispatchFunction( CmdFunc( this,
+            command.getBuffer()->setDispatchFunction( CmdFunc( this,
                                                 &LocalNode::_cmdCommandAsync ));
-            queue->push( &command );
+            queue->push( command.getBuffer( ));
             return true;
         }
         // else
@@ -1917,11 +1887,11 @@ bool LocalNode::_cmdCommand( Command& command )
 
 bool LocalNode::_cmdCommandAsync( Command& command )
 {
-    const NodeCommandPacket* packet = command.get< NodeCommandPacket >();
+    const uint128_t& commandID = command.get< uint128_t >();
     CommandHandler func;
     {
         lunchbox::ScopedFastRead mutex( _impl->commandHandlers );
-        CommandHashCIter i = _impl->commandHandlers->find( packet->commandID );
+        CommandHashCIter i = _impl->commandHandlers->find( commandID );
         LBASSERT( i != _impl->commandHandlers->end( ));
         if( i ==  _impl->commandHandlers->end( ))
             return true; // deregistered between dispatch and now

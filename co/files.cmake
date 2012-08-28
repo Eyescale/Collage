@@ -6,6 +6,7 @@ set(CO_PUBLIC_HEADERS
   api.h
   array.h
   barrier.h
+  buffer.h
   bufferConnection.h
   co.h
   command.h
@@ -15,7 +16,6 @@ set(CO_PUBLIC_HEADERS
   compressor.h
   compressorInfo.h
   connection.h
-  connection.ipp
   connectionDescription.h
   connectionSet.h
   connectionType.h
@@ -36,18 +36,22 @@ set(CO_PUBLIC_HEADERS
   localNode.h
   log.h
   node.h
+  nodeOCommand.h
   nodeType.h
   object.h
   objectFactory.h
   objectHandler.h
+  objectDataCommand.h
+  objectDataOCommand.h
+  objectCommand.h
+  objectOCommand.h
   objectMap.h
   objectVersion.h
-  packets.h
   plugin.h
   pluginRegistry.h
   queueCommand.h
   queueMaster.h
-  queuePackets.h
+  queueItem.h
   queueSlave.h
   serializable.h
   types.h
@@ -58,7 +62,6 @@ set(CO_PUBLIC_HEADERS
 
 set(CO_HEADERS
   barrierCommand.h
-  barrierPackets.h
   commandCache.h
   connectionListener.h
   dataIStreamQueue.h
@@ -66,14 +69,12 @@ set(CO_HEADERS
   eventConnection.h
   fullMasterCM.h
   nodeCommand.h
-  nodePackets.h
   nullCM.h
   objectCM.h
   objectDataIStream.h
   objectDataOStream.h
   objectDeltaDataOStream.h
   objectInstanceDataOStream.h
-  objectPackets.h
   objectSlaveDataOStream.h
   pipeConnection.h
   rspConnection.h
@@ -87,6 +88,7 @@ set(CO_HEADERS
 
 set(CO_SOURCES
   barrier.cpp
+  buffer.cpp
   bufferConnection.cpp
   command.cpp
   commandCache.cpp
@@ -108,20 +110,25 @@ set(CO_SOURCES
   instanceCache.cpp
   localNode.cpp
   node.cpp
+  nodeOCommand.cpp
   object.cpp
   objectCM.cpp
   objectDataIStream.cpp
   objectDataOStream.cpp
   objectDeltaDataOStream.cpp
+  objectDataCommand.cpp
+  objectDataOCommand.cpp
+  objectCommand.cpp
+  objectOCommand.cpp
   objectInstanceDataOStream.cpp
   objectMap.cpp
   objectSlaveDataOStream.cpp
   objectStore.cpp
   objectVersion.cpp
-  packets.cpp
   pipeConnection.cpp
   plugin.cpp
   pluginRegistry.cpp
+  queueItem.cpp
   queueMaster.cpp
   queueSlave.cpp
   serializable.cpp

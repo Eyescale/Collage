@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -17,9 +17,10 @@
 
 #include "objectDataIStream.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "commands.h"
-#include "objectPackets.h"
+#include "objectDataCommand.h"
 
 #include <co/plugins/compressor.h>
 
@@ -37,7 +38,7 @@ ObjectDataIStream::~ObjectDataIStream()
 
 ObjectDataIStream::ObjectDataIStream( const ObjectDataIStream& from )
         : DataIStream( from )
-        , _commands( from._commands )
+        , _buffers( from._buffers )
         , _version( from._version )
 {
 }
@@ -50,123 +51,129 @@ void ObjectDataIStream::reset()
 
 void ObjectDataIStream::_reset()
 {
-    _usedCommand = 0;
-    _commands.clear();
+    _usedBuffer = 0;
+    _buffers.clear();
     _version = VERSION_INVALID;
 }
 
-void ObjectDataIStream::addDataPacket( CommandPtr command )
+void ObjectDataIStream::addDataPacket( BufferPtr buffer )
 {
     LB_TS_THREAD( _thread );
     LBASSERT( !isReady( ));
 
-    const ObjectDataPacket* packet = command->get< ObjectDataPacket >();
+    ObjectDataCommand command( buffer );
 #ifndef NDEBUG
-    if( _commands.empty( ))
+    const uint128_t& version = command.getVersion();
+    const uint32_t sequence = command.getSequence();
+
+    if( _buffers.empty( ))
     {
-        LBASSERTINFO( packet->sequence == 0, packet );
+        LBASSERT( sequence == 0 );
     }
     else
     {
-        const ObjectDataPacket* previous = 
-            _commands.back()->get< ObjectDataPacket >();
-        LBASSERTINFO( packet->sequence == previous->sequence+1, 
-                      packet->sequence << ", " << previous->sequence );
-        LBASSERT( packet->version == previous->version );
+        ObjectDataCommand previous( _buffers.back() );
+        const uint128_t& previousVersion = previous.getVersion();
+        const uint32_t previousSequence = previous.getSequence();
+        LBASSERTINFO( sequence == previousSequence+1,
+                      sequence << ", " << previousSequence );
+        LBASSERT( version == previousVersion );
     }
 #endif
 
-    _commands.push_back( command );
-    if( packet->last )
+    _buffers.push_back( buffer );
+    if( command.isLast( ))
         _setReady();
 }
 
 bool ObjectDataIStream::hasInstanceData() const
 {
-    if( !_usedCommand && _commands.empty( ))
+    if( !_usedBuffer && _buffers.empty( ))
     {
         LBUNREACHABLE;
         return false;
     }
 
-    const CommandPtr command = _usedCommand ? _usedCommand : _commands.front();
-    return( (*command)->command == CMD_OBJECT_INSTANCE );
+    const BufferPtr buffer = _usedBuffer ? _usedBuffer : _buffers.front();
+    ObjectDataCommand cmd( buffer );
+    return( cmd.getCommand() == CMD_OBJECT_INSTANCE );
 }
 
 NodePtr ObjectDataIStream::getMaster()
 {
-    if( !_usedCommand && _commands.empty( ))
+    if( !_usedBuffer && _buffers.empty( ))
         return 0;
 
-    const CommandPtr command = _usedCommand ? _usedCommand : _commands.front();
-    return command->getNode();
+    const BufferPtr buffer = _usedBuffer ? _usedBuffer : _buffers.front();
+    return buffer->getNode();
 }
 
 size_t ObjectDataIStream::getDataSize() const
 {
     size_t size = 0;
-    for( CommandDequeCIter i = _commands.begin(); i != _commands.end(); ++i )
+    for( BufferDequeCIter i = _buffers.begin(); i != _buffers.end(); ++i )
     {
-        const CommandPtr command = *i;
-        const ObjectDataPacket* packet = command->get< ObjectDataPacket >();
-        size += packet->dataSize;
+        const BufferPtr buffer = *i;
+        size += buffer->getDataSize();
     }
     return size;
 }
 
 uint128_t ObjectDataIStream::getPendingVersion() const
 {
-    if( _commands.empty( ))
+    if( _buffers.empty( ))
         return VERSION_INVALID;
 
-    const CommandPtr command = _commands.back();
-    const ObjectDataPacket* packet = command->get< ObjectDataPacket >();
-    return packet->version;
+    const BufferPtr buffer = _buffers.back();
+    ObjectDataCommand cmd( buffer );
+    return cmd.getVersion();
 }
 
-const CommandPtr ObjectDataIStream::getNextCommand()
+const BufferPtr ObjectDataIStream::_getNextBuffer()
 {
-    if( _commands.empty( ))
-        _usedCommand = 0;
+    if( _buffers.empty( ))
+        _usedBuffer = 0;
     else
     {
-        _usedCommand = _commands.front();
-        _commands.pop_front();
+        _usedBuffer = _buffers.front();
+        _buffers.pop_front();
     }
-    return _usedCommand;
+    return _usedBuffer;
 }
 
 bool ObjectDataIStream::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
                                        const void** chunkData, uint64_t* size )
 {
-    const CommandPtr command = getNextCommand();
-    if( !command )
+    BufferPtr buffer = _getNextBuffer();
+    if( !buffer )
         return false;
 
-    const ObjectDataPacket* packet = command->get< ObjectDataPacket >();
-    LBASSERT( packet->command == CMD_OBJECT_INSTANCE ||
-              packet->command == CMD_OBJECT_DELTA ||
-              packet->command == CMD_OBJECT_SLAVE_DELTA );
+    ObjectDataCommand command( buffer );
 
-    if( packet->dataSize == 0 ) // empty packet
+    LBASSERT( command.getCommand() == CMD_OBJECT_INSTANCE ||
+              command.getCommand() == CMD_OBJECT_DELTA ||
+              command.getCommand() == CMD_OBJECT_SLAVE_DELTA );
+
+    const uint64_t dataSize = command.getDataSize();
+
+    if( dataSize == 0 ) // empty packet
         return getNextBuffer( compressor, nChunks, chunkData, size );
 
-    *size = packet->dataSize;
-    *compressor = packet->compressorName;
-    *nChunks = packet->nChunks;
-    *size = packet->dataSize;
-    switch( packet->command )
+    *size = dataSize;
+    *compressor = command.getCompressor();
+    *nChunks = command.getChunks();
+    switch( command.getCommand( ))
     {
-      case CMD_OBJECT_INSTANCE:
-        *chunkData = command->get< ObjectInstancePacket >()->data;
+    case CMD_OBJECT_INSTANCE:
+        command.get< NodeID >();
+        command.get< uint32_t >();
         break;
-      case CMD_OBJECT_DELTA:
-        *chunkData = command->get< ObjectDeltaPacket >()->data;
-        break;
-      case CMD_OBJECT_SLAVE_DELTA:
-        *chunkData = command->get< ObjectSlaveDeltaPacket >()->data;
+    case CMD_OBJECT_SLAVE_DELTA:
+        command.get< UUID >();
         break;
     }
+    *chunkData = command.getRemainingBuffer( command.getRemainingBufferSize( ));
+
     return true;
 }
 

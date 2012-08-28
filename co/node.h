@@ -20,6 +20,7 @@
 #define CO_NODE_H
 
 #include <co/dispatcher.h>        // base class
+#include <co/commands.h>          // for COMMANDTYPE_CO_NODE enum
 #include <co/connection.h>        // used in inline template method
 #include <co/nodeType.h>          // for NODETYPE_CO_NODE enum
 #include <co/types.h>
@@ -89,92 +90,20 @@ namespace detail { class Node; }
 
         /** @name Messaging API */
         //@{
-        /** 
-         * Sends a packet to this node.
-         * 
-         * @param packet the packet.
-         * @return the success status of the transaction.
+        /**
+         * Send a command with optional data to the node.
+         *
+         * The returned data stream can be used to pass additional data to the
+         * given command. The data will be send after the stream is destroyed,
+         * aka when it is running out of scope.
+         *
+         * @param cmd the node command to execute
+         * @param type the type of object that should handle this command
+         * @param multicast prefer multicast connection for sending
+         * @return the stream object to pass additional data to
          */
-        bool send( const Packet& packet )
-        {
-            ConnectionPtr connection = _getConnection();
-            return connection ? connection->send( packet ) : false;
-        }
-
-        /** 
-         * Sends a packet with a string to the node.
-         * 
-         * The data is send as a new packet containing the original packet and
-         * the string, so that it is received as one packet by the node.
-         *
-         * It is assumed that the last 8 bytes in the packet are usable for the
-         * string.  This is used for optimising the send of short strings and on
-         * the receiver side to access the string. The node implementation gives
-         * examples of this usage.
-         *
-         * @param packet the packet.
-         * @param string the string.
-         * @return the success status of the transaction.
-         */
-        bool send( Packet& packet, const std::string& string )
-        {
-            ConnectionPtr connection = _getConnection();
-            return connection ? connection->send( packet, string ) : false;
-        }
-
-        /** 
-         * Sends a packet with additional data to the node.
-         * 
-         * The data is send as a new packet containing the original packet and
-         * the string, so that it is received as one packet by the node.
-         *
-         * It is assumed that the last item in the packet is of sizeof(T) and
-         * usable for the data.
-         *
-         * @param packet the packet.
-         * @param data the vector containing the data.
-         * @return the success status of the transaction.
-         */
-        template< class T >
-        bool send( Packet& packet, const std::vector<T>& data )
-        {
-            ConnectionPtr connection = _getConnection();
-            return connection ? connection->send( packet, data ) : false;
-        }
-
-        /** 
-         * Sends a packet with additional data to the node.
-         * 
-         * The data is send as a new packet containing the original packet and
-         * the data, so that it is received as one packet by the node.
-         *
-         * It is assumed that the last 8 bytes in the packet are usable for the
-         * data.  This is used for optimising the send of short data and on
-         * the receiver side to access the data. The node implementation gives
-         * examples of this usage.
-         *
-         * @param packet the packet.
-         * @param data the data.
-         * @param size the size of the data in bytes.
-         * @return the success status of the transaction.
-         */
-        bool send( Packet& packet, const void* data, const uint64_t size )
-        {
-            ConnectionPtr connection = _getConnection();
-            return connection ? connection->send( packet, data, size ) : false;
-        }
-
-        /** 
-         * Multicasts a packet to the multicast group of this node.
-         * 
-         * @param packet the packet.
-         * @return the success status of the transaction.
-         */
-        bool multicast( const Packet& packet )
-        {
-            ConnectionPtr connection = useMulticast();
-            return connection ? connection->send( packet ) : false;
-        }
+        NodeOCommand send( uint32_t cmd, uint32_t type = COMMANDTYPE_CO_NODE,
+                           bool multicast = false );
         //@}
 
         CO_API const NodeID& getNodeID() const;
@@ -227,6 +156,11 @@ namespace detail { class Node; }
     };
 
     CO_API std::ostream& operator << ( std::ostream& os, const Node& node );
+}
+
+namespace lunchbox
+{
+template<> inline void byteswap( co::Node*& value ) { /*NOP*/ }
 }
 
 #endif // CO_NODE_H

@@ -19,7 +19,6 @@
 #define CO_CONNECTION_H
 
 #include <co/api.h>
-#include <co/packets.h>               // used in inline method
 #include <co/types.h>
 
 #include <lunchbox/referenced.h>   // base class
@@ -228,108 +227,6 @@ namespace detail { class Connection; }
         /** Unlock the connection. @version 1.0 */
         CO_API void unlockSend() const;
 
-        /**
-         * Sends a packaged message using the connection.
-         *
-         * @param packet the message packet.
-         * @return true if all data has been read, false if not.
-         * @version 1.0
-         */
-        bool send( const Packet& packet )
-            { return send( &packet, packet.size ); }
-
-        /**
-         * Sends a packaged message including a string using the connection.
-         *
-         * The packet has to define a 8-byte-aligned, 8-char array at the end
-         * of the packet. When the packet is sent the whole string is appended
-         * to the packet, so that the receiver has to do nothing special to
-         * receive and use the full packet.
-         *
-         * @param packet the message packet.
-         * @param string the string.
-         * @return true if all data has been read, false if not.
-         * @version 1.0
-         */
-        bool send( Packet& packet, const std::string& string )
-            { return send( packet, string.c_str(), string.size()+1 ); }
-
-        /**
-         * Sends a packaged message including additional data.
-         *
-         * The last item of the packet has to be able to hold one item or eight
-         * bytes of the data, whatever is bigger.
-         *
-         * @param packet the message packet.
-         * @param data the vector containing the data.
-         * @return true if all data has been read, false if not.
-         * @version 1.0
-         */
-        template< typename T >
-        bool send( Packet& packet, const std::vector<T>& data );
-
-        /**
-         * Sends a packaged message including additional data.
-         *
-         * @param packet the message packet.
-         * @param data the data.
-         * @param size the data size in bytes.
-         * @return true if all data has been read, false if not.
-         * @version 1.0
-         */
-        CO_API bool send( Packet& packet, const void* data,
-                          const uint64_t size );
-
-        /**
-         * Sends a packaged message to multiple connections.
-         *
-         * @param connections The connections.
-         * @param packet      the message packet.
-         * @param isLocked true if the connection is locked externally.
-         * @return true if the packet was sent successfully to all connections.
-         * @version 1.0
-         */
-        static CO_API bool send( const Connections& connections,
-                                 const Packet& packet,
-                                 const bool isLocked = false );
-        /**
-         * Sends a packaged message including additional data to multiple
-         * connections.
-         *
-         * @param connections The connections.
-         * @param packet the message packet.
-         * @param data the data.
-         * @param size the data size in bytes.
-         * @param isLocked true if the connection is locked externally.
-         * @return true if the packet was sent successfully to all receivers.
-         * @version 1.0
-         */
-        static CO_API bool send( const Connections& connections,
-                                 Packet& packet, const void* data,
-                                 const uint64_t size,
-                                 const bool isLocked = false );
-        /**
-         * Sends a packaged message including additional, multiple data items to
-         * multiple connections.
-         *
-         * Automatically locks each individual connection during send. The data
-         * items are appended to the packet individually as a 8-byte size token
-         * followed by size bytes data. The packet.size is updated to the size
-         * of all data send (packet + sizes + items).
-         *
-         * @param connections The connections.
-         * @param packet the message packet.
-         * @param items a pointer array to the data items.
-         * @param itemSizes an array containing the size of each item.
-         * @param nItems the number of data elements.
-         * @return true if the packet was sent successfully to all receivers.
-         * @version 1.0
-         */
-        static bool CO_API send( const Connections& connections,
-                                 Packet& packet, const void* const* items,
-                                 const uint64_t* itemSizes,
-                                 const size_t nItems );
-
         /** @internal Finish all pending send operations. */
         virtual void finish() { LBUNIMPLEMENTED; }
         //@}
@@ -423,8 +320,11 @@ namespace detail { class Connection; }
     };
 
     CO_API std::ostream& operator << ( std::ostream&, const Connection& );
-
-#   include "connection.ipp" // template implementation
-
 }
+
+namespace lunchbox
+{
+template<> inline void byteswap( co::Connection*& value ) { /*NOP*/ }
+}
+
 #endif //CO_CONNECTION_H

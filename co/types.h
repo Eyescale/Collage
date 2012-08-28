@@ -36,6 +36,7 @@ namespace co
 #define EQ_INSTANCE_ALL     0xffffffffu   //!< all object instances
 
 class Barrier;
+class Buffer;
 class CPUCompressor; //!< @internal
 class Command;
 class CommandQueue;
@@ -47,10 +48,15 @@ class DataOStream;
 class Global;
 class LocalNode;
 class Node;
+class NodeOCommand;
 class Object;
 class ObjectFactory;
 class ObjectHandler;
+class ObjectDataCommand;
 class ObjectDataIStream;
+class ObjectDataOCommand;
+class ObjectCommand;
+class ObjectOCommand;
 class Plugin;        //!< @internal
 class PluginRegistry;
 class QueueMaster;
@@ -60,8 +66,6 @@ class Zeroconf;
 struct CompressorInfo; //!< @internal
 template< class Q > class WorkerThread;
 struct ObjectVersion;
-struct Packet;
-struct QueueItemPacket;
 
 using lunchbox::UUID;
 using lunchbox::uint128_t;
@@ -78,8 +82,6 @@ typedef lunchbox::RefPtr< const Node >            ConstNodePtr;
 typedef lunchbox::RefPtr< LocalNode >             LocalNodePtr;
 /** A reference pointer for const LocalNode pointers. */
 typedef lunchbox::RefPtr< const LocalNode >       ConstLocalNodePtr;
-/** A reference pointer for Commands. */
-typedef lunchbox::RefPtr< Command >               CommandPtr;
 /** A reference pointer for Connection pointers. */
 typedef lunchbox::RefPtr< Connection >            ConnectionPtr;
 /** A reference pointer for ConnectionDescription pointers. */
@@ -123,16 +125,14 @@ typedef ConnectionDescriptions::iterator         ConnectionDescriptionsIter;
 typedef ConnectionDescriptions::const_iterator   ConnectionDescriptionsCIter;
 
 /** @cond IGNORE */
-typedef std::vector< CommandPtr > Commands;
-typedef std::deque< CommandPtr > CommandDeque;
-typedef CommandDeque::const_iterator CommandDequeCIter;
+typedef lunchbox::RefPtr< Buffer > BufferPtr;
+typedef std::deque< BufferPtr > BufferDeque;
+typedef BufferDeque::const_iterator BufferDequeCIter;
 
 typedef std::vector< ObjectVersion > ObjectVersions;
 typedef ObjectVersions::const_iterator ObjectVersionsCIter;
 typedef std::deque< ObjectDataIStream* > ObjectDataIStreamDeque;
 typedef std::vector< ObjectDataIStream* > ObjectDataIStreams;
-
-typedef Commands::const_iterator CommandsCIter;
 
 typedef std::vector< CompressorInfo > CompressorInfos;
 typedef std::vector< const CompressorInfo* > CompressorInfoPtrs;

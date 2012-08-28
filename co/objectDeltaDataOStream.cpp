@@ -19,8 +19,9 @@
 #include "objectDeltaDataOStream.h"
 
 #include "object.h"
+#include "objectCommand.h"
 #include "objectCM.h"
-#include "objectPackets.h"
+#include "objectDataOCommand.h"
 
 namespace co
 {
@@ -34,8 +35,8 @@ ObjectDeltaDataOStream::~ObjectDeltaDataOStream()
 void ObjectDeltaDataOStream::sendData( const void* buffer, const uint64_t size,
                                        const bool last )
 {
-    ObjectDeltaPacket packet;
-    ObjectDataOStream::sendData( packet, buffer, size, last );
+    ObjectDataOStream::send( CMD_OBJECT_DELTA, COMMANDTYPE_CO_OBJECT,
+                             EQ_INSTANCE_ALL, size, last, buffer );
 }
 
 }

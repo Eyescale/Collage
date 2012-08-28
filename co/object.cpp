@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -24,9 +24,10 @@
 #include "deltaMasterCM.h"
 #include "fullMasterCM.h"
 #include "log.h"
-#include "nodePackets.h"
+#include "nodeCommand.h"
 #include "nullCM.h"
 #include "objectCM.h"
+#include "objectOCommand.h"
 #include "staticMasterCM.h"
 #include "staticSlaveCM.h"
 #include "types.h"
@@ -57,7 +58,7 @@ Object::~Object()
     LBASSERTINFO( !isAttached(),
                   "Object " << _id << " is still attached to node " <<
                   _localNode->getNodeID());
-    
+
     if( _localNode.isValid() )
         _localNode->releaseObject( this );
     _localNode = 0;
@@ -66,8 +67,6 @@ Object::~Object()
         delete _cm;
     _cm = 0;
 }
-
-typedef CommandFunc<Object> CmdFunc;
 
 void Object::attach( const UUID& id, const uint32_t instanceID )
 {
@@ -101,13 +100,10 @@ void Object::notifyDetach()
     LBWARN << slaves.size() << " slaves subscribed during deregisterObject of "
            << lunchbox::className( this ) << " id " << _id << std::endl;
 
-    NodeUnmapObjectPacket packet;
-    packet.objectID = _id;
-
     for( NodesCIter i = slaves.begin(); i != slaves.end(); ++i )
     {
         NodePtr node = *i;
-        node->send( packet );
+        node->send( CMD_NODE_UNMAP_OBJECT ) << _id;
     }
 }
 
@@ -115,7 +111,7 @@ void Object::transfer( Object* from )
 {
     _id           = from->_id;
     _instanceID   = from->getInstanceID();
-    _cm           = from->_cm; 
+    _cm           = from->_cm;
     _localNode    = from->_localNode;
     _cm->setObject( this );
 
@@ -138,7 +134,7 @@ void Object::_setChangeManager( ObjectCM* cm )
     _cm = cm;
     cm->init();
     LBLOG( LOG_OBJECTS ) << "set new change manager " << lunchbox::className( cm )
-                         << " for " << lunchbox::className( this ) 
+                         << " for " << lunchbox::className( this )
                          << std::endl;
 }
 
@@ -149,26 +145,13 @@ void Object::setID( const UUID& identifier )
     _id = identifier;
 }
 
-bool Object::send( NodePtr node, ObjectPacket& packet )
-{
-    LBASSERT( isAttached( ));
-    packet.objectID = _id;
-    return node->send( packet );
-}
-
-bool Object::send( NodePtr node, ObjectPacket& packet, const std::string& string)
+ObjectOCommand Object::send( NodePtr node, uint32_t cmd,
+                             const uint32_t instanceID )
 {
     LBASSERT( isAttached() );
-    packet.objectID  = _id;
-    return node->send( packet, string );
-}
-
-bool Object::send( NodePtr node, ObjectPacket& packet, const void* data,
-                   const uint64_t size )
-{
-    LBASSERT( isAttached() );
-    packet.objectID  = _id;
-    return node->send( packet, data, size );
+    Connections connections( 1, node->getConnection( ));
+    return ObjectOCommand( connections, COMMANDTYPE_CO_OBJECT,
+                           cmd, _id, instanceID );
 }
 
 void Object::push( const uint128_t& groupID, const uint128_t& typeID,
@@ -183,7 +166,7 @@ uint128_t Object::commit( const uint32_t incarnation )
 }
 
 
-void Object::setupChangeManager( const Object::ChangeType type, 
+void Object::setupChangeManager( const Object::ChangeType type,
                                  const bool master, LocalNodePtr localNode,
                                  const uint32_t masterInstanceID )
 {
@@ -209,7 +192,7 @@ void Object::setupChangeManager( const Object::ChangeType type,
             if( master )
                 _setChangeManager( new FullMasterCM( this ));
             else
-                _setChangeManager( new VersionedSlaveCM( this, 
+                _setChangeManager( new VersionedSlaveCM( this,
                                                          masterInstanceID ));
             break;
 
@@ -289,7 +272,7 @@ void Object::setAutoObsolete( const uint32_t count )
     _cm->setAutoObsolete( count );
 }
 
-uint32_t Object::getAutoObsolete() const 
+uint32_t Object::getAutoObsolete() const
 {
     return _cm->getAutoObsolete();
 }
@@ -312,9 +295,9 @@ uint128_t Object::getVersion() const
 }
 
 void Object::notifyNewHeadVersion( const uint128_t& version )
-{ 
-    LBASSERTINFO( getVersion() == VERSION_NONE || 
-                  version < getVersion() + 100, 
+{
+    LBASSERTINFO( getVersion() == VERSION_NONE ||
+                  version < getVersion() + 100,
                   lunchbox::className( this ));
 }
 

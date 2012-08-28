@@ -15,48 +15,39 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_OBJECTICOMMAND_H
-#define CO_OBJECTICOMMAND_H
+#ifndef CO_NODEOCOMMAND_H
+#define CO_NODEOCOMMAND_H
 
-#include <co/command.h>   // base class
+#include <co/dataOStream.h>   // base class
 
 
 namespace co
 {
 
-enum ObjectCommands
-{
-    CMD_OBJECT_INSTANCE,
-    CMD_OBJECT_DELTA,
-    CMD_OBJECT_SLAVE_DELTA,
-    CMD_OBJECT_MAX_VERSION
-    // check that not more then CMD_OBJECT_CUSTOM have been defined!
-};
+namespace detail { class NodeOCommand; }
 
-namespace detail { class ObjectCommand; }
-
-/** A DataIStream based command for co::Object. */
-class ObjectCommand : public Command
+/** A DataOStream based command for co::Node. */
+class NodeOCommand : public DataOStream
 {
 public:
-    /** @internal */
-    ObjectCommand( BufferPtr buffer );
+    NodeOCommand( const Connections& connections, const uint32_t type,
+                  const uint32_t cmd );
 
-    ObjectCommand( const ObjectCommand& rhs );
+    NodeOCommand( NodeOCommand const& rhs );
 
-    ObjectCommand& operator = ( const ObjectCommand& rhs );
+    virtual ~NodeOCommand();
 
-    virtual ~ObjectCommand();
+    void sendUnlocked( const uint64_t additionalSize );
 
-    const UUID& getObjectID() const;
-
-    uint32_t getInstanceID() const;
+protected:
+    virtual void sendData( const void* buffer, const uint64_t size,
+                           const bool last );
 
 private:
-    detail::ObjectCommand* const _impl;
+    detail::NodeOCommand* const _impl;
 
+    void _init();
 };
-
 }
 
-#endif //CO_OBJECTICOMMAND_H
+#endif //CO_NODEOCOMMAND_H

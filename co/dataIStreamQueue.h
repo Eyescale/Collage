@@ -39,7 +39,7 @@ namespace co
         DataIStreamQueue();
         ~DataIStreamQueue();
 
-        bool addDataPacket( const uint128_t& key, Command& command );
+        bool addDataPacket( const uint128_t& key, BufferPtr buffer );
 
         ObjectDataIStream* pop() { return _queued.pop().second; }
         ObjectDataIStream* tryPop();

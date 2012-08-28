@@ -18,11 +18,14 @@
 
 #include "queueSlave.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "commandQueue.h"
 #include "dataIStream.h"
 #include "global.h"
-#include "queuePackets.h"
+#include "objectOCommand.h"
+#include "objectCommand.h"
+#include "queueCommand.h"
 
 namespace co
 {
@@ -75,7 +78,7 @@ void QueueSlave::applyInstanceData( co::DataIStream& is )
     _impl->master = localNode->connect( masterNodeID );
 }
 
-CommandPtr QueueSlave::pop()
+ObjectCommand QueueSlave::pop()
 {
     static lunchbox::a_int32_t _request;
     const int32_t request = ++_request;
@@ -85,22 +88,18 @@ CommandPtr QueueSlave::pop()
         const size_t queueSize = _impl->queue.getSize();
         if( queueSize <= _impl->prefetchMark )
         {
-            QueueGetItemPacket packet;
-            packet.itemsRequested = _impl->prefetchAmount;
-            packet.instanceID = _impl->masterInstanceID;
-            packet.slaveInstanceID = getInstanceID();
-            packet.requestID = request;
-            send( _impl->master, packet );
+            send( _impl->master, CMD_QUEUE_GET_ITEM, _impl->masterInstanceID )
+                    << _impl->prefetchAmount << getInstanceID() << request;
         }
 
-        CommandPtr cmd = _impl->queue.pop();
-        if( (*cmd)->command == CMD_QUEUE_ITEM )
-            return cmd;
-    
-        LBASSERT( (*cmd)->command == CMD_QUEUE_EMPTY );
-        const QueueEmptyPacket* packet = cmd->get< QueueEmptyPacket >();
-        if( packet->requestID == request )
-            return 0;
+        ObjectCommand cmd( _impl->queue.pop( ));
+        if( cmd.getCommand() == CMD_QUEUE_ITEM )
+            return ObjectCommand( cmd.getBuffer( ));
+
+        LBASSERT( cmd.getCommand() == CMD_QUEUE_EMPTY );
+        const int32_t requestID = cmd.get< int32_t >();
+        if( requestID == request )
+            return ObjectCommand( 0 );
         // else left-over or not our empty packet, discard and retry
     }
 }
