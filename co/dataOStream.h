@@ -69,6 +69,9 @@ namespace DataStreamTest { class Sender; }
 
         /** @internal */
         void sendCompressedData( ConnectionPtr connection );
+
+        /** @internal */
+        uint64_t getCompressedDataSize() const;
         //@}
 
         /** @name Data output */

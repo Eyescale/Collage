@@ -61,7 +61,7 @@ ObjectCommand::ObjectCommand( const ObjectCommand& rhs )
     : Command( rhs )
     , _impl( new detail::ObjectCommand( *rhs._impl ))
 {
-    if( getBuffer(  ))
+    if( getBuffer( ))
         *this >> _impl->objectID >> _impl->instanceID;
 }
 

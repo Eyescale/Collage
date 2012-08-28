@@ -61,6 +61,11 @@ ObjectDataOCommand::ObjectDataOCommand( const Connections& receivers,
                                        : EQ_COMPRESSOR_NONE;
     const uint32_t nChunks = stream ? stream->getNumChunks() : 1;
 
+    if( compressor != EQ_COMPRESSOR_NONE )
+        _impl->dataSize = stream->getCompressedDataSize() +
+                          nChunks * sizeof( uint64_t );
+
+    // cast to avoid call to our user data operator << overload
     (ObjectOCommand&)(*this) << version << sequence << dataSize << isLast
                              << compressor << nChunks;
 }

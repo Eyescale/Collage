@@ -66,6 +66,9 @@ public:
     /** The uncompressed size of a completely compressed buffer. */
     uint64_t dataSize;
 
+    /** The compressed size, 0 for uncompressed or uncompressable data. */
+    uint64_t compressedDataSize;
+
     /** Locked connections to the receivers, if _enabled */
     Connections connections;
 
@@ -119,7 +122,7 @@ public:
 #endif
 
         const uint32_t nChunks = compressor.getNumResults();
-        uint64_t compressedSize = 0;
+        compressedDataSize = 0;
         LBASSERT( nChunks > 0 );
 
         for( uint32_t i = 0; i < nChunks; ++i )
@@ -128,13 +131,13 @@ public:
             uint64_t chunkSize;
 
             compressor.getResult( i, &chunk, &chunkSize );
-            compressedSize += chunkSize;
+            compressedDataSize += chunkSize;
         }
 #ifdef EQ_INSTRUMENT_DATAOSTREAM
-        nBytesOut += compressedSize;
+        nBytesOut += compressedDataSize;
 #endif
 
-        if( compressedSize >= size )
+        if( compressedDataSize >= size )
         {
             state = STATE_UNCOMPRESSIBLE;
 #ifndef CO_AGGRESSIVE_CACHING
@@ -437,6 +440,11 @@ void DataOStream::sendCompressedData( ConnectionPtr connection )
         connection->send( &chunkSizes[j], sizeof( uint64_t ), true );
         connection->send( chunks[j], chunkSizes[j], true );
     }
+}
+
+uint64_t DataOStream::getCompressedDataSize() const
+{
+    return _impl->compressedDataSize;
 }
 
 std::ostream& operator << ( std::ostream& os, const DataOStream& dataOStream )
