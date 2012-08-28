@@ -99,12 +99,14 @@ uint32_t Command::getCommand() const
 void Command::setType( const CommandType type )
 {
     _impl->_type = type;
+    // #145 cleaner way??
     memcpy( _impl->_buffer->getData(), &type, sizeof( type ));
 }
 
 void Command::setCommand( const uint32_t cmd )
 {
     _impl->_cmd = cmd;
+    // #145 cleaner way??
     memcpy( _impl->_buffer->getData() + sizeof( CommandType ),
             &cmd, sizeof( cmd ));
 }

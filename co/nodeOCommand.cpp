@@ -34,6 +34,9 @@ public:
         , size( 0 )
     {}
 
+    // #145 eile
+    // Shouldn't this have move semantics? Otherwise creating a copy will send
+    // two packets? Alternatively disable copy ctor and return auto_ptr?
     NodeOCommand( const NodeOCommand& rhs )
         : type( rhs.type )
         , cmd( rhs.cmd )
