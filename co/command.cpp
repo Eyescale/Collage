@@ -111,7 +111,7 @@ void Command::setCommand( const uint32_t cmd )
             &cmd, sizeof( cmd ));
 }
 
-BufferPtr Command::getBuffer()
+BufferPtr Command::getBuffer() const
 {
     return _impl->_buffer;
 }

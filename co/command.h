@@ -54,7 +54,7 @@ namespace detail { class Command; }
         uint32_t getCommand() const;
 
         /** @internal @return the buffer containing the command data. */
-        BufferPtr getBuffer();
+        BufferPtr getBuffer() const;
 
         /** @return a value from the command. */
         template< typename T > T get()
