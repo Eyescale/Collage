@@ -89,9 +89,10 @@ int main( int argc, char **argv )
     co::LocalNodePtr node = new co::LocalNode;
     co::BufferPtr buffer = commandCache.alloc( node, node, PACKET_SIZE );
 
-    co::ObjectDataOCommand packet( co::Connections(), co::CMD_NODE_OBJECT_INSTANCE,
-                                   co::COMMANDTYPE_CO_NODE, co::UUID(), 0,
-                                   1, 0, PACKET_SIZE, true, 0, 0 );
+    co::ObjectDataOCommand packet( co::Connections(),
+                                   co::CMD_NODE_OBJECT_INSTANCE,
+                                   co::COMMANDTYPE_CO_NODE, co::UUID(), 0, 1, 0,
+                                   PACKET_SIZE, true, 0, 0 );
     buffer->swap( packet.getBuffer( ));
 
     Reader** readers = static_cast< Reader** >(

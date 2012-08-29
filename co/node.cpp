@@ -239,7 +239,8 @@ ConnectionPtr Node::getMulticast() const
     return _impl->outMulticast.data;
 }
 
-NodeOCommand Node::send( uint32_t cmd, uint32_t type, bool multicast )
+NodeOCommand Node::send( const uint32_t cmd, const uint32_t type,
+                         const bool multicast )
 {
     ConnectionPtr connection = multicast ? useMulticast() : 0;
     if( !connection )

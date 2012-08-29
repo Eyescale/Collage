@@ -145,7 +145,7 @@ void Object::setID( const UUID& identifier )
     _id = identifier;
 }
 
-ObjectOCommand Object::send( NodePtr node, uint32_t cmd,
+ObjectOCommand Object::send( NodePtr node, const uint32_t cmd,
                              const uint32_t instanceID )
 {
     LBASSERT( isAttached() );

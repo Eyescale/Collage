@@ -51,8 +51,8 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
     os.enablePush( getVersion(), nodes );
     _object->getInstanceData( os );
 
-    NodeOCommand cmd( os.getConnections(), CMD_NODE_OBJECT_PUSH );
-    cmd << _object->getID() << groupID << typeID;
+    NodeOCommand( os.getConnections(), CMD_NODE_OBJECT_PUSH )
+            << _object->getID() << groupID << typeID;
     os.disable();
 }
 
@@ -156,7 +156,7 @@ void ObjectCM::_initSlave( NodePtr node, const uint128_t& version,
 
 void ObjectCM::_sendMapSuccess( NodePtr node, const UUID& objectID,
                                 const uint32_t requestID,
-                                const uint32_t instanceID, bool multicast )
+                                const uint32_t instanceID, const bool multicast)
 {
     node->send( CMD_NODE_MAP_OBJECT_SUCCESS, COMMANDTYPE_CO_NODE, multicast )
             << node->getNodeID() << objectID << requestID << instanceID
@@ -165,8 +165,9 @@ void ObjectCM::_sendMapSuccess( NodePtr node, const UUID& objectID,
 
 void ObjectCM::_sendMapReply( NodePtr node, const UUID& objectID,
                               const uint32_t requestID,
-                              const uint128_t& version, bool result,
-                              bool releaseCache, bool useCache, bool multicast )
+                              const uint128_t& version, const bool result,
+                              const bool releaseCache, const bool useCache,
+                              const bool multicast )
 {
     node->send( CMD_NODE_MAP_OBJECT_REPLY, COMMANDTYPE_CO_NODE, multicast )
             << node->getNodeID() << objectID << version << requestID << result
@@ -180,12 +181,11 @@ void ObjectCM::_sendEmptyVersion( NodePtr node, const uint32_t instanceID,
     ConnectionPtr connection = multicast ? node->useMulticast() : 0;
     if( !connection )
         connection = node->getConnection();
-    Connections connections( 1, connection );
 
-    ObjectDataOCommand command( connections, CMD_OBJECT_INSTANCE,
-                                COMMANDTYPE_CO_OBJECT, _object->getID(),
-                                instanceID, version, 0, 0, true, 0, 0 );
-    command << NodeID::ZERO << _object->getInstanceID();
+    ObjectDataOCommand( Connections( 1, connection ), CMD_OBJECT_INSTANCE,
+                        COMMANDTYPE_CO_OBJECT, _object->getID(), instanceID,
+                        version, 0, 0, true, 0, 0 )
+            << NodeID::ZERO << _object->getInstanceID();
 }
 
 }
