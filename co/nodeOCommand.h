@@ -30,8 +30,8 @@ namespace detail { class NodeOCommand; }
 class NodeOCommand : public DataOStream
 {
 public:
-    CO_API NodeOCommand( const Connections& connections, const uint32_t type,
-                         const uint32_t cmd );
+    CO_API NodeOCommand( const Connections& connections, const uint32_t cmd,
+                         const uint32_t type = COMMANDTYPE_CO_NODE );
 
     NodeOCommand( NodeOCommand const& rhs );
 

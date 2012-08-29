@@ -45,7 +45,7 @@ public:
 }
 
 ObjectDataOCommand::ObjectDataOCommand( const Connections& receivers,
-                                        const uint32_t type, const uint32_t cmd,
+                                        const uint32_t cmd, const uint32_t type,
                                         const UUID& id,
                                         const uint32_t instanceID,
                                         const uint128_t& version,
@@ -54,7 +54,7 @@ ObjectDataOCommand::ObjectDataOCommand( const Connections& receivers,
                                         const bool isLast,
                                         const void* buffer,
                                         DataOStream* stream )
-    : ObjectOCommand( receivers, type, cmd, id, instanceID )
+    : ObjectOCommand( receivers, cmd, type, id, instanceID )
     , _impl( new detail::ObjectDataOCommand( buffer, dataSize, stream ))
 {
     const uint32_t compressor = stream ? stream->getCompressor()

@@ -1,16 +1,16 @@
 
-/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch> 
- *               2011, Carsten Rohn <carsten.rohn@rtt.ag> 
+/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
+ *               2011, Carsten Rohn <carsten.rohn@rtt.ag>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -57,8 +57,9 @@ public:
         for( Items::const_iterator i = items.begin(); i != items.end(); ++i )
         {
             Connections connections( 1, command.getNode()->getConnection( ));
-            co::ObjectOCommand cmd( connections, COMMANDTYPE_CO_OBJECT,
-                                    CMD_QUEUE_ITEM, masterID, slaveInstanceID );
+            co::ObjectOCommand cmd( connections, CMD_QUEUE_ITEM,
+                                    COMMANDTYPE_CO_OBJECT, masterID,
+                                    slaveInstanceID );
 
             const lunchbox::Bufferb* item = *i;
             if( !item->isEmpty( ))
@@ -96,7 +97,7 @@ void QueueMaster::attach( const UUID& id, const uint32_t instanceID )
     Object::attach( id, instanceID );
 
     CommandQueue* queue = getLocalNode()->getCommandThreadQueue();
-    registerCommand( CMD_QUEUE_GET_ITEM, 
+    registerCommand( CMD_QUEUE_GET_ITEM,
                      CommandFunc< detail::QueueMaster >(
                          _impl, &detail::QueueMaster::cmdGetItem ), queue );
 }

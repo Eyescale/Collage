@@ -150,8 +150,8 @@ ObjectOCommand Object::send( NodePtr node, uint32_t cmd,
 {
     LBASSERT( isAttached() );
     Connections connections( 1, node->getConnection( ));
-    return ObjectOCommand( connections, COMMANDTYPE_CO_OBJECT,
-                           cmd, _id, instanceID );
+    return ObjectOCommand( connections, cmd, COMMANDTYPE_CO_OBJECT, _id,
+                           instanceID );
 }
 
 void Object::push( const uint128_t& groupID, const uint128_t& typeID,

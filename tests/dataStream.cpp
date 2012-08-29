@@ -50,11 +50,10 @@ protected:
     virtual void sendData( const void* buffer, const uint64_t size,
                            const bool last )
         {
-            co::ObjectDataOCommand command( getConnections(),
-                                            co::COMMANDTYPE_CO_OBJECT,
-                                            co::CMD_OBJECT_DELTA, co::UUID(),
-                                            0, co::uint128_t(), 0, size, last,
-                                            buffer, this );
+            co::ObjectDataOCommand( getConnections(), co::CMD_OBJECT_DELTA,
+                                    co::COMMANDTYPE_CO_OBJECT, co::UUID(), 0,
+                                    co::uint128_t(), 0, size, last, buffer,
+                                    this );
         }
 };
 

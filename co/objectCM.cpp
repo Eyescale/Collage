@@ -51,8 +51,7 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
     os.enablePush( getVersion(), nodes );
     _object->getInstanceData( os );
 
-    NodeOCommand cmd( os.getConnections(), COMMANDTYPE_CO_NODE,
-                      CMD_NODE_OBJECT_PUSH );
+    NodeOCommand cmd( os.getConnections(), CMD_NODE_OBJECT_PUSH );
     cmd << _object->getID() << groupID << typeID;
     os.disable();
 }
@@ -183,8 +182,8 @@ void ObjectCM::_sendEmptyVersion( NodePtr node, const uint32_t instanceID,
         connection = node->getConnection();
     Connections connections( 1, connection );
 
-    ObjectDataOCommand command( connections, COMMANDTYPE_CO_OBJECT,
-                                CMD_OBJECT_INSTANCE, _object->getID(),
+    ObjectDataOCommand command( connections, CMD_OBJECT_INSTANCE,
+                                COMMANDTYPE_CO_OBJECT, _object->getID(),
                                 instanceID, version, 0, 0, true, 0, 0 );
     command << NodeID::ZERO << _object->getInstanceID();
 }

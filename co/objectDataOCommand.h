@@ -32,7 +32,7 @@ class ObjectDataOCommand : public ObjectOCommand
 {
 public:
     CO_API ObjectDataOCommand( const Connections& receivers,
-                               const uint32_t type, const uint32_t cmd,
+                               const uint32_t cmd, const uint32_t type,
                                const UUID& id, const uint32_t instanceID,
                                const uint128_t& version,
                                const uint32_t sequence,

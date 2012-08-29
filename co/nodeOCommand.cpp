@@ -27,7 +27,7 @@ namespace detail
 class NodeOCommand
 {
 public:
-    NodeOCommand( const uint32_t type_, const uint32_t cmd_ )
+    NodeOCommand( const uint32_t cmd_, const uint32_t type_ )
         : type( type_ )
         , cmd( cmd_ )
         , lockSend( true )
@@ -52,10 +52,10 @@ public:
 
 }
 
-NodeOCommand::NodeOCommand( const Connections& connections, const uint32_t type,
-                            const uint32_t cmd )
+NodeOCommand::NodeOCommand( const Connections& connections, const uint32_t cmd,
+                            const uint32_t type )
     : DataOStream()
-    , _impl( new detail::NodeOCommand( type, cmd ))
+    , _impl( new detail::NodeOCommand( cmd, type ))
 {
     _setupConnections( connections );
     _init();

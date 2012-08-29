@@ -30,8 +30,8 @@ namespace detail { class ObjectOCommand; }
 class ObjectOCommand : public NodeOCommand
 {
 public:
-    CO_API ObjectOCommand( const Connections& receivers, const uint32_t type,
-                           const uint32_t cmd, const UUID& id,
+    CO_API ObjectOCommand( const Connections& receivers, const uint32_t cmd,
+                           const uint32_t type, const UUID& id,
                            const uint32_t instanceID );
 
     CO_API virtual ~ObjectOCommand();

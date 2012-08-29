@@ -31,9 +31,9 @@ class ObjectOCommand
 }
 
 ObjectOCommand::ObjectOCommand( const Connections& receivers,
-                                const uint32_t type, const uint32_t cmd,
+                                const uint32_t cmd, const uint32_t type,
                                 const UUID& id, const uint32_t instanceID )
-    : NodeOCommand( receivers, type, cmd )
+    : NodeOCommand( receivers, cmd, type )
     , _impl( new detail::ObjectOCommand )
 {
     *this << id << instanceID;
