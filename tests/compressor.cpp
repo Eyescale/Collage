@@ -59,6 +59,8 @@ float _baseTime = 0.f;
 
 int main( int argc, char **argv )
 {
+    co::Global::getPluginRegistry().addDirectory( std::string( CO_BUILD_DIR ) +
+                                                  "/lib" );
     co::init( argc, argv );
     _testFile();
     _testRandom();
@@ -172,7 +174,7 @@ void _testFile()
 
     std::cout.setf( std::ios::right, std::ios::adjustfield );
     std::cout.precision( 5 );
-    std::cout << "                File, Compressor,       SIZE, "
+    std::cout << "                File, Compressor, Uncompress, "
               << "Compressed,     t_comp,   t_decomp" << std::endl;
     for( std::vector< uint32_t >::const_iterator i = compressorNames.begin();
          i != compressorNames.end(); ++i )
@@ -182,8 +184,7 @@ void _testFile()
         _compressionTime = 0;
         _decompressionTime = 0;
 
-        for ( std::vector< std::string >::const_iterator j = files.begin();
-              j != files.end(); ++j )
+        for( co::StringsCIter j = files.begin(); j != files.end(); ++j )
         {
             lunchbox::MemoryMap file;
             const uint8_t* data = static_cast<const uint8_t*>( file.map( *j ));

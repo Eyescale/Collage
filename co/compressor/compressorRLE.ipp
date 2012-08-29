@@ -65,7 +65,7 @@ public:
     static const bool _initialized ## cls ## type = _register ## cls ## type();
 
 template< typename T > 
-static inline void _write( const T token, const T numTokens, T*& out )
+inline void _write( const T token, const T numTokens, T*& out )
 {
     if( token == _rleMarker )
     {
@@ -100,7 +100,7 @@ static inline void _write( const T token, const T numTokens, T*& out )
 #define WRITE_OUTPUT( name ) _write( name ## Last, name ## Same, name ## Out )
 
 template< typename T >
-static inline void _compressToken( const T in, T& last, T& numLast, T*& out )
+inline void _compressToken( const T in, T& last, T& numLast, T*& out )
 {
     if( in == last && numLast != std::numeric_limits< T >::max( ))
         ++numLast;

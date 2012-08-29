@@ -12,6 +12,7 @@ set(RELEASE_VERSION OFF) # OFF or 'Mm0' ABI version
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "7")
 set(VERSION_PATCH "0")
+#set(LAST_RELEASE )
 
 include(Common)
 include(GitTargets)
