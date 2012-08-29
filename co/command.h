@@ -26,6 +26,7 @@ namespace co
 {
 namespace detail { class Command; }
 
+// #145 Documentation & API
     /**
      * A class managing received commands.
      *

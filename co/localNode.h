@@ -381,7 +381,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         /**
          * Dispatches a packet to the registered command queue.
          *
-         * @param command the command.
+         * @param buffer the command buffer.
          * @return the result of the operation.
          * @sa Command::invoke
          */

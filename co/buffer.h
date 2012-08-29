@@ -29,6 +29,7 @@ namespace co
 {
 namespace detail { class Buffer; }
 
+// #145 Documentation & API
 /**  */
 class Buffer : public lunchbox::Bufferb, public lunchbox::Referenced
 {

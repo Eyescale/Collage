@@ -35,6 +35,7 @@ enum ObjectCommands
 
 namespace detail { class ObjectCommand; }
 
+// #145 Documentation & API
 /** A DataIStream based command for co::Object. */
 class ObjectCommand : public Command
 {

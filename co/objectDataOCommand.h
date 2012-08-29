@@ -27,6 +27,7 @@ namespace co
 
 namespace detail { class ObjectDataOCommand; }
 
+// #145 Documentation & API
 /** A DataOStream based command for co::ObjectDataOStream. */
 class ObjectDataOCommand : public ObjectOCommand
 {

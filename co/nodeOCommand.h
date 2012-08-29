@@ -26,6 +26,7 @@ namespace co
 
 namespace detail { class NodeOCommand; }
 
+// #145 Documentation & API
 /** A DataOStream based command for co::Node. */
 class NodeOCommand : public DataOStream
 {
