@@ -64,6 +64,7 @@ set(CO_HEADERS
   barrierCommand.h
   commandCache.h
   connectionListener.h
+  dataStreamArchive.h
   dataIStreamQueue.h
   deltaMasterCM.h
   eventConnection.h
