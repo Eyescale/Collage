@@ -40,6 +40,9 @@ public:
 
     void sendUnlocked( const uint64_t additionalSize );
 
+    /** @return the static size of this command. */
+    CO_API static size_t getSize();
+
 protected:
     virtual void sendData( const void* buffer, const uint64_t size,
                            const bool last );

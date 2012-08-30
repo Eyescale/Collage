@@ -44,4 +44,9 @@ ObjectOCommand::~ObjectOCommand()
     delete _impl;
 }
 
+size_t ObjectOCommand::getSize()
+{
+    return NodeOCommand::getSize() + sizeof( UUID ) + sizeof( uint32_t );
+}
+
 }

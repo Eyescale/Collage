@@ -24,6 +24,7 @@
 #include <co/dispatcher.h>
 #include <co/init.h>
 #include <co/localNode.h>
+#include <co/nodeOCommand.h>
 #include <lunchbox/clock.h>
 
 // Tests the functionality of the network packet cache
@@ -99,7 +100,8 @@ int main( int argc, char **argv )
         lunchbox::Clock clock;
         while( clock.getTime64() < RUNTIME )
         {
-            co::BufferPtr buffer = cache.alloc( node, node, 8 );
+            co::BufferPtr buffer = cache.alloc( node, node,
+                                                co::NodeOCommand::getSize( ));
             co::Command command( buffer );
             command.setCommand( 0 );
 
@@ -110,7 +112,8 @@ int main( int argc, char **argv )
 #if 1
                 co::BufferPtr clone = cache.clone( buffer );
 #else
-                co::BufferPtr clone = cache.alloc( node, node, 8 );
+                co::BufferPtr clone = cache.alloc( node, node,
+                                                   co::NodeOCommand::getSize());
                 co::Command cloneCommand( clone );
                 cloneCommand.setCommand( 0 );
 #endif
@@ -122,7 +125,8 @@ int main( int argc, char **argv )
 
         for( size_t i = 0; i < N_READER; ++i )
         {
-            co::BufferPtr buffer = cache.alloc( node, node, 8 );
+            co::BufferPtr buffer = cache.alloc( node, node,
+                                                co::NodeOCommand::getSize( ));
             co::Command command( buffer );
             command.setCommand( 1 );
 

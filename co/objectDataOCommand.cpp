@@ -76,6 +76,13 @@ ObjectDataOCommand::~ObjectDataOCommand()
     delete _impl;
 }
 
+size_t ObjectDataOCommand::getSize()
+{
+    return ObjectOCommand::getSize() + sizeof( uint128_t ) + sizeof( uint32_t )
+            + sizeof( uint64_t ) + sizeof( bool )+ sizeof( uint32_t )
+            + sizeof( uint32_t );
+}
+
 void ObjectDataOCommand::_addUserData( const void* data, uint64_t size )
 {
     _impl->userBuffer.append( static_cast< const uint8_t* >( data ), size );

@@ -82,6 +82,11 @@ void NodeOCommand::sendUnlocked( const uint64_t additionalSize )
     disable();
 }
 
+size_t NodeOCommand::getSize()
+{
+    return sizeof( _impl->type ) + sizeof( _impl->cmd );
+}
+
 void NodeOCommand::_init()
 {
     enableSave();

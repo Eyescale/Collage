@@ -45,6 +45,9 @@ public:
     template< typename T > ObjectDataOCommand& operator << ( const T& value )
         { _addUserData( &value, sizeof( value )); return *this; }
 
+    /** @return the static size of this command. */
+    CO_API static size_t getSize();
+
 protected:
     virtual void sendData( const void* buffer, const uint64_t size,
                            const bool last );

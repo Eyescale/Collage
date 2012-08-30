@@ -37,6 +37,9 @@ public:
 
     CO_API virtual ~ObjectOCommand();
 
+    /** @return the static size of this command. */
+    CO_API static size_t getSize();
+
 private:
     detail::ObjectOCommand* const _impl;
 };
