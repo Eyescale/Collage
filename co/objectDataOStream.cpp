@@ -67,8 +67,8 @@ ObjectDataOCommand ObjectDataOStream::send( const uint32_t cmd,
         _sequence = 0;
 
     return ObjectDataOCommand( getConnections(), cmd, type,
-                                _cm->getObject()->getID(), instanceID, _version,
-                                sequence, size, last, buffer, this );
+                               _cm->getObject()->getID(), instanceID, _version,
+                               sequence, size, last, buffer, this );
 }
 
 }
