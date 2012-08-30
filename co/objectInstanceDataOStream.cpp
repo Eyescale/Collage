@@ -5,12 +5,12 @@
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -19,11 +19,12 @@
 #include "objectInstanceDataOStream.h"
 
 #include "log.h"
-#include "versionedMasterCM.h"
-#include "nodePackets.h"
+#include "nodeCommand.h"
 #include "object.h"
 #include "objectDataIStream.h"
-#include "objectPackets.h"
+#include "objectDataOCommand.h"
+#include "versionedMasterCM.h"
+
 
 namespace co
 {
@@ -73,8 +74,8 @@ void ObjectInstanceDataOStream::push( const Nodes& receivers,
     _setupConnections( receivers );
 
     _resend();
-    NodeObjectPushPacket packet( objectID, groupID, typeID );
-    _send( packet );
+    NodeOCommand( getConnections(), CMD_NODE_OBJECT_PUSH )
+        << objectID << groupID << typeID;
 
     _clearConnections();
 }
@@ -117,11 +118,9 @@ void ObjectInstanceDataOStream::sendData( const void* buffer,
 {
     LBASSERT( _command );
 
-    ObjectInstancePacket packet( _nodeID, _cm->getObject()->getInstanceID( ));
-    packet.command = _command;
-    packet.instanceID = _instanceID;
-
-    ObjectDataOStream::sendData( packet, buffer, size, last );
+    ObjectDataOStream::send( _command, COMMANDTYPE_CO_NODE, _instanceID, size,
+                             last, buffer )
+        << _nodeID << _cm->getObject()->getInstanceID();
 }
 
 }

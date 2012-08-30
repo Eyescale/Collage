@@ -17,11 +17,11 @@
 
 #include "versionedMasterCM.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "log.h"
-#include "nodePackets.h"
 #include "object.h"
-#include "objectPackets.h"
+#include "objectDataCommand.h"
 #include "objectDataIStream.h"
 
 namespace co
@@ -100,16 +100,25 @@ uint128_t VersionedMasterCM::_apply( ObjectDataIStream* is )
     return version;
 }
 
-void VersionedMasterCM::addSlave( Command& command )
+void VersionedMasterCM::addSlave( Command& comd )
 {
     LB_TS_THREAD( _cmdThread );
     Mutex mutex( _slaves );
-    const NodeMapObjectPacket* packet = command.get< NodeMapObjectPacket >();
+
+    Command command( comd.getBuffer( ));
+
+    /*const uint128_t& version = */command.get< uint128_t >();
+    /*const uint128_t& minCachedVersion = */command.get< uint128_t >();
+    /*const uint128_t& maxCachedVersion = */command.get< uint128_t >();
+    /*const UUID& id = */command.get< UUID >();
+    const uint64_t maxVersion = command.get< uint64_t >();
+    /*const uint32_t requestID = */command.get< uint32_t >();
+    const uint32_t instanceID = command.get< uint32_t >();
 
     SlaveData data;
     data.node = command.getNode();
-    data.instanceID = packet->instanceID;
-    data.maxVersion = packet->maxVersion;
+    data.instanceID = instanceID;
+    data.maxVersion = maxVersion;
     if( data.maxVersion == 0 )
         data.maxVersion = std::numeric_limits< uint64_t >::max();
     else if( data.maxVersion < std::numeric_limits< uint64_t >::max( ))
@@ -188,35 +197,40 @@ void VersionedMasterCM::_updateMaxVersion()
 //---------------------------------------------------------------------------
 // command handlers
 //---------------------------------------------------------------------------
-bool VersionedMasterCM::_cmdSlaveDelta( Command& command )
+bool VersionedMasterCM::_cmdSlaveDelta( Command& cmd )
 {
-    LB_TS_THREAD( _rcvThread );
-    const ObjectSlaveDeltaPacket* packet = 
-        command.get< ObjectSlaveDeltaPacket >();
+    ObjectDataCommand command( cmd.getBuffer( ));
 
-    if( _slaveCommits.addDataPacket( packet->commit, command ))
+    LB_TS_THREAD( _rcvThread );
+
+    if( _slaveCommits.addDataPacket( command.get< UUID >(),
+                                     command.getBuffer( )))
+    {
         _object->notifyNewVersion();
+    }
     return true;
 }
 
-bool VersionedMasterCM::_cmdMaxVersion( Command& command )
+bool VersionedMasterCM::_cmdMaxVersion( Command& cmd )
 {
-    const ObjectMaxVersionPacket* packet = 
-        command.get< ObjectMaxVersionPacket >();
+    ObjectCommand command( cmd.getBuffer( ));
+
+    const uint64_t version = command.get< uint64_t >();
+    const uint32_t slaveID = command.get< uint32_t >();
 
     Mutex mutex( _slaves );
 
     // Update slave's max version
     SlaveData data;
     data.node = command.getNode();
-    data.instanceID = packet->slaveID;
+    data.instanceID = slaveID;
     SlaveDatasIter i = stde::find( _slaveData, data );
     if( i == _slaveData.end( ))
     {
         LBWARN << "Got max version from unmapped slave" << std::endl;
         return true;
     }
-    i->maxVersion = packet->version;
+    i->maxVersion = version;
 
     _updateMaxVersion();
     return true;

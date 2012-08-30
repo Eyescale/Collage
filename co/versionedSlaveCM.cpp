@@ -17,11 +17,12 @@
 
 #include "versionedSlaveCM.h"
 
-#include "command.h"
+#include "buffer.h"
 #include "log.h"
 #include "object.h"
+#include "objectDataCommand.h"
 #include "objectDataIStream.h"
-#include "objectPackets.h"
+#include "objectDataOCommand.h"
 #include <lunchbox/scopedMutex.h>
 #include <limits>
 
@@ -178,9 +179,8 @@ void VersionedSlaveCM::_sendAck()
     if( maxVersion <= _version.low( )) // overflow: default unblocking commit
         return;
 
-    ObjectMaxVersionPacket packet( maxVersion, _object->getInstanceID( ));
-    packet.instanceID = _masterInstanceID;
-    _object->send( _master, packet );
+    _object->send( _master, CMD_OBJECT_MAX_VERSION, _masterInstanceID )
+            << maxVersion << _object->getInstanceID();
 }
 
 void VersionedSlaveCM::applyMapData( const uint128_t& version )
@@ -315,15 +315,17 @@ void VersionedSlaveCM::addInstanceDatas( const ObjectDataIStreamDeque& cache,
 //---------------------------------------------------------------------------
 // command handlers
 //---------------------------------------------------------------------------
-bool VersionedSlaveCM::_cmdData( Command& command )
+bool VersionedSlaveCM::_cmdData( Command& cmd )
 {
+    ObjectDataCommand command( cmd.getBuffer( ));
+
     LB_TS_THREAD( _rcvThread );
     LBASSERT( command.getNode().isValid( ));
 
     if( !_currentIStream )
         _currentIStream = _iStreamCache.alloc();
 
-    _currentIStream->addDataPacket( &command );
+    _currentIStream->addDataPacket( command.getBuffer( ));
     if( _currentIStream->isReady( ))
     {
         const uint128_t& version = _currentIStream->getVersion();

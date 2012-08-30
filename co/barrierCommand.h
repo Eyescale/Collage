@@ -25,7 +25,7 @@ namespace co
     enum BarrierCommand
     {
         CMD_BARRIER_ENTER = CMD_OBJECT_CUSTOM,
-        CMD_BARRIER_ENTER_REPLY,
+        CMD_BARRIER_ENTER_REPLY
     };
 }
 

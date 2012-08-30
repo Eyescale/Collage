@@ -18,6 +18,8 @@
 #ifndef CO_NODECOMMAND_H
 #define CO_NODECOMMAND_H
 
+#include <co/commands.h>
+
 namespace co
 {
     enum NodeCommand

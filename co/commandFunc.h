@@ -53,11 +53,11 @@ namespace co
             {}
 
         /** @internal Invoke the callback. */
-        bool operator()( CommandPtr command )
+        bool operator()( Command& command )
         {
             LBASSERT( _object );
             LBASSERT( _func );
-            return (_object->*_func)( *command );
+            return (_object->*_func)( command );
         }
 
         /** @internal */

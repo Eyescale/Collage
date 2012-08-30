@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -29,10 +29,6 @@
 
 namespace co
 {
-    struct NodeMapObjectPacket;
-    struct NodeMapObjectReplyPacket;
-    struct NodeMapObjectSuccessPacket;
-
     /**
      * @internal
      * The object change manager base class.
@@ -57,27 +53,27 @@ namespace co
         virtual void push( const uint128_t& groupID, const uint128_t& typeID,
                            const Nodes& nodes );
 
-        /** 
+        /**
          * Commit a new version.
-         * 
+         *
          * @param incarnation the commit incarnation for auto obsoletion.
          * @return the new head version.
          */
         virtual uint128_t commit( const uint32_t incarnation )
             { LBUNIMPLEMENTED; return VERSION_NONE; }
 
-        /** 
+        /**
          * Automatically obsolete old versions.
-         * 
+         *
          * @param count the number of versions to retain, excluding the head
          *              version.
          */
         virtual void setAutoObsolete( const uint32_t count ){ LBUNIMPLEMENTED; }
- 
+
         /** @return get the number of versions this object retains. */
         virtual uint32_t getAutoObsolete() const { LBUNIMPLEMENTED; return 0; }
 
-        /** 
+        /**
          * Sync to a given version.
          *
          * @param version the version to synchronize, must be bigger than the
@@ -107,19 +103,19 @@ namespace co
         virtual void setMasterNode( NodePtr ) { /* nop */ }
 
         /** @return the master node, may be 0. */
-        virtual NodePtr getMasterNode() { return 0; } 
+        virtual NodePtr getMasterNode() { return 0; }
 
-        /** 
+        /**
          * Add a subscribed slave to the managed object.
-         * 
+         *
          * @param command the subscribe command initiating the add.
          */
         virtual void addSlave( Command& command ) = 0;
 
-        /** 
+        /**
          * Remove a subscribed slave.
-         * 
-         * @param node the slave node. 
+         *
+         * @param node the slave node.
          * @param instanceID the slave's instance identifier.
          */
         virtual void removeSlave( NodePtr node, const uint32_t instanceID )
@@ -164,9 +160,15 @@ namespace co
 
         void _addSlave( Command& command, const uint128_t& version );
         virtual void _initSlave( NodePtr node, const uint128_t& version,
-                                 const NodeMapObjectPacket* packet,
-                                 NodeMapObjectSuccessPacket& success,
-                                 NodeMapObjectReplyPacket& reply );
+                                 Command& command, uint128_t replyVersion,
+                                 bool replyUseCache );
+        void _sendMapSuccess( NodePtr node, const UUID& objectID,
+                              const uint32_t requestID,
+                              const uint32_t instanceID, const bool multicast );
+        void _sendMapReply( NodePtr node, const UUID& objectID,
+                            const uint32_t requestID, const uint128_t& version,
+                            const bool result, const bool releaseCache,
+                            const bool useCache, const bool multicast );
         void _sendEmptyVersion( NodePtr node, const uint32_t instanceID,
                                 const uint128_t& version, const bool multicast);
     };

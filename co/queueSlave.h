@@ -63,12 +63,12 @@ public:
      * @return an item from the distributed queue, or 0 if the queue is empty.
      * @version 1.1.6
      */
-    CO_API CommandPtr pop();
+    CO_API ObjectCommand pop();
 
 private:
     detail::QueueSlave* const _impl;
 
-    CO_API virtual void attach(const UUID& id, const uint32_t instanceID);
+    CO_API virtual void attach( const UUID& id, const uint32_t instanceID );
 
     virtual ChangeType getChangeType() const { return STATIC; }
     virtual void getInstanceData( co::DataOStream& ) { LBDONTCALL }

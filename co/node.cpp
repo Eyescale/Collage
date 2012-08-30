@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -18,7 +18,8 @@
 #include "node.h"
 
 #include "connectionDescription.h"
-#include "nodePackets.h"
+#include "nodeCommand.h"
+#include "nodeOCommand.h"
 
 #include <lunchbox/scopedMutex.h>
 
@@ -30,7 +31,7 @@ namespace
 enum State
 {
     STATE_CLOSED,    //!< initial state
-    STATE_CONNECTED, //!< proxy for a remote node, connected  
+    STATE_CONNECTED, //!< proxy for a remote node, connected
     STATE_LISTENING, //!< local node, listening
     STATE_CLOSING    //!< listening, about to close
 };
@@ -60,7 +61,7 @@ public:
     /** The multicast connection to this node, can be 0. */
     lunchbox::Lockable< ConnectionPtr > outMulticast;
 
-    /** 
+    /**
      * Yet unused multicast connections for this node.
      *
      * On the first multicast send usage, the connection is 'primed' by sending
@@ -77,7 +78,7 @@ public:
     int64_t lastReceive;
 
     Node() : id( true ), state( STATE_CLOSED ), lastReceive ( 0 ) {}
-    ~Node() 
+    ~Node()
     {
         LBASSERT( !outgoing );
         connectionDescriptions->clear();
@@ -98,7 +99,7 @@ Node::~Node()
 }
 
 bool Node::operator == ( const Node* node ) const
-{ 
+{
     LBASSERTINFO( _impl->id != node->_impl->id || this == node,
                   "Two node instances with the same ID found "
                   << (void*)this << " and " << (void*)node );
@@ -116,7 +117,7 @@ ConnectionPtr Node::useMulticast()
 {
     if( !isReachable( ))
         return 0;
-    
+
     ConnectionPtr connection = _impl->outMulticast.data;
     if( connection.isValid() && !connection->isClosed( ))
         return connection;
@@ -133,11 +134,9 @@ ConnectionPtr Node::useMulticast()
     LBINFO << "Announcing id " << node->getNodeID() << " to multicast group "
            << data.connection->getDescription() << std::endl;
 
-    NodeIDPacket packet;
-    packet.id = node->getNodeID();
-    packet.nodeType = getType();
+    NodeOCommand( Connections( 1, data.connection ), CMD_NODE_ID )
+            << node->getNodeID() << getType() << node->serialize();
 
-    data.connection->send( packet, node->serialize( ));
     _impl->outMulticast.data = data.connection;
     return data.connection;
 }
@@ -148,7 +147,7 @@ void Node::addConnectionDescription( ConnectionDescriptionPtr cd )
         cd->port = EQ_DEFAULT_PORT;
 
     lunchbox::ScopedFastWrite mutex( _impl->connectionDescriptions );
-    _impl->connectionDescriptions->push_back( cd ); 
+    _impl->connectionDescriptions->push_back( cd );
 }
 
 bool Node::removeConnectionDescription( ConnectionDescriptionPtr cd )
@@ -178,7 +177,7 @@ std::string Node::serialize() const
     }
     return data.str();
 }
- 
+
 bool Node::deserialize( std::string& data )
 {
     LBASSERT( _impl->state == STATE_CLOSED );
@@ -240,6 +239,16 @@ ConnectionPtr Node::getMulticast() const
     return _impl->outMulticast.data;
 }
 
+NodeOCommand Node::send( const uint32_t cmd, const uint32_t type,
+                         const bool multicast )
+{
+    ConnectionPtr connection = multicast ? useMulticast() : 0;
+    if( !connection )
+        connection = getConnection();
+    LBASSERT( connection );
+    return NodeOCommand( Connections( 1, connection ), cmd, type );
+}
+
 const NodeID& Node::getNodeID() const
 {
     return _impl->id;
@@ -260,7 +269,7 @@ ConnectionPtr Node::_getConnection()
 }
 
 void Node::_addMulticast( NodePtr node, ConnectionPtr connection )
-{            
+{
     lunchbox::ScopedMutex<> mutex( _impl->outMulticast );
     MCData data;
     data.connection = connection;
@@ -271,7 +280,7 @@ void Node::_addMulticast( NodePtr node, ConnectionPtr connection )
 void Node::_removeMulticast( ConnectionPtr connection )
 {
     LBASSERT( connection->getDescription()->type >= CONNECTIONTYPE_MULTICAST );
-            
+
     lunchbox::ScopedMutex<> mutex( _impl->outMulticast );
     if( _impl->outMulticast == connection )
         _impl->outMulticast.data = 0;
