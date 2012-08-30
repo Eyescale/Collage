@@ -84,7 +84,7 @@ void NodeOCommand::sendUnlocked( const uint64_t additionalSize )
 
 size_t NodeOCommand::getSize()
 {
-    return sizeof( _impl->type ) + sizeof( _impl->cmd );
+    return sizeof( uint32_t ) + sizeof( uint32_t );
 }
 
 void NodeOCommand::_init()
