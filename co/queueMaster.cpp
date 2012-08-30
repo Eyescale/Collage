@@ -31,8 +31,24 @@
 
 namespace co
 {
+
 namespace detail
 {
+
+class ItemBuffer : public lunchbox::Bufferb, public lunchbox::Referenced
+{
+public:
+    ItemBuffer( lunchbox::Bufferb& from )
+        : lunchbox::Bufferb( from )
+        , lunchbox::Referenced()
+    {}
+
+    ~ItemBuffer()
+    {}
+};
+
+typedef lunchbox::RefPtr< ItemBuffer > ItemBufferPtr;
+
 class QueueMaster : public co::Dispatcher
 {
 public:
@@ -50,7 +66,7 @@ public:
         const uint32_t slaveInstanceID = command.get< uint32_t >();
         const int32_t requestID = command.get< int32_t >();
 
-        typedef std::vector< lunchbox::Bufferb* > Items;
+        typedef std::vector< ItemBufferPtr > Items;
         Items items;
         queue.tryPop( itemsRequested, items );
 
@@ -61,10 +77,9 @@ public:
                                     COMMANDTYPE_CO_OBJECT, masterID,
                                     slaveInstanceID );
 
-            const lunchbox::Bufferb* item = *i;
+            const ItemBufferPtr item = *i;
             if( !item->isEmpty( ))
                 cmd << Array< const void >( item->getData(), item->getSize( ));
-            delete item;
         }
 
         if( itemsRequested > items.size( ))
@@ -73,7 +88,7 @@ public:
         return true;
     }
 
-    typedef lunchbox::MTQueue< lunchbox::Bufferb* > ItemQueue;
+    typedef lunchbox::MTQueue< ItemBufferPtr > ItemQueue;
 
     const UUID& masterID;
     ItemQueue queue;
@@ -120,7 +135,7 @@ QueueItem QueueMaster::push()
 
 void QueueMaster::_addItem( QueueItem& item )
 {
-    lunchbox::Bufferb* newBuffer = new lunchbox::Bufferb( item.getBuffer( ));
+    detail::ItemBufferPtr newBuffer = new detail::ItemBuffer( item.getBuffer( ));
     _impl->queue.push( newBuffer );
 }
 

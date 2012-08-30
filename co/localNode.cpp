@@ -398,8 +398,6 @@ void LocalNode::addListener( ConnectionPtr connection )
     LBASSERT( isListening( ));
     LBASSERT( connection->isListening( ));
 
-    connection->ref( this );
-
     // Update everybody's description list of me
     // I will add the listener to myself in my handler
     Nodes nodes;
@@ -1816,6 +1814,7 @@ bool LocalNode::_cmdAddListener( Command& command )
         return true;
 
     ConnectionPtr connection = rawConnection;
+    connection->unref();
     LBASSERT( connection );
 
     _impl->connectionNodes[ connection ] = this;
