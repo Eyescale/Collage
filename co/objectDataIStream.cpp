@@ -56,12 +56,12 @@ void ObjectDataIStream::_reset()
     _version = VERSION_INVALID;
 }
 
-void ObjectDataIStream::addDataPacket( BufferPtr buffer )
+void ObjectDataIStream::addDataPacket( Command& cmd )
 {
     LB_TS_THREAD( _thread );
     LBASSERT( !isReady( ));
 
-    ObjectDataCommand command( buffer );
+    ObjectDataCommand command( cmd );
 #ifndef NDEBUG
     const uint128_t& version = command.getVersion();
     const uint32_t sequence = command.getSequence();
@@ -81,7 +81,7 @@ void ObjectDataIStream::addDataPacket( BufferPtr buffer )
     }
 #endif
 
-    _buffers.push_back( buffer );
+    _buffers.push_back( command.getBuffer( ));
     if( command.isLast( ))
         _setReady();
 }

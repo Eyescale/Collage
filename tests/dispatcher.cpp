@@ -126,9 +126,9 @@ int main( int argc, char **argv )
     FooBar fooBar;
     BarFoo barFoo;
 
-    bar.dispatchCommand( buffer );
-    fooBar.dispatchCommand( buffer );
-    barFoo.dispatchCommand ( buffer );
+    bar.dispatchCommand( command );
+    fooBar.dispatchCommand( command );
+    barFoo.dispatchCommand ( command );
     TESTINFO( calls == 3, calls );
 
     return EXIT_SUCCESS;

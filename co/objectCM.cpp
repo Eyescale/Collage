@@ -58,7 +58,8 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
 
 void ObjectCM::_addSlave( Command& comd, const uint128_t& version )
 {
-    Command command( comd.getBuffer( ));
+    // #145 introduce reset() on command to read from the buffer front
+    Command command( comd );
 
     LBASSERT( version != VERSION_NONE );
     LBASSERT( command.getType() == COMMANDTYPE_CO_NODE );
@@ -108,7 +109,8 @@ void ObjectCM::_initSlave( NodePtr node, const uint128_t& version,
                << version << std::endl;
 #endif
 
-    Command command( comd.getBuffer( ));
+    // #145 introduce reset() on command to read from the buffer front
+    Command command( comd );
 
     /*const uint128_t& requested = */command.get< uint128_t >();
     const uint128_t& minCachedVersion = command.get< uint128_t >();

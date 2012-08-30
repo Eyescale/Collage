@@ -26,22 +26,26 @@ namespace co
 {
 namespace detail { class Command; }
 
-// #145 Documentation & API
     /**
      * A class managing received commands.
      *
      * This class is used by the LocalNode to pass received buffers to the
      * Dispatcher and ultimately command handler functions. It is not intended
-     * to be instantiated by applications. It is the applications responsible to
-     * provide the correct command type to the templated get methods.
+     * to be instantiated by applications. The derivates of this Command have to
+     * be instaniated by the application if the command type requires it. The
+     * data retrieval is possible with the provided DataIStream methods or with
+     * the templated get() function.
      */
     class Command : public DataIStream
     {
     public:
+        /** @internal */
         CO_API Command( BufferPtr buffer );
 
+        /** @internal */
         Command( const Command& rhs );
 
+        /** @internal */
         Command& operator = ( const Command& rhs );
 
         CO_API virtual ~Command();

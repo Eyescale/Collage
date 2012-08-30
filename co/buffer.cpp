@@ -76,7 +76,7 @@ uint64_t Buffer::getDataSize() const
 
 bool Buffer::isValid() const
 {
-    return getSize() > 0;
+    return getDataSize() > 0;
 }
 
 size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)

@@ -157,7 +157,7 @@ LocalNodePtr Command::getLocalNode() const
 
 bool Command::isValid() const
 {
-    return _impl->_buffer;
+    return _impl->_buffer && _impl->_buffer->isValid();
 }
 
 bool Command::operator()()

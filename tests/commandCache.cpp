@@ -105,7 +105,7 @@ int main( int argc, char **argv )
             co::Command command( buffer );
             command.setCommand( 0 );
 
-            readers[0].dispatchCommand( buffer );
+            readers[0].dispatchCommand( command );
 
             for( size_t i = 1; i < N_READER; ++i )
             {
@@ -117,7 +117,8 @@ int main( int argc, char **argv )
                 co::Command cloneCommand( clone );
                 cloneCommand.setCommand( 0 );
 #endif
-                readers[i].dispatchCommand( clone );
+                co::Command clonedCmd( clone );
+                readers[i].dispatchCommand( clonedCmd );
             }
             ++nOps;
         }
@@ -130,7 +131,7 @@ int main( int argc, char **argv )
             co::Command command( buffer );
             command.setCommand( 1 );
 
-            readers[i].dispatchCommand( buffer );
+            readers[i].dispatchCommand( command );
             readers[i].join();
         }
 

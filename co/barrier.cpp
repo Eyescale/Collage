@@ -197,7 +197,7 @@ bool Barrier::_cmdEnter( Command& cmd )
     LBASSERTINFO( !_impl->master || _impl->master == getLocalNode(),
                   _impl->master );
 
-    ObjectCommand command( cmd.getBuffer( ));
+    ObjectCommand command( cmd );
     const uint128_t version = command.get< uint128_t >();
     const uint32_t incarnation = command.get< uint32_t >();
     const uint32_t timeout = command.get< uint32_t >();
@@ -334,7 +334,7 @@ void Barrier::_cleanup( const uint64_t time )
 
 bool Barrier::_cmdEnterReply( Command& cmd )
 {
-    ObjectCommand command( cmd.getBuffer( ));
+    ObjectCommand command( cmd );
     LB_TS_THREAD( _thread );
     LBLOG( LOG_BARRIER ) << "Got ok, unlock local user(s)" << std::endl;
     const uint128_t version = command.get< uint128_t >();

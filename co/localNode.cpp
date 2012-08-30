@@ -53,7 +53,7 @@ namespace co
 namespace
 {
 typedef CommandFunc<LocalNode> CmdFunc;
-typedef std::list< BufferPtr > BufferList;
+typedef std::list< Command > CommandList;
 typedef lunchbox::RefPtrHash< Connection, NodePtr > ConnectionNodeHash;
 typedef ConnectionNodeHash::const_iterator ConnectionNodeHashCIter;
 typedef ConnectionNodeHash::iterator ConnectionNodeHashIter;
@@ -136,7 +136,7 @@ public:
     bool inReceiverThread() const { return receiverThread->isCurrent(); }
 
     /** Commands re-scheduled for dispatch. */
-    BufferList  pendingCommands;
+    CommandList  pendingCommands;
 
     /** The command 'allocator' */
     co::CommandCache commandCache;
@@ -1277,7 +1277,7 @@ bool LocalNode::_handleData()
                     command.getCommand() == CMD_NODE_ID )),
                   command << " connection " << connection );
 
-    _dispatchCommand( buffer );
+    _dispatchCommand( command );
     return true;
 }
 
@@ -1287,35 +1287,36 @@ BufferPtr LocalNode::allocCommand( const uint64_t size )
     return _impl->commandCache.alloc( this, this, size );
 }
 
-void LocalNode::_dispatchCommand( BufferPtr buffer )
+void LocalNode::_dispatchCommand( Command& command )
 {
-    LBASSERT( buffer->isValid( ));
+    LBASSERT( command.isValid( ));
 
-    if( dispatchCommand( buffer ))
+    if( dispatchCommand( command ))
         _redispatchCommands();
     else
     {
         _redispatchCommands();
-        _impl->pendingCommands.push_back( buffer );
+        _impl->pendingCommands.push_back( command );
     }
 }
 
-bool LocalNode::dispatchCommand( BufferPtr buffer )
+bool LocalNode::dispatchCommand( Command& cmd )
 {
-    LBASSERT( buffer->isValid( ));
+    LBASSERT( cmd.isValid( ));
 
-    Command command( buffer );
+    // #145 introduce reset() on command to read from the buffer front
+    Command command( cmd );
     LBVERB << "dispatch " << command << " by " << getNodeID() << std::endl;
 
     const uint32_t type = command.getType();
     switch( type )
     {
         case COMMANDTYPE_CO_NODE:
-            LBCHECK( Dispatcher::dispatchCommand( buffer ));
+            LBCHECK( Dispatcher::dispatchCommand( command ));
             return true;
 
         case COMMANDTYPE_CO_OBJECT:
-            return _impl->objectStore->dispatchObjectCommand( buffer );
+            return _impl->objectStore->dispatchObjectCommand( command );
 
         default:
             LBABORT( "Unknown packet type " << type << " for " << command );
@@ -1330,13 +1331,13 @@ void LocalNode::_redispatchCommands()
     {
         changes = false;
 
-        for( BufferList::iterator i = _impl->pendingCommands.begin();
+        for( CommandList::iterator i = _impl->pendingCommands.begin();
              i != _impl->pendingCommands.end(); ++i )
         {
-            BufferPtr buffer = *i;
-            LBASSERT( buffer->isValid( ));
+            Command& command = *i;
+            LBASSERT( command.isValid( ));
 
-            if( dispatchCommand( buffer ))
+            if( dispatchCommand( command ))
             {
                 _impl->pendingCommands.erase( i );
                 changes = true;
@@ -1425,7 +1426,7 @@ bool LocalNode::_cmdStopRcv( Command& command )
     _setClosing(); // causes rcv thread exit
 
     command.setCommand( CMD_NODE_STOP_CMD ); // causes cmd thread exit
-    _dispatchCommand( command.getBuffer( ));
+    _dispatchCommand( command );
     return true;
 }
 

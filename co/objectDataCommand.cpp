@@ -53,7 +53,19 @@ ObjectDataCommand::ObjectDataCommand( BufferPtr buffer )
     : ObjectCommand( buffer )
     , _impl( new detail::ObjectDataCommand )
 {
-    if( buffer )
+    _init();
+}
+
+ObjectDataCommand::ObjectDataCommand( const Command& command )
+    : ObjectCommand( command.getBuffer( ))
+    , _impl( new detail::ObjectDataCommand )
+{
+    _init();
+}
+
+void ObjectDataCommand::_init()
+{
+    if( getBuffer( ))
         *this >> _impl->version >> _impl->sequence >> _impl->datasize
               >> _impl->isLast >> _impl->compressor >> _impl->chunks;
 }
