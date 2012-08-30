@@ -39,7 +39,7 @@ public:
     /**
      * Construct a command which is send & dispatched typically to a co::Node.
      *
-     * @param connections list of connections where to send the command to.
+     * @param receivers list of connections where to send the command to.
      * @param cmd the command.
      * @param type the command type for dispatching.
      */

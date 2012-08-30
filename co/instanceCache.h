@@ -47,7 +47,7 @@ namespace co
          *
          * @param rev the object identifier and version.
          * @param instanceID the master instance ID.
-         * @param buffer The buffer to add.
+         * @param command The command to add.
          * @param usage pre-set usage count.
          * @return true if the command was entered, false if not.
          */
