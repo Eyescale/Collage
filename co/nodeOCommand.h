@@ -59,7 +59,7 @@ public:
                          const uint32_t type = COMMANDTYPE_CO_NODE );
 
     /** @internal */
-    NodeOCommand( NodeOCommand const& rhs );
+    NodeOCommand( const NodeOCommand& rhs );
 
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~NodeOCommand();

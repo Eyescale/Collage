@@ -40,9 +40,6 @@ public:
         , localNode( localNode_ )
     {}
 
-    // #145 eile
-    // Shouldn't this have move semantics? Otherwise creating a copy will send
-    // two packets? Alternatively disable copy ctor and return auto_ptr?
     NodeOCommand( const NodeOCommand& rhs )
         : type( rhs.type )
         , cmd( rhs.cmd )
@@ -80,12 +77,16 @@ NodeOCommand::NodeOCommand( Dispatcher* const dispatcher,
     _init();
 }
 
-NodeOCommand::NodeOCommand( NodeOCommand const& rhs )
+NodeOCommand::NodeOCommand( const NodeOCommand& rhs )
     : DataOStream()
     , _impl( new detail::NodeOCommand( *rhs._impl ))
 {
     _setupConnections( rhs.getConnections( ));
     _init();
+
+    // disable send of rhs
+    const_cast< NodeOCommand& >( rhs )._setupConnections( Connections( ));
+    const_cast< NodeOCommand& >( rhs ).disable();
 }
 
 NodeOCommand::~NodeOCommand()
