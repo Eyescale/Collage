@@ -777,7 +777,6 @@ bool ObjectStore::_cmdDeregisterObject( Command& command )
 bool ObjectStore::_cmdMapObject( Command& command )
 {
     LB_TS_THREAD( _commandThread );
-    LBLOG( LOG_OBJECTS ) << "Cmd map object " << command << std::endl;
 
     const uint128_t& version = command.get< uint128_t >();
     /*const uint128_t& minCachedVersion = */command.get< uint128_t >();
@@ -785,9 +784,12 @@ bool ObjectStore::_cmdMapObject( Command& command )
     const UUID& id = command.get< UUID >();
     /*const uint64_t maxVersion = */command.get< uint64_t >();
     const uint32_t requestID = command.get< uint32_t >();
-    /*const uint32_t instanceID = */command.get< uint32_t >();
+    const uint32_t instanceID = command.get< uint32_t >();
     /*const uint32_t masterInstanceID = */command.get< uint32_t >();
     const bool useCache = command.get< bool >();
+
+    LBLOG( LOG_OBJECTS ) << "Cmd map object " << command << " id " << id << "."
+                         << instanceID << " req " << requestID << std::endl;
 
     Object* master = 0;
     {
@@ -838,7 +840,9 @@ bool ObjectStore::_cmdMapObjectSuccess( Command& command )
     if( nodeID != _localNode->getNodeID( ))
         return true;
 
-    LBLOG( LOG_OBJECTS ) << "Cmd map object success " << command << std::endl;
+    LBLOG( LOG_OBJECTS ) << "Cmd map object success " << command
+                         << " id " << objectID << "." << instanceID
+                         << " req " << requestID << std::endl;
 
     // set up change manager and attach object to dispatch table
     Object* object = static_cast<Object*>( _localNode->getRequestData(
@@ -855,7 +859,6 @@ bool ObjectStore::_cmdMapObjectSuccess( Command& command )
 bool ObjectStore::_cmdMapObjectReply( Command& command )
 {
     LB_TS_THREAD( _receiverThread );
-    LBLOG( LOG_OBJECTS ) << "Cmd map object reply " << command << std::endl;
 
     const UUID& nodeID = command.get< UUID >();
     const UUID& objectID = command.get< UUID >();
@@ -864,6 +867,9 @@ bool ObjectStore::_cmdMapObjectReply( Command& command )
     const bool result = command.get< bool >();
     const bool releaseCache = command.get< bool >();
     const bool useCache = command.get< bool >();
+
+    LBLOG( LOG_OBJECTS ) << "Cmd map object reply " << command << " id "
+                         << objectID << " req " << requestID << std::endl;
 
     // Map reply packets are potentially multicasted (see above)
     // verify that we are the intended receiver
@@ -977,14 +983,16 @@ bool ObjectStore::_cmdUnmapObject( Command& command )
 
 bool ObjectStore::_cmdInstance( Command& comd )
 {
-    ObjectDataCommand command( comd.getBuffer( ));
-
     LB_TS_THREAD( _receiverThread );
     LBASSERT( _localNode );
-    LBLOG( LOG_OBJECTS ) << "Cmd instance " << command << std::endl;
 
+    ObjectDataCommand command( comd.getBuffer( ));
     const NodeID nodeID = command.get< NodeID >();
     const uint32_t masterInstanceID = command.get< uint32_t >();
+
+    LBLOG( LOG_OBJECTS ) << "Cmd instance " << command << " master "
+                         << masterInstanceID << " node " << nodeID << std::endl;
+
 #ifndef NDEBUG
     const uint32_t instanceID = command.getInstanceID();
 #endif

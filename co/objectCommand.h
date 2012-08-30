@@ -58,6 +58,8 @@ private:
 
 };
 
+CO_API std::ostream& operator << ( std::ostream& os, const ObjectCommand& );
+
 }
 
 #endif //CO_OBJECTICOMMAND_H

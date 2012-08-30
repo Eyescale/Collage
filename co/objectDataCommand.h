@@ -49,6 +49,9 @@ public:
 private:
     detail::ObjectDataCommand* const _impl;
 };
+
+CO_API std::ostream& operator << ( std::ostream& os, const ObjectDataCommand& );
+
 }
 
 #endif //CO_OBJECTDATACOMMAND_H

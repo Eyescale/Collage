@@ -87,4 +87,15 @@ uint32_t ObjectCommand::getInstanceID() const
     return _impl->instanceID;
 }
 
+std::ostream& operator << ( std::ostream& os, const ObjectCommand& command )
+{
+    os << static_cast< const Command& >( command );
+    if( command.isValid( ))
+    {
+        os << " object " << command.getObjectID()
+           << "." << command.getInstanceID();
+    }
+    return os;
+}
+
 }

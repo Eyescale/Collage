@@ -1452,12 +1452,14 @@ bool LocalNode::_cmdConnect( Command& command )
 {
     LBASSERT( !command.getNode().isValid( ));
     LBASSERT( _impl->inReceiverThread( ));
-    LBVERB << "handle connect " << command << std::endl;
 
     const NodeID& nodeID = command.get< NodeID >();
     const uint32_t requestID = command.get< uint32_t >();
     const uint32_t nodeType = command.get< uint32_t >();
     std::string data = command.get< std::string >();
+
+    LBVERB << "handle connect " << command << " req " << requestID << " type "
+           << nodeType << " data " << data << std::endl;
 
     ConnectionPtr connection = _impl->incoming.getConnection();
 
@@ -1517,12 +1519,14 @@ bool LocalNode::_cmdConnectReply( Command& command )
 {
     LBASSERT( !command.getNode( ));
     LBASSERT( _impl->inReceiverThread( ));
-    LBVERB << "handle connect reply " << command << std::endl;
 
     const NodeID& nodeID = command.get< NodeID >();
     const uint32_t requestID = command.get< uint32_t >();
     const uint32_t nodeType = command.get< uint32_t >();
     std::string data = command.get< std::string >();
+
+    LBVERB << "handle connect reply " << command << " req " << requestID
+           << " type " << nodeType << " data " << data << std::endl;
 
     ConnectionPtr connection = _impl->incoming.getConnection();
     LBASSERT( _impl->connectionNodes.find( connection ) ==
@@ -1680,10 +1684,11 @@ bool LocalNode::_cmdDisconnect( Command& command )
 
 bool LocalNode::_cmdGetNodeData( Command& command )
 {
-    LBVERB << "cmd get node data: " << command << std::endl;
-
     const NodeID& nodeID = command.get< NodeID >();
     const uint32_t requestID = command.get< uint32_t >();
+
+    LBVERB << "cmd get node data: " << command << " req " << requestID
+           << " nodeID " << nodeID << std::endl;
 
     NodePtr node = getNode( nodeID );
     NodePtr toNode = command.getNode();
@@ -1706,12 +1711,14 @@ bool LocalNode::_cmdGetNodeData( Command& command )
 bool LocalNode::_cmdGetNodeDataReply( Command& command )
 {
     LBASSERT( _impl->inReceiverThread( ));
-    LBVERB << "cmd get node data reply: " << command << std::endl;
 
     const NodeID& nodeID = command.get< NodeID >();
     const uint32_t requestID = command.get< uint32_t >();
     const uint32_t nodeType = command.get< uint32_t >();
     std::string nodeData = command.get< std::string >();
+
+    LBVERB << "cmd get node data reply: " << command << " req " << requestID
+           << " type " << nodeType << " data " << nodeData << std::endl;
 
     // No locking needed, only recv thread writes
     NodeHash::const_iterator i = _impl->nodes->find( nodeID );
