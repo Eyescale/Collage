@@ -40,7 +40,7 @@ class ObjectCommand : public Command
 {
 public:
     /** @internal */
-    ObjectCommand( BufferPtr buffer );
+    CO_API ObjectCommand( BufferPtr buffer );
 
     /** Construct an object command from a base command. */
     CO_API ObjectCommand( const Command& command );

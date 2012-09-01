@@ -59,7 +59,7 @@ public:
                          const uint32_t type = COMMANDTYPE_CO_NODE );
 
     /** @internal */
-    NodeOCommand( const NodeOCommand& rhs );
+    CO_API NodeOCommand( const NodeOCommand& rhs );
 
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~NodeOCommand();
@@ -69,14 +69,14 @@ public:
      *
      * @param additionalSize size in bytes of external data.
      */
-    void setExternalSend( const uint64_t additionalSize );
+    CO_API void setExternalSend( const uint64_t additionalSize );
 
     /** @return the static size of this command. */
     CO_API static size_t getSize();
 
 protected:
-    virtual void sendData( const void* buffer, const uint64_t size,
-                           const bool last );
+    CO_API virtual void sendData( const void* buffer, const uint64_t size,
+                                  const bool last );
 
 private:
     detail::NodeOCommand* const _impl;
