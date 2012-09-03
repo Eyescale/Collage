@@ -27,10 +27,10 @@ namespace co
 namespace detail { class NodeOCommand; }
 
 /**
- * A class for sending commands and data to local & external nodes.
+ * A class for sending commands with data to local and external nodes.
  *
  * The data to this command is added via the interface provided by DataOStream.
- * The command is send or dispatched after it goes out of scoped, i.e. during
+ * The command is send or dispatched after it goes out of scope, i.e. during
  * destruction.
  */
 class NodeOCommand : public DataOStream

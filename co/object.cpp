@@ -148,7 +148,7 @@ void Object::setID( const UUID& identifier )
 ObjectOCommand Object::send( NodePtr node, const uint32_t cmd,
                              const uint32_t instanceID )
 {
-    LBASSERT( isAttached() );
+    LBASSERT( isAttached( ));
     Connections connections( 1, node->getConnection( ));
     return ObjectOCommand( connections, cmd, COMMANDTYPE_CO_OBJECT, _id,
                            instanceID );

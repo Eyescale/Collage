@@ -60,16 +60,6 @@ public:
     /** @internal @return the number of newly allocated bytes. */
     size_t alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size );
 
-    /**
-     * @internal Clone the from buffer into this buffer.
-     *
-     * The buffer will share all data but the dispatch function. The
-     * buffer's allocation size will be 0 and it will never delete the
-     * shared data. The buffer will release its reference to the from
-     * buffer when it is released.
-     */
-    void clone( BufferPtr from );
-
     void free(); //!< @internal
 
     static size_t getMinSize(); //! @internal

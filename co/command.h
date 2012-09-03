@@ -112,6 +112,8 @@ namespace detail { class Command; }
                                            const void** chunkData,
                                            uint64_t* size );
         //@}
+
+        void _skipHeader(); //!< @internal
     };
 
     CO_API std::ostream& operator << ( std::ostream& os, const Command& );

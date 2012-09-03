@@ -84,23 +84,27 @@ Command::Command( const Command& rhs )
     , _impl( new detail::Command( *rhs._impl ))
 {
     if( _impl->_buffer )
-    {
-        // skip already set type & cmd to forward read pos
-        get< uint32_t >();
-        get< uint32_t >();
-    }
+        _skipHeader();
 }
 
 Command& Command::operator = ( const Command& rhs )
 {
     if( this != &rhs )
+    {
         *_impl = *rhs._impl;
+        _skipHeader();
+    }
     return *this;
 }
 
 Command::~Command()
 {
     delete _impl;
+}
+
+void Command::_skipHeader()
+{
+    getRemainingBuffer( sizeof( _impl->_type ) + sizeof( _impl->_cmd ));
 }
 
 uint32_t Command::getType() const
@@ -142,7 +146,7 @@ size_t Command::nRemainingBuffers() const
 
 uint128_t Command::getVersion() const
 {
-    return uint128_t( 0, 0 );
+    return VERSION_NONE;
 }
 
 NodePtr Command::getMaster()
