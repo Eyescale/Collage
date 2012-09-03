@@ -55,7 +55,7 @@ static lunchbox::a_int32_t _frees;
 }
 namespace detail
 {
-class CommandCache
+class CommandCache // #145 rename to BufferCache?
 {
 public:
     CommandCache()
@@ -146,7 +146,7 @@ public:
                                 for( DataCIter k = cmds.begin();
                                      k != cmds.end(); ++k )
                                 {
-                                    size += (*k)->getSize();
+                                    size += (*k)->getMaxSize();
                                 }
                                 LBINFO << _hits << "/" << _hits + _misses
                                        << " hits, " << _lookups << " lookups, "

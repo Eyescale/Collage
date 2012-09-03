@@ -114,7 +114,7 @@ size_t ObjectDataIStream::getDataSize() const
     for( BufferDequeCIter i = _buffers.begin(); i != _buffers.end(); ++i )
     {
         const BufferPtr buffer = *i;
-        size += buffer->getDataSize();
+        size += buffer->getSize();
     }
     return size;
 }

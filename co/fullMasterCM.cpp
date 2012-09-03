@@ -162,11 +162,11 @@ void FullMasterCM::_obsolete()
 }
 
 void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
-                               Command& comd, uint128_t replyVersion,
+                               Command& cmd, uint128_t replyVersion,
                                bool replyUseCache )
 {
     // #145 introduce reset() on command to read from the buffer front
-    Command command( comd );
+    Command command( cmd );
 
     _checkConsistency();
 

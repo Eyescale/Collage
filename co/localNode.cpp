@@ -398,6 +398,8 @@ void LocalNode::addListener( ConnectionPtr connection )
     LBASSERT( isListening( ));
     LBASSERT( connection->isListening( ));
 
+    connection->ref( this );
+
     // Update everybody's description list of me
     // I will add the listener to myself in my handler
     Nodes nodes;
@@ -1084,6 +1086,7 @@ void LocalNode::flushCommands()
     _impl->incoming.interrupt();
 }
 
+// #145 remove?
 BufferPtr LocalNode::cloneCommand( BufferPtr command )
 {
     return _impl->commandCache.clone( command );
@@ -1192,6 +1195,7 @@ void LocalNode::_handleDisconnect()
     if( i != _impl->connectionNodes.end( ))
     {
         NodePtr node = i->second;
+// #145 use old direct-dispatch
         node->ref(); // extend lifetime to give cmd handler a chance
         send( CMD_NODE_REMOVE_NODE )
             << node.get() << uint32_t( LB_UNDEFINED_UINT32 );
@@ -1300,13 +1304,10 @@ void LocalNode::_dispatchCommand( Command& command )
     }
 }
 
-bool LocalNode::dispatchCommand( Command& cmd )
+bool LocalNode::dispatchCommand( Command& command )
 {
-    LBASSERT( cmd.isValid( ));
-
-    // #145 introduce reset() on command to read from the buffer front
-    Command command( cmd );
     LBVERB << "dispatch " << command << " by " << getNodeID() << std::endl;
+    LBASSERT( command.isValid( ));
 
     const uint32_t type = command.getType();
     switch( type )
@@ -1843,6 +1844,7 @@ bool LocalNode::_cmdRemoveListener( Command& command )
     _initService(); // update zeroconf
 
     ConnectionPtr connection = rawConnection;
+    connection->unref( this );
     LBASSERT( connection );
 
     if( connection->getDescription()->type >= CONNECTIONTYPE_MULTICAST )

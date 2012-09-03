@@ -24,7 +24,8 @@ namespace co
     {
         COMMANDTYPE_CO_NODE,
         COMMANDTYPE_CO_OBJECT,
-        COMMANDTYPE_CO_CUSTOM = 1<<7
+        COMMANDTYPE_CO_CUSTOM = 1<<7,
+        COMMANDTYPE_INVALID = 0xFFFFFFFFu //!< @internal
     };
 
     enum
@@ -32,7 +33,8 @@ namespace co
         CMD_NODE_COMMAND, //!< A custom node command
         CMD_NODE_INTERNAL, //!< @internal
         CMD_NODE_CUSTOM = 50,  //!< Commands for subclasses of Node start here
-        CMD_OBJECT_CUSTOM = 10 //!< Commands for subclasses of Object start here
+        CMD_OBJECT_CUSTOM = 10, //!< Commands for subclasses of Object start here
+        CMD_INVALID = 0xFFFFFFFFu //!< @internal
     };
 }
 

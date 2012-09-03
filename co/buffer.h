@@ -51,9 +51,6 @@ public:
     /** @internal @return the receiving node. */
     LocalNodePtr getLocalNode() const;
 
-    /** @internal @return the actual size of the buffers content. */
-    uint64_t getDataSize() const;
-
     /** @internal @return true if the buffer has valid data. */
     CO_API bool isValid() const;
 

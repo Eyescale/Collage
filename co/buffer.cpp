@@ -33,7 +33,6 @@ public:
         , _node()
         , _localNode()
         , _master()
-        , _dataSize( 0 )
         , _func( 0, 0 )
     {}
 
@@ -41,7 +40,6 @@ public:
     NodePtr _node; //!< The node sending the packet
     LocalNodePtr  _localNode; //!< The node receiving the packet
     BufferPtr _master;
-    uint64_t _dataSize;
     co::Dispatcher::Func _func;
 };
 }
@@ -69,14 +67,9 @@ LocalNodePtr Buffer::getLocalNode() const
     return _impl->_localNode;
 }
 
-uint64_t Buffer::getDataSize() const
-{
-    return _impl->_dataSize;
-}
-
 bool Buffer::isValid() const
 {
-    return getDataSize() > 0;
+    return getSize() > 0;
 }
 
 size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
@@ -94,12 +87,12 @@ size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
     }
 
     --_impl->_freeCount;
-    _impl->_dataSize = size;
     _impl->_node = node;
     _impl->_localNode = localNode;
     _impl->_master = 0;
 
-    reset( LB_MAX( getMinSize(), size ));
+    reserve( LB_MAX( getMinSize(), size ));
+    resize( size );
 
     return getSize();
 }
@@ -118,7 +111,6 @@ void Buffer::clone( BufferPtr from )
     _data = from->getData();
     _size = from->getSize();
 
-    _impl->_dataSize = from->_impl->_dataSize;
     _impl->_node = from->_impl->_node;
     _impl->_localNode = from->_impl->_localNode;
     _impl->_master = from;
@@ -138,7 +130,6 @@ void Buffer::free()
     else
         clear();
 
-    _impl->_dataSize = 0;
     _impl->_node = 0;
     _impl->_localNode = 0;
     _impl->_master = 0;

@@ -138,7 +138,7 @@ bool Command::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
         return false;
 
     *chunkData = _impl->_buffer->getData();
-    *size = _impl->_buffer->getDataSize();
+    *size = _impl->_buffer->getSize();
     *compressor = EQ_COMPRESSOR_NONE;
     *nChunks = 1;
 
