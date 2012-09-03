@@ -66,13 +66,13 @@ public:
 }
 
 Command::Command()
-    : DataIStream( )
+    : DataIStream()
     , _impl( new detail::Command )
 {
 }
 
 Command::Command( BufferPtr buffer )
-    : DataIStream( )
+    : DataIStream()
     , _impl( new detail::Command( buffer ))
 {
     if( _impl->_buffer )
@@ -80,7 +80,7 @@ Command::Command( BufferPtr buffer )
 }
 
 Command::Command( const Command& rhs )
-    : DataIStream( )
+    : DataIStream()
     , _impl( new detail::Command( *rhs._impl ))
 {
     if( _impl->_buffer )
@@ -129,9 +129,10 @@ void Command::setDispatchFunction( const Dispatcher::Func& func )
     _impl->_func = func;
 }
 
-BufferPtr Command::getBuffer() const
+uint64_t Command::getSize() const
 {
-    return _impl->_buffer;
+    LBASSERT( isValid( ));
+    return _impl->_buffer->getSize();
 }
 
 size_t Command::nRemainingBuffers() const

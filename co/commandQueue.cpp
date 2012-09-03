@@ -83,7 +83,7 @@ Command CommandQueue::pop( const uint32_t timeout )
     if( !_impl->commands.timedPop( timeout, command ))
         throw Exception( Exception::TIMEOUT_COMMANDQUEUE );
 
-    return command;
+    return Command( command );
 }
 
 Command CommandQueue::tryPop()
@@ -91,7 +91,7 @@ Command CommandQueue::tryPop()
     LB_TS_THREAD( _thread );
     Command command;
     _impl->commands.tryPop( command );
-    return command;
+    return Command( command );
 }
 
 }

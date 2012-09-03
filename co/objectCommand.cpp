@@ -57,7 +57,7 @@ ObjectCommand::ObjectCommand( BufferPtr buffer )
 }
 
 ObjectCommand::ObjectCommand( const Command& command )
-    : Command( command.getBuffer( ))
+    : Command( command )
     , _impl( new detail::ObjectCommand )
 {
     _init();
@@ -79,7 +79,7 @@ ObjectCommand& ObjectCommand::operator = ( const ObjectCommand& rhs )
 
 void ObjectCommand::_init()
 {
-    if( getBuffer( ))
+    if( isValid( ))
         *this >> _impl->objectID >> _impl->instanceID;
 }
 

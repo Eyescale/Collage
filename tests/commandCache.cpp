@@ -96,6 +96,7 @@ int main( int argc, char **argv )
                                                 co::NodeOCommand::getSize( ));
             co::Command command( buffer );
             command.setCommand( 0 );
+            command.setType( co::COMMANDTYPE_CO_CUSTOM );
 
             readers[0].dispatchCommand( command );
 

@@ -17,8 +17,6 @@
 
 #include "objectDataIStream.h"
 
-#include "buffer.h"
-#include "command.h"
 #include "commands.h"
 #include "objectDataCommand.h"
 
@@ -38,7 +36,7 @@ ObjectDataIStream::~ObjectDataIStream()
 
 ObjectDataIStream::ObjectDataIStream( const ObjectDataIStream& from )
         : DataIStream( from )
-        , _buffers( from._buffers )
+        , _commands( from._commands )
         , _version( from._version )
 {
 }
@@ -51,8 +49,8 @@ void ObjectDataIStream::reset()
 
 void ObjectDataIStream::_reset()
 {
-    _usedBuffer = 0;
-    _buffers.clear();
+    _usedCommand = Command();
+    _commands.clear();
     _version = VERSION_INVALID;
 }
 
@@ -66,13 +64,13 @@ void ObjectDataIStream::addDataPacket( Command& cmd )
     const uint128_t& version = command.getVersion();
     const uint32_t sequence = command.getSequence();
 
-    if( _buffers.empty( ))
+    if( _commands.empty( ))
     {
         LBASSERT( sequence == 0 );
     }
     else
     {
-        ObjectDataCommand previous( _buffers.back() );
+        ObjectDataCommand previous( _commands.back() );
         const uint128_t& previousVersion = previous.getVersion();
         const uint32_t previousSequence = previous.getSequence();
         LBASSERTINFO( sequence == previousSequence+1,
@@ -81,74 +79,65 @@ void ObjectDataIStream::addDataPacket( Command& cmd )
     }
 #endif
 
-    _buffers.push_back( command.getBuffer( ));
+    _commands.push_back( command );
     if( command.isLast( ))
         _setReady();
 }
 
 bool ObjectDataIStream::hasInstanceData() const
 {
-    if( !_usedBuffer && _buffers.empty( ))
+    if( !_usedCommand.isValid() && _commands.empty( ))
     {
         LBUNREACHABLE;
         return false;
     }
 
-    const BufferPtr buffer = _usedBuffer ? _usedBuffer : _buffers.front();
-    ObjectDataCommand cmd( buffer );
-    return( cmd.getCommand() == CMD_OBJECT_INSTANCE );
+    const Command& command = _usedCommand.isValid() ? _usedCommand :
+                                                      _commands.front();
+    return( command.getCommand() == CMD_OBJECT_INSTANCE );
 }
 
 NodePtr ObjectDataIStream::getMaster()
 {
-    if( !_usedBuffer && _buffers.empty( ))
+    if( !_usedCommand.isValid() && _commands.empty( ))
         return 0;
 
-    const BufferPtr buffer = _usedBuffer ? _usedBuffer : _buffers.front();
-    return buffer->getNode();
+    const Command& command = _usedCommand.isValid() ? _usedCommand :
+                                                      _commands.front();
+    return command.getNode();
 }
 
 size_t ObjectDataIStream::getDataSize() const
 {
     size_t size = 0;
-    for( BufferDequeCIter i = _buffers.begin(); i != _buffers.end(); ++i )
+    for( CommandDequeCIter i = _commands.begin(); i != _commands.end(); ++i )
     {
-        const BufferPtr buffer = *i;
-        size += buffer->getSize();
+        const Command& command = *i;
+        size += command.getSize();
     }
     return size;
 }
 
 uint128_t ObjectDataIStream::getPendingVersion() const
 {
-    if( _buffers.empty( ))
+    if( _commands.empty( ))
         return VERSION_INVALID;
 
-    const BufferPtr buffer = _buffers.back();
-    ObjectDataCommand cmd( buffer );
+    const ObjectDataCommand& cmd( _commands.back( ));
     return cmd.getVersion();
-}
-
-const BufferPtr ObjectDataIStream::_getNextBuffer()
-{
-    if( _buffers.empty( ))
-        _usedBuffer = 0;
-    else
-    {
-        _usedBuffer = _buffers.front();
-        _buffers.pop_front();
-    }
-    return _usedBuffer;
 }
 
 bool ObjectDataIStream::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
                                        const void** chunkData, uint64_t* size )
 {
-    BufferPtr buffer = _getNextBuffer();
-    if( !buffer )
+    if( _commands.empty( ))
         return false;
 
-    ObjectDataCommand command( buffer );
+    _usedCommand = _commands.front();
+    ObjectDataCommand command( _usedCommand );
+    _commands.pop_front();
+    if( !command.isValid( ))
+        return false;
 
     LBASSERT( command.getCommand() == CMD_OBJECT_INSTANCE ||
               command.getCommand() == CMD_OBJECT_DELTA ||

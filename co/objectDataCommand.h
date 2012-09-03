@@ -30,9 +30,6 @@ namespace detail { class ObjectDataCommand; }
 class ObjectDataCommand : public ObjectCommand
 {
 public:
-    /** @internal */
-    CO_API ObjectDataCommand( BufferPtr buffer );
-
     /** @internal Construct an object data command from a base command. */
     CO_API ObjectDataCommand( const Command& command );
 

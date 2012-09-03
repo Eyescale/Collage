@@ -18,10 +18,11 @@
 #ifndef CO_OBJECTDATAISTREAM_H
 #define CO_OBJECTDATAISTREAM_H
 
-#include <co/dataIStream.h>   // base class
-#include <co/version.h>       // enum
-#include <lunchbox/monitor.h>      // member
-#include <lunchbox/thread.h>       // member
+#include <co/command.h>         // member
+#include <co/dataIStream.h>     // base class
+#include <co/version.h>         // enum
+#include <lunchbox/monitor.h>   // member
+#include <lunchbox/thread.h>    // member
 
 #include <deque>
 
@@ -44,7 +45,7 @@ namespace co
         void waitReady() const { _version.waitNE( VERSION_INVALID ); }
         bool isReady() const { return _version != VERSION_INVALID; }
 
-        virtual size_t nRemainingBuffers() const { return _buffers.size(); }
+        virtual size_t nRemainingBuffers() const { return _commands.size(); }
 
         virtual void reset();
 
@@ -52,15 +53,14 @@ namespace co
         CO_API virtual NodePtr getMaster();
 
     protected:
-        const BufferPtr _getNextBuffer();
         virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
                                     const void** chunkData, uint64_t* size );
 
     private:
         /** All data command packets for this istream. */
-        BufferDeque _buffers;
+        CommandDeque _commands;
 
-        BufferPtr _usedBuffer; //!< Currently used buffer
+        Command _usedCommand; //!< Currently used buffer
 
         /** The object version associated with this input stream. */
         lunchbox::Monitor< uint128_t > _version;

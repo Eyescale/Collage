@@ -32,13 +32,11 @@ public:
         : _freeCount( freeCounter )
         , _node()
         , _localNode()
-        , _master()
     {}
 
     lunchbox::a_int32_t& _freeCount;
     NodePtr _node; //!< The node sending the packet
     LocalNodePtr  _localNode; //!< The node receiving the packet
-    BufferPtr _master;
 };
 }
 
@@ -76,18 +74,9 @@ size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
     LBASSERT( getRefCount() == 1 ); // caller BufferCache
     LBASSERT( _impl->_freeCount > 0 );
 
-    // 'unclone' ourselves
-    if( _impl->_master )
-    {
-        _data = 0;
-        _size = 0;
-        _maxSize = 0;
-    }
-
     --_impl->_freeCount;
     _impl->_node = node;
     _impl->_localNode = localNode;
-    _impl->_master = 0;
 
     reserve( LB_MAX( getMinSize(), size ));
     resize( size );
@@ -95,49 +84,19 @@ size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
     return getSize();
 }
 
-void Buffer::clone( BufferPtr from )
-{
-    LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller BufferCache
-    LBASSERT( from->getRefCount() > 1 ); // caller BufferCache, self
-    LBASSERT( _impl->_freeCount > 0 );
-
-    free();
-
-    --_impl->_freeCount;
-
-    _data = from->getData();
-    _size = from->getSize();
-
-    _impl->_node = from->_impl->_node;
-    _impl->_localNode = from->_impl->_localNode;
-    _impl->_master = from;
-}
-
 void Buffer::free()
 {
     LB_TS_THREAD( _writeThread );
 
-    // if this buffer is a clone, don't dare to free the owner's data
-    if( _impl->_master )
-    {
-        _data = 0;
-        _size = 0;
-        _maxSize = 0;
-    }
-    else
-        clear();
+    clear();
 
     _impl->_node = 0;
     _impl->_localNode = 0;
-    _impl->_master = 0;
 }
 
 void Buffer::deleteReferenced( const Referenced* object ) const
 {
     Buffer* buffer = const_cast< Buffer* >( this );
-    // DON'T 'command->_master = 0;', command is already reusable and _master
-    // may be set any time. alloc or clone_ will free old master.
     ++buffer->_impl->_freeCount;
 }
 
