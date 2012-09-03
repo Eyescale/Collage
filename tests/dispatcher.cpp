@@ -20,8 +20,8 @@
 
 #include <test.h>
 #include <co/buffer.h>
+#include <co/bufferCache.h>
 #include <co/command.h>
-#include <co/commandCache.h>
 #include <co/commandFunc.h>
 #include <co/dispatcher.h>
 #include <co/localNode.h>
@@ -113,7 +113,7 @@ public:
 
 int main( int argc, char **argv )
 {
-    co::CommandCache cache;
+    co::BufferCache cache;
     co::LocalNodePtr node = new co::LocalNode;
     co::BufferPtr buffer = cache.alloc( node, node,
                                         co::NodeOCommand::getSize( ));

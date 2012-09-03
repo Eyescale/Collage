@@ -36,7 +36,7 @@ namespace detail { class Buffer; }
  * methods are using the buffer for data forwarding because of the unknown
  * command type. The concrete command can be then instaniated with this buffer.
  *
- * The allocation of the buffer is always performed by the co::CommandCache. The
+ * The allocation of the buffer is always performed by the co::BufferCache. The
  * buffer API is supposed for internal use only.
 */
 class Buffer : public lunchbox::Bufferb, public lunchbox::Referenced

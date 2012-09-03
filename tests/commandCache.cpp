@@ -18,8 +18,8 @@
 #include <test.h>
 
 #include <co/buffer.h>
+#include <co/bufferCache.h>
 #include <co/command.h>
-#include <co/commandCache.h>
 #include <co/commandQueue.h>
 #include <co/dispatcher.h>
 #include <co/init.h>
@@ -93,7 +93,7 @@ int main( int argc, char **argv )
             readers[i].start();
         }
 
-        co::CommandCache cache;
+        co::BufferCache cache;
         co::LocalNodePtr node = new co::LocalNode;
         size_t nOps = 0;
 

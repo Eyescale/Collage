@@ -21,9 +21,9 @@
 #include <co/dataOStream.h>
 
 #include <co/buffer.h>
+#include <co/bufferCache.h>
 #include <co/connectionDescription.h>
 #include <co/command.h>
-#include <co/commandCache.h>
 #include <co/commandQueue.h>
 #include <co/connection.h>
 #include <co/init.h>
@@ -152,7 +152,7 @@ int main( int argc, char **argv )
     TEST( sender.start( ));
 
     ::DataIStream stream;
-    co::CommandCache commandCache;
+    co::BufferCache bufferCache;
     bool receiving = true;
 
     while( receiving )
@@ -162,7 +162,7 @@ int main( int argc, char **argv )
         TEST( connection->recvSync( 0, 0 ));
         TEST( size );
 
-        co::BufferPtr buffer = commandCache.alloc( 0, 0, size );
+        co::BufferPtr buffer = bufferCache.alloc( 0, 0, size );
         connection->recvNB( buffer->getData(), size );
         TEST( connection->recvSync( 0, 0 ) );
         TEST( buffer->isValid( ));

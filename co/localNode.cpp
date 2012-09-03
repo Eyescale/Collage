@@ -19,8 +19,8 @@
 #include "localNode.h"
 
 #include "buffer.h"
+#include "bufferCache.h"
 #include "command.h"
-#include "commandCache.h"
 #include "commandQueue.h"
 #include "connectionDescription.h"
 #include "connectionSet.h"
@@ -138,8 +138,8 @@ public:
     /** Commands re-scheduled for dispatch. */
     CommandList  pendingCommands;
 
-    /** The command 'allocator' */
-    co::CommandCache commandCache;
+    /** The command buffer 'allocator' */
+    co::BufferCache bufferCache;
 
     bool sendToken; //!< send token availability.
     uint64_t lastSendToken; //!< last used time for timeout detection
@@ -1089,7 +1089,7 @@ void LocalNode::flushCommands()
 // #145 remove?
 BufferPtr LocalNode::cloneCommand( BufferPtr command )
 {
-    return _impl->commandCache.clone( command );
+    return _impl->bufferCache.clone( command );
 }
 
 //----------------------------------------------------------------------
@@ -1165,7 +1165,7 @@ void LocalNode::_runReceiverThread()
     LBCHECK( _impl->commandThread->join( ));
     _impl->objectStore->clear();
     _impl->pendingCommands.clear();
-    _impl->commandCache.flush();
+    _impl->bufferCache.flush();
 
     LBINFO << "Leaving receiver thread of " << lunchbox::className( this )
            << std::endl;
@@ -1253,7 +1253,7 @@ bool LocalNode::_handleData()
     if( node )
         node->_setLastReceive( getTime64( ));
 
-    BufferPtr buffer = _impl->commandCache.alloc( node, this, size );
+    BufferPtr buffer = _impl->bufferCache.alloc( node, this, size );
     LBASSERT( buffer->getRefCount() == 1 );
     connection->recvNB( buffer->getData(), size );
     const bool gotData = connection->recvSync( 0, 0 );
@@ -1288,7 +1288,7 @@ bool LocalNode::_handleData()
 BufferPtr LocalNode::allocCommand( const uint64_t size )
 {
     LBASSERT( _impl->inReceiverThread( ));
-    return _impl->commandCache.alloc( this, this, size );
+    return _impl->bufferCache.alloc( this, this, size );
 }
 
 void LocalNode::_dispatchCommand( Command& command )

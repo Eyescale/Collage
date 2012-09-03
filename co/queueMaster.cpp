@@ -19,8 +19,8 @@
 #include "queueMaster.h"
 
 #include "buffer.h"
+#include "bufferCache.h"
 #include "command.h"
-#include "commandCache.h"
 #include "dataOStream.h"
 #include "objectCommand.h"
 #include "objectOCommand.h"
@@ -92,7 +92,7 @@ public:
 
     const UUID& masterID;
     ItemQueue queue;
-    co::CommandCache cache;
+    co::BufferCache cache;
 };
 }
 

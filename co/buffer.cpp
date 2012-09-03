@@ -75,7 +75,7 @@ bool Buffer::isValid() const
 size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
 {
     LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller CommandCache
+    LBASSERT( getRefCount() == 1 ); // caller BufferCache
     LBASSERT( _impl->_freeCount > 0 );
 
     // 'unclone' ourselves
@@ -100,8 +100,8 @@ size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
 void Buffer::clone( BufferPtr from )
 {
     LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller CommandCache
-    LBASSERT( from->getRefCount() > 1 ); // caller CommandCache, self
+    LBASSERT( getRefCount() == 1 ); // caller BufferCache
+    LBASSERT( from->getRefCount() > 1 ); // caller BufferCache, self
     LBASSERT( _impl->_freeCount > 0 );
 
     free();
