@@ -33,14 +33,12 @@ public:
         , _node()
         , _localNode()
         , _master()
-        , _func( 0, 0 )
     {}
 
     lunchbox::a_int32_t& _freeCount;
     NodePtr _node; //!< The node sending the packet
     LocalNodePtr  _localNode; //!< The node receiving the packet
     BufferPtr _master;
-    co::Dispatcher::Func _func;
 };
 }
 
@@ -141,17 +139,6 @@ void Buffer::deleteReferenced( const Referenced* object ) const
     // DON'T 'command->_master = 0;', command is already reusable and _master
     // may be set any time. alloc or clone_ will free old master.
     ++buffer->_impl->_freeCount;
-}
-
-void Buffer::setDispatchFunction( const Dispatcher::Func& func )
-{
-    _impl->_func = func;
-}
-
-Dispatcher::Func Buffer::getDispatchFunction() const
-{
-    LBASSERT( _impl->_func.isValid( ));
-    return _impl->_func;
 }
 
 size_t Buffer::getMinSize()

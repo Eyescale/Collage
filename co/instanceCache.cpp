@@ -17,7 +17,6 @@
 
 #include "instanceCache.h"
 
-#include "buffer.h"
 #include "objectDataCommand.h"
 #include "objectDataIStream.h"
 #include "objectVersion.h"

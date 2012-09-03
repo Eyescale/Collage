@@ -75,11 +75,11 @@ protected:
     virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
                                 const void** chunkData, uint64_t* size )
         {
-            co::BufferPtr buffer = _commands.tryPop();
-            if( !buffer )
+            co::Command cmd = _commands.tryPop();
+            if( !cmd.isValid( ))
                 return false;
 
-            co::ObjectDataCommand command( buffer );
+            co::ObjectDataCommand command( cmd );
 
             TEST( command.getCommand() == co::CMD_OBJECT_DELTA );
 

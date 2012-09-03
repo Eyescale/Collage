@@ -72,12 +72,6 @@ public:
 
     void free(); //!< @internal
 
-    /** @internal Set the function to which the buffer is dispatched. */
-    void setDispatchFunction( const Dispatcher::Func& func );
-
-    /** @internal @return the function to which the buffer is dispatched. */
-    Dispatcher::Func getDispatchFunction() const;
-
     static size_t getMinSize(); //! @internal
 
 private:

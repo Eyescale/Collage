@@ -17,7 +17,6 @@
 
 #include "versionedMasterCM.h"
 
-#include "buffer.h"
 #include "command.h"
 #include "log.h"
 #include "object.h"

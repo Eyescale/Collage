@@ -40,6 +40,9 @@ namespace detail { class Command; }
     {
     public:
         /** @internal */
+        CO_API Command();
+
+        /** @internal */
         CO_API Command( BufferPtr buffer );
 
         /** @internal */
@@ -87,14 +90,15 @@ namespace detail { class Command; }
         /** @internal Change the command for subsequent dispatching. */
         CO_API void setCommand( const uint32_t cmd );
 
+        /** @internal Set the function to which the command is dispatched. */
+        void setDispatchFunction( const Dispatcher::Func& func );
+
         /** Invoke and clear the command function of a dispatched command. */
         CO_API bool operator()();
         //@}
 
     private:
         detail::Command* const _impl;
-
-        Command(); // disable default ctor
 
         friend CO_API std::ostream& operator << (std::ostream&, const Command&);
 

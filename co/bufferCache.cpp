@@ -262,17 +262,6 @@ BufferPtr BufferCache::alloc( NodePtr node, LocalNodePtr localNode,
     return buffer;
 }
 
-BufferPtr BufferCache::clone( BufferPtr from )
-{
-    LB_TS_THREAD( _thread );
-
-    const Cache which = ( from->getSize() > Buffer::getMinSize( ))
-                                ? CACHE_BIG : CACHE_SMALL;
-    BufferPtr buffer = _impl->newBuffer( which );
-    buffer->clone( from );
-    return buffer;
-}
-
 std::ostream& operator << ( std::ostream& os, const BufferCache& cache )
 {
     const Data& buffers = cache._impl->cache[ CACHE_SMALL ];

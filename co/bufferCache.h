@@ -42,9 +42,6 @@ namespace detail { class BufferCache; }
         CO_API BufferPtr alloc( NodePtr node, LocalNodePtr localNode,
                                 const uint64_t size );
 
-        /** @return a clone of a buffer. */
-        CO_API BufferPtr clone( BufferPtr from );
-
         /** Flush all allocated buffers. */
         void flush();
 

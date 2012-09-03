@@ -19,7 +19,6 @@
 #include "objectStore.h"
 
 #include "barrier.h"
-#include "buffer.h"
 #include "command.h"
 #include "connection.h"
 #include "connectionDescription.h"
@@ -623,8 +622,6 @@ bool ObjectStore::dispatchObjectCommand( Command& cmd )
     for( ++j; j != objects.end(); ++j )
     {
         object = *j;
-        // #145 do we need the clone here??
-        //BufferPtr clone = _localNode->cloneCommand( command.getBuffer( ));
         LBCHECK( object->dispatchCommand( command ));
     }
     return true;

@@ -17,7 +17,6 @@
 
 #include "fullMasterCM.h"
 
-#include "buffer.h"
 #include "command.h"
 #include "log.h"
 #include "node.h"

@@ -17,7 +17,6 @@
 
 #include "objectCM.h"
 
-#include "buffer.h"
 #include "nodeCommand.h"
 #include "nullCM.h"
 #include "node.h"

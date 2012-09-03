@@ -29,18 +29,25 @@ namespace detail
 class Command
 {
 public:
+    Command()
+        : _func( 0, 0 )
+        , _buffer( 0 )
+        , _type( COMMANDTYPE_INVALID )
+        , _cmd( CMD_INVALID )
+    {}
+
     Command( BufferPtr buffer )
         : _func( 0, 0 )
         , _buffer( buffer )
-        , _type()
-        , _cmd()
+        , _type( COMMANDTYPE_INVALID )
+        , _cmd( CMD_INVALID )
     {}
 
     Command( const Command& rhs )
         : _func( rhs._func )
         , _buffer( rhs._buffer )
-        , _type()
-        , _cmd()
+        , _type( rhs._type )
+        , _cmd( rhs._cmd )
     {}
 
     void operator=( const Command& rhs )
@@ -58,6 +65,12 @@ public:
 };
 }
 
+Command::Command()
+    : DataIStream( )
+    , _impl( new detail::Command )
+{
+}
+
 Command::Command( BufferPtr buffer )
     : DataIStream( )
     , _impl( new detail::Command( buffer ))
@@ -71,7 +84,11 @@ Command::Command( const Command& rhs )
     , _impl( new detail::Command( *rhs._impl ))
 {
     if( _impl->_buffer )
-        *this >> _impl->_type >> _impl->_cmd;
+    {
+        // skip already set type & cmd to forward read pos
+        get< uint32_t >();
+        get< uint32_t >();
+    }
 }
 
 Command& Command::operator = ( const Command& rhs )
@@ -99,16 +116,17 @@ uint32_t Command::getCommand() const
 void Command::setType( const CommandType type )
 {
     _impl->_type = type;
-    // #145 cleaner way??
-    memcpy( _impl->_buffer->getData(), &type, sizeof( type ));
 }
 
 void Command::setCommand( const uint32_t cmd )
 {
     _impl->_cmd = cmd;
-    // #145 cleaner way??
-    memcpy( _impl->_buffer->getData() + sizeof( CommandType ),
-            &cmd, sizeof( cmd ));
+}
+
+void Command::setDispatchFunction( const Dispatcher::Func& func )
+{
+    LBASSERT( !_impl->_func.isValid( ));
+    _impl->_func = func;
 }
 
 BufferPtr Command::getBuffer() const
@@ -157,12 +175,15 @@ LocalNodePtr Command::getLocalNode() const
 
 bool Command::isValid() const
 {
-    return _impl->_buffer && _impl->_buffer->isValid();
+    return _impl->_buffer && _impl->_buffer->isValid() &&
+           _impl->_type != COMMANDTYPE_INVALID && _impl->_cmd != CMD_INVALID;
 }
 
 bool Command::operator()()
 {
-    Dispatcher::Func func = _impl->_buffer->getDispatchFunction();
+    LBASSERT( _impl->_func.isValid( ));
+    Dispatcher::Func func = _impl->_func;
+    _impl->_func.clear();
     return func( *this );
 }
 

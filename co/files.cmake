@@ -6,7 +6,6 @@ set(CO_PUBLIC_HEADERS
   api.h
   array.h
   barrier.h
-  buffer.h
   bufferConnection.h
   co.h
   command.h
@@ -62,6 +61,7 @@ set(CO_PUBLIC_HEADERS
 
 set(CO_HEADERS
   barrierCommand.h
+  buffer.h
   bufferCache.h
   connectionListener.h
   dataStreamArchive.h

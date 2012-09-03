@@ -18,7 +18,6 @@
 
 #include "queueMaster.h"
 
-#include "buffer.h"
 #include "bufferCache.h"
 #include "command.h"
 #include "dataOStream.h"

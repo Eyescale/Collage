@@ -17,7 +17,6 @@
 
 #include "dataIStreamQueue.h"
 
-#include "buffer.h"
 #include "objectDataCommand.h"
 #include "objectDataIStream.h"
 

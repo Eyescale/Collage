@@ -17,7 +17,6 @@
 
 #include "dispatcher.h"
 
-#include "buffer.h"
 #include "command.h"
 #include "commandQueue.h"
 #include "node.h"
@@ -105,8 +104,8 @@ bool Dispatcher::dispatchCommand( Command& cmd )
     CommandQueue* queue = _impl->qTable[which];
     if( queue )
     {
-        command.getBuffer()->setDispatchFunction( _impl->fTable[which] );
-        queue->push( command.getBuffer( ));
+        command.setDispatchFunction( _impl->fTable[which] );
+        queue->push( command );
         return true;
     }
     // else

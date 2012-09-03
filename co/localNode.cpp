@@ -1086,12 +1086,6 @@ void LocalNode::flushCommands()
     _impl->incoming.interrupt();
 }
 
-// #145 remove?
-BufferPtr LocalNode::cloneCommand( BufferPtr command )
-{
-    return _impl->bufferCache.clone( command );
-}
-
 //----------------------------------------------------------------------
 // receiver thread functions
 //----------------------------------------------------------------------
@@ -1878,9 +1872,9 @@ bool LocalNode::_cmdCommand( Command& command )
         CommandQueue* queue = i->second.second;
         if( queue )
         {
-            command.getBuffer()->setDispatchFunction( CmdFunc( this,
+            command.setDispatchFunction( CmdFunc( this,
                                                 &LocalNode::_cmdCommandAsync ));
-            queue->push( command.getBuffer( ));
+            queue->push( command );
             return true;
         }
         // else
