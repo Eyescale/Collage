@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -19,6 +19,7 @@
 #define CO_STATICSLAVECM_H
 
 #include "objectCM.h"     // base class
+#include "command.h"
 #include <co/objectVersion.h> // VERSION_FOO values
 #include <lunchbox/thread.h>  // thread-safety check
 
@@ -47,11 +48,11 @@ namespace co
         virtual uint32_t getMasterInstanceID() const
             { return EQ_INSTANCE_INVALID; }
 
-        virtual void addSlave( Command& command ) { LBDONTCALL; }
+        virtual void addSlave( Command command ) { LBDONTCALL; }
         virtual void removeSlaves( NodePtr ) {}
 
         virtual void applyMapData( const uint128_t& version );
-        virtual void addInstanceDatas( const ObjectDataIStreamDeque&, 
+        virtual void addInstanceDatas( const ObjectDataIStreamDeque&,
                                        const uint128_t& startVersion );
     protected:
         /** input stream for receiving the current version */

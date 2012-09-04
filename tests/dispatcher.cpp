@@ -20,11 +20,12 @@
 
 #include <test.h>
 #include <co/buffer.h>
+#include <co/bufferCache.h>
 #include <co/command.h>
-#include <co/commandCache.h>
 #include <co/commandFunc.h>
 #include <co/dispatcher.h>
 #include <co/localNode.h>
+#include <co/nodeOCommand.h>
 
 size_t calls = 0;
 
@@ -112,9 +113,10 @@ public:
 
 int main( int argc, char **argv )
 {
-    co::CommandCache cache;
+    co::BufferCache cache;
     co::LocalNodePtr node = new co::LocalNode;
-    co::BufferPtr buffer = cache.alloc( node, node, 8 );
+    co::BufferPtr buffer = cache.alloc( node, node,
+                                        co::NodeOCommand::getSize( ));
 
     co::Command command( buffer );
     command.setType( co::COMMANDTYPE_CO_NODE );
@@ -124,9 +126,9 @@ int main( int argc, char **argv )
     FooBar fooBar;
     BarFoo barFoo;
 
-    bar.dispatchCommand( buffer );
-    fooBar.dispatchCommand( buffer );
-    barFoo.dispatchCommand ( buffer );
+    bar.dispatchCommand( command );
+    fooBar.dispatchCommand( command );
+    barFoo.dispatchCommand ( command );
     TESTINFO( calls == 3, calls );
 
     return EXIT_SUCCESS;

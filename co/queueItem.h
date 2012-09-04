@@ -19,11 +19,10 @@
 #define CO_QUEUEITEM_H
 
 #include <co/dataOStream.h> // base class
-
+#include <co/types.h>
 
 namespace co
 {
-class QueueMaster;
 namespace detail { class QueueItem; }
 
 /**

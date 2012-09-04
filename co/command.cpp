@@ -29,55 +29,79 @@ namespace detail
 class Command
 {
 public:
-    Command( BufferPtr buffer )
-        : _func( 0, 0 )
-        , _buffer( buffer )
-        , _type()
-        , _cmd()
+    Command()
+        : func( 0, 0 )
+        , buffer( 0 )
+        , type( COMMANDTYPE_INVALID )
+        , cmd( CMD_INVALID )
+    {}
+
+    Command( BufferPtr buffer_ )
+        : func( 0, 0 )
+        , buffer( buffer_ )
+        , type( COMMANDTYPE_INVALID )
+        , cmd( CMD_INVALID )
     {}
 
     Command( const Command& rhs )
-        : _func( rhs._func )
-        , _buffer( rhs._buffer )
-        , _type()
-        , _cmd()
+        : func( rhs.func )
+        , buffer( rhs.buffer )
+        , type( rhs.type )
+        , cmd( rhs.cmd )
     {}
 
     void operator=( const Command& rhs )
     {
-        _func = rhs._func;
-        _buffer = rhs._buffer;
-        _type = rhs._type;
-        _cmd = rhs._cmd;
+        func = rhs.func;
+        buffer = rhs.buffer;
+        type = rhs.type;
+        cmd = rhs.cmd;
     }
 
-    co::Dispatcher::Func _func;
-    BufferPtr _buffer;
-    uint32_t _type;
-    uint32_t _cmd;
+    void clear()
+    {
+        func.clear();
+        buffer = 0;
+        type = COMMANDTYPE_INVALID;
+        cmd = CMD_INVALID;
+    }
+
+    co::Dispatcher::Func func;
+    BufferPtr buffer;
+    uint32_t type;
+    uint32_t cmd;
 };
 }
 
+Command::Command()
+    : DataIStream()
+    , _impl( new detail::Command )
+{
+}
+
 Command::Command( BufferPtr buffer )
-    : DataIStream( )
+    : DataIStream()
     , _impl( new detail::Command( buffer ))
 {
-    if( _impl->_buffer )
-        *this >> _impl->_type >> _impl->_cmd;
+    if( _impl->buffer )
+        *this >> _impl->type >> _impl->cmd;
 }
 
 Command::Command( const Command& rhs )
-    : DataIStream( )
+    : DataIStream()
     , _impl( new detail::Command( *rhs._impl ))
 {
-    if( _impl->_buffer )
-        *this >> _impl->_type >> _impl->_cmd;
+    if( _impl->buffer )
+        _skipHeader();
 }
 
 Command& Command::operator = ( const Command& rhs )
 {
     if( this != &rhs )
+    {
         *_impl = *rhs._impl;
+        _skipHeader();
+    }
     return *this;
 }
 
@@ -86,44 +110,57 @@ Command::~Command()
     delete _impl;
 }
 
+void Command::clear()
+{
+    _impl->clear();
+}
+
+void Command::_skipHeader()
+{
+    const size_t headerSize = sizeof( _impl->type ) + sizeof( _impl->cmd );
+    if( isValid() && getRemainingBufferSize() >= headerSize )
+        getRemainingBuffer( headerSize );
+}
+
 uint32_t Command::getType() const
 {
-    return _impl->_type;
+    return _impl->type;
 }
 
 uint32_t Command::getCommand() const
 {
-    return _impl->_cmd;
+    return _impl->cmd;
 }
 
 void Command::setType( const CommandType type )
 {
-    _impl->_type = type;
-    // #145 cleaner way??
-    memcpy( _impl->_buffer->getData(), &type, sizeof( type ));
+    _impl->type = type;
 }
 
 void Command::setCommand( const uint32_t cmd )
 {
-    _impl->_cmd = cmd;
-    // #145 cleaner way??
-    memcpy( _impl->_buffer->getData() + sizeof( CommandType ),
-            &cmd, sizeof( cmd ));
+    _impl->cmd = cmd;
 }
 
-BufferPtr Command::getBuffer() const
+void Command::setDispatchFunction( const Dispatcher::Func& func )
 {
-    return _impl->_buffer;
+    _impl->func = func;
+}
+
+uint64_t Command::getSize() const
+{
+    LBASSERT( isValid( ));
+    return _impl->buffer->getSize();
 }
 
 size_t Command::nRemainingBuffers() const
 {
-    return _impl->_buffer ? 1 : 0;
+    return _impl->buffer ? 1 : 0;
 }
 
 uint128_t Command::getVersion() const
 {
-    return uint128_t( 0, 0 );
+    return VERSION_NONE;
 }
 
 NodePtr Command::getMaster()
@@ -134,11 +171,11 @@ NodePtr Command::getMaster()
 bool Command::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
                              const void** chunkData, uint64_t* size )
 {
-    if( !_impl->_buffer )
+    if( !_impl->buffer )
         return false;
 
-    *chunkData = _impl->_buffer->getData();
-    *size = _impl->_buffer->getDataSize();
+    *chunkData = _impl->buffer->getData();
+    *size = _impl->buffer->getSize();
     *compressor = EQ_COMPRESSOR_NONE;
     *nChunks = 1;
 
@@ -147,22 +184,25 @@ bool Command::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
 
 NodePtr Command::getNode() const
 {
-    return _impl->_buffer->getNode();
+    return _impl->buffer->getNode();
 }
 
 LocalNodePtr Command::getLocalNode() const
 {
-    return _impl->_buffer->getLocalNode();
+    return _impl->buffer->getLocalNode();
 }
 
 bool Command::isValid() const
 {
-    return _impl->_buffer;
+    return _impl->buffer && _impl->buffer->isValid() &&
+           _impl->type != COMMANDTYPE_INVALID && _impl->cmd != CMD_INVALID;
 }
 
 bool Command::operator()()
 {
-    Dispatcher::Func func = _impl->_buffer->getDispatchFunction();
+    LBASSERT( _impl->func.isValid( ));
+    Dispatcher::Func func = _impl->func;
+    _impl->func.clear();
     return func( *this );
 }
 
@@ -178,8 +218,8 @@ std::ostream& operator << ( std::ostream& os, const Command& command )
     else
         os << "command< empty >";
 
-    if( command._impl->_func.isValid( ))
-        os << ' ' << command._impl->_func << std::endl;
+    if( command._impl->func.isValid( ))
+        os << ' ' << command._impl->func << std::endl;
     return os;
 }
 }

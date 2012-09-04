@@ -26,18 +26,48 @@ namespace co
 
 namespace detail { class ObjectOCommand; }
 
-/** A DataOStream based command for co::Object. */
+/**
+ * A class for sending commands and data to local & external objects.
+ *
+ * @sa co::NodeOCommand
+ */
 class ObjectOCommand : public NodeOCommand
 {
 public:
-    CO_API ObjectOCommand( const Connections& receivers, const uint32_t type,
-                           const uint32_t cmd, const UUID& id,
+    /**
+     * Construct a command which is send & dispatched to a co::Object.
+     *
+     * @param receivers list of connections where to send the command to.
+     * @param cmd the command.
+     * @param type the command type for dispatching.
+     * @param id the ID of the object to dispatch this command to.
+     * @param instanceID the instance of the object to dispatch the command to.
+     */
+    CO_API ObjectOCommand( const Connections& receivers, const uint32_t cmd,
+                           const uint32_t type, const UUID& id,
                            const uint32_t instanceID );
 
+    /**
+     * Construct a command which is dispatched locally to a co::Object.
+     *
+     * @param dispatcher the dispatcher to dispatch this command.
+     * @param localNode the local node that holds the command cache.
+     * @param cmd the command.
+     * @param type the command type for dispatching.
+     * @param id the ID of the object to dispatch this command to.
+     * @param instanceID the instance of the object to dispatch the command to.
+     */
+    CO_API ObjectOCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
+                           const uint32_t cmd, const uint32_t type,
+                           const UUID& id, const uint32_t instanceID );
+
+    /** Send or dispatch this command during destruction. */
     CO_API virtual ~ObjectOCommand();
 
 private:
     detail::ObjectOCommand* const _impl;
+
+    void _init();
 };
 }
 

@@ -1,16 +1,16 @@
 
-/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch> 
- *               2011, Carsten Rohn <carsten.rohn@rtt.ag> 
+/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
+ *               2011, Carsten Rohn <carsten.rohn@rtt.ag>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -18,9 +18,8 @@
 
 #include "queueMaster.h"
 
-#include "buffer.h"
+#include "bufferCache.h"
 #include "command.h"
-#include "commandCache.h"
 #include "dataOStream.h"
 #include "objectCommand.h"
 #include "objectOCommand.h"
@@ -31,39 +30,55 @@
 
 namespace co
 {
+
 namespace detail
 {
+
+class ItemBuffer : public lunchbox::Bufferb, public lunchbox::Referenced
+{
+public:
+    ItemBuffer( lunchbox::Bufferb& from )
+        : lunchbox::Bufferb( from )
+        , lunchbox::Referenced()
+    {}
+
+    ~ItemBuffer()
+    {}
+};
+
+typedef lunchbox::RefPtr< ItemBuffer > ItemBufferPtr;
+
 class QueueMaster : public co::Dispatcher
 {
 public:
-    QueueMaster( const UUID& masterID_ )
+    QueueMaster( const co::QueueMaster& parent )
         : co::Dispatcher()
-        , masterID( masterID_ )
+        , _parent( parent )
     {}
 
     /** The command handler functions. */
     bool cmdGetItem( co::Command& comd )
     {
-        co::ObjectCommand command( comd.getBuffer( ));
+        co::ObjectCommand command( comd );
 
         const uint32_t itemsRequested = command.get< uint32_t >();
         const uint32_t slaveInstanceID = command.get< uint32_t >();
         const int32_t requestID = command.get< int32_t >();
 
-        typedef std::vector< lunchbox::Bufferb* > Items;
+        typedef std::vector< ItemBufferPtr > Items;
         Items items;
         queue.tryPop( itemsRequested, items );
 
         for( Items::const_iterator i = items.begin(); i != items.end(); ++i )
         {
             Connections connections( 1, command.getNode()->getConnection( ));
-            co::ObjectOCommand cmd( connections, COMMANDTYPE_CO_OBJECT,
-                                    CMD_QUEUE_ITEM, masterID, slaveInstanceID );
+            co::ObjectOCommand cmd( connections, CMD_QUEUE_ITEM,
+                                    COMMANDTYPE_CO_OBJECT, _parent.getID(),
+                                    slaveInstanceID );
 
-            const lunchbox::Bufferb* item = *i;
+            const ItemBufferPtr item = *i;
             if( !item->isEmpty( ))
                 cmd << Array< const void >( item->getData(), item->getSize( ));
-            delete item;
         }
 
         if( itemsRequested > items.size( ))
@@ -72,16 +87,18 @@ public:
         return true;
     }
 
-    typedef lunchbox::MTQueue< lunchbox::Bufferb* > ItemQueue;
+    typedef lunchbox::MTQueue< ItemBufferPtr > ItemQueue;
 
-    const UUID& masterID;
     ItemQueue queue;
-    co::CommandCache cache;
+    co::BufferCache cache;
+
+private:
+    const co::QueueMaster& _parent;
 };
 }
 
 QueueMaster::QueueMaster()
-    : _impl( new detail::QueueMaster( getID( )) )
+    : _impl( new detail::QueueMaster( *this ))
 {
 }
 
@@ -96,7 +113,7 @@ void QueueMaster::attach( const UUID& id, const uint32_t instanceID )
     Object::attach( id, instanceID );
 
     CommandQueue* queue = getLocalNode()->getCommandThreadQueue();
-    registerCommand( CMD_QUEUE_GET_ITEM, 
+    registerCommand( CMD_QUEUE_GET_ITEM,
                      CommandFunc< detail::QueueMaster >(
                          _impl, &detail::QueueMaster::cmdGetItem ), queue );
 }
@@ -119,7 +136,7 @@ QueueItem QueueMaster::push()
 
 void QueueMaster::_addItem( QueueItem& item )
 {
-    lunchbox::Bufferb* newBuffer = new lunchbox::Bufferb( item.getBuffer( ));
+    detail::ItemBufferPtr newBuffer = new detail::ItemBuffer( item.getBuffer());
     _impl->queue.push( newBuffer );
 }
 

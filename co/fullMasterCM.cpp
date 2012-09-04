@@ -17,7 +17,6 @@
 
 #include "fullMasterCM.h"
 
-#include "buffer.h"
 #include "command.h"
 #include "log.h"
 #include "node.h"
@@ -108,7 +107,7 @@ void FullMasterCM::_updateCommitCount( const uint32_t incarnation )
     }
 
     LBASSERTINFO( incarnation >= _commitCount,
-		  "Detected decreasing commit incarnation counter" );
+          "Detected decreasing commit incarnation counter" );
     _commitCount = incarnation;
 
     // obsolete 'future' old packages
@@ -162,11 +161,9 @@ void FullMasterCM::_obsolete()
 }
 
 void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
-                               Command& comd, uint128_t replyVersion,
+                               Command command, const uint128_t& /*replyVersion*/,
                                bool replyUseCache )
 {
-    Command command( comd.getBuffer( ));
-
     _checkConsistency();
 
     const uint128_t oldest = _instanceDatas.front()->os.getVersion();
@@ -190,7 +187,7 @@ void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
     /*const uint32_t masterInstanceID = */command.get< uint32_t >();
     const bool useCache = command.get< bool >();
 
-    replyVersion = start;
+    const uint128_t replyVersion = start;
     if( replyUseCache )
     {
         if( minCachedVersion <= start &&

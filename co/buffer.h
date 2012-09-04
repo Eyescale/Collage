@@ -22,30 +22,36 @@
 #include <lunchbox/referenced.h>    // base class
 
 #include <co/types.h>
-#include <co/dispatcher.h>
+#include <co/dispatcher.h>          // for Dispatcher::Func
 
 
 namespace co
 {
 namespace detail { class Buffer; }
 
-/**  */
+/**
+ * The buffer containing the data of a co::Command.
+ *
+ * The command is required to extract the data from the buffer. The dispatching
+ * methods are using the buffer for data forwarding because of the unknown
+ * command type. The concrete command can be then instaniated with this buffer.
+ *
+ * The allocation of the buffer is always performed by the co::BufferCache. The
+ * buffer API is supposed for internal use only.
+*/
 class Buffer : public lunchbox::Bufferb, public lunchbox::Referenced
 {
 public:
     Buffer( lunchbox::a_int32_t& freeCounter ); //!< @internal
     virtual ~Buffer(); //!< @internal
 
-    /** @internal */
+    /** @internal @return the sending node proxy instance. */
     NodePtr getNode() const;
 
-    /** @internal */
+    /** @internal @return the receiving node. */
     LocalNodePtr getLocalNode() const;
 
-    /** @internal @return the actual size of the buffers content. */
-    uint64_t getDataSize() const;
-
-    /** @internal @return true if the buffer has a valid data. */
+    /** @internal @return true if the buffer has valid data. */
     CO_API bool isValid() const;
 
     /** @internal @return true if the buffer is no longer in use. */
@@ -54,23 +60,7 @@ public:
     /** @internal @return the number of newly allocated bytes. */
     size_t alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size );
 
-    /**
-     * @internal Clone the from buffer into this buffer.
-     *
-     * The command will share all data but the dispatch function. The
-     * command's allocation size will be 0 and it will never delete the
-     * shared data. The command will release its reference to the from
-     * command when it is released.
-     */
-    void clone( BufferPtr from );
-
     void free(); //!< @internal
-
-    /** @internal Set the function to which the buffer is dispatched. */
-    void setDispatchFunction( const Dispatcher::Func& func );
-
-    /** @internal @return the function to which the buffer is dispatched. */
-    Dispatcher::Func getDispatchFunction() const;
 
     static size_t getMinSize(); //! @internal
 

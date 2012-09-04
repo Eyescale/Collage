@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2010-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2010-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -17,7 +17,6 @@
 
 #include "versionedMasterCM.h"
 
-#include "buffer.h"
 #include "command.h"
 #include "log.h"
 #include "object.h"
@@ -62,7 +61,7 @@ uint128_t VersionedMasterCM::sync( const uint128_t& inVersion )
     LBASSERTINFO( inVersion.high() != 0 || inVersion == VERSION_NEXT ||
                   inVersion == VERSION_HEAD, inVersion );
 #if 0
-    LBLOG( LOG_OBJECTS ) << "sync to v" << inVersion << ", id " 
+    LBLOG( LOG_OBJECTS ) << "sync to v" << inVersion << ", id "
                          << _object->getID() << "." << _object->getInstanceID()
                          << std::endl;
 #endif
@@ -89,7 +88,7 @@ uint128_t VersionedMasterCM::_apply( ObjectDataIStream* is )
 {
     LBASSERT( !is->hasInstanceData( ));
     _object->unpack( *is );
-    LBASSERTINFO( is->getRemainingBufferSize() == 0 && 
+    LBASSERTINFO( is->getRemainingBufferSize() == 0 &&
                   is->nRemainingBuffers()==0,
                   "Object " << lunchbox::className( _object ) <<
                   " did not unpack all data" );
@@ -100,12 +99,12 @@ uint128_t VersionedMasterCM::_apply( ObjectDataIStream* is )
     return version;
 }
 
-void VersionedMasterCM::addSlave( Command& comd )
+void VersionedMasterCM::addSlave( Command command )
 {
     LB_TS_THREAD( _cmdThread );
     Mutex mutex( _slaves );
 
-    Command command( comd.getBuffer( ));
+    // #145 Create MasterCMCommand for all FooMasterCM::addSlave?
 
     /*const uint128_t& version = */command.get< uint128_t >();
     /*const uint128_t& minCachedVersion = */command.get< uint128_t >();
@@ -199,22 +198,18 @@ void VersionedMasterCM::_updateMaxVersion()
 //---------------------------------------------------------------------------
 bool VersionedMasterCM::_cmdSlaveDelta( Command& cmd )
 {
-    ObjectDataCommand command( cmd.getBuffer( ));
+    ObjectDataCommand command( cmd );
 
     LB_TS_THREAD( _rcvThread );
 
-    if( _slaveCommits.addDataPacket( command.get< UUID >(),
-                                     command.getBuffer( )))
-    {
+    if( _slaveCommits.addDataPacket( command.get< UUID >(), command ))
         _object->notifyNewVersion();
-    }
     return true;
 }
 
 bool VersionedMasterCM::_cmdMaxVersion( Command& cmd )
 {
-    ObjectCommand command( cmd.getBuffer( ));
-
+    ObjectCommand command( cmd );
     const uint64_t version = command.get< uint64_t >();
     const uint32_t slaveID = command.get< uint32_t >();
 

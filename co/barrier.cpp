@@ -1,16 +1,16 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2011, Cedric Stalder <cedric.stalder@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -18,7 +18,6 @@
 
 #include "barrier.h"
 
-#include "buffer.h"
 #include "command.h"
 #include "connection.h"
 #include "dataIStream.h"
@@ -39,7 +38,7 @@ namespace
 {
 struct Request
 {
-    Request() 
+    Request()
             : time( 0 ), timeout( LB_TIMEOUT_INDEFINITE ), incarnation( 0 ) {}
     uint64_t time;
     uint32_t timeout;
@@ -144,7 +143,7 @@ void Barrier::attach( const UUID& id, const uint32_t instanceID )
 
     registerCommand( CMD_BARRIER_ENTER,
                      CmdFunc( this, &Barrier::_cmdEnter ), queue );
-    registerCommand( CMD_BARRIER_ENTER_REPLY, 
+    registerCommand( CMD_BARRIER_ENTER_REPLY,
                      CmdFunc( this, &Barrier::_cmdEnterReply ), queue );
 
     if( _impl->masterID == NodeID::ZERO )
@@ -193,26 +192,27 @@ void Barrier::enter( const uint32_t timeout )
 
 bool Barrier::_cmdEnter( Command& cmd )
 {
-    ObjectCommand command( cmd.getBuffer( ));
-
     LB_TS_THREAD( _thread );
     LBASSERTINFO( !_impl->master || _impl->master == getLocalNode(),
                   _impl->master );
-    LBLOG( LOG_BARRIER ) << "handle barrier enter " << command << " barrier v"
-                         << getVersion() << std::endl;
 
+    ObjectCommand command( cmd );
     const uint128_t version = command.get< uint128_t >();
     const uint32_t incarnation = command.get< uint32_t >();
     const uint32_t timeout = command.get< uint32_t >();
 
+    LBLOG( LOG_BARRIER ) << "handle barrier enter " << command
+                         << " v" << version
+                         << " barrier v" << getVersion() << std::endl;
+
     Request& request = _impl->enteredNodes[ version ];
- 
-    LBLOG( LOG_BARRIER ) << "enter barrier v" << version 
-                         << ", has " << request.nodes.size() << " of " 
+
+    LBLOG( LOG_BARRIER ) << "enter barrier v" << version
+                         << ", has " << request.nodes.size() << " of "
                          << _impl->height << std::endl;
 
     request.time = getLocalNode()->getTime64();
-    
+
     // It's the first call to enter barrier
     if( request.nodes.empty() )
     {
@@ -250,7 +250,7 @@ bool Barrier::_cmdEnter( Command& cmd )
     // version never leaves the barrier. We simply assume this is not the case.
     if( version > getVersion( ))
         return true;
-    
+
     // if it's an older version a timeout has been handled
     // for performance, send directly the order to unblock the caller.
     if( timeout != LB_TIMEOUT_INDEFINITE && version < getVersion( ))
@@ -315,14 +315,14 @@ void Barrier::_cleanup( const uint64_t time )
          i != _impl->enteredNodes.end(); ++i )
     {
         Request& cleanNodes = i->second;
-        
+
         if( cleanNodes.timeout == LB_TIMEOUT_INDEFINITE )
             continue;
 
-        const uint32_t timeout = cleanNodes.timeout != LB_TIMEOUT_DEFAULT ? 
+        const uint32_t timeout = cleanNodes.timeout != LB_TIMEOUT_DEFAULT ?
                         cleanNodes.timeout :
                         Global::getIAttribute( Global::IATTR_TIMEOUT_DEFAULT );
-               
+
         if( time > cleanNodes.time + timeout )
         {
             _impl->enteredNodes.erase( i );
@@ -333,14 +333,14 @@ void Barrier::_cleanup( const uint64_t time )
 
 bool Barrier::_cmdEnterReply( Command& cmd )
 {
-    ObjectCommand command( cmd.getBuffer( ));
+    ObjectCommand command( cmd );
     LB_TS_THREAD( _thread );
     LBLOG( LOG_BARRIER ) << "Got ok, unlock local user(s)" << std::endl;
     const uint128_t version = command.get< uint128_t >();
-    
+
     if( version == getVersion( ))
         ++_impl->leaveNotify;
-    
+
     return true;
 }
 

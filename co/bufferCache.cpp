@@ -15,7 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "commandCache.h"
+#include "bufferCache.h"
 
 #include "buffer.h"
 #include "command.h"
@@ -55,10 +55,10 @@ static lunchbox::a_int32_t _frees;
 }
 namespace detail
 {
-class CommandCache
+class BufferCache
 {
 public:
-    CommandCache()
+    BufferCache()
         {
             for( size_t i = 0; i < CACHE_ALL; ++i )
             {
@@ -69,7 +69,7 @@ public:
             }
         }
 
-    ~CommandCache()
+    ~BufferCache()
         {
             for( size_t i = 0; i < CACHE_ALL; ++i )
             {
@@ -107,7 +107,7 @@ public:
             }
         }
 
-    BufferPtr newCommand( const Cache which )
+    BufferPtr newBuffer( const Cache which )
         {
             _compact( CACHE_SMALL );
             _compact( CACHE_BIG );
@@ -146,7 +146,7 @@ public:
                                 for( DataCIter k = cmds.begin();
                                      k != cmds.end(); ++k )
                                 {
-                                    size += (*k)->getSize();
+                                    size += (*k)->getMaxSize();
                                 }
                                 LBINFO << _hits << "/" << _hits + _misses
                                        << " hits, " << _lookups << " lookups, "
@@ -234,54 +234,43 @@ private:
 };
 }
 
-CommandCache::CommandCache()
-        : _impl( new detail::CommandCache )
+BufferCache::BufferCache()
+        : _impl( new detail::BufferCache )
 {}
 
-CommandCache::~CommandCache()
+BufferCache::~BufferCache()
 {
     flush();
     delete _impl;
 }
 
-void CommandCache::flush()
+void BufferCache::flush()
 {
     _impl->flush();
 }
 
-BufferPtr CommandCache::alloc( NodePtr node, LocalNodePtr localNode,
-                               const uint64_t size )
+BufferPtr BufferCache::alloc( NodePtr node, LocalNodePtr localNode,
+                              const uint64_t size )
 {
     LB_TS_THREAD( _thread );
     LBASSERTINFO( size < LB_BIT48,
                   "Out-of-sync network stream: packet size " << size << "?" );
 
-    const Cache which = (size >Buffer::getMinSize()) ? CACHE_BIG : CACHE_SMALL;
-    BufferPtr buffer = _impl->newCommand( which );
+    const Cache which = (size > Buffer::getMinSize()) ? CACHE_BIG : CACHE_SMALL;
+    BufferPtr buffer = _impl->newBuffer( which );
     buffer->alloc( node, localNode, size );
     return buffer;
 }
 
-BufferPtr CommandCache::clone( BufferPtr from )
+std::ostream& operator << ( std::ostream& os, const BufferCache& cache )
 {
-    LB_TS_THREAD( _thread );
-
-    const Cache which = ( from->getSize() > Buffer::getMinSize( ))
-                                ? CACHE_BIG : CACHE_SMALL;
-    BufferPtr buffer = _impl->newCommand( which );
-    buffer->clone( from );
-    return buffer;
-}
-
-std::ostream& operator << ( std::ostream& os, const CommandCache& cache )
-{
-    const Data& commands = cache._impl->cache[ CACHE_SMALL ];
+    const Data& buffers = cache._impl->cache[ CACHE_SMALL ];
     os << lunchbox::disableFlush << "Cache has "
-       << commands.size() - cache._impl->free[ CACHE_SMALL ]
+       << buffers.size() - cache._impl->free[ CACHE_SMALL ]
        << " used small packets:" << std::endl
        << lunchbox::indent << lunchbox::disableHeader;
 
-    for( DataCIter i = commands.begin(); i != commands.end(); ++i )
+    for( DataCIter i = buffers.begin(); i != buffers.end(); ++i )
     {
         Buffer* buffer = *i;
         if( !buffer->isFree( ))

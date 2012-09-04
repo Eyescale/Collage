@@ -32,17 +32,11 @@ public:
         : _freeCount( freeCounter )
         , _node()
         , _localNode()
-        , _master()
-        , _dataSize( 0 )
-        , _func( 0, 0 )
     {}
 
     lunchbox::a_int32_t& _freeCount;
     NodePtr _node; //!< The node sending the packet
     LocalNodePtr  _localNode; //!< The node receiving the packet
-    BufferPtr _master;
-    uint64_t _dataSize;
-    co::Dispatcher::Func _func;
 };
 }
 
@@ -69,11 +63,6 @@ LocalNodePtr Buffer::getLocalNode() const
     return _impl->_localNode;
 }
 
-uint64_t Buffer::getDataSize() const
-{
-    return _impl->_dataSize;
-}
-
 bool Buffer::isValid() const
 {
     return getSize() > 0;
@@ -82,85 +71,33 @@ bool Buffer::isValid() const
 size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
 {
     LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller CommandCache
+    LBASSERT( getRefCount() == 1 ); // caller BufferCache
     LBASSERT( _impl->_freeCount > 0 );
 
-    // 'unclone' ourselves
-    if( _impl->_master )
-    {
-        _data = 0;
-        _size = 0;
-        _maxSize = 0;
-    }
-
     --_impl->_freeCount;
-    _impl->_dataSize = size;
     _impl->_node = node;
     _impl->_localNode = localNode;
-    _impl->_master = 0;
 
-    reset( LB_MAX( getMinSize(), size ));
+    reserve( LB_MAX( getMinSize(), size ));
+    resize( size );
 
     return getSize();
-}
-
-void Buffer::clone( BufferPtr from )
-{
-    LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller CommandCache
-    LBASSERT( from->getRefCount() > 1 ); // caller CommandCache, self
-    LBASSERT( _impl->_freeCount > 0 );
-
-    free();
-
-    --_impl->_freeCount;
-
-    _data = from->getData();
-    _size = from->getSize();
-
-    _impl->_dataSize = from->_impl->_dataSize;
-    _impl->_node = from->_impl->_node;
-    _impl->_localNode = from->_impl->_localNode;
-    _impl->_master = from;
 }
 
 void Buffer::free()
 {
     LB_TS_THREAD( _writeThread );
 
-    // if this buffer is a clone, don't dare to free the owner's data
-    if( _impl->_master )
-    {
-        _data = 0;
-        _size = 0;
-        _maxSize = 0;
-    }
-    else
-        clear();
+    clear();
 
-    _impl->_dataSize = 0;
     _impl->_node = 0;
     _impl->_localNode = 0;
-    _impl->_master = 0;
 }
 
 void Buffer::deleteReferenced( const Referenced* object ) const
 {
     Buffer* buffer = const_cast< Buffer* >( this );
-    // DON'T 'command->_master = 0;', command is already reusable and _master
-    // may be set any time. alloc or clone_ will free old master.
     ++buffer->_impl->_freeCount;
-}
-
-void Buffer::setDispatchFunction( const Dispatcher::Func& func )
-{
-    _impl->_func = func;
-}
-
-Dispatcher::Func Buffer::getDispatchFunction() const
-{
-    LBASSERT( _impl->_func.isValid( ));
-    return _impl->_func;
 }
 
 size_t Buffer::getMinSize()

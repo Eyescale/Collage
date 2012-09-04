@@ -35,27 +35,36 @@ enum ObjectCommands
 
 namespace detail { class ObjectCommand; }
 
-/** A DataIStream based command for co::Object. */
+/** A command specialization for objects. */
 class ObjectCommand : public Command
 {
 public:
     /** @internal */
-    ObjectCommand( BufferPtr buffer );
+    CO_API ObjectCommand( BufferPtr buffer );
 
+    /** Construct an object command from a base command. */
+    CO_API ObjectCommand( const Command& command );
+
+    /** @internal */
     ObjectCommand( const ObjectCommand& rhs );
-
-    ObjectCommand& operator = ( const ObjectCommand& rhs );
 
     CO_API virtual ~ObjectCommand();
 
+    /** @internal @return the object adressed by this command. */
     const UUID& getObjectID() const;
 
+    /** @internal @return the object instance adressed by this command. */
     uint32_t getInstanceID() const;
 
 private:
+    ObjectCommand();
+    ObjectCommand& operator = ( const ObjectCommand& );
     detail::ObjectCommand* const _impl;
 
+    void _init();
 };
+
+CO_API std::ostream& operator << ( std::ostream& os, const ObjectCommand& );
 
 }
 

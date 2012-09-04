@@ -67,8 +67,6 @@ lunchbox::Lockable< Histogram, lunchbox::SpinLock > _histogram;
 #  define DUMP_STATISTIC
 #endif
 
-#define EQ_ASSEMBLE_THRESHOLD (4096)
-
 namespace co
 {
 namespace detail
