@@ -18,9 +18,8 @@
 
 #include "queueMaster.h"
 
-#include "buffer.h"
+#include "bufferCache.h"
 #include "command.h"
-#include "commandCache.h"
 #include "dataOStream.h"
 #include "objectCommand.h"
 #include "objectOCommand.h"
@@ -60,7 +59,7 @@ public:
     /** The command handler functions. */
     bool cmdGetItem( co::Command& comd )
     {
-        co::ObjectCommand command( comd.getBuffer( ));
+        co::ObjectCommand command( comd );
 
         const uint32_t itemsRequested = command.get< uint32_t >();
         const uint32_t slaveInstanceID = command.get< uint32_t >();
@@ -92,7 +91,7 @@ public:
 
     const UUID& masterID;
     ItemQueue queue;
-    co::CommandCache cache;
+    co::BufferCache cache;
 };
 }
 
@@ -135,7 +134,7 @@ QueueItem QueueMaster::push()
 
 void QueueMaster::_addItem( QueueItem& item )
 {
-    detail::ItemBufferPtr newBuffer = new detail::ItemBuffer( item.getBuffer( ));
+    detail::ItemBufferPtr newBuffer = new detail::ItemBuffer( item.getBuffer());
     _impl->queue.push( newBuffer );
 }
 

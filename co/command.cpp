@@ -29,18 +29,25 @@ namespace detail
 class Command
 {
 public:
+    Command()
+        : _func( 0, 0 )
+        , _buffer( 0 )
+        , _type( COMMANDTYPE_INVALID )
+        , _cmd( CMD_INVALID )
+    {}
+
     Command( BufferPtr buffer )
         : _func( 0, 0 )
         , _buffer( buffer )
-        , _type()
-        , _cmd()
+        , _type( COMMANDTYPE_INVALID )
+        , _cmd( CMD_INVALID )
     {}
 
     Command( const Command& rhs )
         : _func( rhs._func )
         , _buffer( rhs._buffer )
-        , _type()
-        , _cmd()
+        , _type( rhs._type )
+        , _cmd( rhs._cmd )
     {}
 
     void operator=( const Command& rhs )
@@ -58,8 +65,14 @@ public:
 };
 }
 
+Command::Command()
+    : DataIStream()
+    , _impl( new detail::Command )
+{
+}
+
 Command::Command( BufferPtr buffer )
-    : DataIStream( )
+    : DataIStream()
     , _impl( new detail::Command( buffer ))
 {
     if( _impl->_buffer )
@@ -67,23 +80,31 @@ Command::Command( BufferPtr buffer )
 }
 
 Command::Command( const Command& rhs )
-    : DataIStream( )
+    : DataIStream()
     , _impl( new detail::Command( *rhs._impl ))
 {
     if( _impl->_buffer )
-        *this >> _impl->_type >> _impl->_cmd;
+        _skipHeader();
 }
 
 Command& Command::operator = ( const Command& rhs )
 {
     if( this != &rhs )
+    {
         *_impl = *rhs._impl;
+        _skipHeader();
+    }
     return *this;
 }
 
 Command::~Command()
 {
     delete _impl;
+}
+
+void Command::_skipHeader()
+{
+    getRemainingBuffer( sizeof( _impl->_type ) + sizeof( _impl->_cmd ));
 }
 
 uint32_t Command::getType() const
@@ -99,21 +120,23 @@ uint32_t Command::getCommand() const
 void Command::setType( const CommandType type )
 {
     _impl->_type = type;
-    // #145 cleaner way??
-    memcpy( _impl->_buffer->getData(), &type, sizeof( type ));
 }
 
 void Command::setCommand( const uint32_t cmd )
 {
     _impl->_cmd = cmd;
-    // #145 cleaner way??
-    memcpy( _impl->_buffer->getData() + sizeof( CommandType ),
-            &cmd, sizeof( cmd ));
 }
 
-BufferPtr Command::getBuffer() const
+void Command::setDispatchFunction( const Dispatcher::Func& func )
 {
-    return _impl->_buffer;
+    LBASSERT( !_impl->_func.isValid( ));
+    _impl->_func = func;
+}
+
+uint64_t Command::getSize() const
+{
+    LBASSERT( isValid( ));
+    return _impl->_buffer->getSize();
 }
 
 size_t Command::nRemainingBuffers() const
@@ -123,7 +146,7 @@ size_t Command::nRemainingBuffers() const
 
 uint128_t Command::getVersion() const
 {
-    return uint128_t( 0, 0 );
+    return VERSION_NONE;
 }
 
 NodePtr Command::getMaster()
@@ -138,7 +161,7 @@ bool Command::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
         return false;
 
     *chunkData = _impl->_buffer->getData();
-    *size = _impl->_buffer->getDataSize();
+    *size = _impl->_buffer->getSize();
     *compressor = EQ_COMPRESSOR_NONE;
     *nChunks = 1;
 
@@ -157,12 +180,15 @@ LocalNodePtr Command::getLocalNode() const
 
 bool Command::isValid() const
 {
-    return _impl->_buffer;
+    return _impl->_buffer && _impl->_buffer->isValid() &&
+           _impl->_type != COMMANDTYPE_INVALID && _impl->_cmd != CMD_INVALID;
 }
 
 bool Command::operator()()
 {
-    Dispatcher::Func func = _impl->_buffer->getDispatchFunction();
+    LBASSERT( _impl->_func.isValid( ));
+    Dispatcher::Func func = _impl->_func;
+    _impl->_func.clear();
     return func( *this );
 }
 

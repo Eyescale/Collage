@@ -17,6 +17,9 @@
 
 #include "nodeOCommand.h"
 
+#include "buffer.h"
+#include "command.h"
+
 
 namespace co
 {
@@ -27,56 +30,87 @@ namespace detail
 class NodeOCommand
 {
 public:
-    NodeOCommand( const uint32_t cmd_, const uint32_t type_ )
+    NodeOCommand( const uint32_t cmd_, const uint32_t type_,
+                  co::Dispatcher* const dispatcher_, LocalNodePtr localNode_ )
         : type( type_ )
         , cmd( cmd_ )
         , lockSend( true )
         , size( 0 )
+        , dispatcher( dispatcher_ )
+        , localNode( localNode_ )
     {}
 
-    // #145 eile
-    // Shouldn't this have move semantics? Otherwise creating a copy will send
-    // two packets? Alternatively disable copy ctor and return auto_ptr?
     NodeOCommand( const NodeOCommand& rhs )
         : type( rhs.type )
         , cmd( rhs.cmd )
         , lockSend( rhs.lockSend )
         , size( rhs.size )
+        , dispatcher( rhs.dispatcher )
+        , localNode( rhs.localNode )
     {}
 
     uint32_t type;
     uint32_t cmd;
     bool lockSend;
     uint64_t size;
+    co::Dispatcher* const dispatcher;
+    LocalNodePtr localNode;
 };
 
 }
 
-NodeOCommand::NodeOCommand( const Connections& connections, const uint32_t cmd,
+NodeOCommand::NodeOCommand( const Connections& receivers, const uint32_t cmd,
                             const uint32_t type )
     : DataOStream()
-    , _impl( new detail::NodeOCommand( cmd, type ))
+    , _impl( new detail::NodeOCommand( cmd, type, 0, 0 ))
 {
-    _setupConnections( connections );
+    _setupConnections( receivers );
     _init();
 }
 
-NodeOCommand::NodeOCommand( NodeOCommand const& rhs )
+NodeOCommand::NodeOCommand( Dispatcher* const dispatcher,
+                            LocalNodePtr localNode, const uint32_t cmd,
+                            const uint32_t type )
+    : DataOStream()
+    , _impl( new detail::NodeOCommand( cmd, type, dispatcher, localNode ))
+{
+    _init();
+}
+
+NodeOCommand::NodeOCommand( const NodeOCommand& rhs )
     : DataOStream()
     , _impl( new detail::NodeOCommand( *rhs._impl ))
 {
     _setupConnections( rhs.getConnections( ));
     _init();
+
+    // disable send of rhs
+    const_cast< NodeOCommand& >( rhs )._setupConnections( Connections( ));
+    const_cast< NodeOCommand& >( rhs ).disable();
 }
 
 NodeOCommand::~NodeOCommand()
 {
     disable();
+
+    if( _impl->dispatcher )
+    {
+        LBASSERT( _impl->localNode );
+
+        // #145 proper local command dispatch?
+        BufferPtr buffer =
+                _impl->localNode->allocCommand( getBuffer().getSize( ));
+        buffer->swap( getBuffer( ));
+        Command cmd( buffer );
+        _impl->dispatcher->dispatchCommand( cmd );
+    }
+
     delete _impl;
 }
 
-void NodeOCommand::sendUnlocked( const uint64_t additionalSize )
+void NodeOCommand::setExternalSend( const uint64_t additionalSize )
 {
+    LBASSERT( !_impl->dispatcher );
     _impl->lockSend = false;
     _impl->size = additionalSize;
     disable();
@@ -97,6 +131,7 @@ void NodeOCommand::_init()
 void NodeOCommand::sendData( const void* buffer, const uint64_t size,
                              const bool last )
 {
+    LBASSERT( !_impl->dispatcher );
     LBASSERT( last );
     LBASSERT( size > 0 );
 

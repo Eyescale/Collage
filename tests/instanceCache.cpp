@@ -22,12 +22,12 @@
 #include <test.h>
 
 #include <co/buffer.h>
-#include <co/command.h>
-#include <co/commandCache.h>
+#include <co/bufferCache.h>
 #include <co/init.h>
 #include <co/instanceCache.h>
 #include <co/nodeCommand.h>
 #include <co/localNode.h>
+#include <co/objectDataCommand.h>
 #include <co/objectDataOCommand.h>
 #include <co/objectVersion.h>
 
@@ -85,15 +85,16 @@ int main( int argc, char **argv )
 {
     co::init( argc, argv );
 
-    co::CommandCache commandCache;
+    co::BufferCache bufferCache;
     co::LocalNodePtr node = new co::LocalNode;
-    co::BufferPtr buffer = commandCache.alloc( node, node, PACKET_SIZE );
+    co::BufferPtr buffer = bufferCache.alloc( node, node, PACKET_SIZE );
 
     co::ObjectDataOCommand packet( co::Connections(),
                                    co::CMD_NODE_OBJECT_INSTANCE,
                                    co::COMMANDTYPE_CO_NODE, co::UUID(), 0, 1, 0,
                                    PACKET_SIZE, true, 0, 0 );
     buffer->swap( packet.getBuffer( ));
+    co::ObjectDataCommand command( buffer );
 
     Reader** readers = static_cast< Reader** >(
         alloca( N_READER * sizeof( Reader* )));
@@ -105,7 +106,7 @@ int main( int argc, char **argv )
     size_t ops = 0;
 
     for( lunchbox::UUID key; key.low() < 65536; ++key ) // Fill cache
-        if( !cache.add( co::ObjectVersion( key, 1 ), 1, buffer ))
+        if( !cache.add( co::ObjectVersion( key, 1 ), 1, command ))
             break;
 
     _clock.reset();
@@ -125,12 +126,12 @@ int main( int argc, char **argv )
             ++ops;
             if( cache.erase( key.identifier ))
             {
-                TEST( cache.add( key, 1, buffer ));
+                TEST( cache.add( key, 1, command ));
                 ops += 2;
                 hits += 2;
             }
         }
-        else if( cache.add( key, 1, buffer ))
+        else if( cache.add( key, 1, command ))
             ++hits;
         ++ops;
     }
@@ -164,7 +165,7 @@ int main( int argc, char **argv )
     std::cout << cache << std::endl;
 
     TESTINFO( cache.getSize() == 0, cache.getSize( ));
-    TEST( buffer->getRefCount() ==  1 );
+    TEST( buffer->getRefCount() ==  2 ); // self + command
     buffer = 0;
 
     TEST( co::exit( ));

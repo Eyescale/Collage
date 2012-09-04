@@ -372,20 +372,17 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          */
         CO_API void flushCommands();
 
-        /** @internal Clone the given command. */
-        CO_API BufferPtr cloneCommand( BufferPtr command );
-
         /** @internal Allocate a local command from the receiver thread. */
         CO_API BufferPtr allocCommand( const uint64_t size );
 
         /**
          * Dispatches a packet to the registered command queue.
          *
-         * @param buffer the command buffer.
+         * @param command the command.
          * @return the result of the operation.
          * @sa Command::invoke
          */
-        CO_API virtual bool dispatchCommand( BufferPtr command );
+        CO_API virtual bool dispatchCommand( Command& command );
 
         /**
          * Acquire a singular send token from the given node.
@@ -468,7 +465,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
             registerCommand( command, func, destinationQueue );
         }
 
-        void _dispatchCommand( BufferPtr command );
+        void _dispatchCommand( Command& command );
         void   _redispatchCommands();
 
         /** The command functions. */

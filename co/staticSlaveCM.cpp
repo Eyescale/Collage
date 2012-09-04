@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -17,7 +17,6 @@
 
 #include "staticSlaveCM.h"
 
-#include "buffer.h"
 #include "log.h"
 #include "object.h"
 #include "objectDataCommand.h"
@@ -67,7 +66,7 @@ void StaticSlaveCM::applyMapData( const uint128_t& version )
     _currentIStream = 0;
 
     LBLOG( LOG_OBJECTS ) << "Mapped initial data for " << _object->getID()
-                         << "." << _object->getInstanceID() << " ready" 
+                         << "." << _object->getInstanceID() << " ready"
                          << std::endl;
 }
 
@@ -101,11 +100,11 @@ bool StaticSlaveCM::_cmdInstance( Command& command )
 {
     LB_TS_THREAD( _rcvThread );
     LBASSERT( _currentIStream );
-    _currentIStream->addDataPacket( command.getBuffer( ));
+    _currentIStream->addDataPacket( command );
 
     if( _currentIStream->isReady( ))
-        LBLOG( LOG_OBJECTS ) << "id " << _object->getID() << "." 
-                             << _object->getInstanceID() << " ready" 
+        LBLOG( LOG_OBJECTS ) << "id " << _object->getID() << "."
+                             << _object->getInstanceID() << " ready"
                              << std::endl;
 
     return true;

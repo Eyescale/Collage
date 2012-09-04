@@ -48,11 +48,11 @@ namespace detail { class Dispatcher; }
         /**
          * Dispatch a command from the receiver thread to the registered queue.
          *
-         * @param buffer the command buffer.
+         * @param command the command.
          * @return true if the command was dispatched, false if not.
          * @sa registerCommand
          */
-        CO_API virtual bool dispatchCommand( BufferPtr buffer );
+        CO_API virtual bool dispatchCommand( Command& command );
 
     protected:
         /**

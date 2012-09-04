@@ -53,16 +53,21 @@ ObjectCommand::ObjectCommand( BufferPtr buffer )
     : Command( buffer )
     , _impl( new detail::ObjectCommand )
 {
-    if( buffer )
-        *this >> _impl->objectID >> _impl->instanceID;
+    _init();
+}
+
+ObjectCommand::ObjectCommand( const Command& command )
+    : Command( command )
+    , _impl( new detail::ObjectCommand )
+{
+    _init();
 }
 
 ObjectCommand::ObjectCommand( const ObjectCommand& rhs )
     : Command( rhs )
     , _impl( new detail::ObjectCommand( *rhs._impl ))
 {
-    if( getBuffer( ))
-        *this >> _impl->objectID >> _impl->instanceID;
+    _init();
 }
 
 ObjectCommand& ObjectCommand::operator = ( const ObjectCommand& rhs )
@@ -70,6 +75,12 @@ ObjectCommand& ObjectCommand::operator = ( const ObjectCommand& rhs )
     if( this != &rhs )
         *_impl = *rhs._impl;
     return *this;
+}
+
+void ObjectCommand::_init()
+{
+    if( isValid( ))
+        *this >> _impl->objectID >> _impl->instanceID;
 }
 
 ObjectCommand::~ObjectCommand()

@@ -19,7 +19,6 @@
 #include "objectStore.h"
 
 #include "barrier.h"
-#include "buffer.h"
 #include "command.h"
 #include "connection.h"
 #include "connectionDescription.h"
@@ -584,10 +583,10 @@ void ObjectStore::removeNode( NodePtr node )
 //===========================================================================
 // Packet handling
 //===========================================================================
-bool ObjectStore::dispatchObjectCommand( BufferPtr buffer )
+bool ObjectStore::dispatchObjectCommand( Command& cmd )
 {
     LB_TS_THREAD( _receiverThread );
-    ObjectCommand command( buffer );
+    ObjectCommand command( cmd );
     const UUID& id = command.getObjectID();
     const uint32_t instanceID = command.getInstanceID();
 
@@ -608,7 +607,7 @@ bool ObjectStore::dispatchObjectCommand( BufferPtr buffer )
             Object* object = *j;
             if( instanceID == object->getInstanceID( ))
             {
-                LBCHECK( object->dispatchCommand( buffer ));
+                LBCHECK( object->dispatchCommand( command ));
                 return true;
             }
         }
@@ -618,13 +617,12 @@ bool ObjectStore::dispatchObjectCommand( BufferPtr buffer )
 
     Objects::const_iterator j = objects.begin();
     Object* object = *j;
-    LBCHECK( object->dispatchCommand( buffer ));
+    LBCHECK( object->dispatchCommand( command ));
 
     for( ++j; j != objects.end(); ++j )
     {
         object = *j;
-        BufferPtr clone = _localNode->cloneCommand( buffer );
-        LBCHECK( object->dispatchCommand( clone ));
+        LBCHECK( object->dispatchCommand( command ));
     }
     return true;
 }
@@ -986,7 +984,7 @@ bool ObjectStore::_cmdInstance( Command& comd )
     LB_TS_THREAD( _receiverThread );
     LBASSERT( _localNode );
 
-    ObjectDataCommand command( comd.getBuffer( ));
+    ObjectDataCommand command( comd );
     const NodeID nodeID = command.get< NodeID >();
     const uint32_t masterInstanceID = command.get< uint32_t >();
 
@@ -1007,8 +1005,7 @@ bool ObjectStore::_cmdInstance( Command& comd )
 #ifndef CO_AGGRESSIVE_CACHING // Issue #82:
         if( cmd != CMD_NODE_OBJECT_INSTANCE_PUSH )
 #endif
-            _instanceCache->add( rev, masterInstanceID,
-                                 command.getBuffer(), 0 );
+            _instanceCache->add( rev, masterInstanceID, command, 0 );
     }
 
     switch( cmd )
@@ -1023,17 +1020,17 @@ bool ObjectStore::_cmdInstance( Command& comd )
             return true;
 
         LBASSERT( instanceID <= EQ_INSTANCE_MAX );
-        return dispatchObjectCommand( command.getBuffer( ));
+        return dispatchObjectCommand( command );
 
       case CMD_NODE_OBJECT_INSTANCE_COMMIT:
         LBASSERT( nodeID == NodeID::ZERO );
         LBASSERT( instanceID == EQ_INSTANCE_NONE );
-        return dispatchObjectCommand( command.getBuffer( ));
+        return dispatchObjectCommand( command );
 
       case CMD_NODE_OBJECT_INSTANCE_PUSH:
         LBASSERT( nodeID == NodeID::ZERO );
         LBASSERT( instanceID == EQ_INSTANCE_NONE );
-        _pushData.addDataPacket( command.getObjectID(), command.getBuffer( ));
+        _pushData.addDataPacket( command.getObjectID(), command );
         return true;
 
       default:

@@ -79,7 +79,7 @@ ObjectDataOCommand::~ObjectDataOCommand()
 size_t ObjectDataOCommand::getSize()
 {
     return ObjectOCommand::getSize() + sizeof( uint128_t ) + sizeof( uint32_t )
-            + sizeof( uint64_t ) + sizeof( bool )+ sizeof( uint32_t )
+            + sizeof( uint64_t ) + sizeof( bool ) + sizeof( uint32_t )
             + sizeof( uint32_t );
 }
 

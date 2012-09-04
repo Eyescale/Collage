@@ -412,6 +412,7 @@ uint64_t DataOStream::_getCompressedData( void** chunks, uint64_t* chunkSizes )
     return dataSize;
 }
 
+// #145: Unify into sendData() -> sendUncompressed | sendCompressed
 lunchbox::Bufferb& DataOStream::getBuffer()
 {
     return _impl->buffer;
