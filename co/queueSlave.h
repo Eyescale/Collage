@@ -1,6 +1,7 @@
 
-/* Copyright (c) 2011, Stefan Eilemann <eile@eyescale.ch> 
- *               2011, Carsten Rohn <carsten.rohn@rtt.ag> 
+/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch> 
+ *                    2011, Carsten Rohn <carsten.rohn@rtt.ag> 
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published

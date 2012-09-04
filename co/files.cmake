@@ -1,6 +1,7 @@
 
 # Copyright (c) 2010 Cedric Stalder <cedric.stalder@gmail.ch>
 #               2011-2012 Stefan Eilemann <eile@eyescale.ch>
+#               2012 Daniel Nachbaur <danielnachbaur@gmail.com>
 
 set(CO_PUBLIC_HEADERS
   api.h
@@ -77,6 +78,7 @@ set(CO_HEADERS
   objectDeltaDataOStream.h
   objectInstanceDataOStream.h
   objectSlaveDataOStream.h
+  objectStore.h
   pipeConnection.h
   rspConnection.h
   socketConnection.h
