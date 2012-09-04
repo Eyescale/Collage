@@ -63,7 +63,7 @@ namespace co
         };
 
         virtual void _initSlave( NodePtr node, const uint128_t& version,
-                                 Command command, uint128_t replyVersion,
+                                 Command command, const uint128_t& replyVersion,
                                  bool replyUseCache );
 
         InstanceData* _newInstanceData();

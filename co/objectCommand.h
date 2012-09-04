@@ -48,9 +48,6 @@ public:
     /** @internal */
     ObjectCommand( const ObjectCommand& rhs );
 
-    /** @internal */
-    ObjectCommand& operator = ( const ObjectCommand& rhs );
-
     CO_API virtual ~ObjectCommand();
 
     /** @internal @return the object adressed by this command. */
@@ -61,6 +58,7 @@ public:
 
 private:
     ObjectCommand();
+    ObjectCommand& operator = ( const ObjectCommand& );
     detail::ObjectCommand* const _impl;
 
     void _init();

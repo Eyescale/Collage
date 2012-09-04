@@ -161,7 +161,7 @@ void FullMasterCM::_obsolete()
 }
 
 void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
-                               Command command, uint128_t replyVersion,
+                               Command command, const uint128_t& /*replyVersion*/,
                                bool replyUseCache )
 {
     _checkConsistency();
@@ -187,7 +187,7 @@ void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
     /*const uint32_t masterInstanceID = */command.get< uint32_t >();
     const bool useCache = command.get< bool >();
 
-    replyVersion = start;
+    const uint128_t replyVersion = start;
     if( replyUseCache )
     {
         if( minCachedVersion <= start &&

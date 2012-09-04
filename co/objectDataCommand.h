@@ -59,6 +59,7 @@ public:
 
 private:
     ObjectDataCommand();
+    ObjectDataCommand& operator = ( const ObjectDataCommand& );
     detail::ObjectDataCommand* const _impl;
 
     void _init();
