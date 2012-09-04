@@ -18,6 +18,7 @@
 
 #include "dataOStream.h"
 
+#include "buffer.h"
 #include "connectionDescription.h"
 #include "connections.h"
 #include "cpuCompressor.h"
@@ -203,9 +204,8 @@ void DataOStream::_enable()
     _impl->dataSent    = false;
     _impl->enabled     = true;
     _impl->buffer.setSize( 0 );
-#ifndef CO_AGGRESSIVE_CACHING
-    _impl->buffer.reserve( _impl->dataSize );
-    _impl->dataSize    = 0;
+#ifdef CO_AGGRESSIVE_CACHING
+    _impl->buffer.reserve( Buffer::getMinSize( ));
 #endif
 }
 
