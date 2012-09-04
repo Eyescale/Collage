@@ -161,12 +161,9 @@ void FullMasterCM::_obsolete()
 }
 
 void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
-                               Command& cmd, uint128_t replyVersion,
+                               Command command, uint128_t replyVersion,
                                bool replyUseCache )
 {
-    // #145 introduce reset() on command to read from the buffer front
-    Command command( cmd );
-
     _checkConsistency();
 
     const uint128_t oldest = _instanceDatas.front()->os.getVersion();

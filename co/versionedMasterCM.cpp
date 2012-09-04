@@ -99,13 +99,10 @@ uint128_t VersionedMasterCM::_apply( ObjectDataIStream* is )
     return version;
 }
 
-void VersionedMasterCM::addSlave( Command& comd )
+void VersionedMasterCM::addSlave( Command command )
 {
     LB_TS_THREAD( _cmdThread );
     Mutex mutex( _slaves );
-
-    // #145 introduce reset() on command to read from the buffer front
-    Command command( comd );
 
     /*const uint128_t& version = */command.get< uint128_t >();
     /*const uint128_t& minCachedVersion = */command.get< uint128_t >();

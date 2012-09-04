@@ -80,12 +80,10 @@ void Dispatcher::_registerCommand( const uint32_t command, const Func& func,
 }
 
 
-bool Dispatcher::dispatchCommand( Command& cmd )
+bool Dispatcher::dispatchCommand( Command& command )
 {
-    LBASSERT( cmd.isValid( ));
+    LBASSERT( command.isValid( ));
 
-    // #145 introduce reset() on command to read from the buffer front
-    Command command( cmd );
     LBVERB << "dispatch " << command << " on " << lunchbox::className( this )
            << std::endl;
 

@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -27,7 +27,7 @@ namespace co
 {
     class ObjectDataIStream;
 
-    /** 
+    /**
      * An object change manager handling only full versions for the master
      * instance.
      * @internal
@@ -51,19 +51,19 @@ namespace co
 
         /** Speculatively send instance data to all nodes. */
         virtual void sendInstanceData( Nodes& nodes );
-    
+
     protected:
         struct InstanceData
         {
-            InstanceData( const VersionedMasterCM* cm ) 
+            InstanceData( const VersionedMasterCM* cm )
                     : os( cm ), commitCount( 0 ) {}
 
             ObjectInstanceDataOStream os;
             uint32_t commitCount;
         };
-        
+
         virtual void _initSlave( NodePtr node, const uint128_t& version,
-                                 Command& command, uint128_t replyVersion,
+                                 Command command, uint128_t replyVersion,
                                  bool replyUseCache );
 
         InstanceData* _newInstanceData();
