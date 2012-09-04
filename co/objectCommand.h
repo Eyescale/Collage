@@ -46,7 +46,7 @@ public:
     CO_API ObjectCommand( const Command& command );
 
     /** @internal */
-    ObjectCommand( const ObjectCommand& rhs );
+    CO_API ObjectCommand( const ObjectCommand& rhs );
 
     CO_API virtual ~ObjectCommand();
 
