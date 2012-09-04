@@ -98,7 +98,10 @@ private:
 }
 
 QueueMaster::QueueMaster()
+#pragma warning(push)
+#pragma warning(disable: 4355)
     : _impl( new detail::QueueMaster( *this ))
+#pragma warning(pop)
 {
 }
 

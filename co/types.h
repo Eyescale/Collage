@@ -128,7 +128,6 @@ typedef ConnectionDescriptions::const_iterator   ConnectionDescriptionsCIter;
 /** @cond IGNORE */
 typedef lunchbox::RefPtr< Buffer > BufferPtr;
 typedef std::deque< Command > CommandDeque;
-typedef CommandDeque::const_iterator CommandDequeCIter;
 
 typedef std::vector< ObjectVersion > ObjectVersions;
 typedef ObjectVersions::const_iterator ObjectVersionsCIter;

@@ -109,7 +109,8 @@ NodePtr ObjectDataIStream::getMaster()
 size_t ObjectDataIStream::getDataSize() const
 {
     size_t size = 0;
-    for( CommandDequeCIter i = _commands.begin(); i != _commands.end(); ++i )
+    for( CommandDeque::const_iterator i = _commands.begin();
+         i != _commands.end(); ++i )
     {
         const Command& command = *i;
         size += command.getSize();
