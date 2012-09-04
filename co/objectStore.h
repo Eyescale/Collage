@@ -53,10 +53,10 @@ namespace co
          * Object packets are dispatch to the appropriate objects mapped on
          * this session.
          *
-         * @param packet the command packet.
+         * @param command the command packet.
          * @return true if the command was dispatched, false otherwise.
          */
-        bool dispatchObjectCommand( Command& cmd );
+        bool dispatchObjectCommand( Command& command );
         //@}
 
         /** @name Object Registration */

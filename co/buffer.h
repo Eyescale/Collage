@@ -36,7 +36,7 @@ namespace detail { class Buffer; }
  * methods are using the buffer for data forwarding because of the unknown
  * command type. The concrete command can be then instaniated with this buffer.
  *
- * The allocation of the buffer is always performed by the co::CommandCache. The
+ * The allocation of the buffer is always performed by the co::BufferCache. The
  * buffer API is supposed for internal use only.
 */
 class Buffer : public lunchbox::Bufferb, public lunchbox::Referenced
@@ -51,9 +51,6 @@ public:
     /** @internal @return the receiving node. */
     LocalNodePtr getLocalNode() const;
 
-    /** @internal @return the actual size of the buffers content. */
-    uint64_t getDataSize() const;
-
     /** @internal @return true if the buffer has valid data. */
     CO_API bool isValid() const;
 
@@ -63,23 +60,7 @@ public:
     /** @internal @return the number of newly allocated bytes. */
     size_t alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size );
 
-    /**
-     * @internal Clone the from buffer into this buffer.
-     *
-     * The buffer will share all data but the dispatch function. The
-     * buffer's allocation size will be 0 and it will never delete the
-     * shared data. The buffer will release its reference to the from
-     * buffer when it is released.
-     */
-    void clone( BufferPtr from );
-
     void free(); //!< @internal
-
-    /** @internal Set the function to which the buffer is dispatched. */
-    void setDispatchFunction( const Dispatcher::Func& func );
-
-    /** @internal @return the function to which the buffer is dispatched. */
-    Dispatcher::Func getDispatchFunction() const;
 
     static size_t getMinSize(); //! @internal
 

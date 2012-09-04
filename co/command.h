@@ -40,13 +40,15 @@ namespace detail { class Command; }
     {
     public:
         /** @internal */
+        CO_API Command();
+
+        /** @internal */
         CO_API Command( BufferPtr buffer );
 
-        /** @internal */
-        Command( const Command& rhs );
+        Command( const Command& rhs ); //!< @internal
+        Command& operator = ( const Command& rhs ); //!< @internal
 
-        /** @internal */
-        Command& operator = ( const Command& rhs );
+        CO_API void clear(); //!< @internal
 
         CO_API virtual ~Command();
 
@@ -58,8 +60,8 @@ namespace detail { class Command; }
         /** @return the command. @version 1.0 */
         CO_API uint32_t getCommand() const;
 
-        /** @internal @return the buffer containing the command data. */
-        CO_API BufferPtr getBuffer() const;
+        /** @internal @return the size of this command. */
+        CO_API uint64_t getSize() const;
 
         /** @return a value from the command. */
         template< typename T > T get()
@@ -87,14 +89,15 @@ namespace detail { class Command; }
         /** @internal Change the command for subsequent dispatching. */
         CO_API void setCommand( const uint32_t cmd );
 
+        /** @internal Set the function to which the command is dispatched. */
+        void setDispatchFunction( const Dispatcher::Func& func );
+
         /** Invoke and clear the command function of a dispatched command. */
         CO_API bool operator()();
         //@}
 
     private:
         detail::Command* const _impl;
-
-        Command(); // disable default ctor
 
         friend CO_API std::ostream& operator << (std::ostream&, const Command&);
 
@@ -108,6 +111,8 @@ namespace detail { class Command; }
                                            const void** chunkData,
                                            uint64_t* size );
         //@}
+
+        void _skipHeader(); //!< @internal
     };
 
     CO_API std::ostream& operator << ( std::ostream& os, const Command& );

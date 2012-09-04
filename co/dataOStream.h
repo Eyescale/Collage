@@ -59,18 +59,15 @@ namespace DataStreamTest { class Sender; }
         CO_API const Connections& getConnections() const;
 
         /** @internal */
-        uint32_t getCompressor() const;
-
-        /** @internal */
-        uint32_t getNumChunks() const;
-
-        /** @internal */
         CO_API lunchbox::Bufferb& getBuffer();
 
-        /** @internal */
-        void sendCompressedData( ConnectionPtr connection );
+        /** @internal Stream the data header (compressor, nChunks). */
+        DataOStream& streamDataHeader( DataOStream& os );
 
-        /** @internal */
+        /** @internal Send the (compressed) data using the given connection. */
+        void sendData( ConnectionPtr connection, const uint64_t dataSize );
+
+        /** @internal @return the compressed data size, 0 if uncompressed.*/
         uint64_t getCompressedDataSize() const;
         //@}
 

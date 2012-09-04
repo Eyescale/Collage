@@ -22,7 +22,7 @@
 #include <test.h>
 
 #include <co/buffer.h>
-#include <co/commandCache.h>
+#include <co/bufferCache.h>
 #include <co/init.h>
 #include <co/instanceCache.h>
 #include <co/nodeCommand.h>
@@ -85,14 +85,14 @@ int main( int argc, char **argv )
 {
     co::init( argc, argv );
 
-    co::CommandCache commandCache;
+    co::BufferCache bufferCache;
     co::LocalNodePtr node = new co::LocalNode;
-    co::BufferPtr buffer = commandCache.alloc( node, node, PACKET_SIZE );
+    co::BufferPtr buffer = bufferCache.alloc( node, node, PACKET_SIZE );
 
     co::ObjectDataOCommand packet( co::Connections(),
                                    co::CMD_NODE_OBJECT_INSTANCE,
                                    co::COMMANDTYPE_CO_NODE, co::UUID(), 0, 1, 0,
-                                   PACKET_SIZE, true, 0, 0 );
+                                   PACKET_SIZE, true, 0 );
     buffer->swap( packet.getBuffer( ));
     co::ObjectDataCommand command( buffer );
 

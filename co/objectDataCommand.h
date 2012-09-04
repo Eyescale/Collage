@@ -30,11 +30,11 @@ namespace detail { class ObjectDataCommand; }
 class ObjectDataCommand : public ObjectCommand
 {
 public:
-    /** @internal */
-    CO_API ObjectDataCommand( BufferPtr buffer );
-
     /** @internal Construct an object data command from a base command. */
     CO_API ObjectDataCommand( const Command& command );
+
+    /** @internal */
+    ObjectDataCommand( const ObjectDataCommand& rhs );
 
     /** @internal */
     CO_API ~ObjectDataCommand();
@@ -58,6 +58,8 @@ public:
     CO_API bool isLast() const;
 
 private:
+    ObjectDataCommand();
+    ObjectDataCommand& operator = ( const ObjectDataCommand& );
     detail::ObjectDataCommand* const _impl;
 
     void _init();

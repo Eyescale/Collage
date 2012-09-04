@@ -58,8 +58,7 @@ ObjectDataOCommand ObjectDataOStream::send( const uint32_t cmd,
                                             const uint32_t type,
                                             const uint32_t instanceID,
                                             const uint64_t size,
-                                            const bool last,
-                                            const void* buffer )
+                                            const bool last )
 {
     LBASSERT( _version != VERSION_INVALID );
     const uint32_t sequence = _sequence++;
@@ -68,7 +67,7 @@ ObjectDataOCommand ObjectDataOStream::send( const uint32_t cmd,
 
     return ObjectDataOCommand( getConnections(), cmd, type,
                                _cm->getObject()->getID(), instanceID, _version,
-                               sequence, size, last, buffer, this );
+                               sequence, size, last, this );
 }
 
 }

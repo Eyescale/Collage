@@ -6,7 +6,6 @@ set(CO_PUBLIC_HEADERS
   api.h
   array.h
   barrier.h
-  buffer.h
   bufferConnection.h
   co.h
   command.h
@@ -41,8 +40,6 @@ set(CO_PUBLIC_HEADERS
   object.h
   objectFactory.h
   objectHandler.h
-  objectDataCommand.h
-  objectDataOCommand.h
   objectCommand.h
   objectOCommand.h
   objectMap.h
@@ -62,7 +59,8 @@ set(CO_PUBLIC_HEADERS
 
 set(CO_HEADERS
   barrierCommand.h
-  commandCache.h
+  buffer.h
+  bufferCache.h
   connectionListener.h
   dataStreamArchive.h
   dataIStreamQueue.h
@@ -72,6 +70,8 @@ set(CO_HEADERS
   nodeCommand.h
   nullCM.h
   objectCM.h
+  objectDataCommand.h
+  objectDataOCommand.h
   objectDataIStream.h
   objectDataOStream.h
   objectDeltaDataOStream.h
@@ -90,9 +90,9 @@ set(CO_HEADERS
 set(CO_SOURCES
   barrier.cpp
   buffer.cpp
+  bufferCache.cpp
   bufferConnection.cpp
   command.cpp
-  commandCache.cpp
   commandQueue.cpp
   compressor.cpp
   connection.cpp

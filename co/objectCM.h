@@ -110,7 +110,7 @@ namespace co
          *
          * @param command the subscribe command initiating the add.
          */
-        virtual void addSlave( Command& command ) = 0;
+        virtual void addSlave( Command command ) = 0;
 
         /**
          * Remove a subscribed slave.
@@ -158,9 +158,9 @@ namespace co
         static lunchbox::a_int32_t _miss;
 #endif
 
-        void _addSlave( Command& command, const uint128_t& version );
+        void _addSlave( Command command, const uint128_t& version );
         virtual void _initSlave( NodePtr node, const uint128_t& version,
-                                 Command& command, uint128_t replyVersion,
+                                 Command command, const uint128_t& replyVersion,
                                  bool replyUseCache );
         void _sendMapSuccess( NodePtr node, const UUID& objectID,
                               const uint32_t requestID,

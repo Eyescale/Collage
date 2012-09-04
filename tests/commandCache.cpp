@@ -18,8 +18,8 @@
 #include <test.h>
 
 #include <co/buffer.h>
+#include <co/bufferCache.h>
 #include <co/command.h>
-#include <co/commandCache.h>
 #include <co/commandQueue.h>
 #include <co/dispatcher.h>
 #include <co/init.h>
@@ -61,16 +61,8 @@ protected:
             _running = true;
             while( _running )
             {
-                co::BufferPtr buffer = _queue.pop();
-                TEST( buffer->getRefCount() > 0 );
-                // Writer callstack + self reference
-                TESTINFO( index == 0 || buffer->getRefCount() < 7,
-                          index << ", " << buffer->getRefCount() );
-                {
-                    co::Command command( buffer );
-                    TEST( command( ));
-                }
-                TEST( buffer->getRefCount() > 0 );
+                co::Command command = _queue.pop();
+                TEST( command( ));
             }
             TEST( _queue.isEmpty( ));
             lunchbox::ScopedFastWrite mutex( _lock );
@@ -93,7 +85,7 @@ int main( int argc, char **argv )
             readers[i].start();
         }
 
-        co::CommandCache cache;
+        co::BufferCache cache;
         co::LocalNodePtr node = new co::LocalNode;
         size_t nOps = 0;
 
@@ -104,20 +96,13 @@ int main( int argc, char **argv )
                                                 co::NodeOCommand::getSize( ));
             co::Command command( buffer );
             command.setCommand( 0 );
+            command.setType( co::COMMANDTYPE_CO_CUSTOM );
 
             readers[0].dispatchCommand( command );
 
             for( size_t i = 1; i < N_READER; ++i )
             {
-#if 1
-                co::BufferPtr clone = cache.clone( buffer );
-#else
-                co::BufferPtr clone = cache.alloc( node, node,
-                                                   co::NodeOCommand::getSize());
-                co::Command cloneCommand( clone );
-                cloneCommand.setCommand( 0 );
-#endif
-                co::Command clonedCmd( clone );
+                co::Command clonedCmd( command );
                 readers[i].dispatchCommand( clonedCmd );
             }
             ++nOps;

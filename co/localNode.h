@@ -372,9 +372,6 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          */
         CO_API void flushCommands();
 
-        /** @internal Clone the given command. */
-        CO_API BufferPtr cloneCommand( BufferPtr command );
-
         /** @internal Allocate a local command from the receiver thread. */
         CO_API BufferPtr allocCommand( const uint64_t size );
 

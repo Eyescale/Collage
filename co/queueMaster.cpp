@@ -18,9 +18,8 @@
 
 #include "queueMaster.h"
 
-#include "buffer.h"
+#include "bufferCache.h"
 #include "command.h"
-#include "commandCache.h"
 #include "dataOStream.h"
 #include "objectCommand.h"
 #include "objectOCommand.h"
@@ -52,9 +51,9 @@ typedef lunchbox::RefPtr< ItemBuffer > ItemBufferPtr;
 class QueueMaster : public co::Dispatcher
 {
 public:
-    QueueMaster( const UUID& masterID_ )
+    QueueMaster( const co::QueueMaster& parent )
         : co::Dispatcher()
-        , masterID( masterID_ )
+        , _parent( parent )
     {}
 
     /** The command handler functions. */
@@ -74,7 +73,7 @@ public:
         {
             Connections connections( 1, command.getNode()->getConnection( ));
             co::ObjectOCommand cmd( connections, CMD_QUEUE_ITEM,
-                                    COMMANDTYPE_CO_OBJECT, masterID,
+                                    COMMANDTYPE_CO_OBJECT, _parent.getID(),
                                     slaveInstanceID );
 
             const ItemBufferPtr item = *i;
@@ -90,14 +89,16 @@ public:
 
     typedef lunchbox::MTQueue< ItemBufferPtr > ItemQueue;
 
-    const UUID& masterID;
     ItemQueue queue;
-    co::CommandCache cache;
+    co::BufferCache cache;
+
+private:
+    const co::QueueMaster& _parent;
 };
 }
 
 QueueMaster::QueueMaster()
-    : _impl( new detail::QueueMaster( getID( )) )
+    : _impl( new detail::QueueMaster( *this ))
 {
 }
 

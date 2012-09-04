@@ -37,12 +37,6 @@ public:
         , instanceID( rhs.instanceID )
     {}
 
-    void operator=( const ObjectCommand& rhs )
-    {
-        objectID = rhs.objectID;
-        instanceID = rhs.instanceID;
-    }
-
     UUID objectID;
     uint32_t instanceID;
 };
@@ -57,7 +51,7 @@ ObjectCommand::ObjectCommand( BufferPtr buffer )
 }
 
 ObjectCommand::ObjectCommand( const Command& command )
-    : Command( command.getBuffer( ))
+    : Command( command )
     , _impl( new detail::ObjectCommand )
 {
     _init();
@@ -70,16 +64,9 @@ ObjectCommand::ObjectCommand( const ObjectCommand& rhs )
     _init();
 }
 
-ObjectCommand& ObjectCommand::operator = ( const ObjectCommand& rhs )
-{
-    if( this != &rhs )
-        *_impl = *rhs._impl;
-    return *this;
-}
-
 void ObjectCommand::_init()
 {
-    if( getBuffer( ))
+    if( isValid( ))
         *this >> _impl->objectID >> _impl->instanceID;
 }
 

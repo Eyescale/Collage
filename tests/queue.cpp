@@ -66,8 +66,6 @@ int main( int argc, char **argv )
         TEST( !c5.isValid( ));
     }
 
-    lunchbox::sleep(10);
-
     node->unmapObject( qs );
     node->deregisterObject( qm );
 

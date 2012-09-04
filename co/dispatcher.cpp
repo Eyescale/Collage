@@ -17,7 +17,6 @@
 
 #include "dispatcher.h"
 
-#include "buffer.h"
 #include "command.h"
 #include "commandQueue.h"
 #include "node.h"
@@ -81,12 +80,10 @@ void Dispatcher::_registerCommand( const uint32_t command, const Func& func,
 }
 
 
-bool Dispatcher::dispatchCommand( Command& cmd )
+bool Dispatcher::dispatchCommand( Command& command )
 {
-    LBASSERT( cmd.isValid( ));
+    LBASSERT( command.isValid( ));
 
-    // #145 introduce reset() on command to read from the buffer front
-    Command command( cmd );
     LBVERB << "dispatch " << command << " on " << lunchbox::className( this )
            << std::endl;
 
@@ -105,8 +102,8 @@ bool Dispatcher::dispatchCommand( Command& cmd )
     CommandQueue* queue = _impl->qTable[which];
     if( queue )
     {
-        command.getBuffer()->setDispatchFunction( _impl->fTable[which] );
-        queue->push( command.getBuffer( ));
+        command.setDispatchFunction( _impl->fTable[which] );
+        queue->push( command );
         return true;
     }
     // else

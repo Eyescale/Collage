@@ -17,7 +17,6 @@
 
 #include "objectDataCommand.h"
 
-#include "buffer.h"
 #include "command.h"
 #include "plugins/compressorTypes.h"
 
@@ -39,6 +38,16 @@ public:
         , chunks( 1 )
         , isLast( false )
     {}
+
+    ObjectDataCommand( const ObjectDataCommand& rhs )
+        : version( rhs.version )
+        , sequence( rhs.sequence )
+        , datasize( rhs.datasize )
+        , compressor( rhs.compressor )
+        , chunks( rhs.chunks )
+        , isLast( rhs.isLast )
+    {}
+
     uint128_t version;
     uint32_t sequence;
     uint64_t datasize;
@@ -49,23 +58,23 @@ public:
 
 }
 
-ObjectDataCommand::ObjectDataCommand( BufferPtr buffer )
-    : ObjectCommand( buffer )
+ObjectDataCommand::ObjectDataCommand( const Command& command )
+    : ObjectCommand( command )
     , _impl( new detail::ObjectDataCommand )
 {
     _init();
 }
 
-ObjectDataCommand::ObjectDataCommand( const Command& command )
-    : ObjectCommand( command.getBuffer( ))
-    , _impl( new detail::ObjectDataCommand )
+ObjectDataCommand::ObjectDataCommand( const ObjectDataCommand& rhs )
+    : ObjectCommand( rhs )
+    , _impl( new detail::ObjectDataCommand( *rhs._impl ))
 {
     _init();
 }
 
 void ObjectDataCommand::_init()
 {
-    if( getBuffer( ))
+    if( isValid( ))
         *this >> _impl->version >> _impl->sequence >> _impl->datasize
               >> _impl->isLast >> _impl->compressor >> _impl->chunks;
 }

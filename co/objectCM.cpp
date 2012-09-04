@@ -17,7 +17,6 @@
 
 #include "objectCM.h"
 
-#include "buffer.h"
 #include "nodeCommand.h"
 #include "nullCM.h"
 #include "node.h"
@@ -56,11 +55,8 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
     os.disable();
 }
 
-void ObjectCM::_addSlave( Command& comd, const uint128_t& version )
+void ObjectCM::_addSlave( Command command, const uint128_t& version )
 {
-    // #145 introduce reset() on command to read from the buffer front
-    Command command( comd );
-
     LBASSERT( version != VERSION_NONE );
     LBASSERT( command.getType() == COMMANDTYPE_CO_NODE );
     LBASSERT( command.getCommand() == CMD_NODE_MAP_OBJECT );
@@ -94,7 +90,7 @@ void ObjectCM::_addSlave( Command& comd, const uint128_t& version )
 }
 
 void ObjectCM::_initSlave( NodePtr node, const uint128_t& version,
-                           Command& comd, uint128_t replyVersion,
+                           Command command, const uint128_t& replyVersion,
                            bool replyUseCache )
 {
 #if 0
@@ -108,9 +104,6 @@ void ObjectCM::_initSlave( NodePtr node, const uint128_t& version,
         LBINFO << "Mapping version " << replyVersion << " instead of "
                << version << std::endl;
 #endif
-
-    // #145 introduce reset() on command to read from the buffer front
-    Command command( comd );
 
     /*const uint128_t& requested = */command.get< uint128_t >();
     const uint128_t& minCachedVersion = command.get< uint128_t >();
@@ -186,7 +179,7 @@ void ObjectCM::_sendEmptyVersion( NodePtr node, const uint32_t instanceID,
 
     ObjectDataOCommand( Connections( 1, connection ), CMD_OBJECT_INSTANCE,
                         COMMANDTYPE_CO_OBJECT, _object->getID(), instanceID,
-                        version, 0, 0, true, 0, 0 )
+                        version, 0, 0, true, 0 )
             << NodeID::ZERO << _object->getInstanceID();
 }
 

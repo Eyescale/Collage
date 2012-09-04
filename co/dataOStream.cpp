@@ -18,6 +18,7 @@
 
 #include "dataOStream.h"
 
+#include "buffer.h"
 #include "connectionDescription.h"
 #include "connections.h"
 #include "cpuCompressor.h"
@@ -92,6 +93,20 @@ public:
             , dataSent( false )
             , save( false )
         {}
+
+    uint32_t getCompressor() const
+    {
+        if( state == STATE_UNCOMPRESSED || state == STATE_UNCOMPRESSIBLE )
+            return EQ_COMPRESSOR_NONE;
+        return compressor.getName();
+    }
+
+    uint32_t getNumChunks() const
+    {
+        if( state == STATE_UNCOMPRESSED || state == STATE_UNCOMPRESSIBLE )
+            return 1;
+        return compressor.getNumResults();
+    }
 
 
     /** Compress data and update the compressor state. */
@@ -187,11 +202,11 @@ void DataOStream::_enable()
     _impl->state = STATE_UNCOMPRESSED;
     _impl->bufferStart = 0;
     _impl->dataSent    = false;
+    _impl->dataSize    = 0;
     _impl->enabled     = true;
     _impl->buffer.setSize( 0 );
-#ifndef CO_AGGRESSIVE_CACHING
-    _impl->buffer.reserve( _impl->dataSize );
-    _impl->dataSize    = 0;
+#ifdef CO_AGGRESSIVE_CACHING
+    _impl->buffer.reserve( Buffer::getMinSize( ));
 #endif
 }
 
@@ -360,26 +375,6 @@ const Connections& DataOStream::getConnections() const
     return _impl->connections;
 }
 
-uint32_t DataOStream::getCompressor() const
-{
-    if( _impl->state == STATE_UNCOMPRESSED ||
-        _impl->state == STATE_UNCOMPRESSIBLE )
-    {
-        return EQ_COMPRESSOR_NONE;
-    }
-    return _impl->compressor.getName();
-}
-
-uint32_t DataOStream::getNumChunks() const
-{
-    if( _impl->state == STATE_UNCOMPRESSED ||
-        _impl->state == STATE_UNCOMPRESSIBLE )
-    {
-        return 1;
-    }
-    return _impl->compressor.getNumResults();
-}
-
 void DataOStream::_resetBuffer()
 {
     _impl->state = STATE_UNCOMPRESSED;
@@ -417,8 +412,23 @@ lunchbox::Bufferb& DataOStream::getBuffer()
     return _impl->buffer;
 }
 
-void DataOStream::sendCompressedData( ConnectionPtr connection )
+DataOStream& DataOStream::streamDataHeader( DataOStream& os )
 {
+    os << _impl->getCompressor() << _impl->getNumChunks();
+    return os;
+}
+
+void DataOStream::sendData( ConnectionPtr connection, const uint64_t dataSize )
+{
+    const uint32_t compressor = _impl->getCompressor();
+    if( compressor == EQ_COMPRESSOR_NONE )
+    {
+        if( dataSize > 0 )
+            LBCHECK( connection->send( _impl->buffer.getData(), dataSize,
+                                       true ));
+        return;
+    }
+
 #ifdef EQ_INSTRUMENT_DATAOSTREAM
     nBytesSent += _impl->buffer.getSize();
 #endif
@@ -437,14 +447,17 @@ void DataOStream::sendCompressedData( ConnectionPtr connection )
 
     for( size_t j = 0; j < nChunks; ++j )
     {
-        connection->send( &chunkSizes[j], sizeof( uint64_t ), true );
-        connection->send( chunks[j], chunkSizes[j], true );
+        LBCHECK( connection->send( &chunkSizes[j], sizeof( uint64_t ), true ));
+        LBCHECK( connection->send( chunks[j], chunkSizes[j], true ));
     }
 }
 
 uint64_t DataOStream::getCompressedDataSize() const
 {
-    return _impl->compressedDataSize;
+    if( _impl->getCompressor() == EQ_COMPRESSOR_NONE )
+        return 0;
+    return _impl->compressedDataSize
+            + _impl->getNumChunks() * sizeof( uint64_t );
 }
 
 std::ostream& operator << ( std::ostream& os, const DataOStream& dataOStream )

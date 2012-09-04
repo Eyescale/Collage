@@ -17,7 +17,6 @@
 
 #include "staticSlaveCM.h"
 
-#include "buffer.h"
 #include "log.h"
 #include "object.h"
 #include "objectDataCommand.h"

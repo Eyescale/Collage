@@ -19,8 +19,8 @@
 #include "localNode.h"
 
 #include "buffer.h"
+#include "bufferCache.h"
 #include "command.h"
-#include "commandCache.h"
 #include "commandQueue.h"
 #include "connectionDescription.h"
 #include "connectionSet.h"
@@ -138,8 +138,8 @@ public:
     /** Commands re-scheduled for dispatch. */
     CommandList  pendingCommands;
 
-    /** The command 'allocator' */
-    co::CommandCache commandCache;
+    /** The command buffer 'allocator' */
+    co::BufferCache bufferCache;
 
     bool sendToken; //!< send token availability.
     uint64_t lastSendToken; //!< last used time for timeout detection
@@ -397,6 +397,8 @@ void LocalNode::addListener( ConnectionPtr connection )
 {
     LBASSERT( isListening( ));
     LBASSERT( connection->isListening( ));
+
+    connection->ref( this );
 
     // Update everybody's description list of me
     // I will add the listener to myself in my handler
@@ -1084,11 +1086,6 @@ void LocalNode::flushCommands()
     _impl->incoming.interrupt();
 }
 
-BufferPtr LocalNode::cloneCommand( BufferPtr command )
-{
-    return _impl->commandCache.clone( command );
-}
-
 //----------------------------------------------------------------------
 // receiver thread functions
 //----------------------------------------------------------------------
@@ -1162,7 +1159,7 @@ void LocalNode::_runReceiverThread()
     LBCHECK( _impl->commandThread->join( ));
     _impl->objectStore->clear();
     _impl->pendingCommands.clear();
-    _impl->commandCache.flush();
+    _impl->bufferCache.flush();
 
     LBINFO << "Leaving receiver thread of " << lunchbox::className( this )
            << std::endl;
@@ -1192,9 +1189,12 @@ void LocalNode::_handleDisconnect()
     if( i != _impl->connectionNodes.end( ))
     {
         NodePtr node = i->second;
+
         node->ref(); // extend lifetime to give cmd handler a chance
-        send( CMD_NODE_REMOVE_NODE )
-            << node.get() << uint32_t( LB_UNDEFINED_UINT32 );
+
+        // local command dispatching
+        NodeOCommand( this, this, CMD_NODE_REMOVE_NODE )
+                << node.get() << uint32_t( LB_UNDEFINED_UINT32 );
 
         if( node->getConnection() == connection )
             _closeNode( node );
@@ -1249,7 +1249,7 @@ bool LocalNode::_handleData()
     if( node )
         node->_setLastReceive( getTime64( ));
 
-    BufferPtr buffer = _impl->commandCache.alloc( node, this, size );
+    BufferPtr buffer = _impl->bufferCache.alloc( node, this, size );
     LBASSERT( buffer->getRefCount() == 1 );
     connection->recvNB( buffer->getData(), size );
     const bool gotData = connection->recvSync( 0, 0 );
@@ -1284,7 +1284,7 @@ bool LocalNode::_handleData()
 BufferPtr LocalNode::allocCommand( const uint64_t size )
 {
     LBASSERT( _impl->inReceiverThread( ));
-    return _impl->commandCache.alloc( this, this, size );
+    return _impl->bufferCache.alloc( this, this, size );
 }
 
 void LocalNode::_dispatchCommand( Command& command )
@@ -1300,13 +1300,10 @@ void LocalNode::_dispatchCommand( Command& command )
     }
 }
 
-bool LocalNode::dispatchCommand( Command& cmd )
+bool LocalNode::dispatchCommand( Command& command )
 {
-    LBASSERT( cmd.isValid( ));
-
-    // #145 introduce reset() on command to read from the buffer front
-    Command command( cmd );
     LBVERB << "dispatch " << command << " by " << getNodeID() << std::endl;
+    LBASSERT( command.isValid( ));
 
     const uint32_t type = command.getType();
     switch( type )
@@ -1843,6 +1840,7 @@ bool LocalNode::_cmdRemoveListener( Command& command )
     _initService(); // update zeroconf
 
     ConnectionPtr connection = rawConnection;
+    connection->unref( this );
     LBASSERT( connection );
 
     if( connection->getDescription()->type >= CONNECTIONTYPE_MULTICAST )
@@ -1876,9 +1874,9 @@ bool LocalNode::_cmdCommand( Command& command )
         CommandQueue* queue = i->second.second;
         if( queue )
         {
-            command.getBuffer()->setDispatchFunction( CmdFunc( this,
+            command.setDispatchFunction( CmdFunc( this,
                                                 &LocalNode::_cmdCommandAsync ));
-            queue->push( command.getBuffer( ));
+            queue->push( command );
             return true;
         }
         // else
