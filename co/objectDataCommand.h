@@ -34,6 +34,9 @@ public:
     CO_API ObjectDataCommand( const Command& command );
 
     /** @internal */
+    ObjectDataCommand( const ObjectDataCommand& rhs );
+
+    /** @internal */
     CO_API ~ObjectDataCommand();
 
     /** @internal @return the object version. */
@@ -55,6 +58,7 @@ public:
     CO_API bool isLast() const;
 
 private:
+    ObjectDataCommand();
     detail::ObjectDataCommand* const _impl;
 
     void _init();

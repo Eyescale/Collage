@@ -104,6 +104,8 @@ void VersionedMasterCM::addSlave( Command command )
     LB_TS_THREAD( _cmdThread );
     Mutex mutex( _slaves );
 
+    // #145 Create MasterCMCommand for all FooMasterCM::addSlave?
+
     /*const uint128_t& version = */command.get< uint128_t >();
     /*const uint128_t& minCachedVersion = */command.get< uint128_t >();
     /*const uint128_t& maxCachedVersion = */command.get< uint128_t >();

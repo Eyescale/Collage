@@ -60,6 +60,7 @@ public:
     uint32_t getInstanceID() const;
 
 private:
+    ObjectCommand();
     detail::ObjectCommand* const _impl;
 
     void _init();
