@@ -92,7 +92,7 @@ int main( int argc, char **argv )
     co::ObjectDataOCommand packet( co::Connections(),
                                    co::CMD_NODE_OBJECT_INSTANCE,
                                    co::COMMANDTYPE_CO_NODE, co::UUID(), 0, 1, 0,
-                                   PACKET_SIZE, true, 0, 0 );
+                                   PACKET_SIZE, true, 0 );
     buffer->swap( packet.getBuffer( ));
     co::ObjectDataCommand command( buffer );
 

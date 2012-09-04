@@ -104,7 +104,9 @@ Command::~Command()
 
 void Command::_skipHeader()
 {
-    getRemainingBuffer( sizeof( _impl->_type ) + sizeof( _impl->_cmd ));
+    const size_t headerSize = sizeof( _impl->_type ) + sizeof( _impl->_cmd );
+    if( isValid() && getRemainingBufferSize() >= headerSize )
+        getRemainingBuffer( headerSize );
 }
 
 uint32_t Command::getType() const

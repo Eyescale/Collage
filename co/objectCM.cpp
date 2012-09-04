@@ -185,7 +185,7 @@ void ObjectCM::_sendEmptyVersion( NodePtr node, const uint32_t instanceID,
 
     ObjectDataOCommand( Connections( 1, connection ), CMD_OBJECT_INSTANCE,
                         COMMANDTYPE_CO_OBJECT, _object->getID(), instanceID,
-                        version, 0, 0, true, 0, 0 )
+                        version, 0, 0, true, 0 )
             << NodeID::ZERO << _object->getInstanceID();
 }
 

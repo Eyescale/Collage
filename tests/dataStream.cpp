@@ -52,8 +52,7 @@ protected:
         {
             co::ObjectDataOCommand( getConnections(), co::CMD_OBJECT_DELTA,
                                     co::COMMANDTYPE_CO_OBJECT, co::UUID(), 0,
-                                    co::uint128_t(), 0, size, last, buffer,
-                                    this );
+                                    co::uint128_t(), 0, size, last, this );
         }
 };
 

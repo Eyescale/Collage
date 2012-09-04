@@ -46,9 +46,8 @@ public:
      * @param instanceID the instance of the object to dispatch the command to.
      * @param version the version of the object data.
      * @param sequence the index in a sequence of a set commands.
-     * @param dataSize the size of the packed object data.
+     * @param dataSize the size of the packed, uncompressed object data.
      * @param isLast true if this is the last command for one object
-     * @param buffer the uncompressed object data.
      * @param stream the stream containing the (possible) compressed object data
      */
     CO_API ObjectDataOCommand( const Connections& receivers,
@@ -57,7 +56,7 @@ public:
                                const uint128_t& version,
                                const uint32_t sequence,
                                const uint64_t dataSize, const bool isLast,
-                               const void* buffer, DataOStream* stream );
+                               DataOStream* stream );
 
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~ObjectDataOCommand();
@@ -65,9 +64,6 @@ public:
     /** Adds additional data to this command. */
     template< typename T > ObjectDataOCommand& operator << ( const T& value )
         { _addUserData( &value, sizeof( value )); return *this; }
-
-    /** @return the static size of this command. */
-    CO_API static size_t getSize();
 
 protected:
     virtual void sendData( const void* buffer, const uint64_t size,

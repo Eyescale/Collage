@@ -38,6 +38,7 @@ public:
         , chunks( 1 )
         , isLast( false )
     {}
+
     uint128_t version;
     uint32_t sequence;
     uint64_t datasize;

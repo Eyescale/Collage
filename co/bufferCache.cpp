@@ -250,13 +250,13 @@ void BufferCache::flush()
 }
 
 BufferPtr BufferCache::alloc( NodePtr node, LocalNodePtr localNode,
-                               const uint64_t size )
+                              const uint64_t size )
 {
     LB_TS_THREAD( _thread );
     LBASSERTINFO( size < LB_BIT48,
                   "Out-of-sync network stream: packet size " << size << "?" );
 
-    const Cache which = (size >Buffer::getMinSize()) ? CACHE_BIG : CACHE_SMALL;
+    const Cache which = (size > Buffer::getMinSize()) ? CACHE_BIG : CACHE_SMALL;
     BufferPtr buffer = _impl->newBuffer( which );
     buffer->alloc( node, localNode, size );
     return buffer;
