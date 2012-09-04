@@ -36,7 +36,7 @@ namespace co
         ObjectDataIStream( const ObjectDataIStream& from );
         virtual ~ObjectDataIStream();
 
-        void addDataPacket( Command& command );
+        void addDataPacket( ObjectDataCommand command );
         size_t getDataSize() const;
 
         virtual uint128_t getVersion() const { return _version.get(); }

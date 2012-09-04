@@ -49,17 +49,16 @@ void ObjectDataIStream::reset()
 
 void ObjectDataIStream::_reset()
 {
-    _usedCommand = Command();
+    _usedCommand.clear();
     _commands.clear();
     _version = VERSION_INVALID;
 }
 
-void ObjectDataIStream::addDataPacket( Command& cmd )
+void ObjectDataIStream::addDataPacket( ObjectDataCommand command )
 {
     LB_TS_THREAD( _thread );
     LBASSERT( !isReady( ));
 
-    ObjectDataCommand command( cmd );
 #ifndef NDEBUG
     const uint128_t& version = command.getVersion();
     const uint32_t sequence = command.getSequence();
@@ -131,7 +130,10 @@ bool ObjectDataIStream::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
                                        const void** chunkData, uint64_t* size )
 {
     if( _commands.empty( ))
+    {
+        _usedCommand.clear();
         return false;
+    }
 
     _usedCommand = _commands.front();
     ObjectDataCommand command( _usedCommand );

@@ -49,19 +49,25 @@ public:
      *
      * @param prefetchMark the low-water mark for prefetching.
      * @param prefetchAmount the refill quantity when prefetching.
-     * @version 1.1.6
+     * @version 1.0
      */
     CO_API QueueSlave( const uint32_t prefetchMark = 
                        Global::getIAttribute( Global::IATTR_QUEUE_MIN_SIZE ),
                        const uint32_t prefetchAmount = 
                        Global::getIAttribute( Global::IATTR_QUEUE_REFILL ));
 
-    /** Destruct this new queue consumer. @version 1.1.6 */
+    /** Destruct this new queue consumer. @version 1.0 */
     virtual CO_API ~QueueSlave();
 
     /**
-     * @return an item from the distributed queue, or 0 if the queue is empty.
-     * @version 1.1.6
+     * Dequeue an item.
+     *
+     * The returned item can deserialize additional data using the DataIStream
+     * operators.
+     *
+     * @return an item from the distributed queue, or an invalid item if the
+     *         queue is empty.
+     * @version 1.0
      */
     CO_API ObjectCommand pop();
 

@@ -93,7 +93,7 @@ void ObjectCM::_addSlave( Command& cmd, const uint128_t& version )
 }
 
 void ObjectCM::_initSlave( NodePtr node, const uint128_t& version,
-                           Command& cmd, uint128_t replyVersion,
+                           Command& cmd, const uint128_t& replyVersion,
                            bool replyUseCache )
 {
 #if 0

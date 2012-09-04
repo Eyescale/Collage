@@ -110,7 +110,8 @@ int main( int argc, char **argv )
         serverProxy->send( co::CMD_NODE_CUSTOM ) << message;
     const float time = clock.getTimef();
 
-    const size_t size = NMESSAGES * ( /*packet.size +*/ message.length() - 7 );
+    const size_t size = NMESSAGES * ( co::NodeOCommand::getSize() +
+                                      message.length() - 7 );
     std::cout << "Send " << size << " bytes using " << NMESSAGES
               << " packets in " << time << "ms" << " (" 
               << size / 1024. * 1000.f / time << " KB/s)" << std::endl;

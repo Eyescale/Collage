@@ -40,8 +40,6 @@ set(CO_PUBLIC_HEADERS
   object.h
   objectFactory.h
   objectHandler.h
-  objectDataCommand.h
-  objectDataOCommand.h
   objectCommand.h
   objectOCommand.h
   objectMap.h
@@ -72,6 +70,8 @@ set(CO_HEADERS
   nodeCommand.h
   nullCM.h
   objectCM.h
+  objectDataCommand.h
+  objectDataOCommand.h
   objectDataIStream.h
   objectDataOStream.h
   objectDeltaDataOStream.h

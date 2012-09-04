@@ -202,6 +202,7 @@ void DataOStream::_enable()
     _impl->state = STATE_UNCOMPRESSED;
     _impl->bufferStart = 0;
     _impl->dataSent    = false;
+    _impl->dataSize    = 0;
     _impl->enabled     = true;
     _impl->buffer.setSize( 0 );
 #ifdef CO_AGGRESSIVE_CACHING
