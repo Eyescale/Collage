@@ -59,6 +59,7 @@ class ObjectCommand;
 class ObjectOCommand;
 class Plugin;        //!< @internal
 class PluginRegistry;
+class QueueItem;
 class QueueMaster;
 class QueueSlave;
 class Serializable;

@@ -575,6 +575,7 @@ bool ObjectStore::notifyCommandThreadIdle()
 
 void ObjectStore::removeNode( NodePtr node )
 {
+// TODO #145 implement sendSync() with implicit waitReq()
     const uint32_t requestID = _localNode->registerRequest();
     _localNode->send( CMD_NODE_REMOVE_NODE ) << node.get() << requestID;
     _localNode->waitRequest( requestID );
@@ -598,7 +599,7 @@ bool ObjectStore::dispatchObjectCommand( Command& cmd )
         return ( instanceID == EQ_INSTANCE_NONE );
 
     const Objects& objects = i->second;
-    LBASSERT( !objects.empty( ));
+    LBASSERTINFO( !objects.empty(), command );
 
     if( instanceID <= EQ_INSTANCE_MAX )
     {
@@ -987,14 +988,10 @@ bool ObjectStore::_cmdInstance( Command& comd )
     ObjectDataCommand command( comd );
     const NodeID nodeID = command.get< NodeID >();
     const uint32_t masterInstanceID = command.get< uint32_t >();
+    const uint32_t cmd = command.getCommand();
 
     LBLOG( LOG_OBJECTS ) << "Cmd instance " << command << " master "
                          << masterInstanceID << " node " << nodeID << std::endl;
-
-#ifndef NDEBUG
-    const uint32_t instanceID = command.getInstanceID();
-#endif
-    const uint32_t cmd = command.getCommand();
 
     command.setType( COMMANDTYPE_CO_OBJECT );
     command.setCommand( CMD_OBJECT_INSTANCE );
@@ -1012,24 +1009,24 @@ bool ObjectStore::_cmdInstance( Command& comd )
     {
       case CMD_NODE_OBJECT_INSTANCE:
         LBASSERT( nodeID == NodeID::ZERO );
-        LBASSERT( instanceID == EQ_INSTANCE_NONE );
+        LBASSERT( command.getInstanceID() == EQ_INSTANCE_NONE );
         return true;
 
       case CMD_NODE_OBJECT_INSTANCE_MAP:
         if( nodeID != _localNode->getNodeID( )) // not for me
             return true;
 
-        LBASSERT( instanceID <= EQ_INSTANCE_MAX );
+        LBASSERT( command.getInstanceID() <= EQ_INSTANCE_MAX );
         return dispatchObjectCommand( command );
 
       case CMD_NODE_OBJECT_INSTANCE_COMMIT:
         LBASSERT( nodeID == NodeID::ZERO );
-        LBASSERT( instanceID == EQ_INSTANCE_NONE );
+        LBASSERT( command.getInstanceID() == EQ_INSTANCE_NONE );
         return dispatchObjectCommand( command );
 
       case CMD_NODE_OBJECT_INSTANCE_PUSH:
         LBASSERT( nodeID == NodeID::ZERO );
-        LBASSERT( instanceID == EQ_INSTANCE_NONE );
+        LBASSERT( command.getInstanceID() == EQ_INSTANCE_NONE );
         _pushData.addDataPacket( command.getObjectID(), command );
         return true;
 
@@ -1042,7 +1039,7 @@ bool ObjectStore::_cmdInstance( Command& comd )
 bool ObjectStore::_cmdDisableSendOnRegister( Command& command )
 {
     LB_TS_THREAD( _commandThread );
-    LBASSERTINFO( _sendOnRegister > 0, size_t( _sendOnRegister ));
+    LBASSERTINFO( _sendOnRegister > 0, _sendOnRegister );
 
     if( --_sendOnRegister == 0 )
     {

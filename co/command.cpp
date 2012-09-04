@@ -58,6 +58,14 @@ public:
         cmd = rhs.cmd;
     }
 
+    void clear()
+    {
+        func.clear();
+        buffer = 0;
+        type = COMMANDTYPE_INVALID;
+        cmd = CMD_INVALID;
+    }
+
     co::Dispatcher::Func func;
     BufferPtr buffer;
     uint32_t type;
@@ -100,6 +108,11 @@ Command& Command::operator = ( const Command& rhs )
 Command::~Command()
 {
     delete _impl;
+}
+
+void Command::clear()
+{
+    _impl->clear();
 }
 
 void Command::_skipHeader()

@@ -45,11 +45,10 @@ namespace detail { class Command; }
         /** @internal */
         CO_API Command( BufferPtr buffer );
 
-        /** @internal */
-        Command( const Command& rhs );
+        Command( const Command& rhs ); //!< @internal
+        Command& operator = ( const Command& rhs ); //!< @internal
 
-        /** @internal */
-        Command& operator = ( const Command& rhs );
+        CO_API void clear(); //!< @internal
 
         CO_API virtual ~Command();
 

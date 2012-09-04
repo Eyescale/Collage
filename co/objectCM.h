@@ -160,7 +160,7 @@ namespace co
 
         void _addSlave( Command command, const uint128_t& version );
         virtual void _initSlave( NodePtr node, const uint128_t& version,
-                                 Command command, uint128_t replyVersion,
+                                 Command command, const uint128_t& replyVersion,
                                  bool replyUseCache );
         void _sendMapSuccess( NodePtr node, const UUID& objectID,
                               const uint32_t requestID,

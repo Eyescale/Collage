@@ -67,9 +67,9 @@ public:
     /**
      * Allow external send of data along with this command.
      *
-     * @param additionalSize size in bytes of external data.
+     * @param additionalSize size in bytes of additional data after header.
      */
-    CO_API void setExternalSend( const uint64_t additionalSize );
+    CO_API void sendHeaderUnlocked( const uint64_t additionalSize );
 
     /** @return the static size of this command. */
     CO_API static size_t getSize();
