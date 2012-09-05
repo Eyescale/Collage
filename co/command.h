@@ -44,7 +44,7 @@ namespace detail { class Command; }
         CO_API Command();
 
         /** @internal */
-        CO_API Command( BufferPtr buffer );
+        CO_API Command( ConstBufferPtr buffer );
 
         CO_API Command( const Command& rhs ); //!< @internal
         Command& operator = ( const Command& rhs ); //!< @internal

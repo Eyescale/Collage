@@ -129,6 +129,7 @@ typedef ConnectionDescriptions::const_iterator   ConnectionDescriptionsCIter;
 /** @cond IGNORE */
 class MasterCMCommand;
 typedef lunchbox::RefPtr< Buffer > BufferPtr;
+typedef lunchbox::RefPtr< const Buffer > ConstBufferPtr;
 typedef std::deque< Command > CommandDeque;
 
 typedef std::vector< ObjectVersion > ObjectVersions;

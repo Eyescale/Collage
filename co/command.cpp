@@ -37,7 +37,7 @@ public:
         , cmd( CMD_INVALID )
     {}
 
-    Command( BufferPtr buffer_ )
+    Command( ConstBufferPtr buffer_ )
         : func( 0, 0 )
         , buffer( buffer_ )
         , type( COMMANDTYPE_INVALID )
@@ -68,7 +68,7 @@ public:
     }
 
     co::Dispatcher::Func func;
-    BufferPtr buffer;
+    ConstBufferPtr buffer;
     uint32_t type;
     uint32_t cmd;
 };
@@ -80,7 +80,7 @@ Command::Command()
 {
 }
 
-Command::Command( BufferPtr buffer )
+Command::Command( ConstBufferPtr buffer )
     : DataIStream()
     , _impl( new detail::Command( buffer ))
 {

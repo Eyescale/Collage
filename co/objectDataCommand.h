@@ -34,6 +34,9 @@ public:
     CO_API ObjectDataCommand( const Command& command );
 
     /** @internal */
+    CO_API ObjectDataCommand( ConstBufferPtr buffer );
+
+    /** @internal */
     ObjectDataCommand( const ObjectDataCommand& rhs );
 
     /** @internal */

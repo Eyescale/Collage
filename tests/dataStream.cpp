@@ -60,7 +60,7 @@ protected:
 class DataIStream : public co::DataIStream
 {
 public:
-    void addDataCommand( co::BufferPtr buffer )
+    void addDataCommand( co::ConstBufferPtr buffer )
         {
             co::ObjectDataCommand command( buffer );
             TESTINFO( command.getCommand() == co::CMD_OBJECT_DELTA, command );
