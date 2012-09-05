@@ -20,12 +20,12 @@
 #include "objectStore.h"
 
 #include "barrier.h"
-#include "command.h"
 #include "connection.h"
 #include "connectionDescription.h"
 #include "global.h"
 #include "instanceCache.h"
 #include "log.h"
+#include "masterCMCommand.h"
 #include "nodeCommand.h"
 #include "nodeOCommand.h"
 #include "objectCM.h"
@@ -774,22 +774,16 @@ bool ObjectStore::_cmdDeregisterObject( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdMapObject( Command& command )
+bool ObjectStore::_cmdMapObject( Command& cmd )
 {
     LB_TS_THREAD( _commandThread );
 
-    const uint128_t& version = command.get< uint128_t >();
-    /*const uint128_t& minCachedVersion = */command.get< uint128_t >();
-    /*const uint128_t& maxCachedVersion = */command.get< uint128_t >();
-    const UUID& id = command.get< UUID >();
-    /*const uint64_t maxVersion = */command.get< uint64_t >();
-    const uint32_t requestID = command.get< uint32_t >();
-    const uint32_t instanceID = command.get< uint32_t >();
-    /*const uint32_t masterInstanceID = */command.get< uint32_t >();
-    const bool useCache = command.get< bool >();
+    MasterCMCommand command( cmd );
+    const UUID& id = command.getObjectID();
 
     LBLOG( LOG_OBJECTS ) << "Cmd map object " << command << " id " << id << "."
-                         << instanceID << " req " << requestID << std::endl;
+                         << command.getInstanceID() << " req "
+                         << command.getRequestID() << std::endl;
 
     Object* master = 0;
     {
@@ -818,8 +812,8 @@ bool ObjectStore::_cmdMapObject( Command& command )
         LBWARN << "Can't find master object to map " << id << std::endl;
         NodePtr node = command.getNode();
         node->send( CMD_NODE_MAP_OBJECT_REPLY )
-            << node->getNodeID() << id << version << requestID << false
-            << useCache << false;
+            << node->getNodeID() << id << command.getRequestedVersion()
+            << command.getRequestID() << false << command.useCache() << false;
     }
     return true;
 }

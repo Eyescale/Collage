@@ -376,7 +376,7 @@ namespace co
         NodePtr getMasterNode();
 
         /** @internal */
-        void addSlave( Command& command );
+        void addSlave( MasterCMCommand& command );
         CO_API void removeSlave( NodePtr node, const uint32_t instanceID );
         CO_API void removeSlaves( NodePtr node ); //!< @internal
         void setMasterNode( NodePtr node ); //!< @internal

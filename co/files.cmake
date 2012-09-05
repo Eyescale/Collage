@@ -68,6 +68,7 @@ set(CO_HEADERS
   deltaMasterCM.h
   eventConnection.h
   fullMasterCM.h
+  masterCMCommand.h
   nodeCommand.h
   nullCM.h
   objectCM.h
@@ -112,6 +113,7 @@ set(CO_SOURCES
   init.cpp
   instanceCache.cpp
   localNode.cpp
+  masterCMCommand.cpp
   node.cpp
   nodeOCommand.cpp
   object.cpp

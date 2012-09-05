@@ -63,8 +63,8 @@ namespace co
             uint32_t commitCount;
         };
 
-        virtual void _initSlave( NodePtr node, const uint128_t& version,
-                                 Command command, const uint128_t& replyVersion,
+        virtual void _initSlave( MasterCMCommand command,
+                                 const uint128_t& replyVersion,
                                  bool replyUseCache );
 
         InstanceData* _newInstanceData();

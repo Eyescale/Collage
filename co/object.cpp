@@ -242,7 +242,7 @@ bool Object::isMaster() const
     return _cm->isMaster();
 }
 
-void Object::addSlave( Command& command )
+void Object::addSlave( MasterCMCommand& command )
 {
     _cm->addSlave( command );
 }

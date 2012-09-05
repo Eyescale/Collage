@@ -20,7 +20,6 @@
 #define CO_STATICSLAVECM_H
 
 #include "objectCM.h"     // base class
-#include "command.h"
 #include <co/objectVersion.h> // VERSION_FOO values
 #include <lunchbox/thread.h>  // thread-safety check
 
@@ -49,7 +48,7 @@ namespace co
         virtual uint32_t getMasterInstanceID() const
             { return EQ_INSTANCE_INVALID; }
 
-        virtual void addSlave( Command command ) { LBDONTCALL; }
+        virtual void addSlave( MasterCMCommand command ) { LBDONTCALL; }
         virtual void removeSlaves( NodePtr ) {}
 
         virtual void applyMapData( const uint128_t& version );

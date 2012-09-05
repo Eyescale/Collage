@@ -48,6 +48,7 @@ class DataIStream;
 class DataOStream;
 class Global;
 class LocalNode;
+class MasterCMCommand;
 class Node;
 class NodeOCommand;
 class Object;
