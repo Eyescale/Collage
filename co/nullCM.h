@@ -20,7 +20,6 @@
 #define EQNET_NULLCM_H
 
 #include "objectCM.h"    // base class
-#include "command.h"
 
 namespace co
 {

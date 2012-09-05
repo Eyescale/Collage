@@ -48,7 +48,6 @@ class DataIStream;
 class DataOStream;
 class Global;
 class LocalNode;
-class MasterCMCommand;
 class Node;
 class NodeOCommand;
 class Object;
@@ -128,6 +127,7 @@ typedef ConnectionDescriptions::iterator         ConnectionDescriptionsIter;
 typedef ConnectionDescriptions::const_iterator   ConnectionDescriptionsCIter;
 
 /** @cond IGNORE */
+class MasterCMCommand;
 typedef lunchbox::RefPtr< Buffer > BufferPtr;
 typedef std::deque< Command > CommandDeque;
 
