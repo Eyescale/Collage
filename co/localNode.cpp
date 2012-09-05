@@ -1025,7 +1025,7 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
 
     const uint32_t requestID = registerRequest( node.get( ));
 
-    // send connect packet to peer
+    // send connect command to peer
     NodeOCommand( Connections( 1, connection ), CMD_NODE_CONNECT )
             << getNodeID() << requestID << getType() << serialize();
 
@@ -1265,11 +1265,11 @@ bool LocalNode::_handleData()
 
     if( !gotData )
     {
-        LBERROR << "Incomplete packet read: " << command << std::endl;
+        LBERROR << "Incomplete command read: " << command << std::endl;
         return false;
     }
 
-    // This is one of the initial packets during the connection handshake, at
+    // This is one of the initial commands during the connection handshake, at
     // this point the remote node is not yet available.
     LBASSERTINFO( node.isValid() ||
                  ( command.getType() == COMMANDTYPE_CO_NODE &&
@@ -1317,7 +1317,7 @@ bool LocalNode::dispatchCommand( Command& command )
             return _impl->objectStore->dispatchObjectCommand( command );
 
         default:
-            LBABORT( "Unknown packet type " << type << " for " << command );
+            LBABORT( "Unknown command type " << type << " for " << command );
             return true;
     }
 }
@@ -1481,7 +1481,7 @@ bool LocalNode::_cmdConnect( Command& command )
             NodeOCommand( Connections( 1, connection ), CMD_NODE_CONNECT_REPLY )
                     << nodeID << requestID << nodeType;
 
-            // NOTE: There is no close() here. The reply packet above has to be
+            // NOTE: There is no close() here. The reply command above has to be
             // received by the peer first, before closing the connection.
             _removeConnection( connection );
             return true;

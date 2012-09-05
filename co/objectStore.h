@@ -46,15 +46,15 @@ namespace co
         /** Remove all objects and clear all caches. */
         void clear();
 
-        /** @name Command Packet Dispatch */
+        /** @name Command Dispatch */
         //@{
         /**
-         * Dispatches a command object packet to the registered command queue.
+         * Dispatches an object command to the registered command queue.
          *
-         * Object packets are dispatch to the appropriate objects mapped on
+         * Object commands are dispatched to the appropriate objects mapped on
          * this session.
          *
-         * @param command the command packet.
+         * @param command the command.
          * @return true if the command was dispatched, false otherwise.
          */
         bool dispatchObjectCommand( Command& command );

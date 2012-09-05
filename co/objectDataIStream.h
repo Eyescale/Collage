@@ -37,7 +37,7 @@ namespace co
         ObjectDataIStream( const ObjectDataIStream& from );
         virtual ~ObjectDataIStream();
 
-        void addDataPacket( ObjectDataCommand command );
+        void addDataCommand( ObjectDataCommand command );
         size_t getDataSize() const;
 
         virtual uint128_t getVersion() const { return _version.get(); }
@@ -58,7 +58,7 @@ namespace co
                                     const void** chunkData, uint64_t* size );
 
     private:
-        /** All data command packets for this istream. */
+        /** All data commands for this istream. */
         CommandDeque _commands;
 
         Command _usedCommand; //!< Currently used buffer

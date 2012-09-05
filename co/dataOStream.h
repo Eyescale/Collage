@@ -37,7 +37,7 @@ namespace DataStreamTest { class Sender; }
      * A std::ostream-like interface for object serialization.
      *
      * Implements buffering, retaining and compressing data in a binary format.
-     * Derived classes send the data using the appropriate command packets.
+     * Derived classes send the data using the appropriate commands.
      */
     class DataOStream : public lunchbox::NonCopyable
     {
@@ -131,7 +131,7 @@ namespace DataStreamTest { class Sender; }
 
         /** @internal @name Data sending, used by the subclasses */
         //@{
-        /** @internal Send a data buffer (packet) to the receivers. */
+        /** @internal Send a data buffer (command) to the receivers. */
         virtual void sendData( const void* buffer, const uint64_t size,
                                const bool last ) = 0;
 
@@ -168,7 +168,7 @@ namespace DataStreamTest { class Sender; }
                 _write( &value.front(), nElems * sizeof( T ));
             return *this;
         }
-        /** Send the trailing data (packet) to the receivers */
+        /** Send the trailing data (command) to the receivers */
         void _sendFooter( const void* buffer, const uint64_t size );
     };
 

@@ -225,7 +225,7 @@ bool Barrier::_cmdEnter( Command& cmd )
         // the incarnation belongs to an older barrier
         if( request.incarnation < incarnation )
         {
-            // send directly the reply packet to unblock the caller
+            // send directly the reply command to unblock the caller
             _sendNotify( version, command.getNode( ));
             return true;
         }
