@@ -41,11 +41,11 @@
  * Node and LocalNode. A process typically uses one LocalNode to listen on
  * connection requests and to communicate with other nodes. A Node is a proxy
  * for a remote LocalNode. To exchange information, a Command is send using the
- * remote node proxy. The remote local node receives the command and dispatches
- * it to a CommandQueue. The queue is processed by another thread, which invokes
- * a CommandFunc. The queue and handler method are pre-registered with the
- * proper Dispatcher. The command specialization ObjectCommand dispatch the
- * command to a registered Object or the LocalNode, respectively.
+ * node proxy. The remote local node receives the command and dispatches it to a
+ * CommandQueue. The queue is processed by another thread, which invokes a
+ * CommandFunc. The queue and handler method are pre-registered with the proper
+ * Dispatcher. The command specialization ObjectCommand dispatch the command to
+ * a registered Object or the LocalNode, respectively.
  *
  * The Object facilitates the data distribution for C++ classes. An object is
  * registered with a listening LocalNode, which allows the mapping of this
