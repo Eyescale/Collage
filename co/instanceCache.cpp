@@ -1,15 +1,16 @@
 
-/* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2010-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -17,7 +18,7 @@
 
 #include "instanceCache.h"
 
-#include "command.h"
+#include "objectDataCommand.h"
 #include "objectDataIStream.h"
 #include "objectVersion.h"
 
@@ -61,7 +62,7 @@ InstanceCache::~InstanceCache()
     _size = 0;
 }
 
-InstanceCache::Data::Data() 
+InstanceCache::Data::Data()
         : masterInstanceID( EQ_INSTANCE_INVALID )
 {}
 
@@ -83,13 +84,13 @@ InstanceCache::Item::Item()
 {}
 
 bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
-                         CommandPtr command, const uint32_t usage )
+                         Command& command, const uint32_t usage )
 {
 #ifdef EQ_INSTRUMENT_CACHE
     ++nWrite;
 #endif
 
-    const NodeID nodeID = command->getNode()->getNodeID();
+    const NodeID nodeID = command.getNode()->getNodeID();
 
     lunchbox::ScopedMutex<> mutex( _items );
     ItemHash::const_iterator i = _items->find( rev.identifier );
@@ -117,7 +118,7 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
 
     if( item.data.versions.empty( ))
     {
-        item.data.versions.push_back( new ObjectDataIStream ); 
+        item.data.versions.push_back( new ObjectDataIStream );
         item.times.push_back( _clock.getTime64( ));
     }
     else if( item.data.versions.back()->getPendingVersion() == rev.version )
@@ -157,7 +158,7 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
         {
             LBASSERT( previous->isReady( ));
         }
-        item.data.versions.push_back( new ObjectDataIStream ); 
+        item.data.versions.push_back( new ObjectDataIStream );
         item.times.push_back( _clock.getTime64( ));
     }
 
@@ -165,7 +166,7 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
     ObjectDataIStream* stream = item.data.versions.back();
 
     stream->addDataPacket( command );
-    
+
     if( stream->isReady( ))
         _size += stream->getDataSize();
 
@@ -288,7 +289,7 @@ void InstanceCache::expire( const int64_t timeout )
     }
 }
 
-void InstanceCache::_releaseStreams( InstanceCache::Item& item, 
+void InstanceCache::_releaseStreams( InstanceCache::Item& item,
                                      const int64_t minTime )
 {
     LBASSERT( item.access == 0 );
@@ -311,7 +312,7 @@ void InstanceCache::_releaseStreams( InstanceCache::Item& item )
         _deleteStream( stream );
     }
     item.times.clear();
-}            
+}
 
 void InstanceCache::_releaseFirstStream( InstanceCache::Item& item )
 {
@@ -324,7 +325,7 @@ void InstanceCache::_releaseFirstStream( InstanceCache::Item& item )
     item.data.versions.pop_front();
     item.times.pop_front();
     _deleteStream( stream );
-}            
+}
 
 void InstanceCache::_deleteStream( ObjectDataIStream* stream )
 {
@@ -376,7 +377,7 @@ void InstanceCache::_releaseItems( const uint32_t minUsage )
         {
             Item& item = _items.data[ *i ];
 
-            if( !item.data.versions.empty() && item.access == 0 && 
+            if( !item.data.versions.empty() && item.access == 0 &&
                 item.used >= minUsage )
             {
                 _releaseFirstStream( item );
@@ -410,7 +411,7 @@ void InstanceCache::_releaseItems( const uint32_t minUsage )
 std::ostream& operator << ( std::ostream& os,
                             const InstanceCache& instanceCache )
 {
-    os << "InstanceCache " << instanceCache.getSize() / 1048576 << "/" 
+    os << "InstanceCache " << instanceCache.getSize() / 1048576 << "/"
        << instanceCache.getMaxSize() / 1048576 << " MB"
 #ifdef EQ_INSTRUMENT_CACHE
        << ", " << nReadHit << "/" << nRead << " reads, " << nWriteHit

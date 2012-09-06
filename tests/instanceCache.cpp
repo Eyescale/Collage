@@ -1,15 +1,16 @@
 
-/* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -21,11 +22,14 @@
 
 #include <test.h>
 
-#include <co/command.h>
-#include <co/commandCache.h>
+#include <co/buffer.h>
+#include <co/bufferCache.h>
 #include <co/init.h>
 #include <co/instanceCache.h>
+#include <co/nodeCommand.h>
 #include <co/localNode.h>
+#include <co/objectDataCommand.h>
+#include <co/objectDataOCommand.h>
 #include <co/objectVersion.h>
 
 #include <lunchbox/rng.h>
@@ -81,21 +85,19 @@ private:
 int main( int argc, char **argv )
 {
     co::init( argc, argv );
-    co::CommandCache commandCache;
+
+    co::BufferCache bufferCache;
     co::LocalNodePtr node = new co::LocalNode;
+    co::BufferPtr buffer = bufferCache.alloc( node, node, PACKET_SIZE );
 
-//    co::ObjectInstancePacket pkg( co::NodeID::ZERO, 0 );
-//    pkg.last = true;
-//    pkg.dataSize = PACKET_SIZE;
-//    pkg.version = 1;
-//    pkg.sequence = 0;
+    co::ObjectDataOCommand packet( co::Connections(),
+                                   co::CMD_NODE_OBJECT_INSTANCE,
+                                   co::COMMANDTYPE_CO_NODE, co::UUID(), 0, 1, 0,
+                                   PACKET_SIZE, true, 0 );
+    buffer->swap( packet.getBuffer( ));
+    co::ObjectDataCommand command( buffer );
 
-    co::CommandPtr command = commandCache.alloc( node, PACKET_SIZE );
-//    co::ObjectInstancePacket* packet =
-//        command->getModifiable< co::ObjectInstancePacket >();
-//    memcpy( packet, &pkg, sizeof( pkg ));
-
-    Reader** readers = static_cast< Reader** >( 
+    Reader** readers = static_cast< Reader** >(
         alloca( N_READER * sizeof( Reader* )));
 
     co::InstanceCache cache;
@@ -164,8 +166,8 @@ int main( int argc, char **argv )
     std::cout << cache << std::endl;
 
     TESTINFO( cache.getSize() == 0, cache.getSize( ));
-    TEST( command->getRefCount() ==  1 );
-    command = 0;
+    TEST( buffer->getRefCount() ==  2 ); // self + command
+    buffer = 0;
 
     TEST( co::exit( ));
     return EXIT_SUCCESS;

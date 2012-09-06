@@ -1,6 +1,7 @@
 
 /* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -372,11 +373,8 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          */
         CO_API void flushCommands();
 
-        /** @internal Clone the given command. */
-        CO_API CommandPtr cloneCommand( CommandPtr command );
-
         /** @internal Allocate a local command from the receiver thread. */
-        CO_API CommandPtr allocCommand( const uint64_t size );
+        CO_API BufferPtr allocCommand( const uint64_t size );
 
         /**
          * Dispatches a packet to the registered command queue.
@@ -385,7 +383,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * @return the result of the operation.
          * @sa Command::invoke
          */
-        CO_API virtual bool dispatchCommand( CommandPtr command );
+        CO_API virtual bool dispatchCommand( Command& command );
 
         /**
          * Acquire a singular send token from the given node.
@@ -468,11 +466,11 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
             registerCommand( command, func, destinationQueue );
         }
 
-        void _dispatchCommand( CommandPtr command );
+        void _dispatchCommand( Command& command );
         void   _redispatchCommands();
 
         /** The command functions. */
-        bool _cmdAckRequest( Command& packet );
+        bool _cmdAckRequest( Command& command );
         bool _cmdStopRcv( Command& command );
         bool _cmdStopCmd( Command& command );
         bool _cmdSetAffinity( Command& command );

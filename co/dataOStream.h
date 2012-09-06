@@ -1,6 +1,7 @@
 
 /* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -56,24 +57,19 @@ namespace DataStreamTest { class Sender; }
         CO_API bool hasSentData() const;
 
         /** @internal */
-        const Connections& getConnections() const;
+        CO_API const Connections& getConnections() const;
 
         /** @internal */
-        uint32_t getCompressor() const;
+        CO_API lunchbox::Bufferb& getBuffer();
 
-        /** @internal */
-        uint32_t getNumChunks() const;
+        /** @internal Stream the data header (compressor, nChunks). */
+        DataOStream& streamDataHeader( DataOStream& os );
 
-        /**
-         * Collect compressed data.
-         * @return the total size of the compressed data.
-         * @internal
-         */
-        CO_API uint64_t getCompressedData( void** chunks,
-                                            uint64_t* chunkSizes ) const;
+        /** @internal Send the (compressed) data using the given connection. */
+        void sendData( ConnectionPtr connection, const uint64_t dataSize );
 
-        /** @internal */
-        lunchbox::Bufferb& getBuffer();
+        /** @internal @return the compressed data size, 0 if uncompressed.*/
+        uint64_t getCompressedDataSize() const;
         //@}
 
         /** @name Data output */
@@ -146,6 +142,10 @@ namespace DataStreamTest { class Sender; }
 
     private:
         detail::DataOStream* const _impl;
+
+        /** Collect compressed data. */
+        CO_API uint64_t _getCompressedData( void** chunks,
+                                            uint64_t* chunkSizes ) const;
 
         /** Write a number of bytes from data into the stream. */
         CO_API void _write( const void* data, uint64_t size );

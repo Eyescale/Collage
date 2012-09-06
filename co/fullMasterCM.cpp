@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -17,10 +18,8 @@
 
 #include "fullMasterCM.h"
 
-#include "command.h"
 #include "log.h"
 #include "node.h"
-#include "nodeICommand.h"
 #include "object.h"
 #include "objectDataIStream.h"
 
@@ -34,8 +33,6 @@ namespace
 lunchbox::a_int32_t _bytesBuffered;
 #endif
 }
-
-typedef CommandFunc<FullMasterCM> CmdFunc;
 
 FullMasterCM::FullMasterCM( Object* object )
         : VersionedMasterCM( object )
@@ -110,7 +107,7 @@ void FullMasterCM::_updateCommitCount( const uint32_t incarnation )
     }
 
     LBASSERTINFO( incarnation >= _commitCount,
-		  "Detected decreasing commit incarnation counter" );
+          "Detected decreasing commit incarnation counter" );
     _commitCount = incarnation;
 
     // obsolete 'future' old packages
@@ -163,11 +160,13 @@ void FullMasterCM::_obsolete()
     _checkConsistency();
 }
 
-void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
-                               Command& command, uint128_t replyVersion,
+void FullMasterCM::_initSlave( MasterCMCommand command,
+                               const uint128_t& /*replyVersion*/,
                                bool replyUseCache )
 {
     _checkConsistency();
+
+    const uint128_t& version = command.getRequestedVersion();
 
     const uint128_t oldest = _instanceDatas.front()->os.getVersion();
     uint128_t start = (version == VERSION_OLDEST || version < oldest ) ?
@@ -180,18 +179,9 @@ void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
                << version << std::endl;
 #endif
 
-    NodeICommand stream( &command );
-    /*const uint128_t& requested = */stream.get< uint128_t >();
-    const uint128_t& minCachedVersion = stream.get< uint128_t >();
-    const uint128_t& maxCachedVersion = stream.get< uint128_t >();
-    const UUID& id = stream.get< UUID >();
-    /*const uint64_t maxVersion = */stream.get< uint64_t >();
-    const uint32_t requestID = stream.get< uint32_t >();
-    const uint32_t instanceID = stream.get< uint32_t >();
-    /*const uint32_t masterInstanceID = */stream.get< uint32_t >();
-    const bool useCache = stream.get< bool >();
-
-    replyVersion = start;
+    const uint128_t& minCachedVersion = command.getMinCachedVersion();
+    const uint128_t& maxCachedVersion = command.getMaxCachedVersion();
+    const uint128_t replyVersion = start;
     if( replyUseCache )
     {
         if( minCachedVersion <= start &&
@@ -233,13 +223,13 @@ void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
     {
         if( !dataSent )
         {
-            _sendMapSuccess( node, id, requestID, instanceID, true );
+            _sendMapSuccess( command, true );
             dataSent = true;
         }
 
         InstanceData* data = *i;
         LBASSERT( data );
-        data->os.sendMapData( node, instanceID );
+        data->os.sendMapData( command.getNode(), command.getInstanceID( ));
 
 #ifdef EQ_INSTRUMENT_MULTICAST
         ++_miss;
@@ -248,13 +238,11 @@ void FullMasterCM::_initSlave( NodePtr node, const uint128_t& version,
 
     if( !dataSent )
     {
-        _sendMapSuccess( node, id, requestID, instanceID, false );
-        _sendMapReply( node, id, requestID, replyVersion, true, useCache,
-                       replyUseCache, false );
+        _sendMapSuccess( command, false );
+        _sendMapReply( command, replyVersion, true, replyUseCache, false );
     }
     else
-        _sendMapReply( node, id, requestID, replyVersion, true, useCache,
-                       replyUseCache, true );
+        _sendMapReply( command, replyVersion, true, replyUseCache, true );
 
 #ifdef EQ_INSTRUMENT_MULTICAST
     if( _miss % 100 == 0 )

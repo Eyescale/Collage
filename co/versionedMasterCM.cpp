@@ -1,15 +1,16 @@
 
-/* Copyright (c) 2010-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2010-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -20,7 +21,7 @@
 #include "command.h"
 #include "log.h"
 #include "object.h"
-#include "objectDataICommand.h"
+#include "objectDataCommand.h"
 #include "objectDataIStream.h"
 
 namespace co
@@ -61,7 +62,7 @@ uint128_t VersionedMasterCM::sync( const uint128_t& inVersion )
     LBASSERTINFO( inVersion.high() != 0 || inVersion == VERSION_NEXT ||
                   inVersion == VERSION_HEAD, inVersion );
 #if 0
-    LBLOG( LOG_OBJECTS ) << "sync to v" << inVersion << ", id " 
+    LBLOG( LOG_OBJECTS ) << "sync to v" << inVersion << ", id "
                          << _object->getID() << "." << _object->getInstanceID()
                          << std::endl;
 #endif
@@ -88,7 +89,7 @@ uint128_t VersionedMasterCM::_apply( ObjectDataIStream* is )
 {
     LBASSERT( !is->hasInstanceData( ));
     _object->unpack( *is );
-    LBASSERTINFO( is->getRemainingBufferSize() == 0 && 
+    LBASSERTINFO( is->getRemainingBufferSize() == 0 &&
                   is->nRemainingBuffers()==0,
                   "Object " << lunchbox::className( _object ) <<
                   " did not unpack all data" );
@@ -99,24 +100,15 @@ uint128_t VersionedMasterCM::_apply( ObjectDataIStream* is )
     return version;
 }
 
-void VersionedMasterCM::addSlave( Command& command )
+void VersionedMasterCM::addSlave( MasterCMCommand command )
 {
     LB_TS_THREAD( _cmdThread );
     Mutex mutex( _slaves );
 
-    NodeICommand stream( &command );
-    /*const uint128_t& version = */stream.get< uint128_t >();
-    /*const uint128_t& minCachedVersion = */stream.get< uint128_t >();
-    /*const uint128_t& maxCachedVersion = */stream.get< uint128_t >();
-    /*const UUID& id = */stream.get< UUID >();
-    const uint64_t maxVersion = stream.get< uint64_t >();
-    /*const uint32_t requestID = */stream.get< uint32_t >();
-    const uint32_t instanceID = stream.get< uint32_t >();
-
     SlaveData data;
     data.node = command.getNode();
-    data.instanceID = instanceID;
-    data.maxVersion = maxVersion;
+    data.instanceID = command.getInstanceID();
+    data.maxVersion = command.getMaxVersion();
     if( data.maxVersion == 0 )
         data.maxVersion = std::numeric_limits< uint64_t >::max();
     else if( data.maxVersion < std::numeric_limits< uint64_t >::max( ))
@@ -195,22 +187,22 @@ void VersionedMasterCM::_updateMaxVersion()
 //---------------------------------------------------------------------------
 // command handlers
 //---------------------------------------------------------------------------
-bool VersionedMasterCM::_cmdSlaveDelta( Command& command )
+bool VersionedMasterCM::_cmdSlaveDelta( Command& cmd )
 {
+    ObjectDataCommand command( cmd );
+
     LB_TS_THREAD( _rcvThread );
 
-    ObjectDataICommand stream( &command );
-
-    if( _slaveCommits.addDataPacket( stream.get< UUID >(), command ))
+    if( _slaveCommits.addDataPacket( command.get< UUID >(), command ))
         _object->notifyNewVersion();
     return true;
 }
 
-bool VersionedMasterCM::_cmdMaxVersion( Command& command )
+bool VersionedMasterCM::_cmdMaxVersion( Command& cmd )
 {
-    ObjectICommand stream( &command );
-    const uint64_t version = stream.get< uint64_t >();
-    const uint32_t slaveID = stream.get< uint32_t >();
+    ObjectCommand command( cmd );
+    const uint64_t version = command.get< uint64_t >();
+    const uint32_t slaveID = command.get< uint32_t >();
 
     Mutex mutex( _slaves );
 

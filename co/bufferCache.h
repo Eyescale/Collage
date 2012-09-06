@@ -1,22 +1,23 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_COMMANDCACHE_H
-#define CO_COMMANDCACHE_H
+#ifndef CO_BUFFERCACHE_H
+#define CO_BUFFERCACHE_H
 
 #include <co/types.h>
 #include <co/api.h>
@@ -24,36 +25,34 @@
 
 namespace co
 {
-namespace detail { class CommandCache; }
-    
+namespace detail { class BufferCache; }
+
     /**
-     * A command cache handles the reuse of allocated packets for a node.
+     * A byffercache handles the reuse of allocated buffers for a node.
      *
-     * Commands are retained and released whenever they are not directly
+     * Buffers are retained and released whenever they are not directly
      * processed, e.g., when pushed to another thread using a CommandQueue.
      */
-    class CommandCache
+    class BufferCache
     {
     public:
-        CO_API CommandCache();
-        CO_API ~CommandCache();
+        CO_API BufferCache();
+        CO_API ~BufferCache();
 
-        /** @return a new command. */
-        CO_API CommandPtr alloc( NodePtr node, const uint64_t size );
+        /** @return a new buffer. */
+        CO_API BufferPtr alloc( NodePtr node, LocalNodePtr localNode,
+                                const uint64_t size );
 
-        /** @return a clone of a command. */
-        CO_API CommandPtr clone( CommandPtr from );
-
-        /** Flush all allocated commands. */
+        /** Flush all allocated buffers. */
         void flush();
 
     private:
-        detail::CommandCache* const _impl;
-        friend std::ostream& operator << ( std::ostream&, const CommandCache& );
+        detail::BufferCache* const _impl;
+        friend std::ostream& operator << ( std::ostream&, const BufferCache& );
         LB_TS_VAR( _thread );
     };
 
-    std::ostream& operator << ( std::ostream&, const CommandCache& );
+    std::ostream& operator << ( std::ostream&, const BufferCache& );
 }
 
-#endif //CO_COMMANDCACHE_H
+#endif //CO_BUFFERCACHE_H

@@ -1,16 +1,17 @@
 
 /* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
- *               2011, Carsten Rohn <carsten.rohn@rtt.ag>
+ *                    2011, Carsten Rohn <carsten.rohn@rtt.ag>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -18,12 +19,13 @@
 
 #include "queueSlave.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "commandQueue.h"
 #include "dataIStream.h"
 #include "global.h"
 #include "objectOCommand.h"
-#include "objectICommand.h"
+#include "objectCommand.h"
 #include "queueCommand.h"
 
 namespace co
@@ -77,7 +79,7 @@ void QueueSlave::applyInstanceData( co::DataIStream& is )
     _impl->master = localNode->connect( masterNodeID );
 }
 
-CommandPtr QueueSlave::pop()
+ObjectCommand QueueSlave::pop()
 {
     static lunchbox::a_int32_t _request;
     const int32_t request = ++_request;
@@ -91,15 +93,14 @@ CommandPtr QueueSlave::pop()
                     << _impl->prefetchAmount << getInstanceID() << request;
         }
 
-        CommandPtr cmd = _impl->queue.pop();
-        if( (*cmd)->command == CMD_QUEUE_ITEM )
-            return cmd;
+        ObjectCommand cmd( _impl->queue.pop( ));
+        if( cmd.getCommand() == CMD_QUEUE_ITEM )
+            return ObjectCommand( cmd );
 
-        LBASSERT( (*cmd)->command == CMD_QUEUE_EMPTY );
-        ObjectICommand stream( cmd );
-        const int32_t requestID = stream.get< int32_t >();
+        LBASSERT( cmd.getCommand() == CMD_QUEUE_EMPTY );
+        const int32_t requestID = cmd.get< int32_t >();
         if( requestID == request )
-            return 0;
+            return ObjectCommand( 0 );
         // else left-over or not our empty packet, discard and retry
     }
 }

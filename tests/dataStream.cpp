@@ -1,15 +1,16 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -20,19 +21,19 @@
 #include <co/dataIStream.h>
 #include <co/dataOStream.h>
 
+#include <co/buffer.h>
+#include <co/bufferCache.h>
 #include <co/connectionDescription.h>
 #include <co/command.h>
-#include <co/commandCache.h>
 #include <co/commandQueue.h>
 #include <co/connection.h>
 #include <co/init.h>
-#include <co/packets.h>
 #include <co/types.h>
 
 #include <lunchbox/thread.h>
 
 #include <co/objectDataOCommand.h> // private header
-#include <co/objectDataICommand.h> // private header
+#include <co/objectDataCommand.h> // private header
 #include <co/cpuCompressor.h> // private header
 
 // Tests the functionality of the DataOStream and DataIStream
@@ -50,21 +51,20 @@ protected:
     virtual void sendData( const void* buffer, const uint64_t size,
                            const bool last )
         {
-            co::ObjectDataOCommand command( getConnections(),
-                                            co::PACKETTYPE_CO_OBJECT,
-                                            co::CMD_OBJECT_DELTA, co::UUID(),
-                                            0, co::uint128_t(), 0, size, last,
-                                            buffer, this );
+            co::ObjectDataOCommand( getConnections(), co::CMD_OBJECT_DELTA,
+                                    co::COMMANDTYPE_CO_OBJECT, co::UUID(), 0,
+                                    co::uint128_t(), 0, size, last, this );
         }
 };
 
 class DataIStream : public co::DataIStream
 {
 public:
-    void addDataCommand( co::CommandPtr command )
+    void addDataCommand( co::ConstBufferPtr buffer )
         {
-            TESTINFO( (*command)->command == co::CMD_OBJECT_DELTA, command );
-            _commands.push( command );
+            co::ObjectDataCommand command( buffer );
+            TESTINFO( command.getCommand() == co::CMD_OBJECT_DELTA, command );
+            _commands.push( buffer );
         }
 
     virtual size_t nRemainingBuffers() const { return _commands.getSize(); }
@@ -75,18 +75,18 @@ protected:
     virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
                                 const void** chunkData, uint64_t* size )
         {
-            co::CommandPtr command = _commands.tryPop();
-            if( !command )
+            co::Command cmd = _commands.tryPop();
+            if( !cmd.isValid( ))
                 return false;
 
-            co::ObjectDataICommand stream( command );
+            co::ObjectDataCommand command( cmd );
 
-            TEST( stream.getCommand() == co::CMD_OBJECT_DELTA );
+            TEST( command.getCommand() == co::CMD_OBJECT_DELTA );
 
-            *size = stream.getDataSize();
-            *compressor = stream.getCompressor();
-            *nChunks = stream.getChunks();
-            *chunkData = stream.getRemainingBuffer( *size );
+            *size = command.getDataSize();
+            *compressor = command.getCompressor();
+            *nChunks = command.getChunks();
+            *chunkData = command.getRemainingBuffer( *size );
             return true;
         }
 
@@ -152,7 +152,7 @@ int main( int argc, char **argv )
     TEST( sender.start( ));
 
     ::DataIStream stream;
-    co::CommandCache commandCache;
+    co::BufferCache bufferCache;
     bool receiving = true;
 
     while( receiving )
@@ -162,22 +162,19 @@ int main( int argc, char **argv )
         TEST( connection->recvSync( 0, 0 ));
         TEST( size );
 
-        co::CommandPtr command = commandCache.alloc( 0, size );
-
-        char* ptr = reinterpret_cast< char* >(
-            command->getModifiable< co::Packet >( )) + sizeof( size );
-        connection->recvNB( ptr, size );
+        co::BufferPtr buffer = bufferCache.alloc( 0, 0, size );
+        connection->recvNB( buffer->getData(), size );
         TEST( connection->recvSync( 0, 0 ) );
-        TEST( command.isValid( ));
-        
-        switch( (*command)->command )
+        TEST( buffer->isValid( ));
+
+        co::ObjectDataCommand command( buffer );
+        switch( command.getCommand( ))
         {
             case co::CMD_OBJECT_DELTA:
             {
-                stream.addDataCommand( command );
-                TEST( !command->isFree( ));
-                co::ObjectDataICommand streamPkg( command );
-                receiving = !streamPkg.isLast();
+                stream.addDataCommand( buffer );
+                TEST( !buffer->isFree( ));
+                receiving = !command.isLast();
                 break;
             }
             default:
@@ -205,7 +202,7 @@ int main( int argc, char **argv )
     std::string message;
     stream >> message;
     TEST( message.length() == _message.length() );
-    TESTINFO( message == _message, 
+    TESTINFO( message == _message,
               '\'' <<  message << "' != '" << _message << '\'' );
 
     TEST( sender.join( ));

@@ -1,16 +1,17 @@
 
 /* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -47,21 +48,21 @@ namespace co
 
         /** @name Command Packet Dispatch */
         //@{
-        /** 
+        /**
          * Dispatches a command object packet to the registered command queue.
          *
-         * Object packets are dispatch to the appropriate objects mapped on 
+         * Object packets are dispatch to the appropriate objects mapped on
          * this session.
-         * 
-         * @param packet the command packet.
+         *
+         * @param command the command packet.
          * @return true if the command was dispatched, false otherwise.
          */
-        bool dispatchObjectCommand( CommandPtr packet );
+        bool dispatchObjectCommand( Command& command );
         //@}
 
         /** @name Object Registration */
         //@{
-        /** 
+        /**
          * Register a distributed object.
          *
          * Registering a distributed object assigns a session-unique identifier
@@ -75,7 +76,7 @@ namespace co
          */
         bool registerObject( Object* object );
 
-        /** 
+        /**
          * Deregister a distributed object.
          *
          * @param object the object instance.
@@ -83,41 +84,41 @@ namespace co
         virtual void deregisterObject( Object* object );
 
         /** Start mapping a distributed object. */
-        uint32_t mapObjectNB( Object* object, const UUID& id, 
+        uint32_t mapObjectNB( Object* object, const UUID& id,
                               const uint128_t& version );
 
         /** Start mapping a distributed object. */
-        uint32_t mapObjectNB( Object* object, const UUID& id, 
+        uint32_t mapObjectNB( Object* object, const UUID& id,
                               const uint128_t& version, NodePtr master );
 
         /** Finalize the mapping of a distributed object. */
         bool mapObjectSync( const uint32_t requestID );
 
-        /** 
+        /**
          * Unmap a mapped object.
-         * 
+         *
          * @param object the mapped object.
          */
         void unmapObject( Object* object );
 
-        /** 
+        /**
          * Attach an object to an identifier.
          *
          * Attaching an object to an identifier enables it to receive object
          * commands though the local node. It does not establish any data
          * mapping to other object instances with the same identifier.
-         * 
+         *
          * @param object the object.
          * @param id the object identifier.
          * @param instanceID the node-local instance identifier, or
          *                   EQ_ID_INVALID if this method should generate one.
          */
-        void attachObject( Object* object, const UUID& id, 
+        void attachObject( Object* object, const UUID& id,
                            const uint32_t instanceID );
 
-        /** 
+        /**
          * Detach an object.
-         * 
+         *
          * @param object the attached object.
          */
         void detachObject( Object* object );
@@ -140,7 +141,7 @@ namespace co
 
         /** Enable sending data of newly registered objects when idle. */
         void enableSendOnRegister();
-        
+
         /**
          * Disable sending data of newly registered objects when idle.
          *
@@ -149,7 +150,7 @@ namespace co
          * send-on-register gets deactivated, the associated queue is cleared
          * and all data send on multicast connections is finished.
          */
-        void disableSendOnRegister(); 
+        void disableSendOnRegister();
 
         /**
          * @internal
@@ -178,9 +179,9 @@ namespace co
         typedef stde::hash_map< lunchbox::uint128_t, Objects > ObjectsHash;
         typedef ObjectsHash::const_iterator ObjectsHashCIter;
 
-        /** All registered and mapped objects. 
+        /** All registered and mapped objects.
          *   - write locked only in receiver thread
-         *   - read unlocked in receiver thread 
+         *   - read unlocked in receiver thread
          *   - read locked in all other threads
          */
         lunchbox::Lockable< ObjectsHash, lunchbox::SpinLock > _objects;
@@ -199,16 +200,16 @@ namespace co
 
         /**
          * Returns the master node id for an identifier.
-         * 
+         *
          * @param id the identifier.
          * @return the master node, or UUID::ZERO if no master node is
          *         found for the identifier.
          */
         NodeID _findMasterNodeID( const UUID& id );
- 
+
         NodePtr _connectMaster( const UUID& id );
 
-        void _attachObject( Object* object, const UUID& id, 
+        void _attachObject( Object* object, const UUID& id,
                             const uint32_t instanceID );
         void _detachObject( Object* object );
 

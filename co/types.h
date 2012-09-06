@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -36,6 +37,7 @@ namespace co
 #define EQ_INSTANCE_ALL     0xffffffffu   //!< all object instances
 
 class Barrier;
+class Buffer;
 class CPUCompressor; //!< @internal
 class Command;
 class CommandQueue;
@@ -47,17 +49,18 @@ class DataOStream;
 class Global;
 class LocalNode;
 class Node;
-class NodeICommand;
 class NodeOCommand;
 class Object;
 class ObjectFactory;
 class ObjectHandler;
+class ObjectDataCommand;
 class ObjectDataIStream;
 class ObjectDataOCommand;
-class ObjectICommand;
+class ObjectCommand;
 class ObjectOCommand;
 class Plugin;        //!< @internal
 class PluginRegistry;
+class QueueItem;
 class QueueMaster;
 class QueueSlave;
 class Serializable;
@@ -65,7 +68,6 @@ class Zeroconf;
 struct CompressorInfo; //!< @internal
 template< class Q > class WorkerThread;
 struct ObjectVersion;
-struct Packet;
 
 using lunchbox::UUID;
 using lunchbox::uint128_t;
@@ -82,8 +84,6 @@ typedef lunchbox::RefPtr< const Node >            ConstNodePtr;
 typedef lunchbox::RefPtr< LocalNode >             LocalNodePtr;
 /** A reference pointer for const LocalNode pointers. */
 typedef lunchbox::RefPtr< const LocalNode >       ConstLocalNodePtr;
-/** A reference pointer for Commands. */
-typedef lunchbox::RefPtr< Command >               CommandPtr;
 /** A reference pointer for Connection pointers. */
 typedef lunchbox::RefPtr< Connection >            ConnectionPtr;
 /** A reference pointer for ConnectionDescription pointers. */
@@ -127,16 +127,15 @@ typedef ConnectionDescriptions::iterator         ConnectionDescriptionsIter;
 typedef ConnectionDescriptions::const_iterator   ConnectionDescriptionsCIter;
 
 /** @cond IGNORE */
-typedef std::vector< CommandPtr > Commands;
-typedef std::deque< CommandPtr > CommandDeque;
-typedef CommandDeque::const_iterator CommandDequeCIter;
+class MasterCMCommand;
+typedef lunchbox::RefPtr< Buffer > BufferPtr;
+typedef lunchbox::RefPtr< const Buffer > ConstBufferPtr;
+typedef std::deque< Command > CommandDeque;
 
 typedef std::vector< ObjectVersion > ObjectVersions;
 typedef ObjectVersions::const_iterator ObjectVersionsCIter;
 typedef std::deque< ObjectDataIStream* > ObjectDataIStreamDeque;
 typedef std::vector< ObjectDataIStream* > ObjectDataIStreams;
-
-typedef Commands::const_iterator CommandsCIter;
 
 typedef std::vector< CompressorInfo > CompressorInfos;
 typedef std::vector< const CompressorInfo* > CompressorInfoPtrs;

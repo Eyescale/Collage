@@ -1,16 +1,17 @@
 
 /* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -20,9 +21,9 @@
 #define CO_NODE_H
 
 #include <co/dispatcher.h>        // base class
+#include <co/commands.h>          // for COMMANDTYPE_CO_NODE enum
 #include <co/connection.h>        // used in inline template method
 #include <co/nodeType.h>          // for NODETYPE_CO_NODE enum
-#include <co/packets.h>           // for PACKETTYPE_CO_NODE enum
 #include <co/types.h>
 
 namespace co
@@ -59,16 +60,16 @@ namespace detail { class Node; }
         /** @return true if the node is local (listening), false otherwise. */
         bool isLocal() const { return isListening(); }
 
-        /** 
+        /**
          * Adds a new description how this node can be reached.
-         * 
+         *
          * @param cd the connection description.
          */
         CO_API void addConnectionDescription( ConnectionDescriptionPtr cd );
-        
-        /** 
+
+        /**
          * Removes a connection description.
-         * 
+         *
          * @param cd the connection description.
          * @return true if the connection description was removed, false
          *         otherwise.
@@ -102,8 +103,9 @@ namespace detail { class Node; }
          * @param multicast prefer multicast connection for sending
          * @return the stream object to pass additional data to
          */
-        NodeOCommand send( uint32_t cmd, uint32_t type = PACKETTYPE_CO_NODE,
-                           bool multicast = false );
+        CO_API NodeOCommand send( const uint32_t cmd,
+                                  const uint32_t type = COMMANDTYPE_CO_NODE,
+                                  const bool multicast = false );
         //@}
 
         CO_API const NodeID& getNodeID() const;
@@ -123,9 +125,9 @@ namespace detail { class Node; }
         /** Destructs this node. */
         CO_API virtual ~Node();
 
-        /** 
+        /**
          * Factory method to create a new node.
-         * 
+         *
          * @param type the type the node type
          * @return the node.
          * @sa getType()

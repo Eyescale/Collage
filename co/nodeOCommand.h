@@ -26,20 +26,57 @@ namespace co
 
 namespace detail { class NodeOCommand; }
 
-/** A DataOStream based command for co::Node. */
+/**
+ * A class for sending commands with data to local and external nodes.
+ *
+ * The data to this command is added via the interface provided by DataOStream.
+ * The command is send or dispatched after it goes out of scope, i.e. during
+ * destruction.
+ */
 class NodeOCommand : public DataOStream
 {
 public:
-    NodeOCommand( const Connections& connections, const uint32_t type,
-                  const uint32_t cmd );
+    /**
+     * Construct a command which is send & dispatched typically to a co::Node.
+     *
+     * @param receivers list of connections where to send the command to.
+     * @param cmd the command.
+     * @param type the command type for dispatching.
+     */
+    CO_API NodeOCommand( const Connections& receivers, const uint32_t cmd,
+                         const uint32_t type = COMMANDTYPE_CO_NODE );
 
-    NodeOCommand( NodeOCommand const& rhs );
+    /**
+     * Construct a command which is dispatched locally typically to a co::Node.
+     *
+     * @param dispatcher the dispatcher to dispatch this command.
+     * @param localNode the local node that holds the command cache.
+     * @param cmd the command.
+     * @param type the command type for dispatching.
+     */
+    CO_API NodeOCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
+                         const uint32_t cmd,
+                         const uint32_t type = COMMANDTYPE_CO_NODE );
 
-    virtual ~NodeOCommand();
+    /** @internal */
+    CO_API NodeOCommand( const NodeOCommand& rhs );
+
+    /** Send or dispatch this command during destruction. */
+    CO_API virtual ~NodeOCommand();
+
+    /**
+     * Allow external send of data along with this command.
+     *
+     * @param additionalSize size in bytes of additional data after header.
+     */
+    CO_API void sendHeaderUnlocked( const uint64_t additionalSize );
+
+    /** @return the static size of this command. */
+    CO_API static size_t getSize();
 
 protected:
-    virtual void sendData( const void* buffer, const uint64_t size,
-                           const bool last );
+    CO_API virtual void sendData( const void* buffer, const uint64_t size,
+                                  const bool last );
 
 private:
     detail::NodeOCommand* const _impl;

@@ -1,15 +1,16 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -17,9 +18,9 @@
 
 #include "versionedSlaveCM.h"
 
-#include "command.h"
 #include "log.h"
 #include "object.h"
+#include "objectDataCommand.h"
 #include "objectDataIStream.h"
 #include "objectDataOCommand.h"
 #include <lunchbox/scopedMutex.h>
@@ -63,7 +64,7 @@ VersionedSlaveCM::~VersionedSlaveCM()
 uint128_t VersionedSlaveCM::commit( const uint32_t incarnation )
 {
 #if 0
-    LBLOG( LOG_OBJECTS ) << "commit v" << _version << " " << command 
+    LBLOG( LOG_OBJECTS ) << "commit v" << _version << " " << command
                          << std::endl;
 #endif
     if( !_object->isDirty() || !_master || !_master->isReachable( ))
@@ -94,7 +95,7 @@ uint128_t VersionedSlaveCM::sync( const uint128_t& v )
     const uint128_t version = ( v == VERSION_NEXT ) ? _version + 1 : v;
     LBASSERTINFO( version.high() == 0, "Not a master version: " << version )
     LBASSERTINFO( _version <= version,
-                  "can't sync to older version of object " << 
+                  "can't sync to older version of object " <<
                   lunchbox::className( _object ) << " " << _object->getID() <<
                   " (" << _version << ", " << version <<")" );
 
@@ -140,13 +141,13 @@ uint128_t VersionedSlaveCM::getHeadVersion() const
         LBASSERT( is );
         return is->getVersion();
     }
-    return _version;    
+    return _version;
 }
 
 void VersionedSlaveCM::_unpackOneVersion( ObjectDataIStream* is )
 {
     LBASSERT( is );
-    LBASSERTINFO( _version == is->getVersion() - 1, "Expected version " 
+    LBASSERTINFO( _version == is->getVersion() - 1, "Expected version "
                   << _version + 1 << ", got " << is->getVersion() << " for "
                   << *_object );
 
@@ -258,7 +259,7 @@ void VersionedSlaveCM::addInstanceDatas( const ObjectDataIStreamDeque& cache,
         const uint128_t& version = stream->getVersion();
         if( version < startVersion )
             continue;
-        
+
         LBASSERT( stream->isReady( ));
         LBASSERT( stream->hasInstanceData( ));
         if( !stream->isReady( ))
@@ -299,7 +300,7 @@ void VersionedSlaveCM::addInstanceDatas( const ObjectDataIStreamDeque& cache,
         if( debugStream )
         {
             LBASSERT( debugStream->getVersion() + 1 == stream->getVersion( ));
-        } 
+        }
 #endif
         _queuedVersions.push( new ObjectDataIStream( *stream ));
 #if 0
@@ -314,15 +315,17 @@ void VersionedSlaveCM::addInstanceDatas( const ObjectDataIStreamDeque& cache,
 //---------------------------------------------------------------------------
 // command handlers
 //---------------------------------------------------------------------------
-bool VersionedSlaveCM::_cmdData( Command& command )
+bool VersionedSlaveCM::_cmdData( Command& cmd )
 {
+    ObjectDataCommand command( cmd );
+
     LB_TS_THREAD( _rcvThread );
     LBASSERT( command.getNode().isValid( ));
 
     if( !_currentIStream )
         _currentIStream = _iStreamCache.alloc();
 
-    _currentIStream->addDataPacket( &command );
+    _currentIStream->addDataPacket( command );
     if( _currentIStream->isReady( ))
     {
         const uint128_t& version = _currentIStream->getVersion();

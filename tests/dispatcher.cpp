@@ -1,15 +1,16 @@
 
 /* Copyright (c) 2012, Stefan Eilemann <eile@eyescale.ch>
+ *               2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -19,12 +20,13 @@
 #pragma warning( disable: 4407 )
 
 #include <test.h>
+#include <co/buffer.h>
+#include <co/bufferCache.h>
 #include <co/command.h>
-#include <co/commandCache.h>
 #include <co/commandFunc.h>
 #include <co/dispatcher.h>
 #include <co/localNode.h>
-#include <co/packets.h>
+#include <co/nodeOCommand.h>
 
 size_t calls = 0;
 
@@ -61,16 +63,6 @@ public:
             TESTINFO( getBars() == 13, getBars( ));
             ++calls;
             return true;
-        }
-};
-
-struct Packet : public co::Packet
-{
-    Packet()
-        {
-            type = co::PACKETTYPE_CO_NODE;
-            command = co::CMD_NODE_CUSTOM;
-            size = sizeof( Packet ); 
         }
 };
 
@@ -122,12 +114,14 @@ public:
 
 int main( int argc, char **argv )
 {
-    co::CommandCache cache;
+    co::BufferCache cache;
     co::LocalNodePtr node = new co::LocalNode;
-    co::CommandPtr command = cache.alloc( node, sizeof( Packet ));
-    Packet* packet = command->getModifiable< Packet >();
+    co::BufferPtr buffer = cache.alloc( node, node,
+                                        co::NodeOCommand::getSize( ));
 
-    *packet = Packet();
+    co::Command command( buffer );
+    command.setType( co::COMMANDTYPE_CO_NODE );
+    command.setCommand( co::CMD_NODE_CUSTOM );
 
     Bar bar;
     FooBar fooBar;

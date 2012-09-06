@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -26,7 +26,7 @@ namespace co
 {
 namespace detail { class CommandQueue; }
 
-    /** A thread-safe queue for Command packets. */
+    /** A thread-safe queue for Command buffers. */
     class CommandQueue : public lunchbox::NonCopyable
     {
     public:
@@ -36,18 +36,18 @@ namespace detail { class CommandQueue; }
         /** Destruct a new command queue. @version 1.0 */
         CO_API virtual ~CommandQueue();
 
-        /** 
+        /**
          * Push a command to the queue.
-         * 
-         * @param packet the command packet.
+         *
+         * @param command the command.
          * @version 1.0
          */
-        CO_API virtual void push( CommandPtr packet );
+        CO_API virtual void push( const Command& command );
 
         /** Push a command to the front of the queue. @version 1.0 */
-        CO_API virtual void pushFront( CommandPtr packet );
+        CO_API virtual void pushFront( const Command& command );
 
-        /** 
+        /**
          * Pop a command from the queue.
          *
          * @param timeout the time in ms to wait for the operation.
@@ -55,20 +55,20 @@ namespace detail { class CommandQueue; }
          * @throw Exception on timeout.
          * @version 1.0
          */
-        CO_API virtual CommandPtr pop( const uint32_t timeout =
+        CO_API virtual Command pop( const uint32_t timeout =
                                        LB_TIMEOUT_INDEFINITE );
 
-        /** 
+        /**
          * Try to pop a command from the queue.
          *
          * @return the next command in the queue, or 0 if no command is queued.
          * @version 1.0
          */
-        CO_API virtual CommandPtr tryPop();
+        CO_API virtual Command tryPop();
 
-        /** 
+        /**
          * @return <code>true</code> if the command queue is empty,
-         *         <code>false</code> if not. 
+         *         <code>false</code> if not.
          * @version 1.0
          */
         CO_API bool isEmpty() const;

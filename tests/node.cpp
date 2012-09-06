@@ -1,5 +1,6 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -23,7 +24,6 @@
 #include <co/init.h>
 #include <co/node.h>
 #include <co/nodeOCommand.h>
-#include <co/nodeICommand.h>
 #include <lunchbox/clock.h>
 #include <lunchbox/monitor.h>
 #include <lunchbox/rng.h>
@@ -60,11 +60,10 @@ public:
 protected:
     bool command( co::Command& cmd )
         {
-            TEST( cmd->command == co::CMD_NODE_CUSTOM );
+            TEST( cmd.getCommand() == co::CMD_NODE_CUSTOM );
             TEST( _messagesLeft > 0 );
 
-            co::NodeICommand stream( &cmd );
-            const std::string& data = stream.get< std::string >();
+            const std::string& data = cmd.get< std::string >();
             TESTINFO( message == data, data );
 
             --_messagesLeft;
@@ -112,7 +111,8 @@ int main( int argc, char **argv )
         serverProxy->send( co::CMD_NODE_CUSTOM ) << message;
     const float time = clock.getTimef();
 
-    const size_t size = NMESSAGES * ( /*packet.size +*/ message.length() - 7 );
+    const size_t size = NMESSAGES * ( co::NodeOCommand::getSize() +
+                                      message.length() - 7 );
     std::cout << "Send " << size << " bytes using " << NMESSAGES
               << " packets in " << time << "ms" << " (" 
               << size / 1024. * 1000.f / time << " KB/s)" << std::endl;

@@ -1,6 +1,7 @@
 
-/* Copyright (c) 2011, Stefan Eilemann <eile@eyescale.ch> 
- *               2011, Carsten Rohn <carsten.rohn@rtt.ag> 
+/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch> 
+ *                    2011, Carsten Rohn <carsten.rohn@rtt.ag> 
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -49,21 +50,27 @@ public:
      *
      * @param prefetchMark the low-water mark for prefetching.
      * @param prefetchAmount the refill quantity when prefetching.
-     * @version 1.1.6
+     * @version 1.0
      */
     CO_API QueueSlave( const uint32_t prefetchMark = 
                        Global::getIAttribute( Global::IATTR_QUEUE_MIN_SIZE ),
                        const uint32_t prefetchAmount = 
                        Global::getIAttribute( Global::IATTR_QUEUE_REFILL ));
 
-    /** Destruct this new queue consumer. @version 1.1.6 */
+    /** Destruct this new queue consumer. @version 1.0 */
     virtual CO_API ~QueueSlave();
 
     /**
-     * @return an item from the distributed queue, or 0 if the queue is empty.
-     * @version 1.1.6
+     * Dequeue an item.
+     *
+     * The returned item can deserialize additional data using the DataIStream
+     * operators.
+     *
+     * @return an item from the distributed queue, or an invalid item if the
+     *         queue is empty.
+     * @version 1.0
      */
-    CO_API CommandPtr pop();
+    CO_API ObjectCommand pop();
 
 private:
     detail::QueueSlave* const _impl;
