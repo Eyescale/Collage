@@ -42,12 +42,13 @@ public:
     /** @internal */
     CO_API ObjectCommand( ConstBufferPtr buffer );
 
-    /** Construct an object command from a base command. */
+    /** @internal */
     CO_API ObjectCommand( const Command& command );
 
-    /** @internal */
+    /** Copy-construct an object command. */
     CO_API ObjectCommand( const ObjectCommand& rhs );
 
+    /** Destruct an object command. */
     CO_API virtual ~ObjectCommand();
 
     /** @internal @return the object adressed by this command. */

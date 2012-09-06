@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -73,6 +74,7 @@
 #include <co/global.h>
 #include <co/init.h>
 #include <co/object.h>
+#include <co/objectCommand.h>
 #include <co/serializable.h>
 #include <co/zeroconf.h>
 #include <lunchbox/lunchbox.h>

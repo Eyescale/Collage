@@ -110,7 +110,7 @@ namespace DataStreamTest { class Sender; }
         void _flush();
 
         /** @internal
-         * Set up the connection list for a group of  nodes, using multicast
+         * Set up the connection list for a group of nodes, using multicast
          * where possible.
          */
         void _setupConnections( const Nodes& receivers );

@@ -28,7 +28,7 @@ namespace co
 namespace detail { class BufferCache; }
 
     /**
-     * A byffercache handles the reuse of allocated buffers for a node.
+     * A buffercache handles the reuse of allocated buffers for a node.
      *
      * Buffers are retained and released whenever they are not directly
      * processed, e.g., when pushed to another thread using a CommandQueue.

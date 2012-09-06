@@ -1,6 +1,12 @@
 
 This file lists all changes in the public Collage API, latest on top:
 
+06/Sep/2012
+  New stream-based commands supersedes packet-based messaging. New send()
+  methods in co::Node & co::Object replaces old API. All packets are superseded
+  by NodeOCommand & ObjectOOCommand for sending commands, and by Command &
+  ObjectCommand for receiving commands.
+
 09/Aug/2012
   Made co::DataOStream::write private. Use 'os << co::Array< T >( ptr, num )'
   instead.

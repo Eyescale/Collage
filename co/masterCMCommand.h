@@ -30,39 +30,28 @@ namespace detail { class MasterCMCommand; }
 class MasterCMCommand : public Command
 {
 public:
-    /** Construct a master CM command from a base command. */
     MasterCMCommand( const Command& command );
 
-    /** @internal */
     MasterCMCommand( const MasterCMCommand& rhs );
 
     virtual ~MasterCMCommand();
 
-    /** @internal */
     const uint128_t& getRequestedVersion() const;
 
-    /** @internal */
     const uint128_t& getMinCachedVersion() const;
 
-    /** @internal */
     const uint128_t& getMaxCachedVersion() const;
 
-    /** @internal */
     const UUID& getObjectID() const;
 
-    /** @internal */
     uint64_t getMaxVersion() const;
 
-    /** @internal */
     uint32_t getRequestID() const;
 
-    /** @internal */
     uint32_t getInstanceID() const;
 
-    /** @internal */
     uint32_t getMasterInstanceID() const;
 
-    /** @internal */
     bool useCache() const;
 
 private:

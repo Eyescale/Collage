@@ -318,14 +318,14 @@ namespace co
          * Send a command with optional data to object instance(s) on another
          * node.
          *
-         * The returned data stream can be used to pass additional data to the
-         * given command. The data will be send after the stream is destroyed,
-         * aka when it is running out of scope.
+         * The returned command can be used to pass additional data. The data
+         * will be send after the command object is destroyed, aka when it is
+         * running out of scope.
          *
          * @param node the node where to send the command to
          * @param cmd the object command to execute
          * @param instanceID the object instance which should handle the command
-         * @return the stream object to pass additional data to
+         * @return the command object to pass additional data to
          */
         CO_API ObjectOCommand send( NodePtr node, const uint32_t cmd,
                                   const uint32_t instanceID = EQ_INSTANCE_ALL );
