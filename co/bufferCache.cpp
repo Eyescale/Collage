@@ -25,8 +25,8 @@
 
 #define COMPACT
 //#define PROFILE
-// 31300 hits, 35 misses, 297640 lookups, 126976b allocated in 31 packets
-// 31300 hits, 35 misses, 49228 lookups, 135168b allocated in 34 packets
+// 31300 hits, 35 misses, 297640 lookups, 126976b allocated in 31 buffers
+// 31300 hits, 35 misses, 49228 lookups, 135168b allocated in 34 buffers
 
 namespace co
 {
@@ -42,9 +42,9 @@ enum Cache
 typedef std::vector< Buffer* > Data;
 typedef Data::const_iterator DataCIter;
 
-// minimum number of free packets, at least 2
+// minimum number of free buffers, at least 2
 static const int32_t _minFree[ CACHE_ALL ] = { 200, 20 };
-static const uint32_t _freeShift = 1; // 'size >> shift' packets can be free
+static const uint32_t _freeShift = 1; // 'size >> shift' buffers can be free
 
 #ifdef PROFILE
 static lunchbox::a_int32_t _hits;
@@ -152,7 +152,7 @@ public:
                                 LBINFO << _hits << "/" << _hits + _misses
                                        << " hits, " << _lookups << " lookups, "
                                        << _free[j] << " of " << cmds.size()
-                                       << " packets free (min " << _minFree[ j ]
+                                       << " buffers free (min " << _minFree[ j ]
                                        << " max " << _maxFree[ j ] << "), "
                                        << _allocs << " allocs, " << _frees
                                        << " frees, " << size / 1024 << "KB"
@@ -255,7 +255,7 @@ BufferPtr BufferCache::alloc( NodePtr node, LocalNodePtr localNode,
 {
     LB_TS_THREAD( _thread );
     LBASSERTINFO( size < LB_BIT48,
-                  "Out-of-sync network stream: packet size " << size << "?" );
+                  "Out-of-sync network stream: buffer size " << size << "?" );
 
     const Cache which = (size > Buffer::getMinSize()) ? CACHE_BIG : CACHE_SMALL;
     BufferPtr buffer = _impl->newBuffer( which );
@@ -268,7 +268,7 @@ std::ostream& operator << ( std::ostream& os, const BufferCache& cache )
     const Data& buffers = cache._impl->cache[ CACHE_SMALL ];
     os << lunchbox::disableFlush << "Cache has "
        << buffers.size() - cache._impl->free[ CACHE_SMALL ]
-       << " used small packets:" << std::endl
+       << " used small buffers:" << std::endl
        << lunchbox::indent << lunchbox::disableHeader;
 
     for( DataCIter i = buffers.begin(); i != buffers.end(); ++i )

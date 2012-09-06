@@ -20,7 +20,6 @@
 #define EQNET_NULLCM_H
 
 #include "objectCM.h"    // base class
-#include "command.h"
 
 namespace co
 {
@@ -47,7 +46,7 @@ namespace co
         virtual uint32_t getMasterInstanceID() const
             { LBDONTCALL; return EQ_INSTANCE_INVALID; }
 
-        virtual void addSlave( Command command ) { LBDONTCALL; }
+        virtual void addSlave( MasterCMCommand command ) { LBDONTCALL; }
         virtual void removeSlaves( NodePtr ) { LBDONTCALL; }
 
     private:

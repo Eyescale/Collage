@@ -74,7 +74,7 @@ void DataIStreamQueue::recycle( ObjectDataIStream* stream )
 #endif
 }
 
-bool DataIStreamQueue::addDataPacket( const uint128_t& key, Command& command )
+bool DataIStreamQueue::addDataCommand( const uint128_t& key, Command& command )
 {
     LB_TS_THREAD( _thread );
     LBASSERTINFO( _pending.size() < 100, "More than 100 pending commits");
@@ -86,7 +86,7 @@ bool DataIStreamQueue::addDataPacket( const uint128_t& key, Command& command )
     else
         istream = i->second;
 
-    istream->addDataPacket( command );
+    istream->addDataCommand( command );
     if( istream->isReady( ))
     {
         if( i != _pending.end( ))

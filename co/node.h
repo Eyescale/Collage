@@ -94,14 +94,14 @@ namespace detail { class Node; }
         /**
          * Send a command with optional data to the node.
          *
-         * The returned data stream can be used to pass additional data to the
-         * given command. The data will be send after the stream is destroyed,
-         * aka when it is running out of scope.
+         * The returned command can be used to pass additional data. The data
+         * will be send after the command object is destroyed, aka when it is
+         * running out of scope.
          *
          * @param cmd the node command to execute
          * @param type the type of object that should handle this command
          * @param multicast prefer multicast connection for sending
-         * @return the stream object to pass additional data to
+         * @return the command object to pass additional data to
          */
         CO_API NodeOCommand send( const uint32_t cmd,
                                   const uint32_t type = COMMANDTYPE_CO_NODE,

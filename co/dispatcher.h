@@ -28,10 +28,10 @@ namespace co
 namespace detail { class Dispatcher; }
 
     /**
-     * A helper class providing command packet dispatch functionality to
-     * networked objects.
+     * A helper class providing command dispatch functionality to networked
+     * objects.
      *
-     * Provides packet dispatch through a command queue and command handler
+     * Provides command dispatch through a command queue and command handler
      * table.
      */
     class Dispatcher

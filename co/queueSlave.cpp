@@ -101,7 +101,7 @@ ObjectCommand QueueSlave::pop()
         const int32_t requestID = cmd.get< int32_t >();
         if( requestID == request )
             return ObjectCommand( 0 );
-        // else left-over or not our empty packet, discard and retry
+        // else left-over or not our empty command, discard and retry
     }
 }
 

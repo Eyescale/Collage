@@ -28,7 +28,7 @@
 #include <co/nodeOCommand.h>
 #include <lunchbox/clock.h>
 
-// Tests the functionality of the network packet cache
+// Tests the functionality of the network command cache
 
 #define N_READER 13
 #define RUNTIME 5000

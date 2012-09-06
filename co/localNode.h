@@ -377,7 +377,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         CO_API BufferPtr allocCommand( const uint64_t size );
 
         /**
-         * Dispatches a packet to the registered command queue.
+         * Dispatches a command to the registered command queue.
          *
          * @param command the command.
          * @return the result of the operation.

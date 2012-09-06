@@ -54,7 +54,7 @@ namespace co
         virtual uint32_t getMasterInstanceID() const
             { LBDONTCALL; return EQ_INSTANCE_INVALID; }
 
-        virtual void addSlave( Command command )
+        virtual void addSlave( MasterCMCommand command )
             { ObjectCM::_addSlave( command, VERSION_FIRST ); }
         virtual void removeSlaves( NodePtr ) { /* NOP */}
     };
