@@ -75,7 +75,7 @@ public:
     lunchbox::Lockable< ConnectionDescriptions, lunchbox::SpinLock >
         connectionDescriptions;
 
-    /** Last time packets were received */
+    /** Last time commands were received */
     int64_t lastReceive;
 
     Node() : id( true ), state( STATE_CLOSED ), lastReceive ( 0 ) {}

@@ -193,7 +193,7 @@ bool VersionedMasterCM::_cmdSlaveDelta( Command& cmd )
 
     LB_TS_THREAD( _rcvThread );
 
-    if( _slaveCommits.addDataPacket( command.get< UUID >(), command ))
+    if( _slaveCommits.addDataCommand( command.get< UUID >(), command ))
         _object->notifyNewVersion();
     return true;
 }

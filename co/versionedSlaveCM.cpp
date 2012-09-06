@@ -325,7 +325,7 @@ bool VersionedSlaveCM::_cmdData( Command& cmd )
     if( !_currentIStream )
         _currentIStream = _iStreamCache.alloc();
 
-    _currentIStream->addDataPacket( command );
+    _currentIStream->addDataCommand( command );
     if( _currentIStream->isReady( ))
     {
         const uint128_t& version = _currentIStream->getVersion();

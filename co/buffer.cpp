@@ -35,8 +35,8 @@ public:
     {}
 
     lunchbox::a_int32_t& _freeCount;
-    NodePtr _node; //!< The node sending the packet
-    LocalNodePtr  _localNode; //!< The node receiving the packet
+    NodePtr _node; //!< The node sending the command
+    LocalNodePtr  _localNode; //!< The node receiving the command
 };
 }
 

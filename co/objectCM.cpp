@@ -120,7 +120,7 @@ void ObjectCM::_initSlave( MasterCMCommand command, const uint128_t& replyVersio
     _object->getInstanceData( os );
     os.disable();
     if( !os.hasSentData( ))
-        // no data, send empty packet to set version
+        // no data, send empty command to set version
         _sendEmptyVersion( command, replyVersion, true /* mc */ );
 
     _sendMapReply( command, replyVersion, true, replyUseCache, true );

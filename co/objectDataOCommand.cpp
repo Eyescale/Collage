@@ -83,7 +83,7 @@ void ObjectDataOCommand::sendData( const void* buffer, const uint64_t size,
     LBASSERT( last );
     LBASSERT( size > 0 );
 
-    const uint64_t finalSize = size +                        // packet header
+    const uint64_t finalSize = size +                        // command header
                                _impl->userBuffer.getSize() + // userBuffer
                                _impl->dataSize;
 

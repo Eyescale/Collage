@@ -165,7 +165,7 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
     LBASSERT( !item.data.versions.empty( ));
     ObjectDataIStream* stream = item.data.versions.back();
 
-    stream->addDataPacket( command );
+    stream->addDataCommand( command );
 
     if( stream->isReady( ))
         _size += stream->getDataSize();

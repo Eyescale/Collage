@@ -452,7 +452,7 @@ void ObjectStore::unmapObject( Object* object )
 
     object->notifyDetach();
 
-    // send unsubscribe to master, master will send detach packet.
+    // send unsubscribe to master, master will send detach command.
     LBASSERT( !object->isMaster( ));
     LB_TS_NOT_THREAD( _commandThread );
 
@@ -576,14 +576,13 @@ bool ObjectStore::notifyCommandThreadIdle()
 
 void ObjectStore::removeNode( NodePtr node )
 {
-// TODO #145 implement sendSync() with implicit waitReq()
     const uint32_t requestID = _localNode->registerRequest();
     _localNode->send( CMD_NODE_REMOVE_NODE ) << node.get() << requestID;
     _localNode->waitRequest( requestID );
 }
 
 //===========================================================================
-// Packet handling
+// Command handling
 //===========================================================================
 bool ObjectStore::dispatchObjectCommand( Command& cmd )
 {
@@ -595,7 +594,7 @@ bool ObjectStore::dispatchObjectCommand( Command& cmd )
     ObjectsHash::const_iterator i = _objects->find( id );
 
     if( i == _objects->end( ))
-        // When the instance ID is set to none, we only care about the packet
+        // When the instance ID is set to none, we only care about the command
         // when we have an object of the given ID (multicast)
         return ( instanceID == EQ_INSTANCE_NONE );
 
@@ -829,7 +828,7 @@ bool ObjectStore::_cmdMapObjectSuccess( Command& command )
     const Object::ChangeType changeType = command.get< Object::ChangeType >();
     const uint32_t masterInstanceID = command.get< uint32_t >();
 
-    // Map success packets are potentially multicasted (see above)
+    // Map success commands are potentially multicasted (see above)
     // verify that we are the intended receiver
     if( nodeID != _localNode->getNodeID( ))
         return true;
@@ -865,7 +864,7 @@ bool ObjectStore::_cmdMapObjectReply( Command& command )
     LBLOG( LOG_OBJECTS ) << "Cmd map object reply " << command << " id "
                          << objectID << " req " << requestID << std::endl;
 
-    // Map reply packets are potentially multicasted (see above)
+    // Map reply commands are potentially multicasted (see above)
     // verify that we are the intended receiver
     if( nodeID != _localNode->getNodeID( ))
         return true;
@@ -1022,7 +1021,7 @@ bool ObjectStore::_cmdInstance( Command& comd )
       case CMD_NODE_OBJECT_INSTANCE_PUSH:
         LBASSERT( nodeID == NodeID::ZERO );
         LBASSERT( command.getInstanceID() == EQ_INSTANCE_NONE );
-        _pushData.addDataPacket( command.getObjectID(), command );
+        _pushData.addDataCommand( command.getObjectID(), command );
         return true;
 
       default:

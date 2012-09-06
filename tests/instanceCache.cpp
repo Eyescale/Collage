@@ -41,9 +41,9 @@
 #define N_READER 1
 #define RUNTIME 5000
 #ifdef NDEBUG
-#  define PACKET_SIZE 4096
+#  define COMMAND_SIZE 4096
 #else
-#  define PACKET_SIZE 2048
+#  define COMMAND_SIZE 2048
 #endif
 
 lunchbox::Clock _clock;
@@ -88,13 +88,13 @@ int main( int argc, char **argv )
 
     co::BufferCache bufferCache;
     co::LocalNodePtr node = new co::LocalNode;
-    co::BufferPtr buffer = bufferCache.alloc( node, node, PACKET_SIZE );
+    co::BufferPtr buffer = bufferCache.alloc( node, node, COMMAND_SIZE );
 
-    co::ObjectDataOCommand packet( co::Connections(),
-                                   co::CMD_NODE_OBJECT_INSTANCE,
-                                   co::COMMANDTYPE_CO_NODE, co::UUID(), 0, 1, 0,
-                                   PACKET_SIZE, true, 0 );
-    buffer->swap( packet.getBuffer( ));
+    co::ObjectDataOCommand ocommand( co::Connections(),
+                                     co::CMD_NODE_OBJECT_INSTANCE,
+                                     co::COMMANDTYPE_CO_NODE, co::UUID(), 0, 1,
+                                     0, COMMAND_SIZE, true, 0 );
+    buffer->swap( ocommand.getBuffer( ));
     co::ObjectDataCommand command( buffer );
 
     Reader** readers = static_cast< Reader** >(

@@ -55,7 +55,7 @@ void ObjectDataIStream::_reset()
     _version = VERSION_INVALID;
 }
 
-void ObjectDataIStream::addDataPacket( ObjectDataCommand command )
+void ObjectDataIStream::addDataCommand( ObjectDataCommand command )
 {
     LB_TS_THREAD( _thread );
     LBASSERT( !isReady( ));
@@ -149,7 +149,7 @@ bool ObjectDataIStream::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
 
     const uint64_t dataSize = command.getDataSize();
 
-    if( dataSize == 0 ) // empty packet
+    if( dataSize == 0 ) // empty command
         return getNextBuffer( compressor, nChunks, chunkData, size );
 
     *size = dataSize;
