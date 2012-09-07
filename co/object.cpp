@@ -1,15 +1,16 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -58,7 +59,7 @@ Object::~Object()
     LBASSERTINFO( !isAttached(),
                   "Object " << _id << " is still attached to node " <<
                   _localNode->getNodeID());
-    
+
     if( _localNode.isValid() )
         _localNode->releaseObject( this );
     _localNode = 0;
@@ -111,7 +112,7 @@ void Object::transfer( Object* from )
 {
     _id           = from->_id;
     _instanceID   = from->getInstanceID();
-    _cm           = from->_cm; 
+    _cm           = from->_cm;
     _localNode    = from->_localNode;
     _cm->setObject( this );
 
@@ -134,7 +135,7 @@ void Object::_setChangeManager( ObjectCM* cm )
     _cm = cm;
     cm->init();
     LBLOG( LOG_OBJECTS ) << "set new change manager " << lunchbox::className( cm )
-                         << " for " << lunchbox::className( this ) 
+                         << " for " << lunchbox::className( this )
                          << std::endl;
 }
 
@@ -145,13 +146,12 @@ void Object::setID( const UUID& identifier )
     _id = identifier;
 }
 
-ObjectOCommand Object::send( NodePtr node, uint32_t cmd,
+ObjectOCommand Object::send( NodePtr node, const uint32_t cmd,
                              const uint32_t instanceID )
 {
-    LBASSERT( isAttached() );
-    Connections connections( 1, node->getConnection() );
-    return ObjectOCommand( connections, COMMANDTYPE_CO_OBJECT,
-                           cmd, _id, instanceID );
+    Connections connections( 1, node->getConnection( ));
+    return ObjectOCommand( connections, cmd, COMMANDTYPE_CO_OBJECT, _id,
+                           instanceID );
 }
 
 void Object::push( const uint128_t& groupID, const uint128_t& typeID,
@@ -166,7 +166,7 @@ uint128_t Object::commit( const uint32_t incarnation )
 }
 
 
-void Object::setupChangeManager( const Object::ChangeType type, 
+void Object::setupChangeManager( const Object::ChangeType type,
                                  const bool master, LocalNodePtr localNode,
                                  const uint32_t masterInstanceID )
 {
@@ -192,7 +192,7 @@ void Object::setupChangeManager( const Object::ChangeType type,
             if( master )
                 _setChangeManager( new FullMasterCM( this ));
             else
-                _setChangeManager( new VersionedSlaveCM( this, 
+                _setChangeManager( new VersionedSlaveCM( this,
                                                          masterInstanceID ));
             break;
 
@@ -241,7 +241,7 @@ bool Object::isMaster() const
     return _cm->isMaster();
 }
 
-void Object::addSlave( Command& command )
+void Object::addSlave( MasterCMCommand& command )
 {
     _cm->addSlave( command );
 }
@@ -272,7 +272,7 @@ void Object::setAutoObsolete( const uint32_t count )
     _cm->setAutoObsolete( count );
 }
 
-uint32_t Object::getAutoObsolete() const 
+uint32_t Object::getAutoObsolete() const
 {
     return _cm->getAutoObsolete();
 }
@@ -295,9 +295,9 @@ uint128_t Object::getVersion() const
 }
 
 void Object::notifyNewHeadVersion( const uint128_t& version )
-{ 
-    LBASSERTINFO( getVersion() == VERSION_NONE || 
-                  version < getVersion() + 100, 
+{
+    LBASSERTINFO( getVersion() == VERSION_NONE ||
+                  version < getVersion() + 100,
                   lunchbox::className( this ));
 }
 

@@ -10,7 +10,7 @@ include(revision)
 
 set(RELEASE_VERSION OFF) # OFF or 'Mm0' ABI version
 set(VERSION_MAJOR "0")
-set(VERSION_MINOR "7")
+set(VERSION_MINOR "8")
 set(VERSION_PATCH "0")
 #set(LAST_RELEASE )
 
@@ -51,7 +51,7 @@ if(APPLE)
       "Build architectures")
   endif()
   mark_as_advanced(COLLAGE_OSX_ARCHITECTURES)
-  
+
   set(CMAKE_OSX_ARCHITECTURES "${COLLAGE_OSX_ARCHITECTURES}")
   message(STATUS "Building Collage ${VERSION} for ${CMAKE_OSX_ARCHITECTURES}")
 endif(APPLE)

@@ -1,15 +1,16 @@
 
-/* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -42,17 +43,17 @@ namespace co
         /** Destruct this instance cache. */
         CO_API ~InstanceCache();
 
-        /** 
+        /**
          * Add a new command to the instance cache.
          *
          * @param rev the object identifier and version.
          * @param instanceID the master instance ID.
-         * @param buffer The buffer to add.
+         * @param command The command to add.
          * @param usage pre-set usage count.
          * @return true if the command was entered, false if not.
          */
-        CO_API bool add( const ObjectVersion& rev, const uint32_t instanceID, 
-                         BufferPtr buffer, const uint32_t usage = 0 );
+        CO_API bool add( const ObjectVersion& rev, const uint32_t instanceID,
+                         Command& command, const uint32_t usage = 0 );
 
         /** Remove all items from the given node. */
         void remove( const NodeID& node );
@@ -66,7 +67,7 @@ namespace co
 
             uint32_t masterInstanceID; //!< The instance ID of the master object
             ObjectDataIStreamDeque versions; //!< all cached data
-            CO_API static const Data NONE; //!< '0' return value 
+            CO_API static const Data NONE; //!< '0' return value
         };
 
         /**
@@ -83,7 +84,7 @@ namespace co
 
         CO_API const Data& operator[]( const UUID& id );
 
-        /** 
+        /**
          * Release the retrieved instance data of the given object.
          *
          * @param id the identifier of the object to release.
@@ -93,7 +94,7 @@ namespace co
          */
         CO_API bool release( const UUID& id, const uint32_t count );
 
-        /** 
+        /**
          * Erase all the data for the given object.
          *
          * The data does not have to be accessed, i.e., release has been called
@@ -138,7 +139,7 @@ namespace co
 
         void _releaseItems( const uint32_t minUsage );
         void _releaseStreams( InstanceCache::Item& item );
-        void _releaseStreams( InstanceCache::Item& item, 
+        void _releaseStreams( InstanceCache::Item& item,
                               const int64_t minTime );
         void _releaseFirstStream( InstanceCache::Item& item );
         void _deleteStream( ObjectDataIStream* iStream );

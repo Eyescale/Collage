@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -17,7 +17,7 @@
 
 #include "commandQueue.h"
 
-#include "buffer.h"
+#include "command.h"
 #include "exception.h"
 #include "node.h"
 
@@ -31,7 +31,7 @@ class CommandQueue
 {
 public:
     /** Thread-safe buffer queue. */
-    lunchbox::MTQueue< BufferPtr > buffers;
+    lunchbox::MTQueue< co::Command > commands;
 };
 }
 
@@ -51,47 +51,47 @@ void CommandQueue::flush()
     if( !isEmpty( ))
         LBWARN << "Flushing non-empty command queue" << std::endl;
 
-    _impl->buffers.clear();
+    _impl->commands.clear();
 }
 
 bool CommandQueue::isEmpty() const
 {
-    return _impl->buffers.isEmpty();
+    return _impl->commands.isEmpty();
 }
 
 size_t CommandQueue::getSize() const
 {
-    return _impl->buffers.getSize();
+    return _impl->commands.getSize();
 }
 
-void CommandQueue::push( BufferPtr buffer )
+void CommandQueue::push( const Command& command )
 {
-    _impl->buffers.push( buffer );
+    _impl->commands.push( command );
 }
 
-void CommandQueue::pushFront( BufferPtr buffer )
+void CommandQueue::pushFront( const Command& command )
 {
-    LBASSERT( buffer->isValid( ));
-    _impl->buffers.pushFront( buffer );
+    LBASSERT( command.isValid( ));
+    _impl->commands.pushFront( command );
 }
 
-BufferPtr CommandQueue::pop( const uint32_t timeout )
+Command CommandQueue::pop( const uint32_t timeout )
 {
     LB_TS_THREAD( _thread );
 
-    BufferPtr buffer;
-    if( !_impl->buffers.timedPop( timeout, buffer ))
+    Command command;
+    if( !_impl->commands.timedPop( timeout, command ))
         throw Exception( Exception::TIMEOUT_COMMANDQUEUE );
 
-    return buffer;
+    return command;
 }
 
-BufferPtr CommandQueue::tryPop()
+Command CommandQueue::tryPop()
 {
     LB_TS_THREAD( _thread );
-    BufferPtr buffer;
-    _impl->buffers.tryPop( buffer );
-    return buffer;
+    Command command;
+    _impl->commands.tryPop( command );
+    return command;
 }
 
 }

@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -15,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "commandCache.h"
+#include "bufferCache.h"
 
 #include "buffer.h"
 #include "command.h"
@@ -24,8 +25,8 @@
 
 #define COMPACT
 //#define PROFILE
-// 31300 hits, 35 misses, 297640 lookups, 126976b allocated in 31 packets
-// 31300 hits, 35 misses, 49228 lookups, 135168b allocated in 34 packets
+// 31300 hits, 35 misses, 297640 lookups, 126976b allocated in 31 buffers
+// 31300 hits, 35 misses, 49228 lookups, 135168b allocated in 34 buffers
 
 namespace co
 {
@@ -41,9 +42,9 @@ enum Cache
 typedef std::vector< Buffer* > Data;
 typedef Data::const_iterator DataCIter;
 
-// minimum number of free packets, at least 2
+// minimum number of free buffers, at least 2
 static const int32_t _minFree[ CACHE_ALL ] = { 200, 20 };
-static const uint32_t _freeShift = 1; // 'size >> shift' packets can be free
+static const uint32_t _freeShift = 1; // 'size >> shift' buffers can be free
 
 #ifdef PROFILE
 static lunchbox::a_int32_t _hits;
@@ -55,10 +56,10 @@ static lunchbox::a_int32_t _frees;
 }
 namespace detail
 {
-class CommandCache
+class BufferCache
 {
 public:
-    CommandCache()
+    BufferCache()
         {
             for( size_t i = 0; i < CACHE_ALL; ++i )
             {
@@ -69,7 +70,7 @@ public:
             }
         }
 
-    ~CommandCache()
+    ~BufferCache()
         {
             for( size_t i = 0; i < CACHE_ALL; ++i )
             {
@@ -107,7 +108,7 @@ public:
             }
         }
 
-    BufferPtr newCommand( const Cache which )
+    BufferPtr newBuffer( const Cache which )
         {
             _compact( CACHE_SMALL );
             _compact( CACHE_BIG );
@@ -146,12 +147,12 @@ public:
                                 for( DataCIter k = cmds.begin();
                                      k != cmds.end(); ++k )
                                 {
-                                    size += (*k)->getSize();
+                                    size += (*k)->getMaxSize();
                                 }
                                 LBINFO << _hits << "/" << _hits + _misses
                                        << " hits, " << _lookups << " lookups, "
                                        << _free[j] << " of " << cmds.size()
-                                       << " packets free (min " << _minFree[ j ]
+                                       << " buffers free (min " << _minFree[ j ]
                                        << " max " << _maxFree[ j ] << "), "
                                        << _allocs << " allocs, " << _frees
                                        << " frees, " << size / 1024 << "KB"
@@ -234,53 +235,43 @@ private:
 };
 }
 
-CommandCache::CommandCache()
-        : _impl( new detail::CommandCache )
+BufferCache::BufferCache()
+        : _impl( new detail::BufferCache )
 {}
 
-CommandCache::~CommandCache()
+BufferCache::~BufferCache()
 {
     flush();
     delete _impl;
 }
 
-void CommandCache::flush()
+void BufferCache::flush()
 {
     _impl->flush();
 }
 
-BufferPtr CommandCache::alloc( NodePtr node, const uint64_t size )
+BufferPtr BufferCache::alloc( NodePtr node, LocalNodePtr localNode,
+                              const uint64_t size )
 {
     LB_TS_THREAD( _thread );
     LBASSERTINFO( size < LB_BIT48,
-                  "Out-of-sync network stream: packet size " << size << "?" );
+                  "Out-of-sync network stream: buffer size " << size << "?" );
 
-    const Cache which = (size >Buffer::getMinSize()) ? CACHE_BIG : CACHE_SMALL;
-    BufferPtr buffer = _impl->newCommand( which );
-    buffer->alloc( node, size );
+    const Cache which = (size > Buffer::getMinSize()) ? CACHE_BIG : CACHE_SMALL;
+    BufferPtr buffer = _impl->newBuffer( which );
+    buffer->alloc( node, localNode, size );
     return buffer;
 }
 
-BufferPtr CommandCache::clone( BufferPtr from )
+std::ostream& operator << ( std::ostream& os, const BufferCache& cache )
 {
-    LB_TS_THREAD( _thread );
-
-    const Cache which = ( from->getSize() > Buffer::getMinSize( ))
-                                ? CACHE_BIG : CACHE_SMALL;
-    BufferPtr buffer = _impl->newCommand( which );
-    buffer->clone( from );
-    return buffer;
-}
-
-std::ostream& operator << ( std::ostream& os, const CommandCache& cache )
-{
-    const Data& commands = cache._impl->cache[ CACHE_SMALL ];
+    const Data& buffers = cache._impl->cache[ CACHE_SMALL ];
     os << lunchbox::disableFlush << "Cache has "
-       << commands.size() - cache._impl->free[ CACHE_SMALL ]
-       << " used small packets:" << std::endl
+       << buffers.size() - cache._impl->free[ CACHE_SMALL ]
+       << " used small buffers:" << std::endl
        << lunchbox::indent << lunchbox::disableHeader;
 
-    for( DataCIter i = commands.begin(); i != commands.end(); ++i )
+    for( DataCIter i = buffers.begin(); i != buffers.end(); ++i )
     {
         Buffer* buffer = *i;
         if( !buffer->isFree( ))

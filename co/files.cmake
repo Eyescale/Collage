@@ -1,12 +1,12 @@
 
 # Copyright (c) 2010 Cedric Stalder <cedric.stalder@gmail.ch>
 #               2011-2012 Stefan Eilemann <eile@eyescale.ch>
+#               2012 Daniel Nachbaur <danielnachbaur@gmail.com>
 
 set(CO_PUBLIC_HEADERS
   api.h
   array.h
   barrier.h
-  buffer.h
   bufferConnection.h
   co.h
   command.h
@@ -41,8 +41,6 @@ set(CO_PUBLIC_HEADERS
   object.h
   objectFactory.h
   objectHandler.h
-  objectDataCommand.h
-  objectDataOCommand.h
   objectCommand.h
   objectOCommand.h
   objectMap.h
@@ -62,20 +60,26 @@ set(CO_PUBLIC_HEADERS
 
 set(CO_HEADERS
   barrierCommand.h
-  commandCache.h
+  buffer.h
+  bufferCache.h
   connectionListener.h
+  dataStreamArchive.h
   dataIStreamQueue.h
   deltaMasterCM.h
   eventConnection.h
   fullMasterCM.h
+  masterCMCommand.h
   nodeCommand.h
   nullCM.h
   objectCM.h
+  objectDataCommand.h
+  objectDataOCommand.h
   objectDataIStream.h
   objectDataOStream.h
   objectDeltaDataOStream.h
   objectInstanceDataOStream.h
   objectSlaveDataOStream.h
+  objectStore.h
   pipeConnection.h
   rspConnection.h
   socketConnection.h
@@ -89,9 +93,9 @@ set(CO_HEADERS
 set(CO_SOURCES
   barrier.cpp
   buffer.cpp
+  bufferCache.cpp
   bufferConnection.cpp
   command.cpp
-  commandCache.cpp
   commandQueue.cpp
   compressor.cpp
   connection.cpp
@@ -109,6 +113,7 @@ set(CO_SOURCES
   init.cpp
   instanceCache.cpp
   localNode.cpp
+  masterCMCommand.cpp
   node.cpp
   nodeOCommand.cpp
   object.cpp

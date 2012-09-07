@@ -4,12 +4,12 @@
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -39,6 +39,16 @@ public:
         , chunks( 1 )
         , isLast( false )
     {}
+
+    ObjectDataCommand( const ObjectDataCommand& rhs )
+        : version( rhs.version )
+        , sequence( rhs.sequence )
+        , datasize( rhs.datasize )
+        , compressor( rhs.compressor )
+        , chunks( rhs.chunks )
+        , isLast( rhs.isLast )
+    {}
+
     uint128_t version;
     uint32_t sequence;
     uint64_t datasize;
@@ -49,11 +59,31 @@ public:
 
 }
 
-ObjectDataCommand::ObjectDataCommand( BufferPtr buffer )
+ObjectDataCommand::ObjectDataCommand( const Command& command )
+    : ObjectCommand( command )
+    , _impl( new detail::ObjectDataCommand )
+{
+    _init();
+}
+
+ObjectDataCommand::ObjectDataCommand( ConstBufferPtr buffer )
     : ObjectCommand( buffer )
     , _impl( new detail::ObjectDataCommand )
 {
-    if( buffer )
+    _init();
+}
+
+
+ObjectDataCommand::ObjectDataCommand( const ObjectDataCommand& rhs )
+    : ObjectCommand( rhs )
+    , _impl( new detail::ObjectDataCommand( *rhs._impl ))
+{
+    _init();
+}
+
+void ObjectDataCommand::_init()
+{
+    if( isValid( ))
         *this >> _impl->version >> _impl->sequence >> _impl->datasize
               >> _impl->isLast >> _impl->compressor >> _impl->chunks;
 }
@@ -91,6 +121,17 @@ uint32_t ObjectDataCommand::getChunks() const
 bool ObjectDataCommand::isLast() const
 {
     return _impl->isLast;
+}
+
+std::ostream& operator << ( std::ostream& os, const ObjectDataCommand& command )
+{
+    os << static_cast< const ObjectCommand& >( command );
+    if( command.isValid( ))
+    {
+        os << " v" << command.getVersion() << " size " << command.getDataSize()
+           << " seq " << command.getSequence() << " last " << command.isLast();
+    }
+    return os;
 }
 
 }

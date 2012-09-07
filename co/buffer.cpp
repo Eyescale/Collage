@@ -17,6 +17,7 @@
 
 #include "buffer.h"
 
+#include "localNode.h"
 #include "node.h"
 
 
@@ -30,16 +31,12 @@ public:
     Buffer( lunchbox::a_int32_t& freeCounter )
         : _freeCount( freeCounter )
         , _node()
-        , _master()
-        , _dataSize( 0 )
-        , _func( 0, 0 )
+        , _localNode()
     {}
 
     lunchbox::a_int32_t& _freeCount;
-    NodePtr _node; //!< The node sending the packet
-    BufferPtr _master;
-    uint64_t _dataSize;
-    co::Dispatcher::Func _func;
+    NodePtr _node; //!< The node sending the command
+    LocalNodePtr  _localNode; //!< The node receiving the command
 };
 }
 
@@ -52,6 +49,8 @@ Buffer::Buffer( lunchbox::a_int32_t& freeCounter )
 
 Buffer::~Buffer()
 {
+    free();
+    delete _impl;
 }
 
 NodePtr Buffer::getNode() const
@@ -59,9 +58,9 @@ NodePtr Buffer::getNode() const
     return _impl->_node;
 }
 
-uint64_t Buffer::getDataSize() const
+LocalNodePtr Buffer::getLocalNode() const
 {
-    return _impl->_dataSize;
+    return _impl->_localNode;
 }
 
 bool Buffer::isValid() const
@@ -69,67 +68,36 @@ bool Buffer::isValid() const
     return getSize() > 0;
 }
 
-size_t Buffer::alloc( NodePtr node, const uint64_t size )
+size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
 {
     LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller CommandCache
+    LBASSERT( getRefCount() == 1 ); // caller BufferCache
     LBASSERT( _impl->_freeCount > 0 );
 
     --_impl->_freeCount;
-
-    reset( LB_MAX( getMinSize(), size ));
-
-    _impl->_dataSize = size;
     _impl->_node = node;
-    _impl->_master = 0;
+    _impl->_localNode = localNode;
+
+    reserve( LB_MAX( getMinSize(), size ));
+    resize( size );
 
     return getSize();
-}
-
-void Buffer::clone( BufferPtr from )
-{
-    LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller CommandCache
-    LBASSERT( from->getRefCount() > 1 ); // caller CommandCache, self
-    LBASSERT( _impl->_freeCount > 0 );
-
-    --_impl->_freeCount;
-
-    // need clone() func in lunchbox::Buffer
-    //_data = from->getData();
-    //_size = from->getSize();
-
-    _impl->_dataSize = from->_impl->_dataSize;
-    _impl->_node = from->_impl->_node;
-    _impl->_master = from;
 }
 
 void Buffer::free()
 {
     LB_TS_THREAD( _writeThread );
 
+    clear();
+
     _impl->_node = 0;
-    _impl->_master = 0;
+    _impl->_localNode = 0;
 }
 
 void Buffer::deleteReferenced( const Referenced* object ) const
 {
     Buffer* buffer = const_cast< Buffer* >( this );
-    // DON'T 'command->_master = 0;', command is already reusable and _master
-    // may be set any time. alloc or clone_ will free old master.
     ++buffer->_impl->_freeCount;
-}
-
-void Buffer::setDispatchFunction( const Dispatcher::Func& func )
-{
-    //LBASSERT( !_impl->_func.isValid( ));
-    _impl->_func = func;
-}
-
-Dispatcher::Func Buffer::getDispatchFunction() const
-{
-    LBASSERT( _impl->_func.isValid( ));
-    return _impl->_func;
 }
 
 size_t Buffer::getMinSize()
