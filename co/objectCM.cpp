@@ -129,8 +129,7 @@ void ObjectCM::_initSlave( MasterCMCommand command, const uint128_t& replyVersio
 void ObjectCM::_sendMapSuccess( const MasterCMCommand& command,
                                 const bool multicast )
 {
-    command.getNode()->send( CMD_NODE_MAP_OBJECT_SUCCESS, COMMANDTYPE_CO_NODE,
-                             multicast )
+    command.getNode()->send( CMD_NODE_MAP_OBJECT_SUCCESS, multicast )
             << command.getNode()->getNodeID() << command.getObjectID()
             << command.getRequestID() << command.getInstanceID()
             << _object->getChangeType() << _object->getInstanceID();
@@ -140,8 +139,7 @@ void ObjectCM::_sendMapReply( const MasterCMCommand& command,
                               const uint128_t& version, const bool result,
                               const bool useCache, const bool multicast )
 {
-    command.getNode()->send( CMD_NODE_MAP_OBJECT_REPLY, COMMANDTYPE_CO_NODE,
-                             multicast )
+    command.getNode()->send( CMD_NODE_MAP_OBJECT_REPLY, multicast )
             << command.getNode()->getNodeID() << command.getObjectID()
             << version << command.getRequestID() << result
             << command.useCache() << useCache;

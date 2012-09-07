@@ -70,9 +70,9 @@ public:
         Items items;
         queue.tryPop( itemsRequested, items );
 
+        Connections connections( 1, command.getNode()->getConnection( ));
         for( Items::const_iterator i = items.begin(); i != items.end(); ++i )
         {
-            Connections connections( 1, command.getNode()->getConnection( ));
             co::ObjectOCommand cmd( connections, CMD_QUEUE_ITEM,
                                     COMMANDTYPE_CO_OBJECT, _parent.getID(),
                                     slaveInstanceID );
@@ -83,8 +83,9 @@ public:
         }
 
         if( itemsRequested > items.size( ))
-            command.getNode()->send( CMD_QUEUE_EMPTY, COMMANDTYPE_CO_OBJECT )
-                    << command.getObjectID() << slaveInstanceID << requestID;
+            co::ObjectOCommand( connections, CMD_QUEUE_EMPTY,
+                                COMMANDTYPE_CO_OBJECT, command.getObjectID(),
+                                slaveInstanceID ) << requestID;
         return true;
     }
 

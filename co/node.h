@@ -21,7 +21,6 @@
 #define CO_NODE_H
 
 #include <co/dispatcher.h>        // base class
-#include <co/commands.h>          // for COMMANDTYPE_CO_NODE enum
 #include <co/connection.h>        // used in inline template method
 #include <co/nodeType.h>          // for NODETYPE_CO_NODE enum
 #include <co/types.h>
@@ -99,12 +98,10 @@ namespace detail { class Node; }
          * running out of scope.
          *
          * @param cmd the node command to execute
-         * @param type the type of object that should handle this command
          * @param multicast prefer multicast connection for sending
          * @return the command object to pass additional data to
          */
         CO_API NodeOCommand send( const uint32_t cmd,
-                                  const uint32_t type = COMMANDTYPE_CO_NODE,
                                   const bool multicast = false );
         //@}
 

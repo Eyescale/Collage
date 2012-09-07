@@ -20,7 +20,8 @@
 #define CO_COMMAND_H
 
 #include <co/api.h>
-#include <co/dataIStream.h>         // base class
+#include <co/commands.h>        // for enum CommandType
+#include <co/dataIStream.h>     // base class
 
 
 namespace co
