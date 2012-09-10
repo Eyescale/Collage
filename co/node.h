@@ -124,15 +124,6 @@ namespace detail { class Node; }
         /** Destructs this node. */
         CO_API virtual ~Node();
 
-        /**
-         * Factory method to create a new node.
-         *
-         * @param type the type the node type
-         * @return the node.
-         * @sa getType()
-         */
-        CO_API virtual NodePtr createNode( const uint32_t type );
-
     private:
         detail::Node* const _impl;
         CO_API friend std::ostream& operator << ( std::ostream&, const Node& );
