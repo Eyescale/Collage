@@ -28,13 +28,38 @@ namespace detail
 class ObjectDataOCommand
 {
 public:
-    ObjectDataOCommand( const uint64_t dataSize_,
+    ObjectDataOCommand( const uint128_t& version_, const uint32_t sequence_,
+                        const uint64_t dataSize_, const bool isLast_,
                         co::DataOStream* stream_ )
-        : dataSize( dataSize_ )
+        : version( version_ )
+        , sequence( sequence_ )
+        , isLast( isLast_ )
+        , dataSize( dataSize_ )
         , userBuffer()
         , stream( stream_ )
-    {}
+    {
+        if( stream )
+        {
+            dataSize = stream->getCompressedDataSize();
+            if( dataSize == 0 )
+                dataSize = dataSize_;
+        }
+    }
+    
+    ObjectDataOCommand( ObjectDataOCommand& rhs )
+        : version( rhs.version )
+        , sequence( rhs.sequence )
+        , isLast( rhs.isLast )
+        , dataSize( rhs.dataSize )
+        , userBuffer()
+        , stream( rhs.stream )
+    {
+        userBuffer.swap( rhs.userBuffer );
+    }
 
+    const uint128_t& version;
+    const uint32_t sequence;
+    const bool isLast;
     uint64_t dataSize;
     lunchbox::Bufferb userBuffer;
     co::DataOStream* stream;
@@ -52,18 +77,27 @@ ObjectDataOCommand::ObjectDataOCommand( const Connections& receivers,
                                         const bool isLast,
                                         DataOStream* stream )
     : ObjectOCommand( receivers, cmd, type, id, instanceID )
-    , _impl( new detail::ObjectDataOCommand( dataSize, stream ))
+    , _impl( new detail::ObjectDataOCommand( version, sequence, dataSize, isLast,
+                                             stream ))
+{
+    _init();
+}
+
+ObjectDataOCommand::ObjectDataOCommand( const ObjectDataOCommand& rhs )
+    : ObjectOCommand( rhs )
+    , _impl( new detail::ObjectDataOCommand( *rhs._impl ))
+{
+    _init();
+}
+
+void ObjectDataOCommand::_init()
 {
     // cast to avoid call to our user data operator << overload
-    (ObjectOCommand&)(*this) << version << sequence << dataSize << isLast;
-    if( stream )
-    {
-        stream->streamDataHeader( *this );
+    (ObjectOCommand&)(*this) << _impl->version << _impl->sequence
+                             << _impl->dataSize << _impl->isLast;
 
-        _impl->dataSize = stream->getCompressedDataSize();
-        if( _impl->dataSize == 0 )
-            _impl->dataSize = dataSize;
-    }
+    if( _impl->stream )
+        _impl->stream->streamDataHeader( *this );
 }
 
 ObjectDataOCommand::~ObjectDataOCommand()
