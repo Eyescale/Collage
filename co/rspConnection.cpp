@@ -123,10 +123,8 @@ void RSPConnection::_close()
     if( _parent.isValid() && _parent->_id == _id )
         _parent->close();
 
-    while(( !_parent && _isWriting() ))
-    {
+    while( !_parent && _isWriting( ))
         lunchbox::sleep( 10 );
-    }
 
     if( isClosed( ))
         return;
@@ -322,8 +320,7 @@ ConnectionPtr RSPConnection::acceptSync()
     else
         _event->set();
 
-    ConnectionPtr connection = newConnection.get();
-    return connection;
+    return newConnection;
 }
 
 int64_t RSPConnection::readSync( void* buffer, const uint64_t bytes, const bool)
@@ -349,7 +346,6 @@ int64_t RSPConnection::readSync( void* buffer, const uint64_t bytes, const bool)
                     -1 : static_cast< int64_t >( bytes - bytesLeft );
             }
         }
-        LBASSERT( _readBuffer );
 
         const DatagramData* header = reinterpret_cast< const DatagramData* >(
             _readBuffer->getData( ));
@@ -842,6 +838,7 @@ void RSPConnection::_handleAcceptIDData( const void* data )
             break;
 
         default:
+            LBUNIMPLEMENTED;
             break;
     }
 }
@@ -1371,7 +1368,7 @@ void RSPConnection::_handleCountNode()
 void RSPConnection::_checkNewID( uint16_t id )
 {
     // look if the new ID exist in another connection
-    if( id == _id || _findConnection( id ).isValid() )
+    if( id == _id || _findConnection( id ).isValid( ))
     {
         LBLOG( LOG_RSP ) << "Deny " << id << std::endl;
         _sendSimpleDatagram( ID_DENY, _id );
@@ -1381,8 +1378,10 @@ void RSPConnection::_checkNewID( uint16_t id )
 RSPConnectionPtr RSPConnection::_findConnection( const uint16_t id )
 {
     for( RSPConnectionsCIter i = _children.begin(); i != _children.end(); ++i )
+    {
         if( (*i)->_id == id )
             return *i;
+    }
     return 0;
 }
 
@@ -1443,10 +1442,10 @@ void RSPConnection::_removeConnection( const uint16_t id )
 
 int64_t RSPConnection::write( const void* inData, const uint64_t bytes )
 {
-    if ( _parent.isValid() )
+    if( _parent.isValid( ))
         return _parent->write( inData, bytes );
-    LBASSERT( isListening( ));
 
+    LBASSERT( isListening( ));
     if( !_write )
         return -1;
 
