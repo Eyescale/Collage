@@ -177,8 +177,9 @@ public:
 };
 }
 
-LocalNode::LocalNode( )
-        : _impl( new detail::LocalNode )
+LocalNode::LocalNode( const uint32_t type )
+        : Node( type )
+        , _impl( new detail::LocalNode )
 {
     _impl->receiverThread = new detail::ReceiverThread( this );
     _impl->commandThread  = new detail::CommandThread( this );
@@ -1027,7 +1028,7 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
 
     // send connect command to peer
     NodeOCommand( Connections( 1, connection ), CMD_NODE_CONNECT )
-            << getNodeID() << requestID << getType() << serialize();
+        << getNodeID() << requestID << getType() << serialize();
 
     bool connected = false;
     if( !waitRequest( requestID, connected, 10000 /*ms*/ ))
@@ -1047,8 +1048,8 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
 
 NodePtr LocalNode::createNode( const uint32_t type )
 {
-    LBASSERTINFO( type == NODETYPE_CO_NODE, type );
-    return new Node;
+    LBASSERTINFO( type == NODETYPE_NODE, type );
+    return new Node( type );
 }
 
 NodePtr LocalNode::getNode( const NodeID& id ) const
@@ -1514,7 +1515,7 @@ bool LocalNode::_cmdConnect( Command& command )
 
     // send our information as reply
     NodeOCommand( Connections( 1, connection ), CMD_NODE_CONNECT_REPLY )
-            << getNodeID() << requestID << getType() << serialize();
+        << getNodeID() << requestID << getType() << serialize();
     return true;
 }
 
@@ -1696,7 +1697,7 @@ bool LocalNode::_cmdGetNodeData( Command& command )
     NodePtr node = getNode( nodeID );
     NodePtr toNode = command.getNode();
 
-    uint32_t nodeType = NODETYPE_CO_INVALID;
+    uint32_t nodeType = NODETYPE_INVALID;
     std::string nodeData;
     if( node.isValid( ))
     {
@@ -1735,7 +1736,7 @@ bool LocalNode::_cmdGetNodeDataReply( Command& command )
         return true;
     }
 
-    if( nodeType == NODETYPE_CO_INVALID )
+    if( nodeType == NODETYPE_INVALID )
     {
         serveRequest( requestID, (void*)0 );
         return true;

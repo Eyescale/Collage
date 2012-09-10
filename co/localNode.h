@@ -43,7 +43,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
                       public ObjectHandler
     {
     public:
-        CO_API LocalNode();
+        CO_API LocalNode( const uint32_t type = co::NODETYPE_NODE );
         CO_API virtual ~LocalNode();
 
         typedef NodePtr SendToken; //!< An acquired send token
@@ -435,7 +435,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * 
          * @param type the type the node type
          * @return the node.
-         * @sa getType()
+         * @sa ctor type parameter
          */
         CO_API virtual NodePtr createNode( const uint32_t type );
 

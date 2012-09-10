@@ -40,11 +40,18 @@ namespace detail { class Node; }
     class Node : public Dispatcher, public lunchbox::Referenced
     {
     public:
-        /** Construct a new Node. */
-        CO_API Node();
+        /**
+         * Construct a new node proxy.
+         *
+         * @param type the type of the node, used during connect().
+         */
+        CO_API Node( const uint32_t type = co::NODETYPE_NODE );
 
         /** @name Data Access. */
         //@{
+        /** @return the type of the node. */
+        CO_API uint32_t getType() const;
+
         bool operator == ( const Node* n ) const;
 
         bool isBigEndian() const; //!< @internal
@@ -116,9 +123,6 @@ namespace detail { class Node; }
 
         /** @return last receive time. */
         int64_t getLastReceiveTime() const;
-
-        /** @return the type of the node, used during connect(). */
-        virtual uint32_t getType() const { return NODETYPE_CO_NODE; }
 
     protected:
         /** Destructs this node. */

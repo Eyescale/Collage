@@ -53,6 +53,8 @@ public:
     /** Globally unique node identifier. */
     NodeID id;
 
+    const uint32_t type;
+
     /** The current state of this node. */
     State state;
 
@@ -81,8 +83,8 @@ public:
     /** Is a big endian host? */
     bool bigEndian;
 
-    Node()
-        : id( true ), state( STATE_CLOSED ), lastReceive ( 0 )
+    Node( const uint32_t type_ )
+        : id( true ), type( type_ ), state( STATE_CLOSED ), lastReceive ( 0 )
 #ifdef COLLAGE_BIGENDIAN
         , bigEndian( true )
 #else
@@ -98,8 +100,8 @@ public:
 };
 }
 
-Node::Node()
-        : _impl( new detail::Node )
+Node::Node( const uint32_t type )
+        : _impl( new detail::Node( type ))
 {
     LBVERB << "New Node @" << (void*)this << " " << _impl->id << std::endl;
 }
@@ -315,6 +317,11 @@ const NodeID& Node::getNodeID() const
 int64_t Node::getLastReceiveTime() const
 {
     return _impl->lastReceive;
+}
+
+uint32_t Node::getType() const
+{
+    return _impl->type;
 }
 
 ConnectionPtr Node::_getConnection()
