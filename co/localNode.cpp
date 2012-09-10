@@ -1277,6 +1277,8 @@ bool LocalNode::_handleData()
 
     // This is one of the initial commands during the connection handshake, at
     // this point the remote node is not yet available.
+    // TODO #146 need external byteswap here for these commands, because buffer
+    //           also lacks node for bigEndian query
     LBASSERTINFO( node.isValid() ||
                  ( command.getType() == COMMANDTYPE_CO_NODE &&
                   ( command.getCommand() == CMD_NODE_CONNECT  ||
