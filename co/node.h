@@ -47,6 +47,8 @@ namespace detail { class Node; }
         //@{
         bool operator == ( const Node* n ) const;
 
+        bool isBigEndian() const; //!< @internal
+
         CO_API bool isReachable() const;
         CO_API bool isConnected() const;
         CO_API bool isClosed() const;
@@ -121,15 +123,6 @@ namespace detail { class Node; }
     protected:
         /** Destructs this node. */
         CO_API virtual ~Node();
-
-        /**
-         * Factory method to create a new node.
-         *
-         * @param type the type the node type
-         * @return the node.
-         * @sa getType()
-         */
-        CO_API virtual NodePtr createNode( const uint32_t type );
 
     private:
         detail::Node* const _impl;

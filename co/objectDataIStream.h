@@ -54,8 +54,8 @@ namespace co
         CO_API virtual NodePtr getMaster();
 
     protected:
-        virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
-                                    const void** chunkData, uint64_t* size );
+        virtual bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
+                                    const void** chunkData, uint64_t& size );
 
     private:
         /** All data commands for this istream. */

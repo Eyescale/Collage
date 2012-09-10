@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -51,6 +52,9 @@ public:
 
     /** @return the receiving node. */
     LocalNodePtr getLocalNode() const;
+
+    /** @return true if the content needs to be endian-converted. */
+    bool needsSwapping() const;
 
     /** @return true if the buffer has valid data. */
     CO_API bool isValid() const;
