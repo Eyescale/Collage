@@ -171,10 +171,11 @@ bool Node::removeConnectionDescription( ConnectionDescriptionPtr cd )
 std::string Node::serialize() const
 {
     std::ostringstream data;
+    data << Version::getMajor() << CO_SEPARATOR << Version::getMinor()
+         << CO_SEPARATOR << _impl->id << CO_SEPARATOR;
     {
         lunchbox::ScopedFastRead mutex( _impl->connectionDescriptions );
-        data << _impl->id << CO_SEPARATOR
-             << co::serialize( _impl->connectionDescriptions.data );
+        data << co::serialize( _impl->connectionDescriptions.data );
     }
     return data.str();
 }
@@ -183,17 +184,50 @@ bool Node::deserialize( std::string& data )
 {
     LBASSERT( _impl->state == STATE_CLOSED );
 
-    // node id
+    // version check
+    uint32_t major = 0;
     size_t nextPos = data.find( CO_SEPARATOR );
     if( nextPos == std::string::npos || nextPos == 0 )
     {
-        LBERROR << "Could not parse node data" << std::endl;
+        LBERROR << "Could not parse node major version data" << std::endl;
+        return false;
+    }
+
+    std::istringstream is( data.substr( 0, nextPos ));
+    data = data.substr( nextPos + 1 );
+    is >> major;
+
+    uint32_t minor = 0;
+    nextPos = data.find( CO_SEPARATOR );
+    if( nextPos == std::string::npos || nextPos == 0 )
+    {
+        LBERROR << "Could not parse node minor version data" << std::endl;
+        return false;
+    }
+
+    is.str( data.substr( 0, nextPos ));
+    data = data.substr( nextPos + 1 );
+    is >> minor;
+
+    if( major != Version::getMajor() || minor != Version::getMinor( ))
+    {
+        LBWARN << "Protocol mismatch: remote node uses version " << major << '.'
+               << minor << ", local node uses " << Version::getMajor() << '.'
+               << Version::getMinor() << std::endl;
+    }
+
+    // node id
+    nextPos = data.find( CO_SEPARATOR );
+    if( nextPos == std::string::npos || nextPos == 0 )
+    {
+        LBERROR << "Could not parse node id data" << std::endl;
         return false;
     }
 
     _impl->id = data.substr( 0, nextPos );
     data = data.substr( nextPos + 1 );
 
+    // Connections data
     lunchbox::ScopedFastWrite mutex( _impl->connectionDescriptions );
     _impl->connectionDescriptions->clear();
     return co::deserialize( data, _impl->connectionDescriptions.data );

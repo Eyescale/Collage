@@ -30,7 +30,7 @@ elseif(BOOST_FOUND)
 endif()
 if(Boost_name)
   link_directories(${${Boost_name}_LIBRARY_DIRS})
-  include_directories(${${Boost_name}_INCLUDE_DIRS})
+  include_directories(SYSTEM BEFORE ${${Boost_name}_INCLUDE_DIRS})
 endif()
 
 find_package(Lunchbox 1.5.0 REQUIRED)
