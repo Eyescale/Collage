@@ -19,16 +19,13 @@
 #ifndef CO_RSPCONNECTION_H
 #define CO_RSPCONNECTION_H
 
-#include <co/connection.h> // base class
-#include <co/types.h>
-#include "eventConnection.h" // member
+#include <co/connection.h>      // base class
+#include <co/eventConnection.h> // member
 
-#include <lunchbox/api.h>
 #include <lunchbox/buffer.h>  // member
 #include <lunchbox/clock.h>   // member
 #include <lunchbox/lfQueue.h> // member
 #include <lunchbox/mtQueue.h> // member
-#include <lunchbox/os.h>
 
 #pragma warning(push)
 #pragma warning(disable: 4267)
@@ -275,12 +272,12 @@ namespace co
 
         /* handle timeout about the comunication state */
         void _handleTimeout( const boost::system::error_code& error );
-        void _handleConnectedTimeout( );
-        void _handleInitTimeout( );
-        void _handleAcceptIDTimeout( );
+        void _handleConnectedTimeout();
+        void _handleInitTimeout();
+        void _handleAcceptIDTimeout();
 
         /** find the connection corresponding to the identifier */
-        RSPConnectionPtr _findConnection( const uint16_t id );
+        RSPConnectionPtr _findConnection( const uint16_t id ) const;
 
         /** Sleep until allowed to send according to send rate */
         void _waitWritable( const uint64_t bytes );
@@ -291,7 +288,7 @@ namespace co
         void _addRepeat( const Nack* nacks, const uint16_t num );
 
         /** format and send an simple request which use only type and id field*/
-        void _sendSimpleDatagram( DatagramType type, uint16_t id );
+        void _sendSimpleDatagram( const DatagramType type, const uint16_t id );
 
         /** format and send an ack request for the current sequence */
         void _sendAckRequest();
@@ -312,8 +309,8 @@ namespace co
         void _setTimeout( const int32_t timeOut );
         void _postWakeup();
         void _asyncReceiveFrom();
-        bool _isWriting()
-            { return !_threadBuffers.isEmpty() || !_writeBuffers.empty( ); }
+        bool _isWriting() const
+            { return !_threadBuffers.isEmpty() || !_writeBuffers.empty(); }
     };
 
     std::ostream& operator << ( std::ostream&, const RSPConnection& );

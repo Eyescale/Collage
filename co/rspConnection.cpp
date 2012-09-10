@@ -34,9 +34,6 @@
 #define EQ_RSP_MAX_TIMEOUTS 2000
 
 using namespace boost::asio;
-#if defined __GNUC__ // Problems with boost resolver iterators in listen()
-#  pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif
 
 namespace co
 {
@@ -411,7 +408,7 @@ void RSPConnection::_handleTimeout( const boost::system::error_code& error )
         _handleAcceptIDTimeout();
 }
 
-void RSPConnection::_handleAcceptIDTimeout( )
+void RSPConnection::_handleAcceptIDTimeout()
 {
     ++_timeouts;
     if( _timeouts < 20 )
@@ -1375,7 +1372,7 @@ void RSPConnection::_checkNewID( uint16_t id )
     }
 }
 
-RSPConnectionPtr RSPConnection::_findConnection( const uint16_t id )
+RSPConnectionPtr RSPConnection::_findConnection( const uint16_t id ) const
 {
     for( RSPConnectionsCIter i = _children.begin(); i != _children.end(); ++i )
     {
@@ -1512,7 +1509,8 @@ void RSPConnection::_sendCountNode()
     _write->send( buffer( &count, sizeof( count )) );
 }
 
-void RSPConnection::_sendSimpleDatagram( DatagramType type, uint16_t id )
+void RSPConnection::_sendSimpleDatagram( const DatagramType type,
+                                         const uint16_t id )
 {
     const DatagramNode simple = { type, id };
     _write->send( buffer( &simple, sizeof( simple )) );
