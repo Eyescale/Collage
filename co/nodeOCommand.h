@@ -18,7 +18,8 @@
 #ifndef CO_NODEOCOMMAND_H
 #define CO_NODEOCOMMAND_H
 
-#include <co/dataOStream.h>   // base class
+#include <co/commands.h>       // for COMMANDTYPE_CO_NODE
+#include <co/dataOStream.h>    // base class
 
 
 namespace co

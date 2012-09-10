@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -36,7 +37,7 @@ namespace co
         ObjectDataIStream( const ObjectDataIStream& from );
         virtual ~ObjectDataIStream();
 
-        void addDataPacket( ObjectDataCommand command );
+        void addDataCommand( ObjectDataCommand command );
         size_t getDataSize() const;
 
         virtual uint128_t getVersion() const { return _version.get(); }
@@ -53,11 +54,11 @@ namespace co
         CO_API virtual NodePtr getMaster();
 
     protected:
-        virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
-                                    const void** chunkData, uint64_t* size );
+        virtual bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
+                                    const void** chunkData, uint64_t& size );
 
     private:
-        /** All data command packets for this istream. */
+        /** All data commands for this istream. */
         CommandDeque _commands;
 
         Command _usedCommand; //!< Currently used buffer

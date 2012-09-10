@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2011-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -73,7 +74,7 @@ void DataIStreamQueue::recycle( ObjectDataIStream* stream )
 #endif
 }
 
-bool DataIStreamQueue::addDataPacket( const uint128_t& key, Command& command )
+bool DataIStreamQueue::addDataCommand( const uint128_t& key, Command& command )
 {
     LB_TS_THREAD( _thread );
     LBASSERTINFO( _pending.size() < 100, "More than 100 pending commits");
@@ -85,7 +86,7 @@ bool DataIStreamQueue::addDataPacket( const uint128_t& key, Command& command )
     else
         istream = i->second;
 
-    istream->addDataPacket( command );
+    istream->addDataCommand( command );
     if( istream->isReady( ))
     {
         if( i != _pending.end( ))

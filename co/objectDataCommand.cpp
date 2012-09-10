@@ -17,6 +17,7 @@
 
 #include "objectDataCommand.h"
 
+#include "buffer.h"
 #include "command.h"
 #include "plugins/compressorTypes.h"
 
@@ -64,6 +65,14 @@ ObjectDataCommand::ObjectDataCommand( const Command& command )
 {
     _init();
 }
+
+ObjectDataCommand::ObjectDataCommand( ConstBufferPtr buffer )
+    : ObjectCommand( buffer )
+    , _impl( new detail::ObjectDataCommand )
+{
+    _init();
+}
+
 
 ObjectDataCommand::ObjectDataCommand( const ObjectDataCommand& rhs )
     : ObjectCommand( rhs )

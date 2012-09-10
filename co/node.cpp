@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -74,10 +75,21 @@ public:
     lunchbox::Lockable< ConnectionDescriptions, lunchbox::SpinLock >
         connectionDescriptions;
 
-    /** Last time packets were received */
+    /** Last time commands were received */
     int64_t lastReceive;
 
-    Node() : id( true ), state( STATE_CLOSED ), lastReceive ( 0 ) {}
+    /** Is a big endian host? */
+    bool bigEndian;
+
+    Node()
+        : id( true ), state( STATE_CLOSED ), lastReceive ( 0 )
+#ifdef COLLAGE_BIGENDIAN
+        , bigEndian( true )
+#else
+        , bigEndian( false )
+#endif
+        {}
+
     ~Node()
     {
         LBASSERT( !outgoing );
@@ -170,10 +182,12 @@ bool Node::removeConnectionDescription( ConnectionDescriptionPtr cd )
 std::string Node::serialize() const
 {
     std::ostringstream data;
+    data << Version::getMajor() << CO_SEPARATOR << Version::getMinor()
+         << CO_SEPARATOR << _impl->id << CO_SEPARATOR << _impl->bigEndian
+         << CO_SEPARATOR;
     {
         lunchbox::ScopedFastRead mutex( _impl->connectionDescriptions );
-        data << _impl->id << CO_SEPARATOR
-             << co::serialize( _impl->connectionDescriptions.data );
+        data << co::serialize( _impl->connectionDescriptions.data );
     }
     return data.str();
 }
@@ -182,26 +196,70 @@ bool Node::deserialize( std::string& data )
 {
     LBASSERT( _impl->state == STATE_CLOSED );
 
-    // node id
+    // version check
+    uint32_t major = 0;
     size_t nextPos = data.find( CO_SEPARATOR );
     if( nextPos == std::string::npos || nextPos == 0 )
     {
-        LBERROR << "Could not parse node data" << std::endl;
+        LBERROR << "Could not parse node major version data" << std::endl;
+        return false;
+    }
+
+    std::istringstream is( data.substr( 0, nextPos ));
+    data = data.substr( nextPos + 1 );
+    is >> major;
+
+    uint32_t minor = 0;
+    nextPos = data.find( CO_SEPARATOR );
+    if( nextPos == std::string::npos || nextPos == 0 )
+    {
+        LBERROR << "Could not parse node minor version data" << std::endl;
+        return false;
+    }
+
+    is.str( data.substr( 0, nextPos ));
+    data = data.substr( nextPos + 1 );
+    is >> minor;
+
+    if( major != Version::getMajor() || minor != Version::getMinor( ))
+    {
+        LBWARN << "Protocol mismatch: remote node uses version " << major << '.'
+               << minor << ", local node uses " << Version::getMajor() << '.'
+               << Version::getMinor() << std::endl;
+    }
+
+    // node id
+    nextPos = data.find( CO_SEPARATOR );
+    if( nextPos == std::string::npos || nextPos == 0 )
+    {
+        LBERROR << "Could not parse node id data" << std::endl;
         return false;
     }
 
     _impl->id = data.substr( 0, nextPos );
     data = data.substr( nextPos + 1 );
 
+    // endianness
+    nextPos = data.find( CO_SEPARATOR );
+    if( nextPos == std::string::npos || nextPos == 0 )
+    {
+        LBERROR << "Could not parse node endianness data" << std::endl;
+        return false;
+    }
+
+    is.str( data.substr( 0, nextPos ));
+    data = data.substr( nextPos + 1 );
+    is >> _impl->bigEndian;
+
+    // Connections data
     lunchbox::ScopedFastWrite mutex( _impl->connectionDescriptions );
     _impl->connectionDescriptions->clear();
     return co::deserialize( data, _impl->connectionDescriptions.data );
 }
 
-NodePtr Node::createNode( const uint32_t type )
+bool Node::isBigEndian() const
 {
-    LBASSERTINFO( type == NODETYPE_CO_NODE, type );
-    return new Node;
+    return _impl->bigEndian;
 }
 
 bool Node::isReachable() const
@@ -239,14 +297,14 @@ ConnectionPtr Node::getMulticast() const
     return _impl->outMulticast.data;
 }
 
-NodeOCommand Node::send( const uint32_t cmd, const uint32_t type,
-                         const bool multicast )
+NodeOCommand Node::send( const uint32_t cmd, const bool multicast )
 {
     ConnectionPtr connection = multicast ? useMulticast() : 0;
     if( !connection )
         connection = getConnection();
     LBASSERT( connection );
-    return NodeOCommand( Connections( 1, connection ), cmd, type );
+    return NodeOCommand( Connections( 1, connection ), cmd,
+                         COMMANDTYPE_CO_NODE );
 }
 
 const NodeID& Node::getNodeID() const

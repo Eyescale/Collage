@@ -41,6 +41,7 @@ namespace detail { class DataIStream; }
         virtual uint128_t getVersion() const = 0; //!< @internal
         virtual void reset() { _reset(); } //!< @internal
         void setSwapping( const bool onOff ); //!< @internal enable endian swap
+        CO_API bool isSwapping() const; //!< @internal
         //@}
 
         /** @name Data input */
@@ -133,8 +134,8 @@ namespace detail { class DataIStream; }
         CO_API virtual ~DataIStream();
         //@}
 
-        virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
-                                    const void** chunkData, uint64_t* size )=0;
+        virtual bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
+                                    const void** chunkData, uint64_t& size )=0;
     private:
         detail::DataIStream* const _impl;
 
@@ -166,16 +167,14 @@ namespace detail { class DataIStream; }
             return *this;
         }
 
-        CO_API bool _isSwapping() const;
-
         /** Byte-swap a plain data item. @version 1.0 */
         template< typename T > void _swap( T& value ) const 
-            { if( _isSwapping( )) swap( value ); }
+            { if( isSwapping( )) swap( value ); }
 
         /** Byte-swap a C array. @version 1.0 */
         template< typename T > void _swap( Array< T > array ) const
             {
-                if( !_isSwapping( ))
+                if( !isSwapping( ))
                     return;
 #pragma omp parallel for
                 for( ssize_t i = 0; i < ssize_t( array.num ); ++i )

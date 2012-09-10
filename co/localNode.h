@@ -1,6 +1,7 @@
 
 /* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -376,7 +377,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         CO_API BufferPtr allocCommand( const uint64_t size );
 
         /**
-         * Dispatches a packet to the registered command queue.
+         * Dispatches a command to the registered command queue.
          *
          * @param command the command.
          * @return the result of the operation.
@@ -428,6 +429,15 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
 
         /** Notify remote node disconnection from the receiver thread. */
         virtual void notifyDisconnect( NodePtr node ) { }
+
+        /** 
+         * Factory method to create a new node.
+         * 
+         * @param type the type the node type
+         * @return the node.
+         * @sa getType()
+         */
+        CO_API virtual NodePtr createNode( const uint32_t type );
 
     private:
         detail::LocalNode* const _impl;

@@ -1,5 +1,6 @@
 
-/* Copyright (c) 2007-2011, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -58,7 +59,7 @@ namespace co
         virtual void setMasterNode( NodePtr node ) { _master = node; }
         virtual NodePtr getMasterNode() { return _master; }
 
-        virtual void addSlave( Command command ) { LBDONTCALL; }
+        virtual void addSlave( MasterCMCommand command ) { LBDONTCALL; }
         virtual void removeSlaves( NodePtr ) {}
 
         virtual void applyMapData( const uint128_t& version );

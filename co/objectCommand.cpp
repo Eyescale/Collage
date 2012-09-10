@@ -43,7 +43,7 @@ public:
 
 }
 
-ObjectCommand::ObjectCommand( BufferPtr buffer )
+ObjectCommand::ObjectCommand( ConstBufferPtr buffer )
     : Command( buffer )
     , _impl( new detail::ObjectCommand )
 {

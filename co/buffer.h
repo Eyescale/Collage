@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -30,6 +31,7 @@ namespace co
 namespace detail { class Buffer; }
 
 /**
+ * @internal
  * The buffer containing the data of a co::Command.
  *
  * The command is required to extract the data from the buffer. The dispatching
@@ -42,27 +44,30 @@ namespace detail { class Buffer; }
 class Buffer : public lunchbox::Bufferb, public lunchbox::Referenced
 {
 public:
-    Buffer( lunchbox::a_int32_t& freeCounter ); //!< @internal
-    virtual ~Buffer(); //!< @internal
+    Buffer( lunchbox::a_int32_t& freeCounter );
+    virtual ~Buffer();
 
-    /** @internal @return the sending node proxy instance. */
+    /** @return the sending node proxy instance. */
     NodePtr getNode() const;
 
-    /** @internal @return the receiving node. */
+    /** @return the receiving node. */
     LocalNodePtr getLocalNode() const;
 
-    /** @internal @return true if the buffer has valid data. */
+    /** @return true if the content needs to be endian-converted. */
+    bool needsSwapping() const;
+
+    /** @return true if the buffer has valid data. */
     CO_API bool isValid() const;
 
-    /** @internal @return true if the buffer is no longer in use. */
+    /** @return true if the buffer is no longer in use. */
     bool isFree() const { return getRefCount() == 0; }
 
-    /** @internal @return the number of newly allocated bytes. */
+    /** @return the number of newly allocated bytes. */
     size_t alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size );
 
-    void free(); //!< @internal
+    void free();
 
-    static size_t getMinSize(); //! @internal
+    static size_t getMinSize();
 
 private:
     detail::Buffer* const _impl;

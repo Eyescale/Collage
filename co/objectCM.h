@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -19,6 +20,7 @@
 #define CO_OBJECTCM_H
 
 #include <co/dispatcher.h>   // base class
+#include <co/masterCMCommand.h>
 #include <co/objectVersion.h> // VERSION_FOO values
 #include <co/types.h>
 
@@ -110,7 +112,7 @@ namespace co
          *
          * @param command the subscribe command initiating the add.
          */
-        virtual void addSlave( Command command ) = 0;
+        virtual void addSlave( MasterCMCommand command ) = 0;
 
         /**
          * Remove a subscribed slave.
@@ -158,18 +160,16 @@ namespace co
         static lunchbox::a_int32_t _miss;
 #endif
 
-        void _addSlave( Command command, const uint128_t& version );
-        virtual void _initSlave( NodePtr node, const uint128_t& version,
-                                 Command command, const uint128_t& replyVersion,
+        void _addSlave( MasterCMCommand command, const uint128_t& version );
+        virtual void _initSlave( MasterCMCommand command,
+                                 const uint128_t& replyVersion,
                                  bool replyUseCache );
-        void _sendMapSuccess( NodePtr node, const UUID& objectID,
-                              const uint32_t requestID,
-                              const uint32_t instanceID, const bool multicast );
-        void _sendMapReply( NodePtr node, const UUID& objectID,
-                            const uint32_t requestID, const uint128_t& version,
-                            const bool result, const bool releaseCache,
+        void _sendMapSuccess( const MasterCMCommand& command,
+                              const bool multicast );
+        void _sendMapReply( const MasterCMCommand& command,
+                            const uint128_t& version, const bool result,
                             const bool useCache, const bool multicast );
-        void _sendEmptyVersion( NodePtr node, const uint32_t instanceID,
+        void _sendEmptyVersion( const MasterCMCommand& command,
                                 const uint128_t& version, const bool multicast);
     };
 }

@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2010-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -164,7 +165,7 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
     LBASSERT( !item.data.versions.empty( ));
     ObjectDataIStream* stream = item.data.versions.back();
 
-    stream->addDataPacket( command );
+    stream->addDataCommand( command );
 
     if( stream->isReady( ))
         _size += stream->getDataSize();

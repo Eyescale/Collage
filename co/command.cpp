@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -36,7 +37,7 @@ public:
         , cmd( CMD_INVALID )
     {}
 
-    Command( BufferPtr buffer_ )
+    Command( ConstBufferPtr buffer_ )
         : func( 0, 0 )
         , buffer( buffer_ )
         , type( COMMANDTYPE_INVALID )
@@ -50,7 +51,7 @@ public:
         , cmd( rhs.cmd )
     {}
 
-    void operator=( const Command& rhs )
+    void operator = ( const Command& rhs )
     {
         func = rhs.func;
         buffer = rhs.buffer;
@@ -67,7 +68,7 @@ public:
     }
 
     co::Dispatcher::Func func;
-    BufferPtr buffer;
+    ConstBufferPtr buffer;
     uint32_t type;
     uint32_t cmd;
 };
@@ -79,7 +80,7 @@ Command::Command()
 {
 }
 
-Command::Command( BufferPtr buffer )
+Command::Command( ConstBufferPtr buffer )
     : DataIStream()
     , _impl( new detail::Command( buffer ))
 {
@@ -168,17 +169,18 @@ NodePtr Command::getMaster()
     return getNode();
 }
 
-bool Command::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
-                             const void** chunkData, uint64_t* size )
+bool Command::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
+                             const void** chunkData, uint64_t& size )
 {
     if( !_impl->buffer )
         return false;
 
     *chunkData = _impl->buffer->getData();
-    *size = _impl->buffer->getSize();
-    *compressor = EQ_COMPRESSOR_NONE;
-    *nChunks = 1;
+    size = _impl->buffer->getSize();
+    compressor = EQ_COMPRESSOR_NONE;
+    nChunks = 1;
 
+    setSwapping( _impl->buffer->needsSwapping( ));
     return true;
 }
 

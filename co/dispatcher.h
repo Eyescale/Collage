@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -27,10 +28,10 @@ namespace co
 namespace detail { class Dispatcher; }
 
     /**
-     * A helper class providing command packet dispatch functionality to
-     * networked objects.
+     * A helper class providing command dispatch functionality to networked
+     * objects.
      *
-     * Provides packet dispatch through a command queue and command handler
+     * Provides command dispatch through a command queue and command handler
      * table.
      */
     class Dispatcher

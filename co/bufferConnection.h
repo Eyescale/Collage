@@ -58,6 +58,9 @@ namespace detail { class BufferConnection; }
     private:
         detail::BufferConnection* const _impl;
     };
+
+    typedef lunchbox::RefPtr< BufferConnection > BufferConnectionPtr;
+    typedef lunchbox::RefPtr< const BufferConnection > ConstBufferConnectionPtr;
 }
 
 #endif //CO_BUFFER_CONNECTION_H

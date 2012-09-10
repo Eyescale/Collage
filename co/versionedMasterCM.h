@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2010-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -58,7 +59,7 @@ namespace co
         virtual uint32_t getMasterInstanceID() const
             { LBDONTCALL; return EQ_INSTANCE_INVALID; }
 
-        virtual void addSlave( Command command );
+        virtual void addSlave( MasterCMCommand command );
         virtual void removeSlave( NodePtr node, const uint32_t instanceID );
         virtual void removeSlaves( NodePtr node );
         virtual const Nodes getSlaveNodes() const
