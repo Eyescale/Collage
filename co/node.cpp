@@ -78,7 +78,18 @@ public:
     /** Last time commands were received */
     int64_t lastReceive;
 
-    Node() : id( true ), state( STATE_CLOSED ), lastReceive ( 0 ) {}
+    /** Is a big endian host? */
+    bool bigEndian;
+
+    Node()
+        : id( true ), state( STATE_CLOSED ), lastReceive ( 0 )
+#ifdef COLLAGE_BIGENDIAN
+        , bigEndian( true )
+#else
+        , bigEndian( false )
+#endif
+        {}
+
     ~Node()
     {
         LBASSERT( !outgoing );
@@ -172,7 +183,8 @@ std::string Node::serialize() const
 {
     std::ostringstream data;
     data << Version::getMajor() << CO_SEPARATOR << Version::getMinor()
-         << CO_SEPARATOR << _impl->id << CO_SEPARATOR;
+         << CO_SEPARATOR << _impl->id << CO_SEPARATOR << _impl->bigEndian
+         << CO_SEPARATOR;
     {
         lunchbox::ScopedFastRead mutex( _impl->connectionDescriptions );
         data << co::serialize( _impl->connectionDescriptions.data );
@@ -226,6 +238,18 @@ bool Node::deserialize( std::string& data )
 
     _impl->id = data.substr( 0, nextPos );
     data = data.substr( nextPos + 1 );
+
+    // endianness
+    nextPos = data.find( CO_SEPARATOR );
+    if( nextPos == std::string::npos || nextPos == 0 )
+    {
+        LBERROR << "Could not parse node endianness data" << std::endl;
+        return false;
+    }
+
+    is.str( data.substr( 0, nextPos ));
+    data = data.substr( nextPos + 1 );
+    is >> _impl->bigEndian;
 
     // Connections data
     lunchbox::ScopedFastWrite mutex( _impl->connectionDescriptions );
