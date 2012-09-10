@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com> 
+/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
  *               2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -52,14 +52,14 @@ namespace co
     public:
         /** Create a new RSP-based connection. */
         RSPConnection();
-        
+
         virtual bool listen();
         virtual void close() { _close(); }
 
         /** Identical to listen() for multicast connections. */
-        bool connect(){ return listen(); }
+        virtual bool connect() { return listen(); }
 
-        virtual void acceptNB(){ LBASSERT( isListening( )); }
+        virtual void acceptNB() { LBASSERT( isListening( )); }
 
         virtual ConnectionPtr acceptSync();
         virtual void readNB( void*, const uint64_t ) {/* NOP */}
@@ -79,31 +79,31 @@ namespace co
          *         group.
          */
         uint16_t getID() const { return _id; }
-        
+
         virtual Notifier getNotifier() const { return _event->getNotifier(); }
 
     protected:
         virtual ~RSPConnection();
-    
+
     private:
         /** Thread managing network IO and RSP protocol. */
         class Thread : public lunchbox::Thread
         {
-        public: 
+        public:
             Thread( RSPConnectionPtr connection )
                 : _connection( connection ){}
             virtual ~Thread(){ _connection = 0; }
         protected:
             virtual void run();
             virtual bool init() { return _connection->_initThread(); }
-            
+
         private:
             RSPConnectionPtr _connection;
         };
 
         /** The type of each UDP packet */
         enum DatagramType
-        { 
+        {
             DATA,      //!< the datagram contains data
             ACKREQ,    //!< ask for ack from all readers
             NACK,      //!< negative ack, request missing packets
@@ -114,7 +114,7 @@ namespace co
             ID_EXIT,   //!< a node is disconnected
             COUNTNODE  //!< send to other the number of nodes which I have found
         };
-        
+
         /** ID_HELLO, ID_DENY, ID_CONFIRM or ID_EXIT packet */
         struct DatagramNode
         {
@@ -137,7 +137,7 @@ namespace co
             uint16_t writerID;
             uint16_t sequence;
         };
-        
+
         /** Missing packets from start..end sequence */
         struct Nack
         {
@@ -152,8 +152,8 @@ namespace co
             void set( uint16_t rID, uint16_t wID, uint16_t n )
             {
                 type       = NACK;
-                readerID   = rID; 
-                writerID   = wID;   
+                readerID   = rID;
+                writerID   = wID;
                 count      = n;
             }
 
@@ -189,7 +189,7 @@ namespace co
         RSPConnectionPtr _parent;
         RSPConnections _children;
 
-        // a link for all connection in the connecting state 
+        // a link for all connection in the connecting state
         RSPConnections _newChildren;
 
         uint16_t _id; //!< The identifier used to demultiplex multipe writers
@@ -208,7 +208,7 @@ namespace co
         boost::asio::ip::udp::endpoint _readAddr;
         boost::asio::deadline_timer    _timeout;
         boost::asio::deadline_timer    _wakeup;
-        
+
         lunchbox::Clock _clock;
         uint64_t        _maxBucketSize;
         size_t          _bucketSize;
@@ -266,7 +266,7 @@ namespace co
         bool _initThread();
         /* Make all buffers available for reading */
         void initBuffers();
-        /* handle data about the comunication state */ 
+        /* handle data about the comunication state */
         void _handlePacket( const boost::system::error_code& error,
                             const size_t bytes );
         void _handleConnectedData( const void* data );
@@ -281,7 +281,7 @@ namespace co
 
         /** find the connection corresponding to the identifier */
         RSPConnectionPtr _findConnection( const uint16_t id );
-        
+
         /** Sleep until allowed to send according to send rate */
         void _waitWritable( const uint64_t bytes );
 
@@ -292,17 +292,17 @@ namespace co
 
         /** format and send an simple request which use only type and id field*/
         void _sendSimpleDatagram( DatagramType type, uint16_t id );
-        
+
         /** format and send an ack request for the current sequence */
         void _sendAckRequest();
 
         /** format and send a positive ack */
         void _sendAck( const uint16_t writerID, const uint16_t sequence );
-        
-        /** format and send a negative ack */ 
+
+        /** format and send a negative ack */
         void _sendNack( const uint16_t toWriterID, const Nack* nacks,
                         const uint16_t num );
-        
+
         void _checkNewID( const uint16_t id );
 
         /* add a new connection detected in the multicast network */
