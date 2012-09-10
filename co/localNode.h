@@ -432,6 +432,15 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         /** Notify remote node disconnection from the receiver thread. */
         virtual void notifyDisconnect( NodePtr node ) { }
 
+        /** 
+         * Factory method to create a new node.
+         * 
+         * @param type the type the node type
+         * @return the node.
+         * @sa getType()
+         */
+        CO_API virtual NodePtr createNode( const uint32_t type );
+
     private:
         detail::LocalNode* const _impl;
 

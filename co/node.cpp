@@ -233,12 +233,6 @@ bool Node::deserialize( std::string& data )
     return co::deserialize( data, _impl->connectionDescriptions.data );
 }
 
-NodePtr Node::createNode( const uint32_t type )
-{
-    LBASSERTINFO( type == NODETYPE_CO_NODE, type );
-    return new Node;
-}
-
 bool Node::isReachable() const
 {
     return isListening() || isConnected();

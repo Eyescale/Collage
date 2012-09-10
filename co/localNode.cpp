@@ -1054,6 +1054,12 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
     return CONNECT_OK;
 }
 
+NodePtr LocalNode::createNode( const uint32_t type )
+{
+    LBASSERTINFO( type == NODETYPE_CO_NODE, type );
+    return new Node;
+}
+
 NodePtr LocalNode::getNode( const NodeID& id ) const
 {
     lunchbox::ScopedFastRead mutex( _impl->nodes );
@@ -1067,7 +1073,7 @@ NodePtr LocalNode::getNode( const NodeID& id ) const
 void LocalNode::getNodes( Nodes& nodes, const bool addSelf ) const
 {
     lunchbox::ScopedFastRead mutex( _impl->nodes );
-    for( NodeHashCIter i = _impl->nodes->begin(); i != _impl->nodes->end(); ++i )
+    for( NodeHashCIter i = _impl->nodes->begin(); i != _impl->nodes->end(); ++i)
     {
         NodePtr node = i->second;
         LBASSERTINFO( node->isReachable(), node );
