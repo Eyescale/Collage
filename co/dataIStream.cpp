@@ -76,7 +76,7 @@ void DataIStream::setSwapping( const bool onOff )
     _impl->swap = onOff;
 }
 
-bool DataIStream::_isSwapping() const
+bool DataIStream::isSwapping() const
 {
     return _impl->swap;
 }
@@ -144,7 +144,7 @@ bool DataIStream::_checkBuffer()
         uint32_t nChunks = 0;
         const void* data = 0;
 
-        if( !getNextBuffer( &compressor, &nChunks, &data, &_impl->inputSize ))
+        if( !getNextBuffer( compressor, nChunks, &data, _impl->inputSize ))
             return false;
 
         _impl->input = _decompress( data, compressor, nChunks,

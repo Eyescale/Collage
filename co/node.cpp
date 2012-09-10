@@ -263,6 +263,11 @@ NodePtr Node::createNode( const uint32_t type )
     return new Node;
 }
 
+bool Node::isBigEndian() const
+{
+    return _impl->bigEndian;
+}
+
 bool Node::isReachable() const
 {
     return isListening() || isConnected();

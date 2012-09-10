@@ -128,8 +128,8 @@ uint128_t ObjectDataIStream::getPendingVersion() const
     return cmd.getVersion();
 }
 
-bool ObjectDataIStream::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
-                                       const void** chunkData, uint64_t* size )
+bool ObjectDataIStream::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
+                                       const void** chunkData, uint64_t& size )
 {
     if( _commands.empty( ))
     {
@@ -138,35 +138,36 @@ bool ObjectDataIStream::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
     }
 
     _usedCommand = _commands.front();
-    ObjectDataCommand command( _usedCommand );
     _commands.pop_front();
-    if( !command.isValid( ))
+    if( !_usedCommand.isValid( ))
         return false;
 
-    LBASSERT( command.getCommand() == CMD_OBJECT_INSTANCE ||
-              command.getCommand() == CMD_OBJECT_DELTA ||
-              command.getCommand() == CMD_OBJECT_SLAVE_DELTA );
+    LBASSERT( _usedCommand.getCommand() == CMD_OBJECT_INSTANCE ||
+              _usedCommand.getCommand() == CMD_OBJECT_DELTA ||
+              _usedCommand.getCommand() == CMD_OBJECT_SLAVE_DELTA );
 
+    ObjectDataCommand command( _usedCommand );
     const uint64_t dataSize = command.getDataSize();
 
     if( dataSize == 0 ) // empty command
         return getNextBuffer( compressor, nChunks, chunkData, size );
 
-    *size = dataSize;
-    *compressor = command.getCompressor();
-    *nChunks = command.getChunks();
+    size = dataSize;
+    compressor = command.getCompressor();
+    nChunks = command.getChunks();
     switch( command.getCommand( ))
     {
-    case CMD_OBJECT_INSTANCE:
+      case CMD_OBJECT_INSTANCE:
         command.get< NodeID >();    // nodeID
         command.get< uint32_t >();  // instanceID
         break;
-    case CMD_OBJECT_SLAVE_DELTA:
+      case CMD_OBJECT_SLAVE_DELTA:
         command.get< UUID >();      // commit UUID
         break;
     }
     *chunkData = command.getRemainingBuffer( command.getRemainingBufferSize( ));
 
+    setSwapping( command.isSwapping( ));
     return true;
 }
 

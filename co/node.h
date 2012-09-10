@@ -47,6 +47,8 @@ namespace detail { class Node; }
         //@{
         bool operator == ( const Node* n ) const;
 
+        bool isBigEndian() const; //!< @internal
+
         CO_API bool isReachable() const;
         CO_API bool isConnected() const;
         CO_API bool isClosed() const;
