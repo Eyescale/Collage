@@ -106,10 +106,10 @@ namespace detail { class Command; }
         CO_API virtual size_t nRemainingBuffers() const;
         CO_API virtual uint128_t getVersion() const;
         CO_API virtual NodePtr getMaster();
-        CO_API virtual bool getNextBuffer( uint32_t* compressor,
-                                           uint32_t* nChunks,
+        CO_API virtual bool getNextBuffer( uint32_t& compressor,
+                                           uint32_t& nChunks,
                                            const void** chunkData,
-                                           uint64_t* size );
+                                           uint64_t& size );
         //@}
 
         void _skipHeader(); //!< @internal

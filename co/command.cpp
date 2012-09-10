@@ -51,7 +51,7 @@ public:
         , cmd( rhs.cmd )
     {}
 
-    void operator=( const Command& rhs )
+    void operator = ( const Command& rhs )
     {
         func = rhs.func;
         buffer = rhs.buffer;
@@ -169,17 +169,18 @@ NodePtr Command::getMaster()
     return getNode();
 }
 
-bool Command::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
-                             const void** chunkData, uint64_t* size )
+bool Command::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
+                             const void** chunkData, uint64_t& size )
 {
     if( !_impl->buffer )
         return false;
 
     *chunkData = _impl->buffer->getData();
-    *size = _impl->buffer->getSize();
-    *compressor = EQ_COMPRESSOR_NONE;
-    *nChunks = 1;
+    size = _impl->buffer->getSize();
+    compressor = EQ_COMPRESSOR_NONE;
+    nChunks = 1;
 
+    setSwapping( _impl->buffer->needsSwapping( ));
     return true;
 }
 

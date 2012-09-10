@@ -257,10 +257,9 @@ bool Node::deserialize( std::string& data )
     return co::deserialize( data, _impl->connectionDescriptions.data );
 }
 
-NodePtr Node::createNode( const uint32_t type )
+bool Node::isBigEndian() const
 {
-    LBASSERTINFO( type == NODETYPE_CO_NODE, type );
-    return new Node;
+    return _impl->bigEndian;
 }
 
 bool Node::isReachable() const
