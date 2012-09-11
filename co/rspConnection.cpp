@@ -608,9 +608,7 @@ void RSPConnection::_writeData()
     const uint32_t size = header->size + sizeof( DatagramData );
 
     _waitWritable( size ); // OPT: process incoming in between
-#ifdef COLLAGE_BIGENDIAN
     header->byteswap();
-#endif
     _write->send( boost::asio::buffer( header, size ));
 
 #ifdef EQ_INSTRUMENT_RSP
@@ -696,13 +694,9 @@ void RSPConnection::_repeatData()
 
             // send data
             _waitWritable( size ); // OPT: process incoming in between
-#ifdef COLLAGE_BIGENDIAN
             header->byteswap();
-#endif
             _write->send( boost::asio::buffer( header, size ) );
-#ifdef COLLAGE_BIGENDIAN
-            header->byteswap();
-#endif
+            header->byteswap(); // swap back if repeat occurs again
 #ifdef EQ_INSTRUMENT_RSP
             ++nRepeated;
 #endif
@@ -817,9 +811,7 @@ void RSPConnection::_handlePacket( const boost::system::error_code& /* error */,
     {
         DatagramNode& node =
                     *reinterpret_cast< DatagramNode* >( _recvBuffer.getData( ));
-#ifdef COLLAGE_BIGENDIAN
         node.byteswap();
-#endif
         if( _idAccepted )
             _handleInitData( node, false );
         else
@@ -898,9 +890,7 @@ void RSPConnection::_handleInitData( const DatagramNode& node,
 void RSPConnection::_handleConnectedData( void* data )
 {
     uint16_t type = *reinterpret_cast< uint16_t* >( data );
-#ifdef COLLAGE_BIGENDIAN
     lunchbox::byteswap( type );
-#endif
     switch( type )
     {
         case DATA:
@@ -910,9 +900,7 @@ void RSPConnection::_handleConnectedData( void* data )
         case ACK:
         {
             DatagramAck& ack = *reinterpret_cast< DatagramAck* >( data );
-#ifdef COLLAGE_BIGENDIAN
             ack.byteswap();
-#endif
             LBCHECK( _handleAck( ack ));
             break;
         }
@@ -920,9 +908,7 @@ void RSPConnection::_handleConnectedData( void* data )
         case NACK:
         {
             DatagramNack& nack = *reinterpret_cast< DatagramNack* >( data );
-#ifdef COLLAGE_BIGENDIAN
             nack.byteswap();
-#endif
             LBCHECK( _handleNack( nack ));
             break;
         }
@@ -931,9 +917,7 @@ void RSPConnection::_handleConnectedData( void* data )
         {
             DatagramAckRequest& ackRequest =
                                *reinterpret_cast< DatagramAckRequest* >( data );
-#ifdef COLLAGE_BIGENDIAN
             ackRequest.byteswap();
-#endif
             LBCHECK( _handleAckRequest( ackRequest ));
             break;
         }
@@ -944,9 +928,7 @@ void RSPConnection::_handleConnectedData( void* data )
         case COUNTNODE:
         {
             DatagramNode& node = *reinterpret_cast< DatagramNode* >( data );
-#ifdef COLLAGE_BIGENDIAN
             node.byteswap();
-#endif
             _handleInitData( node, true );
             break;
         }
@@ -972,10 +954,9 @@ bool RSPConnection::_handleData( Buffer& buffer )
 #ifdef EQ_INSTRUMENT_RSP
     ++nReadData;
 #endif
-    DatagramData& datagram = *reinterpret_cast< DatagramData* >( buffer.getData( ));
-#ifdef COLLAGE_BIGENDIAN
+    DatagramData& datagram =
+                         *reinterpret_cast< DatagramData* >( buffer.getData( ));
     datagram.byteswap();
-#endif
     const uint16_t writerID = datagram.writerID;
 #ifdef Darwin
     // There is occasionally a packet from ourselves, even though multicast loop
@@ -1534,9 +1515,7 @@ void RSPConnection::_sendCountNode()
     LBLOG( LOG_RSP ) << _children.size() << " nodes" << std::endl;
     DatagramNode count = { COUNTNODE, EQ_RSP_PROTOCOL_VERSION, _id,
                            uint16_t( _children.size( )) };
-#ifdef COLLAGE_BIGENDIAN
     count.byteswap();
-#endif
     _write->send( buffer( &count, sizeof( count )) );
 }
 
@@ -1544,9 +1523,7 @@ void RSPConnection::_sendSimpleDatagram( const DatagramType type,
                                          const uint16_t id )
 {
     DatagramNode simple = { type, EQ_RSP_PROTOCOL_VERSION, id, 0 };
-#ifdef COLLAGE_BIGENDIAN
     simple.byteswap();
-#endif
     _write->send( buffer( &simple, sizeof( simple )) );
 }
 
@@ -1560,9 +1537,7 @@ void RSPConnection::_sendAck( const uint16_t writerID,
 
     LBLOG( LOG_RSP ) << "send ack " << sequence << std::endl;
     DatagramAck ack = { ACK, _id, writerID, sequence };
-#ifdef COLLAGE_BIGENDIAN
     ack.byteswap();
-#endif
     _write->send( buffer( &ack, sizeof( ack )) );
 }
 
@@ -1588,9 +1563,7 @@ void RSPConnection::_sendNack( const uint16_t writerID, const Nack* nacks,
     DatagramNack packet;
     packet.set( _id, writerID, count );
     memcpy( packet.nacks, nacks, count * sizeof( Nack ));
-#ifdef COLLAGE_BIGENDIAN
     packet.byteswap();
-#endif
     _write->send( buffer( &packet, size ));
 }
 
@@ -1602,9 +1575,7 @@ void RSPConnection::_sendAckRequest()
     LBLOG( LOG_RSP ) << "send ack request for " << uint16_t( _sequence -1 )
                      << std::endl;
     DatagramAckRequest ackRequest = { ACKREQ, _id, _sequence - 1 };
-#ifdef COLLAGE_BIGENDIAN
     ackRequest.byteswap();
-#endif
     _write->send( buffer( &ackRequest, sizeof( DatagramAckRequest )) );
 }
 
