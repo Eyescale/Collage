@@ -921,7 +921,7 @@ void RSPConnection::_handleConnectedData( const void* data )
         default:
             LBASSERTINFO( false,
                           "Don't know how to handle packet of type " <<
-                          type );
+                          node.type );
     }
 
 }
