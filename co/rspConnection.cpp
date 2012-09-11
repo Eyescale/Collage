@@ -1,6 +1,7 @@
 
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
+/* Copyright (c)      2009, Cedric Stalder <cedric.stalder@gmail.com>
  *               2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -32,6 +33,7 @@
 //#define EQ_INSTRUMENT_RSP
 #define EQ_RSP_MERGE_WRITES
 #define EQ_RSP_MAX_TIMEOUTS 2000
+const uint16_t EQ_RSP_PROTOCOL_VERSION = 1;
 
 using namespace boost::asio;
 
@@ -812,6 +814,9 @@ void RSPConnection::_handlePacket( const boost::system::error_code& /* error */,
 void RSPConnection::_handleAcceptIDData( const void* data )
 {
     const DatagramNode* node = reinterpret_cast< const DatagramNode* >( data );
+    if( !_acceptDatagram( *node ))
+        return;
+
     switch( node->type )
     {
         case ID_HELLO:
@@ -841,6 +846,9 @@ void RSPConnection::_handleAcceptIDData( const void* data )
 void RSPConnection::_handleInitData( const void* data )
 {
     const DatagramNode* node = reinterpret_cast< const DatagramNode* >( data );
+    if( !_acceptDatagram( *node ))
+        return;
+
     switch( node->type )
     {
         case ID_HELLO:
@@ -1369,6 +1377,17 @@ void RSPConnection::_checkNewID( uint16_t id )
     }
 }
 
+bool RSPConnection::_acceptDatagram( const DatagramNode& datagram ) const
+{
+#ifdef COLLAGE_BIGENDIAN
+    const bool bigEndian = true;
+#else
+    const bool bigEndian = false;
+#endif
+    return EQ_RSP_PROTOCOL_VERSION == datagram.protocolVersion &&
+           bigEndian == datagram.bigEndian;
+}
+
 RSPConnectionPtr RSPConnection::_findConnection( const uint16_t id ) const
 {
     for( RSPConnectionsCIter i = _children.begin(); i != _children.end(); ++i )
@@ -1509,7 +1528,13 @@ void RSPConnection::_sendCountNode()
 void RSPConnection::_sendSimpleDatagram( const DatagramType type,
                                          const uint16_t id )
 {
-    const DatagramNode simple = { type, id };
+#ifdef COLLAGE_BIGENDIAN
+    const bool bigEndian = true;
+#else
+    const bool bigEndian = false;
+#endif
+    const DatagramNode simple = { type, id, EQ_RSP_PROTOCOL_VERSION,
+                                  bigEndian };
     _write->send( buffer( &simple, sizeof( simple )) );
 }
 
