@@ -60,7 +60,7 @@ public:
     CO_API ObjectOCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
                            const uint32_t cmd, const uint32_t type,
                            const UUID& id, const uint32_t instanceID );
-                           
+
     /** @internal */
     CO_API ObjectOCommand( const ObjectOCommand& rhs );
 

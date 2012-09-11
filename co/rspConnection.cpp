@@ -1372,7 +1372,7 @@ void RSPConnection::_checkNewID( uint16_t id )
     }
 }
 
-RSPConnectionPtr RSPConnection::_findConnection( const uint16_t id ) const
+RSPConnectionPtr RSPConnection::_findConnection( const uint16_t id )
 {
     for( RSPConnectionsCIter i = _children.begin(); i != _children.end(); ++i )
     {
@@ -1439,7 +1439,7 @@ void RSPConnection::_removeConnection( const uint16_t id )
 
 int64_t RSPConnection::write( const void* inData, const uint64_t bytes )
 {
-    if( _parent.isValid( ))
+    if( _parent )
         return _parent->write( inData, bytes );
 
     LBASSERT( isListening( ));
