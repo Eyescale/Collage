@@ -18,7 +18,8 @@
 #ifndef CO_NODEOCOMMAND_H
 #define CO_NODEOCOMMAND_H
 
-#include <co/dataOStream.h>   // base class
+#include <co/commands.h>       // for COMMANDTYPE_CO_NODE
+#include <co/dataOStream.h>    // base class
 
 
 namespace co
@@ -67,9 +68,9 @@ public:
     /**
      * Allow external send of data along with this command.
      *
-     * @param additionalSize size in bytes of external data.
+     * @param additionalSize size in bytes of additional data after header.
      */
-    CO_API void setExternalSend( const uint64_t additionalSize );
+    CO_API void sendHeaderUnlocked( const uint64_t additionalSize );
 
     /** @return the static size of this command. */
     CO_API static size_t getSize();
@@ -79,6 +80,7 @@ protected:
                                   const bool last );
 
 private:
+    NodeOCommand& operator = ( const NodeOCommand& );
     detail::NodeOCommand* const _impl;
 
     void _init();

@@ -108,7 +108,7 @@ NodeOCommand::~NodeOCommand()
     delete _impl;
 }
 
-void NodeOCommand::setExternalSend( const uint64_t additionalSize )
+void NodeOCommand::sendHeaderUnlocked( const uint64_t additionalSize )
 {
     LBASSERT( !_impl->dispatcher );
     _impl->lockSend = false;

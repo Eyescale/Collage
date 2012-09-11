@@ -30,31 +30,35 @@ namespace detail { class ObjectDataCommand; }
 class ObjectDataCommand : public ObjectCommand
 {
 public:
-    /** @internal Construct an object data command from a base command. */
     CO_API ObjectDataCommand( const Command& command );
 
-    /** @internal */
+    CO_API ObjectDataCommand( ConstBufferPtr buffer );
+
+    ObjectDataCommand( const ObjectDataCommand& rhs );
+
     CO_API ~ObjectDataCommand();
 
-    /** @internal @return the object version. */
+    /** @return the object version. */
     virtual uint128_t getVersion() const;
 
-    /** @internal @return the index in a sequence of commands. */
+    /** @return the index in a sequence of commands. */
     uint32_t getSequence() const;
 
-    /** @internal @return the size of the packed object data. */
+    /** @return the size of the packed object data. */
     CO_API uint64_t getDataSize() const;
 
-    /** @internal @return the compressor used for the object data. */
+    /** @return the compressor used for the object data. */
     CO_API uint32_t getCompressor() const;
 
-    /** @internal @return the number of chunks containing the object data. */
+    /** @return the number of chunks containing the object data. */
     CO_API uint32_t getChunks() const;
 
-    /** @internal @return true if this is the last command for one object. */
+    /** @return true if this is the last command for one object. */
     CO_API bool isLast() const;
 
 private:
+    ObjectDataCommand();
+    ObjectDataCommand& operator = ( const ObjectDataCommand& );
     detail::ObjectDataCommand* const _impl;
 
     void _init();

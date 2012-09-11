@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -52,15 +53,14 @@ protected:
         {
             co::ObjectDataOCommand( getConnections(), co::CMD_OBJECT_DELTA,
                                     co::COMMANDTYPE_CO_OBJECT, co::UUID(), 0,
-                                    co::uint128_t(), 0, size, last, buffer,
-                                    this );
+                                    co::uint128_t(), 0, size, last, this );
         }
 };
 
 class DataIStream : public co::DataIStream
 {
 public:
-    void addDataCommand( co::BufferPtr buffer )
+    void addDataCommand( co::ConstBufferPtr buffer )
         {
             co::ObjectDataCommand command( buffer );
             TESTINFO( command.getCommand() == co::CMD_OBJECT_DELTA, command );
@@ -72,8 +72,8 @@ public:
     virtual co::NodePtr getMaster() { return 0; }
 
 protected:
-    virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
-                                const void** chunkData, uint64_t* size )
+    virtual bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
+                                const void** chunkData, uint64_t& size )
         {
             co::Command cmd = _commands.tryPop();
             if( !cmd.isValid( ))
@@ -83,10 +83,10 @@ protected:
 
             TEST( command.getCommand() == co::CMD_OBJECT_DELTA );
 
-            *size = command.getDataSize();
-            *compressor = command.getCompressor();
-            *nChunks = command.getChunks();
-            *chunkData = command.getRemainingBuffer( *size );
+            size = command.getDataSize();
+            compressor = command.getCompressor();
+            nChunks = command.getChunks();
+            *chunkData = command.getRemainingBuffer( size );
             return true;
         }
 

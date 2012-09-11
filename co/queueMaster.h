@@ -1,6 +1,7 @@
 
-/* Copyright (c) 2011, Stefan Eilemann <eile@eyescale.ch> 
- *               2011, Carsten Rohn <carsten.rohn@rtt.ag> 
+/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch> 
+ *                    2011, Carsten Rohn <carsten.rohn@rtt.ag> 
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -20,11 +21,10 @@
 #define CO_QUEUEMASTER_H
 
 #include <co/object.h> // base class
-
+#include <co/types.h>
 
 namespace co
 {
-class QueueItem;
 namespace detail { class QueueMaster; }
 
 /**
@@ -37,25 +37,25 @@ namespace detail { class QueueMaster; }
 class QueueMaster : public Object
 {
 public:
-    /** Construct a new queue master. @version 1.1.6 */
+    /** Construct a new queue master. @version 1.0 */
     CO_API QueueMaster();
 
-    /** Destruct this queue master. @version 1.1.6 */
+    /** Destruct this queue master. @version 1.0 */
     virtual CO_API ~QueueMaster();
 
     /**
      * Enqueue a new queue item.
      *
-     * The returned queue item can be enhanced with additional using the stream
-     * operators provided by DataOStream. Note that the item is enqueued if the
-     * returned item object is destroyed, i.e. if it runs out of scope.
+     * The returned queue item can stream additional data using the DataOStream
+     * operators. Note that the item is enqueued once it is is destroyed,
+     * i.e. if it runs out of scope.
      *
      * @return the item to enqueue.
      * @version 1.0
      */
     CO_API QueueItem push();
 
-    /** Remove all enqueued items. @version 1.1.6 */
+    /** Remove all enqueued items. @version 1.0 */
     CO_API void clear();
 
 private:

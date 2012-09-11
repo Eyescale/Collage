@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -19,7 +20,8 @@
 #define CO_COMMAND_H
 
 #include <co/api.h>
-#include <co/dataIStream.h>         // base class
+#include <co/commands.h>        // for enum CommandType
+#include <co/dataIStream.h>     // base class
 
 
 namespace co
@@ -39,19 +41,16 @@ namespace detail { class Command; }
     class Command : public DataIStream
     {
     public:
-        /** @internal */
-        CO_API Command();
+        CO_API Command(); //!< @internal
 
-        /** @internal */
-        CO_API Command( BufferPtr buffer );
+        CO_API Command( ConstBufferPtr buffer ); //!< @internal
 
-        /** @internal */
-        Command( const Command& rhs );
+        CO_API Command( const Command& rhs ); //!< @internal
+        CO_API Command& operator = ( const Command& rhs ); //!< @internal
 
-        /** @internal */
-        Command& operator = ( const Command& rhs );
+        CO_API void clear(); //!< @internal
 
-        CO_API virtual ~Command();
+        CO_API virtual ~Command(); //!< @internal
 
         /** @name Data Access */
         //@{
@@ -61,10 +60,10 @@ namespace detail { class Command; }
         /** @return the command. @version 1.0 */
         CO_API uint32_t getCommand() const;
 
-        /** @internal @return the size of this command. */
+        /** @internal @return the size of this command. @version 1.0 */
         CO_API uint64_t getSize() const;
 
-        /** @return a value from the command. */
+        /** @return a value from the command. @version 1.0 */
         template< typename T > T get()
         {
             T value;
@@ -78,19 +77,19 @@ namespace detail { class Command; }
         /** @return the receiving node. @version 1.0 */
         CO_API LocalNodePtr getLocalNode() const;
 
-        /** @internal @return true if the command has a valid buffer. */
+        /** @return true if the command has valid data. @version 1.0 */
         CO_API bool isValid() const;
         //@}
 
         /** @internal @name Dispatch command functions.. */
         //@{
-        /** @internal Change the command type for subsequent dispatching. */
+        /** Change the command type for subsequent dispatching. */
         CO_API void setType( const CommandType type );
 
-        /** @internal Change the command for subsequent dispatching. */
+        /** Change the command for subsequent dispatching. */
         CO_API void setCommand( const uint32_t cmd );
 
-        /** @internal Set the function to which the command is dispatched. */
+        /** Set the function to which the command is dispatched. */
         void setDispatchFunction( const Dispatcher::Func& func );
 
         /** Invoke and clear the command function of a dispatched command. */
@@ -107,10 +106,10 @@ namespace detail { class Command; }
         CO_API virtual size_t nRemainingBuffers() const;
         CO_API virtual uint128_t getVersion() const;
         CO_API virtual NodePtr getMaster();
-        CO_API virtual bool getNextBuffer( uint32_t* compressor,
-                                           uint32_t* nChunks,
+        CO_API virtual bool getNextBuffer( uint32_t& compressor,
+                                           uint32_t& nChunks,
                                            const void** chunkData,
-                                           uint64_t* size );
+                                           uint64_t& size );
         //@}
 
         void _skipHeader(); //!< @internal

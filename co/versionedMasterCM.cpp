@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2010-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -99,26 +100,15 @@ uint128_t VersionedMasterCM::_apply( ObjectDataIStream* is )
     return version;
 }
 
-void VersionedMasterCM::addSlave( Command& comd )
+void VersionedMasterCM::addSlave( MasterCMCommand command )
 {
     LB_TS_THREAD( _cmdThread );
     Mutex mutex( _slaves );
 
-    // #145 introduce reset() on command to read from the buffer front
-    Command command( comd );
-
-    /*const uint128_t& version = */command.get< uint128_t >();
-    /*const uint128_t& minCachedVersion = */command.get< uint128_t >();
-    /*const uint128_t& maxCachedVersion = */command.get< uint128_t >();
-    /*const UUID& id = */command.get< UUID >();
-    const uint64_t maxVersion = command.get< uint64_t >();
-    /*const uint32_t requestID = */command.get< uint32_t >();
-    const uint32_t instanceID = command.get< uint32_t >();
-
     SlaveData data;
     data.node = command.getNode();
-    data.instanceID = instanceID;
-    data.maxVersion = maxVersion;
+    data.instanceID = command.getInstanceID();
+    data.maxVersion = command.getMaxVersion();
     if( data.maxVersion == 0 )
         data.maxVersion = std::numeric_limits< uint64_t >::max();
     else if( data.maxVersion < std::numeric_limits< uint64_t >::max( ))
@@ -203,7 +193,7 @@ bool VersionedMasterCM::_cmdSlaveDelta( Command& cmd )
 
     LB_TS_THREAD( _rcvThread );
 
-    if( _slaveCommits.addDataPacket( command.get< UUID >(), command ))
+    if( _slaveCommits.addDataCommand( command.get< UUID >(), command ))
         _object->notifyNewVersion();
     return true;
 }

@@ -1,6 +1,7 @@
 
 /* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
- *               2011, Carsten Rohn <carsten.rohn@rtt.ag>
+ *                    2011, Carsten Rohn <carsten.rohn@rtt.ag>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -51,9 +52,9 @@ typedef lunchbox::RefPtr< ItemBuffer > ItemBufferPtr;
 class QueueMaster : public co::Dispatcher
 {
 public:
-    QueueMaster( const UUID& masterID_ )
+    QueueMaster( const co::QueueMaster& parent )
         : co::Dispatcher()
-        , masterID( masterID_ )
+        , _parent( parent )
     {}
 
     /** The command handler functions. */
@@ -69,11 +70,11 @@ public:
         Items items;
         queue.tryPop( itemsRequested, items );
 
+        Connections connections( 1, command.getNode()->getConnection( ));
         for( Items::const_iterator i = items.begin(); i != items.end(); ++i )
         {
-            Connections connections( 1, command.getNode()->getConnection( ));
             co::ObjectOCommand cmd( connections, CMD_QUEUE_ITEM,
-                                    COMMANDTYPE_CO_OBJECT, masterID,
+                                    COMMANDTYPE_CO_OBJECT, _parent.getID(),
                                     slaveInstanceID );
 
             const ItemBufferPtr item = *i;
@@ -82,21 +83,27 @@ public:
         }
 
         if( itemsRequested > items.size( ))
-            command.getNode()->send( CMD_QUEUE_EMPTY, COMMANDTYPE_CO_OBJECT )
-                    << command.getObjectID() << slaveInstanceID << requestID;
+            co::ObjectOCommand( connections, CMD_QUEUE_EMPTY,
+                                COMMANDTYPE_CO_OBJECT, command.getObjectID(),
+                                slaveInstanceID ) << requestID;
         return true;
     }
 
     typedef lunchbox::MTQueue< ItemBufferPtr > ItemQueue;
 
-    const UUID& masterID;
     ItemQueue queue;
     co::BufferCache cache;
+
+private:
+    const co::QueueMaster& _parent;
 };
 }
 
 QueueMaster::QueueMaster()
-    : _impl( new detail::QueueMaster( getID( )) )
+#pragma warning(push)
+#pragma warning(disable: 4355)
+    : _impl( new detail::QueueMaster( *this ))
+#pragma warning(pop)
 {
 }
 

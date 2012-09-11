@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -59,6 +60,7 @@ class ObjectCommand;
 class ObjectOCommand;
 class Plugin;        //!< @internal
 class PluginRegistry;
+class QueueItem;
 class QueueMaster;
 class QueueSlave;
 class Serializable;
@@ -125,9 +127,10 @@ typedef ConnectionDescriptions::iterator         ConnectionDescriptionsIter;
 typedef ConnectionDescriptions::const_iterator   ConnectionDescriptionsCIter;
 
 /** @cond IGNORE */
+class MasterCMCommand;
 typedef lunchbox::RefPtr< Buffer > BufferPtr;
+typedef lunchbox::RefPtr< const Buffer > ConstBufferPtr;
 typedef std::deque< Command > CommandDeque;
-typedef CommandDeque::const_iterator CommandDequeCIter;
 
 typedef std::vector< ObjectVersion > ObjectVersions;
 typedef ObjectVersions::const_iterator ObjectVersionsCIter;

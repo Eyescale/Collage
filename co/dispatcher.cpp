@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -80,12 +81,10 @@ void Dispatcher::_registerCommand( const uint32_t command, const Func& func,
 }
 
 
-bool Dispatcher::dispatchCommand( Command& cmd )
+bool Dispatcher::dispatchCommand( Command& command )
 {
-    LBASSERT( cmd.isValid( ));
+    LBASSERT( command.isValid( ));
 
-    // #145 introduce reset() on command to read from the buffer front
-    Command command( cmd );
     LBVERB << "dispatch " << command << " on " << lunchbox::className( this )
            << std::endl;
 

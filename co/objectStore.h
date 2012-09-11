@@ -1,6 +1,7 @@
 
 /* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -45,18 +46,18 @@ namespace co
         /** Remove all objects and clear all caches. */
         void clear();
 
-        /** @name Command Packet Dispatch */
+        /** @name Command Dispatch */
         //@{
         /**
-         * Dispatches a command object packet to the registered command queue.
+         * Dispatches an object command to the registered command queue.
          *
-         * Object packets are dispatch to the appropriate objects mapped on
+         * Object commands are dispatched to the appropriate objects mapped on
          * this session.
          *
-         * @param packet the command packet.
+         * @param command the command.
          * @return true if the command was dispatched, false otherwise.
          */
-        bool dispatchObjectCommand( Command& cmd );
+        bool dispatchObjectCommand( Command& command );
         //@}
 
         /** @name Object Registration */

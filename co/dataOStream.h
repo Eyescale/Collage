@@ -1,6 +1,7 @@
 
 /* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -36,7 +37,7 @@ namespace DataStreamTest { class Sender; }
      * A std::ostream-like interface for object serialization.
      *
      * Implements buffering, retaining and compressing data in a binary format.
-     * Derived classes send the data using the appropriate command packets.
+     * Derived classes send the data using the appropriate commands.
      */
     class DataOStream : public lunchbox::NonCopyable
     {
@@ -59,18 +60,15 @@ namespace DataStreamTest { class Sender; }
         CO_API const Connections& getConnections() const;
 
         /** @internal */
-        uint32_t getCompressor() const;
-
-        /** @internal */
-        uint32_t getNumChunks() const;
-
-        /** @internal */
         CO_API lunchbox::Bufferb& getBuffer();
 
-        /** @internal */
-        void sendCompressedData( ConnectionPtr connection );
+        /** @internal Stream the data header (compressor, nChunks). */
+        DataOStream& streamDataHeader( DataOStream& os );
 
-        /** @internal */
+        /** @internal Send the (compressed) data using the given connection. */
+        void sendData( ConnectionPtr connection, const uint64_t dataSize );
+
+        /** @internal @return the compressed data size, 0 if uncompressed.*/
         uint64_t getCompressedDataSize() const;
         //@}
 
@@ -112,7 +110,7 @@ namespace DataStreamTest { class Sender; }
         void _flush();
 
         /** @internal
-         * Set up the connection list for a group of  nodes, using multicast
+         * Set up the connection list for a group of nodes, using multicast
          * where possible.
          */
         void _setupConnections( const Nodes& receivers );
@@ -133,7 +131,7 @@ namespace DataStreamTest { class Sender; }
 
         /** @internal @name Data sending, used by the subclasses */
         //@{
-        /** @internal Send a data buffer (packet) to the receivers. */
+        /** @internal Send a data buffer (command) to the receivers. */
         virtual void sendData( const void* buffer, const uint64_t size,
                                const bool last ) = 0;
 
@@ -170,7 +168,7 @@ namespace DataStreamTest { class Sender; }
                 _write( &value.front(), nElems * sizeof( T ));
             return *this;
         }
-        /** Send the trailing data (packet) to the receivers */
+        /** Send the trailing data (command) to the receivers */
         void _sendFooter( const void* buffer, const uint64_t size );
     };
 

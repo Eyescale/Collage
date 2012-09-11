@@ -1,6 +1,7 @@
 
 /* Copyright (c) 2010-2012, Stefan Eilemann <eile@eyescale.ch>
  *                    2010, Cedric Stalder  <cedric.stalder@gmail.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -58,8 +59,7 @@ ObjectDataOCommand ObjectDataOStream::send( const uint32_t cmd,
                                             const uint32_t type,
                                             const uint32_t instanceID,
                                             const uint64_t size,
-                                            const bool last,
-                                            const void* buffer )
+                                            const bool last )
 {
     LBASSERT( _version != VERSION_INVALID );
     const uint32_t sequence = _sequence++;
@@ -68,7 +68,7 @@ ObjectDataOCommand ObjectDataOStream::send( const uint32_t cmd,
 
     return ObjectDataOCommand( getConnections(), cmd, type,
                                _cm->getObject()->getID(), instanceID, _version,
-                               sequence, size, last, buffer, this );
+                               sequence, size, last, this );
 }
 
 }

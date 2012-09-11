@@ -1,6 +1,7 @@
 
 /* Copyright (c)  2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                     2010, Cedric Stalder <cedric.stalder@gmail.com>
+ *                     2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -1024,7 +1025,7 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
 
     const uint32_t requestID = registerRequest( node.get( ));
 
-    // send connect packet to peer
+    // send connect command to peer
     NodeOCommand( Connections( 1, connection ), CMD_NODE_CONNECT )
             << getNodeID() << requestID << getType() << serialize();
 
@@ -1044,6 +1045,12 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
     return CONNECT_OK;
 }
 
+NodePtr LocalNode::createNode( const uint32_t type )
+{
+    LBASSERTINFO( type == NODETYPE_CO_NODE, type );
+    return new Node;
+}
+
 NodePtr LocalNode::getNode( const NodeID& id ) const
 {
     lunchbox::ScopedFastRead mutex( _impl->nodes );
@@ -1057,7 +1064,7 @@ NodePtr LocalNode::getNode( const NodeID& id ) const
 void LocalNode::getNodes( Nodes& nodes, const bool addSelf ) const
 {
     lunchbox::ScopedFastRead mutex( _impl->nodes );
-    for( NodeHashCIter i = _impl->nodes->begin(); i != _impl->nodes->end(); ++i )
+    for( NodeHashCIter i = _impl->nodes->begin(); i != _impl->nodes->end(); ++i)
     {
         NodePtr node = i->second;
         LBASSERTINFO( node->isReachable(), node );
@@ -1189,10 +1196,12 @@ void LocalNode::_handleDisconnect()
     if( i != _impl->connectionNodes.end( ))
     {
         NodePtr node = i->second;
-// #145 use old direct-dispatch
+
         node->ref(); // extend lifetime to give cmd handler a chance
-        send( CMD_NODE_REMOVE_NODE )
-            << node.get() << uint32_t( LB_UNDEFINED_UINT32 );
+
+        // local command dispatching
+        NodeOCommand( this, this, CMD_NODE_REMOVE_NODE )
+                << node.get() << uint32_t( LB_UNDEFINED_UINT32 );
 
         if( node->getConnection() == connection )
             _closeNode( node );
@@ -1262,12 +1271,14 @@ bool LocalNode::_handleData()
 
     if( !gotData )
     {
-        LBERROR << "Incomplete packet read: " << command << std::endl;
+        LBERROR << "Incomplete command read: " << command << std::endl;
         return false;
     }
 
-    // This is one of the initial packets during the connection handshake, at
+    // This is one of the initial commands during the connection handshake, at
     // this point the remote node is not yet available.
+    // TODO #146 need external byteswap here for these commands, because buffer
+    //           also lacks node for bigEndian query
     LBASSERTINFO( node.isValid() ||
                  ( command.getType() == COMMANDTYPE_CO_NODE &&
                   ( command.getCommand() == CMD_NODE_CONNECT  ||
@@ -1314,7 +1325,7 @@ bool LocalNode::dispatchCommand( Command& command )
             return _impl->objectStore->dispatchObjectCommand( command );
 
         default:
-            LBABORT( "Unknown packet type " << type << " for " << command );
+            LBABORT( "Unknown command type " << type << " for " << command );
             return true;
     }
 }
@@ -1478,7 +1489,7 @@ bool LocalNode::_cmdConnect( Command& command )
             NodeOCommand( Connections( 1, connection ), CMD_NODE_CONNECT_REPLY )
                     << nodeID << requestID << nodeType;
 
-            // NOTE: There is no close() here. The reply packet above has to be
+            // NOTE: There is no close() here. The reply command above has to be
             // received by the peer first, before closing the connection.
             _removeConnection( connection );
             return true;
