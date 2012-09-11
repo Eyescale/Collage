@@ -219,6 +219,7 @@ bool Node::deserialize( std::string& data )
         return false;
     }
 
+    is.clear();
     is.str( data.substr( 0, nextPos ));
     data = data.substr( nextPos + 1 );
     is >> minor;
@@ -249,6 +250,7 @@ bool Node::deserialize( std::string& data )
         return false;
     }
 
+    is.clear();
     is.str( data.substr( 0, nextPos ));
     data = data.substr( nextPos + 1 );
     is >> _impl->bigEndian;

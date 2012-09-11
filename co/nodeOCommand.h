@@ -80,6 +80,7 @@ protected:
                                   const bool last );
 
 private:
+    NodeOCommand& operator = ( const NodeOCommand& );
     detail::NodeOCommand* const _impl;
 
     void _init();

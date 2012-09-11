@@ -58,6 +58,9 @@ public:
                                const uint64_t dataSize, const bool isLast,
                                DataOStream* stream );
 
+    /** @internal */
+    CO_API ObjectDataOCommand( const ObjectDataOCommand& rhs );
+
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~ObjectDataOCommand();
 
@@ -70,8 +73,11 @@ protected:
                            const bool last );
 
 private:
+    ObjectDataOCommand();    
+    ObjectDataOCommand& operator = ( const ObjectDataOCommand& );
     detail::ObjectDataOCommand* const _impl;
 
+    void _init();
     void _addUserData( const void* data, uint64_t size );
 };
 }

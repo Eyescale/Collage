@@ -28,14 +28,42 @@ namespace detail
 class ObjectDataOCommand
 {
 public:
-    ObjectDataOCommand( const uint64_t dataSize_,
+    ObjectDataOCommand( const uint128_t& version_, const uint32_t sequence_,
+                        const uint64_t dataSize_, const bool isLast_,
                         co::DataOStream* stream_ )
-        : dataSize( dataSize_ )
+        : version( version_ )
+        , sequence( sequence_ )
+        , isLast( isLast_ )
+        , uncompressedSize( dataSize_ )
+        , compressedSize( 0 )
         , userBuffer()
         , stream( stream_ )
-    {}
+    {
+        if( stream )
+        {
+            compressedSize = stream->getCompressedDataSize();
+            if( compressedSize == 0 )
+                compressedSize = dataSize_;
+        }
+    }
 
-    uint64_t dataSize;
+    ObjectDataOCommand( ObjectDataOCommand& rhs )
+        : version( rhs.version )
+        , sequence( rhs.sequence )
+        , isLast( rhs.isLast )
+        , uncompressedSize( rhs.uncompressedSize )
+        , compressedSize( rhs.compressedSize )
+        , userBuffer()
+        , stream( rhs.stream )
+    {
+        userBuffer.swap( rhs.userBuffer );
+    }
+
+    const uint128_t& version;
+    const uint32_t sequence;
+    const bool isLast;
+    uint64_t uncompressedSize;
+    uint64_t compressedSize;
     lunchbox::Bufferb userBuffer;
     co::DataOStream* stream;
 };
@@ -52,18 +80,27 @@ ObjectDataOCommand::ObjectDataOCommand( const Connections& receivers,
                                         const bool isLast,
                                         DataOStream* stream )
     : ObjectOCommand( receivers, cmd, type, id, instanceID )
-    , _impl( new detail::ObjectDataOCommand( dataSize, stream ))
+    , _impl( new detail::ObjectDataOCommand( version, sequence, dataSize, isLast,
+                                             stream ))
+{
+    _init();
+}
+
+ObjectDataOCommand::ObjectDataOCommand( const ObjectDataOCommand& rhs )
+    : ObjectOCommand( rhs )
+    , _impl( new detail::ObjectDataOCommand( *rhs._impl ))
+{
+    _init();
+}
+
+void ObjectDataOCommand::_init()
 {
     // cast to avoid call to our user data operator << overload
-    (ObjectOCommand&)(*this) << version << sequence << dataSize << isLast;
-    if( stream )
-    {
-        stream->streamDataHeader( *this );
+    (ObjectOCommand&)(*this) << _impl->version << _impl->sequence
+                             << _impl->uncompressedSize << _impl->isLast;
 
-        _impl->dataSize = stream->getCompressedDataSize();
-        if( _impl->dataSize == 0 )
-            _impl->dataSize = dataSize;
-    }
+    if( _impl->stream )
+        _impl->stream->streamDataHeader( *this );
 }
 
 ObjectDataOCommand::~ObjectDataOCommand()
@@ -85,7 +122,7 @@ void ObjectDataOCommand::sendData( const void* buffer, const uint64_t size,
 
     const uint64_t finalSize = size +                        // command header
                                _impl->userBuffer.getSize() + // userBuffer
-                               _impl->dataSize;
+                               _impl->compressedSize;
 
     for( ConnectionsCIter it = getConnections().begin();
          it != getConnections().end(); ++it )
@@ -99,7 +136,7 @@ void ObjectDataOCommand::sendData( const void* buffer, const uint64_t size,
             LBCHECK( conn->send( _impl->userBuffer.getData(),
                                  _impl->userBuffer.getSize(), true ));
         if( _impl->stream )
-            _impl->stream->sendData( conn, _impl->dataSize );
+            _impl->stream->sendData( conn, _impl->compressedSize );
 
         conn->unlockSend();
     }
