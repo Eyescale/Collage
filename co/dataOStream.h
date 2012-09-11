@@ -213,8 +213,7 @@ namespace co
     DataOStream::operator << ( const lunchbox::Buffer< T >& buffer )
     {
         return (*this) << buffer.getSize()
-                       << Array< const T >( buffer.getData(),
-                                            buffer.getNumBytes( ));
+                       << Array< const T >( buffer.getData(), buffer.getSize());
     }
 
     /** Write a std::vector of serializable items. */

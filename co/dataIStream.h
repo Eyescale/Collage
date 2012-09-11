@@ -151,12 +151,12 @@ namespace detail { class DataIStream; }
         DataIStream& _readFlatVector ( std::vector< T >& value )
         {
             uint64_t nElems = 0;
-            (*this) >> nElems;
+            *this >> nElems;
             LBASSERTINFO( nElems < LB_BIT48,
                   "Out-of-sync co::DataIStream: " << nElems << " elements?" );
             value.resize( size_t( nElems ));
             if( nElems > 0 )
-                (*this) >> Array< T >( &value.front(), nElems );
+                *this >> Array< T >( &value.front(), nElems );
             return *this;
         }
 
@@ -188,7 +188,7 @@ namespace co
     inline DataIStream& DataIStream::operator >> ( std::string& str )
     {
         uint64_t nElems = 0;
-        (*this) >> nElems;
+        *this >> nElems;
         LBASSERTINFO( nElems <= getRemainingBufferSize(),
                       nElems << " > " << getRemainingBufferSize( ));
         if( nElems == 0 )
@@ -203,7 +203,7 @@ namespace co
     template<> inline DataIStream& DataIStream::operator >> ( Object*& object )
     {
         ObjectVersion data;
-        (*this) >> data;
+        *this >> data;
         LBASSERT( object->getID() == data.identifier );
         object->sync( data.version );
         return *this;
@@ -214,9 +214,9 @@ namespace co
     DataIStream::operator >> ( lunchbox::Buffer< T >& buffer )
     {
         uint64_t nElems = 0;
-        (*this) >> nElems;
+        *this >> nElems;
         buffer.resize( nElems );
-        return (*this) >> Array< T >( buffer.getData(), buffer.getNumBytes( ));
+        return *this >> Array< T >( buffer.getData(), nElems );
     }
 
 
@@ -224,10 +224,10 @@ namespace co
     DataIStream::operator >> ( std::vector< T >& value )
     {
         uint64_t nElems = 0;
-        (*this) >> nElems;
+        *this >> nElems;
         value.resize( nElems );
         for( uint64_t i = 0; i < nElems; i++ )
-            (*this) >> value[i];
+            *this >> value[i];
 
         return *this;
     }
@@ -253,7 +253,7 @@ namespace co
                                       std::vector< C* >& result )
     {
         ObjectVersions versions;
-        (*this) >> versions;
+        *this >> versions;
         std::vector< C* > old = old_;
 
         // rebuild vector from serialized list

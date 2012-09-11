@@ -25,22 +25,41 @@
 
 namespace
 {
+class PerfNode;
+typedef co::CommandFunc< PerfNode > CmdFunc;
 typedef lunchbox::Lockable< co::Nodes, lunchbox::SpinLock > ConnectedNodes;
 
 ConnectedNodes nodes_;
 lunchbox::Lock print_;
 
+class PerfNodeProxy : public co::Node
+{
+public:
+    PerfNodeProxy() : co::Node( 0xC0FFEEu ), nPackets( 0 ) {}
+
+    uint32_t nPackets;
+};
+typedef lunchbox::RefPtr< PerfNodeProxy > PerfNodeProxyPtr;
+
 class PerfNode : public co::LocalNode
 {
 public:
-    PerfNode() : co::LocalNode( 0xC0FFEEu ) {}
+    PerfNode() : co::LocalNode( 0xC0FFEEu )
+    {
+        registerCommand( co::CMD_NODE_CUSTOM,
+                         CmdFunc( this, &PerfNode::_cmdCustom ),
+                         getCommandThreadQueue( ));
+    }
 
 private:
+    lunchbox::Buffer< uint64_t > buffer_;
+
     virtual co::NodePtr createNode( const uint32_t type )
-        { return new co::Node( type ); }
+        { return type == 0xC0FFEEu ? new PerfNodeProxy : new co::Node( type ); }
 
     virtual void notifyConnect( co::NodePtr node )
     {
+        LBINFO << "Connect from " << node << std::endl;
         lunchbox::ScopedFastWrite _mutex( nodes_ );
         nodes_->push_back( node );
     }
@@ -51,6 +70,36 @@ private:
         co::NodesIter i = std::find( nodes_->begin(), nodes_->end(), node );
         if( i != nodes_->end( ))
             nodes_->erase( i );
+        LBINFO << "Disconnected from " << node << std::endl;
+    }
+
+    bool _cmdCustom( co::Command& command )
+    {
+        co::NodePtr node = command.getNode();
+        if( node->getType() != 0xC0FFEEu )
+            return false;
+
+        PerfNodeProxyPtr peer = static_cast< PerfNodeProxy* >( node.get( ));
+        const uint32_t nPackets = command.get< uint32_t >();
+
+        if( peer->nPackets != 0 && peer->nPackets - 1 != nPackets )
+        {
+            LBERROR << "Got packet " << nPackets << ", expected "
+                    << peer->nPackets - 1 << std::endl;
+            return false;
+        }
+        peer->nPackets = nPackets;
+
+        command >> buffer_;
+        const size_t i = ( getNodeID().low() + nPackets ) % buffer_.getSize();
+        if( buffer_[ i ] != nPackets )
+        {
+            LBERROR << "Got " << buffer_[ i ] << " @ " << i << ", expected "
+                    << nPackets <<  " in buffer of size " << buffer_.getSize()
+                    << std::endl;
+            return false;
+        }
+        return true;
     }
 };
 
@@ -63,7 +112,7 @@ int main( int argc, char **argv )
 
     co::ConnectionDescriptionPtr remote;
     size_t packetSize = 1048576u; // needs to be modulo 8
-    uint32_t nPackets   = 0xFFFFFFFFu;
+    uint32_t nPackets = 0xFFFFFFFFu;
     uint32_t waitTime = 0;
     bool useZeroconf = true;
 
@@ -117,7 +166,7 @@ int main( int argc, char **argv )
     }
 
     // Set up local node
-    co::LocalNodePtr localNode = new co::LocalNode;
+    co::LocalNodePtr localNode = new PerfNode;
     if( !localNode->initLocal( argc, argv ))
     {
         co::exit();
@@ -164,7 +213,7 @@ int main( int argc, char **argv )
     for( size_t i = 0; i < bufferElems; ++i )
         buffer[i] = i;
 
-    const float mBytesSec = buffer.getSize() / 1024.0f / 1024.0f * 1000.0f;
+    const float mBytesSec = buffer.getNumBytes() / 1024.0f / 1024.0f * 1000.0f;
     lunchbox::Clock clock;
     size_t sentPackets = 0;
 
@@ -185,7 +234,10 @@ int main( int argc, char **argv )
             if( node->getType() != 0xC0FFEEu )
                 continue;
 
+            const size_t j = (node->getNodeID().low() + nPackets) % bufferElems;
+            buffer[ j ] = nPackets;
             node->send( co::CMD_NODE_CUSTOM ) << nPackets << buffer;
+            buffer[ j ] = 0xDEADBEEFu;
             ++sentPackets;
 
             if( waitTime > 0 )
