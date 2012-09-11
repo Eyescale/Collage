@@ -280,7 +280,7 @@ namespace co
         void _handleAcceptIDTimeout();
 
         /** find the connection corresponding to the identifier */
-        RSPConnectionPtr _findConnection( const uint16_t id ) const;
+        RSPConnectionPtr _findConnection( const uint16_t id );
 
         /** Sleep until allowed to send according to send rate */
         void _waitWritable( const uint64_t bytes );
