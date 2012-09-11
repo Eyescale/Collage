@@ -811,10 +811,8 @@ void RSPConnection::_handlePacket( const boost::system::error_code& /* error */,
 
 void RSPConnection::_handleAcceptIDData( const void* data )
 {
-    const uint16_t type = *reinterpret_cast< const uint16_t* >( data );
-    const DatagramNode* node =
-        reinterpret_cast< const DatagramNode* >( data );
-    switch( type )
+    const DatagramNode* node = reinterpret_cast< const DatagramNode* >( data );
+    switch( node->type )
     {
         case ID_HELLO:
             _checkNewID( node->connectionID );
@@ -842,9 +840,8 @@ void RSPConnection::_handleAcceptIDData( const void* data )
 
 void RSPConnection::_handleInitData( const void* data )
 {
-    const uint16_t type = *reinterpret_cast< const uint16_t* >( data );
     const DatagramNode* node = reinterpret_cast< const DatagramNode* >( data );
-    switch( type )
+    switch( node->type )
     {
         case ID_HELLO:
             _timeouts = 0;
