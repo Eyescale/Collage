@@ -1,6 +1,7 @@
 
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
+/* Copyright (c)      2009, Cedric Stalder <cedric.stalder@gmail.com>
  *               2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -117,6 +118,8 @@ namespace co
         {
             uint16_t type;
             uint16_t connectionID;
+            uint16_t protocolVersion;
+            uint16_t bigEndian;
         };
 
         /** Announce number of known connections */
@@ -301,6 +304,8 @@ namespace co
                         const uint16_t num );
 
         void _checkNewID( const uint16_t id );
+
+        bool _acceptDatagram( const DatagramNode& datagram ) const;
 
         /* add a new connection detected in the multicast network */
         bool _addConnection( const uint16_t id );
