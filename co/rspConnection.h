@@ -115,20 +115,21 @@ namespace co
             // detection magic relies on only using the LSB.
         };
 
-        /** ID_HELLO, ID_DENY, ID_CONFIRM or ID_EXIT packet */
+        /** ID_HELLO, ID_DENY, ID_CONFIRM, ID_EXIT or COUNTNODE packet */
         struct DatagramNode
         {
             uint16_t type;
-            uint16_t connectionID;
             uint16_t protocolVersion;
-        };
-
-        /** Announce number of known connections */
-        struct DatagramCount
-        {
-            uint16_t type;
-            uint16_t clientID;
+            uint16_t connectionID;  // clientID for type COUNTNODE
             uint16_t numConnections;
+
+            void byteswap()
+            {
+                lunchbox::byteswap( type );
+                lunchbox::byteswap( protocolVersion );
+                lunchbox::byteswap( connectionID );
+                lunchbox::byteswap( numConnections );
+            }
         };
 
         /** Request receive confirmation of all packets up to sequence. */
@@ -137,6 +138,13 @@ namespace co
             uint16_t type;
             uint16_t writerID;
             uint16_t sequence;
+
+            void byteswap()
+            {
+                lunchbox::byteswap( type );
+                lunchbox::byteswap( writerID );
+                lunchbox::byteswap( sequence );
+            }
         };
 
         /** Missing packets from start..end sequence */
@@ -163,6 +171,19 @@ namespace co
             uint16_t       writerID;
             uint16_t       count;       //!< number of NACK requests used
             Nack           nacks[ EQ_RSP_MAX_NACKS ];
+
+            void byteswap()
+            {
+                lunchbox::byteswap( type );
+                lunchbox::byteswap( readerID );
+                lunchbox::byteswap( writerID );
+                lunchbox::byteswap( count );
+                for( size_t i = 0; i < EQ_RSP_MAX_NACKS; ++i )
+                {
+                    lunchbox::byteswap( nacks[i].start );
+                    lunchbox::byteswap( nacks[i].end );
+                }
+            }
         };
 
         /** Acknowledge reception of all packets including sequence .*/
@@ -172,6 +193,14 @@ namespace co
             uint16_t        readerID;
             uint16_t        writerID;
             uint16_t        sequence;
+
+            void byteswap()
+            {
+                lunchbox::byteswap( type );
+                lunchbox::byteswap( readerID );
+                lunchbox::byteswap( writerID );
+                lunchbox::byteswap( sequence );
+            }
         };
 
         /** Data packet */
@@ -181,6 +210,14 @@ namespace co
             uint16_t    size;
             uint16_t    writerID;
             uint16_t    sequence;
+
+            void byteswap()
+            {
+                lunchbox::byteswap( type );
+                lunchbox::byteswap( size );
+                lunchbox::byteswap( writerID );
+                lunchbox::byteswap( sequence );
+            }
         };
 
         typedef std::vector< RSPConnectionPtr > RSPConnections;
@@ -252,10 +289,10 @@ namespace co
         void _finishWriteQueue( const uint16_t sequence );
 
         bool _handleData( Buffer& buffer );
-        bool _handleAck( const DatagramAck* ack );
-        bool _handleNack( const DatagramNack* nack );
-        bool _handleAckRequest( const DatagramAckRequest* ackRequest );
-        void _handleCountNode();
+        bool _handleAck( const DatagramAck& ack );
+        bool _handleNack( const DatagramNack& nack );
+        bool _handleAckRequest( const DatagramAckRequest& ackRequest );
+        void _handleCountNode( const DatagramNode& node );
 
         Buffer* _newDataBuffer( Buffer& inBuffer );
         void _pushDataBuffer( Buffer* buffer );
@@ -270,9 +307,9 @@ namespace co
         /* handle data about the comunication state */
         void _handlePacket( const boost::system::error_code& error,
                             const size_t bytes );
-        void _handleConnectedData( const void* data );
-        void _handleInitData( const void* data );
-        void _handleAcceptIDData( const void* data );
+        void _handleConnectedData( void* data );
+        void _handleInitData( const DatagramNode& node, const bool connected );
+        void _handleAcceptIDData( const DatagramNode& node );
 
         /* handle timeout about the comunication state */
         void _handleTimeout( const boost::system::error_code& error );
@@ -305,8 +342,6 @@ namespace co
                         const uint16_t num );
 
         void _checkNewID( const uint16_t id );
-
-        bool _acceptDatagram( const DatagramNode& datagram ) const;
 
         /* add a new connection detected in the multicast network */
         bool _addConnection( const uint16_t id );
