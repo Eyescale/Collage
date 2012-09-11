@@ -21,3 +21,8 @@ co_add_tool(coNetperf
   SOURCES netperf/netperf.cpp
   LINK_LIBRARIES shared Collage
   )
+
+co_add_tool(coNodeperf
+  SOURCES nodeperf/nodeperf.cpp
+  LINK_LIBRARIES shared Collage
+  )
