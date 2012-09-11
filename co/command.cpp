@@ -92,6 +92,7 @@ Command::Command( const Command& rhs )
     : DataIStream()
     , _impl( new detail::Command( *rhs._impl ))
 {
+    setSwapping( rhs.isSwapping( )); // needed for node handshake commands
     if( _impl->buffer )
         _skipHeader();
 }
@@ -114,6 +115,16 @@ Command::~Command()
 void Command::clear()
 {
     _impl->clear();
+}
+
+void Command::reread()
+{
+    LBASSERT( _impl->buffer );
+    if( !_impl->buffer )
+        return;
+
+    getRemainingBuffer( getRemainingBufferSize( )); // yuck. resets packet.
+    *this >> _impl->type >> _impl->cmd;
 }
 
 void Command::_skipHeader()
@@ -180,7 +191,9 @@ bool Command::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
     compressor = EQ_COMPRESSOR_NONE;
     nChunks = 1;
 
-    setSwapping( _impl->buffer->needsSwapping( ));
+    if( _impl->buffer->getNode( ))
+        setSwapping( _impl->buffer->needsSwapping( ));
+    // else handshake command. see copy ctor and LocalNode::_dispatchCommand()
     return true;
 }
 
