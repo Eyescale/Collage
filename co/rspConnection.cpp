@@ -33,7 +33,9 @@
 //#define EQ_INSTRUMENT_RSP
 #define EQ_RSP_MERGE_WRITES
 #define EQ_RSP_MAX_TIMEOUTS 2000
-const uint16_t EQ_RSP_PROTOCOL_VERSION = 1;
+
+// Note: Do not use version > 255, endianness detection magic relies on this.
+const uint16_t EQ_RSP_PROTOCOL_VERSION = 0;
 
 using namespace boost::asio;
 
@@ -877,8 +879,9 @@ void RSPConnection::_handleInitData( const void* data )
 
 void RSPConnection::_handleConnectedData( const void* data )
 {
-    const uint16_t type = *reinterpret_cast< const uint16_t* >( data );
-    switch( type )
+    const DatagramNode& node =
+        *reinterpret_cast< const DatagramNode* >( data ); 
+    switch( node.type )
     {
         case DATA:
             LBCHECK( _handleData( _recvBuffer ));
@@ -900,28 +903,16 @@ void RSPConnection::_handleConnectedData( const void* data )
             break;
 
         case ID_HELLO:
-        {
-            const DatagramNode* node =
-                reinterpret_cast< const DatagramNode* >( data );
-            _checkNewID( node->connectionID );
+            _checkNewID( node.connectionID );
             break;
-        }
 
         case ID_CONFIRM:
-        {
-            const DatagramNode* node =
-                reinterpret_cast< const DatagramNode* >( data );
-            _addConnection( node->connectionID );
+            _addConnection( node.connectionID );
             break;
-        }
 
         case ID_EXIT:
-        {
-            const DatagramNode* node =
-                reinterpret_cast< const DatagramNode* >( data );
-            _removeConnection( node->connectionID );
+            _removeConnection( node.connectionID );
             break;
-        }
 
         case COUNTNODE:
             _handleCountNode();
@@ -930,7 +921,7 @@ void RSPConnection::_handleConnectedData( const void* data )
         default:
             LBASSERTINFO( false,
                           "Don't know how to handle packet of type " <<
-                          type );
+                          node.type );
     }
 
 }
@@ -1379,13 +1370,7 @@ void RSPConnection::_checkNewID( uint16_t id )
 
 bool RSPConnection::_acceptDatagram( const DatagramNode& datagram ) const
 {
-#ifdef COLLAGE_BIGENDIAN
-    const bool bigEndian = true;
-#else
-    const bool bigEndian = false;
-#endif
-    return EQ_RSP_PROTOCOL_VERSION == datagram.protocolVersion &&
-           bigEndian == datagram.bigEndian;
+    return EQ_RSP_PROTOCOL_VERSION == datagram.protocolVersion;
 }
 
 RSPConnectionPtr RSPConnection::_findConnection( const uint16_t id )
@@ -1528,13 +1513,7 @@ void RSPConnection::_sendCountNode()
 void RSPConnection::_sendSimpleDatagram( const DatagramType type,
                                          const uint16_t id )
 {
-#ifdef COLLAGE_BIGENDIAN
-    const bool bigEndian = true;
-#else
-    const bool bigEndian = false;
-#endif
-    const DatagramNode simple = { type, id, EQ_RSP_PROTOCOL_VERSION,
-                                  bigEndian };
+    const DatagramNode simple = { type, id, EQ_RSP_PROTOCOL_VERSION };
     _write->send( buffer( &simple, sizeof( simple )) );
 }
 

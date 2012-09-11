@@ -111,6 +111,8 @@ namespace co
             ID_CONFIRM,//!< a new node is connected
             ID_EXIT,   //!< a node is disconnected
             COUNTNODE  //!< send to other the number of nodes which I have found
+            // NOTE: Do not use more than 255 types here, since the endianness
+            // detection magic relies on only using the LSB.
         };
 
         /** ID_HELLO, ID_DENY, ID_CONFIRM or ID_EXIT packet */
@@ -119,7 +121,6 @@ namespace co
             uint16_t type;
             uint16_t connectionID;
             uint16_t protocolVersion;
-            uint16_t bigEndian;
         };
 
         /** Announce number of known connections */
