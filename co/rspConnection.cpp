@@ -797,7 +797,7 @@ void RSPConnection::_handlePacket( const boost::system::error_code& /* error */,
 {
     if( isListening( ))
     {
-        _handleConnectedData( _recvBuffer.getData( ));
+        _handleConnectedData( _recvBuffer );
 
         if( isListening( ))
             _processOutgoing();
@@ -807,7 +807,7 @@ void RSPConnection::_handlePacket( const boost::system::error_code& /* error */,
             return;
         }
     }
-    else
+    else if( _recvBuffer.getSize() >= sizeof( DatagramNode ))
     {
         DatagramNode& node =
                     *reinterpret_cast< DatagramNode* >( _recvBuffer.getData( ));
@@ -887,10 +887,16 @@ void RSPConnection::_handleInitData( const DatagramNode& node,
     }
 }
 
-void RSPConnection::_handleConnectedData( void* data )
+void RSPConnection::_handleConnectedData( Buffer& buffer )
 {
+    if( buffer.getSize() < sizeof( uint16_t ))
+        return;
+
+    void* data = buffer.getData();
     uint16_t type = *reinterpret_cast< uint16_t* >( data );
+#ifdef COLLAGE_BIGENDIAN
     lunchbox::byteswap( type );
+#endif
     switch( type )
     {
         case DATA:

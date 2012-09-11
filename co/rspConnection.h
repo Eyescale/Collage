@@ -317,7 +317,7 @@ namespace co
         /* handle data about the comunication state */
         void _handlePacket( const boost::system::error_code& error,
                             const size_t bytes );
-        void _handleConnectedData( void* data );
+        void _handleConnectedData( Buffer& buffer );
         void _handleInitData( const DatagramNode& node, const bool connected );
         void _handleAcceptIDData( const DatagramNode& node );
 
