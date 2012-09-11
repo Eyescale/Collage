@@ -52,7 +52,7 @@ public:
     }
 
 private:
-    lunchbox::Bufferb buffer_;
+    lunchbox::Buffer< uint64_t > buffer_;
 
     virtual co::NodePtr createNode( const uint32_t type )
         { return type == 0xC0FFEEu ? new PerfNodeProxy : new co::Node( type ); }
@@ -91,6 +91,14 @@ private:
         peer->nPackets = nPackets;
 
         command >> buffer_;
+        const size_t i = ( getNodeID().low() + nPackets ) % buffer_.getSize();
+        if( buffer_[ i ] != nPackets )
+        {
+            LBERROR << "Got " << buffer_[ i ] << " @ " << i << ", expected "
+                    << nPackets <<  " in buffer of size " << buffer_.getSize()
+                    << std::endl;
+            return false;
+        }
         return true;
     }
 };
@@ -226,7 +234,10 @@ int main( int argc, char **argv )
             if( node->getType() != 0xC0FFEEu )
                 continue;
 
+            const size_t j = (node->getNodeID().low() + nPackets) % bufferElems;
+            buffer[ j ] = nPackets;
             node->send( co::CMD_NODE_CUSTOM ) << nPackets << buffer;
+            buffer[ j ] = 0xDEADBEEFu;
             ++sentPackets;
 
             if( waitTime > 0 )
