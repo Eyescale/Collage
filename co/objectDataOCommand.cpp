@@ -34,23 +34,25 @@ public:
         : version( version_ )
         , sequence( sequence_ )
         , isLast( isLast_ )
-        , dataSize( dataSize_ )
+        , uncompressedSize( dataSize_ )
+        , compressedSize( 0 )
         , userBuffer()
         , stream( stream_ )
     {
         if( stream )
         {
-            dataSize = stream->getCompressedDataSize();
-            if( dataSize == 0 )
-                dataSize = dataSize_;
+            compressedSize = stream->getCompressedDataSize();
+            if( compressedSize == 0 )
+                compressedSize = dataSize_;
         }
     }
-    
+
     ObjectDataOCommand( ObjectDataOCommand& rhs )
         : version( rhs.version )
         , sequence( rhs.sequence )
         , isLast( rhs.isLast )
-        , dataSize( rhs.dataSize )
+        , uncompressedSize( rhs.uncompressedSize )
+        , compressedSize( rhs.compressedSize )
         , userBuffer()
         , stream( rhs.stream )
     {
@@ -60,7 +62,8 @@ public:
     const uint128_t& version;
     const uint32_t sequence;
     const bool isLast;
-    uint64_t dataSize;
+    uint64_t uncompressedSize;
+    uint64_t compressedSize;
     lunchbox::Bufferb userBuffer;
     co::DataOStream* stream;
 };
@@ -94,7 +97,7 @@ void ObjectDataOCommand::_init()
 {
     // cast to avoid call to our user data operator << overload
     (ObjectOCommand&)(*this) << _impl->version << _impl->sequence
-                             << _impl->dataSize << _impl->isLast;
+                             << _impl->uncompressedSize << _impl->isLast;
 
     if( _impl->stream )
         _impl->stream->streamDataHeader( *this );
@@ -119,7 +122,7 @@ void ObjectDataOCommand::sendData( const void* buffer, const uint64_t size,
 
     const uint64_t finalSize = size +                        // command header
                                _impl->userBuffer.getSize() + // userBuffer
-                               _impl->dataSize;
+                               _impl->compressedSize;
 
     for( ConnectionsCIter it = getConnections().begin();
          it != getConnections().end(); ++it )
@@ -133,7 +136,7 @@ void ObjectDataOCommand::sendData( const void* buffer, const uint64_t size,
             LBCHECK( conn->send( _impl->userBuffer.getData(),
                                  _impl->userBuffer.getSize(), true ));
         if( _impl->stream )
-            _impl->stream->sendData( conn, _impl->dataSize );
+            _impl->stream->sendData( conn, _impl->compressedSize );
 
         conn->unlockSend();
     }

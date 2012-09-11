@@ -75,15 +75,19 @@ namespace DataStreamTest { class Sender; }
         /** @name Data output */
         //@{
         /** Write a plain data item by copying it to the stream. @version 1.0 */
-        template< typename T > DataOStream& operator << ( const T& value )
+        template< class T > DataOStream& operator << ( const T& value )
             { _write( &value, sizeof( value )); return *this; }
 
         /** Write a C array. @version 1.0 */
-        template< typename T > DataOStream& operator << ( Array< T > array )
+        template< class T > DataOStream& operator << ( Array< T > array )
             { _write( array.data, array.getNumBytes( )); return *this; }
 
+        /** Write a lunchbox::Buffer. @version 1.0 */
+        template< class T >
+        DataOStream& operator << ( const lunchbox::Buffer< T >& buffer );
+
         /** Write a std::vector of serializable items. @version 1.0 */
-        template< typename T >
+        template< class T >
         DataOStream& operator << ( const std::vector< T >& value );
 
         /** @internal
@@ -159,7 +163,7 @@ namespace DataStreamTest { class Sender; }
         void _resetBuffer();
 
         /** Write a vector of trivial data. */
-        template< typename T >
+        template< class T >
         DataOStream& _writeFlatVector( const std::vector< T >& value )
         {
             const uint64_t nElems = value.size();
@@ -205,8 +209,15 @@ namespace co
     }
 
 /** @cond IGNORE */
+    template< class T > inline DataOStream&
+    DataOStream::operator << ( const lunchbox::Buffer< T >& buffer )
+    {
+        return (*this) << buffer.getSize()
+                       << Array< const T >( buffer.getData(), buffer.getSize());
+    }
+
     /** Write a std::vector of serializable items. */
-    template< typename T > inline DataOStream&
+    template< class T > inline DataOStream&
     DataOStream::operator << ( const std::vector< T >& value )
     {
         const uint64_t nElems = value.size();

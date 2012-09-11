@@ -1,6 +1,7 @@
 
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
+/* Copyright (c)      2009, Cedric Stalder <cedric.stalder@gmail.com>
  *               2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -32,6 +33,9 @@
 //#define EQ_INSTRUMENT_RSP
 #define EQ_RSP_MERGE_WRITES
 #define EQ_RSP_MAX_TIMEOUTS 2000
+
+// Note: Do not use version > 255, endianness detection magic relies on this.
+const uint16_t EQ_RSP_PROTOCOL_VERSION = 0;
 
 using namespace boost::asio;
 
@@ -811,10 +815,11 @@ void RSPConnection::_handlePacket( const boost::system::error_code& /* error */,
 
 void RSPConnection::_handleAcceptIDData( const void* data )
 {
-    const uint16_t type = *reinterpret_cast< const uint16_t* >( data );
-    const DatagramNode* node =
-        reinterpret_cast< const DatagramNode* >( data );
-    switch( type )
+    const DatagramNode* node = reinterpret_cast< const DatagramNode* >( data );
+    if( !_acceptDatagram( *node ))
+        return;
+
+    switch( node->type )
     {
         case ID_HELLO:
             _checkNewID( node->connectionID );
@@ -842,9 +847,11 @@ void RSPConnection::_handleAcceptIDData( const void* data )
 
 void RSPConnection::_handleInitData( const void* data )
 {
-    const uint16_t type = *reinterpret_cast< const uint16_t* >( data );
     const DatagramNode* node = reinterpret_cast< const DatagramNode* >( data );
-    switch( type )
+    if( !_acceptDatagram( *node ))
+        return;
+
+    switch( node->type )
     {
         case ID_HELLO:
             _timeouts = 0;
@@ -872,8 +879,9 @@ void RSPConnection::_handleInitData( const void* data )
 
 void RSPConnection::_handleConnectedData( const void* data )
 {
-    const uint16_t type = *reinterpret_cast< const uint16_t* >( data );
-    switch( type )
+    const DatagramNode& node =
+        *reinterpret_cast< const DatagramNode* >( data ); 
+    switch( node.type )
     {
         case DATA:
             LBCHECK( _handleData( _recvBuffer ));
@@ -895,28 +903,16 @@ void RSPConnection::_handleConnectedData( const void* data )
             break;
 
         case ID_HELLO:
-        {
-            const DatagramNode* node =
-                reinterpret_cast< const DatagramNode* >( data );
-            _checkNewID( node->connectionID );
+            _checkNewID( node.connectionID );
             break;
-        }
 
         case ID_CONFIRM:
-        {
-            const DatagramNode* node =
-                reinterpret_cast< const DatagramNode* >( data );
-            _addConnection( node->connectionID );
+            _addConnection( node.connectionID );
             break;
-        }
 
         case ID_EXIT:
-        {
-            const DatagramNode* node =
-                reinterpret_cast< const DatagramNode* >( data );
-            _removeConnection( node->connectionID );
+            _removeConnection( node.connectionID );
             break;
-        }
 
         case COUNTNODE:
             _handleCountNode();
@@ -925,7 +921,7 @@ void RSPConnection::_handleConnectedData( const void* data )
         default:
             LBASSERTINFO( false,
                           "Don't know how to handle packet of type " <<
-                          type );
+                          node.type );
     }
 
 }
@@ -1372,7 +1368,12 @@ void RSPConnection::_checkNewID( uint16_t id )
     }
 }
 
-RSPConnectionPtr RSPConnection::_findConnection( const uint16_t id ) const
+bool RSPConnection::_acceptDatagram( const DatagramNode& datagram ) const
+{
+    return EQ_RSP_PROTOCOL_VERSION == datagram.protocolVersion;
+}
+
+RSPConnectionPtr RSPConnection::_findConnection( const uint16_t id )
 {
     for( RSPConnectionsCIter i = _children.begin(); i != _children.end(); ++i )
     {
@@ -1439,7 +1440,7 @@ void RSPConnection::_removeConnection( const uint16_t id )
 
 int64_t RSPConnection::write( const void* inData, const uint64_t bytes )
 {
-    if( _parent.isValid( ))
+    if( _parent )
         return _parent->write( inData, bytes );
 
     LBASSERT( isListening( ));
@@ -1512,7 +1513,7 @@ void RSPConnection::_sendCountNode()
 void RSPConnection::_sendSimpleDatagram( const DatagramType type,
                                          const uint16_t id )
 {
-    const DatagramNode simple = { type, id };
+    const DatagramNode simple = { type, id, EQ_RSP_PROTOCOL_VERSION };
     _write->send( buffer( &simple, sizeof( simple )) );
 }
 

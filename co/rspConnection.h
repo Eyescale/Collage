@@ -1,6 +1,7 @@
 
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
+/* Copyright (c)      2009, Cedric Stalder <cedric.stalder@gmail.com>
  *               2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -110,6 +111,8 @@ namespace co
             ID_CONFIRM,//!< a new node is connected
             ID_EXIT,   //!< a node is disconnected
             COUNTNODE  //!< send to other the number of nodes which I have found
+            // NOTE: Do not use more than 255 types here, since the endianness
+            // detection magic relies on only using the LSB.
         };
 
         /** ID_HELLO, ID_DENY, ID_CONFIRM or ID_EXIT packet */
@@ -117,6 +120,7 @@ namespace co
         {
             uint16_t type;
             uint16_t connectionID;
+            uint16_t protocolVersion;
         };
 
         /** Announce number of known connections */
@@ -277,7 +281,7 @@ namespace co
         void _handleAcceptIDTimeout();
 
         /** find the connection corresponding to the identifier */
-        RSPConnectionPtr _findConnection( const uint16_t id ) const;
+        RSPConnectionPtr _findConnection( const uint16_t id );
 
         /** Sleep until allowed to send according to send rate */
         void _waitWritable( const uint64_t bytes );
@@ -301,6 +305,8 @@ namespace co
                         const uint16_t num );
 
         void _checkNewID( const uint16_t id );
+
+        bool _acceptDatagram( const DatagramNode& datagram ) const;
 
         /* add a new connection detected in the multicast network */
         bool _addConnection( const uint16_t id );

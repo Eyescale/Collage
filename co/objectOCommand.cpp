@@ -31,7 +31,7 @@ public:
         : id( id_ )
         , instanceID( instanceID_ )
     {}
-    
+
     ObjectOCommand( const ObjectOCommand& rhs )
         : id( rhs.id )
         , instanceID( rhs.instanceID )
