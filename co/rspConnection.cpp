@@ -815,19 +815,19 @@ void RSPConnection::_handlePacket( const boost::system::error_code& /* error */,
 
 void RSPConnection::_handleAcceptIDData( const void* data )
 {
-    const DatagramNode* node = reinterpret_cast< const DatagramNode* >( data );
-    if( !_acceptDatagram( *node ))
+    const DatagramNode& node = *reinterpret_cast< const DatagramNode* >( data );
+    if( !_acceptDatagram( node ))
         return;
 
-    switch( node->type )
+    switch( node.type )
     {
         case ID_HELLO:
-            _checkNewID( node->connectionID );
+            _checkNewID( node.connectionID );
             break;
 
         case ID_DENY:
             // a connection refused my ID, try another ID
-            if( node->connectionID == _id )
+            if( node.connectionID == _id )
             {
                 _timeouts = 0;
                 _sendSimpleDatagram( ID_HELLO, _buildNewID() );
@@ -836,7 +836,7 @@ void RSPConnection::_handleAcceptIDData( const void* data )
             break;
 
         case ID_EXIT:
-            _removeConnection( node->connectionID );
+            _removeConnection( node.connectionID );
             break;
 
         default:
@@ -847,20 +847,20 @@ void RSPConnection::_handleAcceptIDData( const void* data )
 
 void RSPConnection::_handleInitData( const void* data )
 {
-    const DatagramNode* node = reinterpret_cast< const DatagramNode* >( data );
-    if( !_acceptDatagram( *node ))
+    const DatagramNode& node = *reinterpret_cast< const DatagramNode* >( data );
+    if( !_acceptDatagram( node ))
         return;
 
-    switch( node->type )
+    switch( node.type )
     {
         case ID_HELLO:
             _timeouts = 0;
-            _checkNewID( node->connectionID ) ;
+            _checkNewID( node.connectionID ) ;
             return;
 
         case ID_CONFIRM:
             _timeouts = 0;
-            _addConnection( node->connectionID );
+            _addConnection( node.connectionID );
             return;
 
         case COUNTNODE:
@@ -868,7 +868,7 @@ void RSPConnection::_handleInitData( const void* data )
             break;
 
         case ID_EXIT:
-            _removeConnection( node->connectionID );
+            _removeConnection( node.connectionID );
             return;
 
         default:
@@ -879,8 +879,7 @@ void RSPConnection::_handleInitData( const void* data )
 
 void RSPConnection::_handleConnectedData( const void* data )
 {
-    const DatagramNode& node =
-        *reinterpret_cast< const DatagramNode* >( data ); 
+    const DatagramNode& node = *reinterpret_cast< const DatagramNode* >( data );
     switch( node.type )
     {
         case DATA:
@@ -903,15 +902,18 @@ void RSPConnection::_handleConnectedData( const void* data )
             break;
 
         case ID_HELLO:
-            _checkNewID( node.connectionID );
+            if( _acceptDatagram( node ))
+                _checkNewID( node.connectionID );
             break;
 
         case ID_CONFIRM:
-            _addConnection( node.connectionID );
+            if( _acceptDatagram( node ))
+                _addConnection( node.connectionID );
             break;
 
         case ID_EXIT:
-            _removeConnection( node.connectionID );
+            if( _acceptDatagram( node ))
+                _removeConnection( node.connectionID );
             break;
 
         case COUNTNODE:
