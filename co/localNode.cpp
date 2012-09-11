@@ -402,14 +402,14 @@ void LocalNode::addListener( ConnectionPtr connection )
 
     connection->ref( this );
 
-    // Update everybody's description list of me
-    // I will add the listener to myself in my handler
+    // Update everybody's description list of me, add the listener to myself in
+    // my handler
     Nodes nodes;
     getNodes( nodes );
 
     for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
         (*i)->send( CMD_NODE_ADD_LISTENER )
-               << connection.get() << connection->getDescription()->toString();
+            << connection.get() << connection->getDescription()->toString();
 }
 
 void LocalNode::removeListeners( const Connections& connections )
@@ -551,6 +551,7 @@ void LocalNode::_closeNode( NodePtr node )
 
     lunchbox::ScopedFastWrite mutex( _impl->nodes );
     _impl->nodes->erase( node->getNodeID( ));
+    notifyDisconnect( node );
     LBINFO << node << " disconnected from " << *this << std::endl;
 }
 
@@ -611,10 +612,10 @@ void LocalNode::ackRequest( NodePtr node, const uint32_t requestID )
         node->send( CMD_NODE_ACK_REQUEST ) << requestID;
 }
 
-void LocalNode::ping( NodePtr remoteNode )
+void LocalNode::ping( NodePtr peer )
 {
     LBASSERT( !_impl->inReceiverThread( ) );
-    remoteNode->send( CMD_NODE_PING );
+    peer->send( CMD_NODE_PING );
 }
 
 bool LocalNode::pingIdleNodes()
@@ -1208,8 +1209,6 @@ void LocalNode::_handleDisconnect()
             _closeNode( node );
         else
             node->_removeMulticast( connection );
-
-        notifyDisconnect( node );
     }
 
     _removeConnection( connection );
@@ -1471,14 +1470,14 @@ bool LocalNode::_cmdConnect( Command& command )
     LBASSERT( _impl->connectionNodes.find( connection ) ==
               _impl->connectionNodes.end( ));
 
-    NodePtr remoteNode;
+    NodePtr peer;
 
     // No locking needed, only recv thread modifies
     NodeHashCIter i = _impl->nodes->find( nodeID );
     if( i != _impl->nodes->end( ))
     {
-        remoteNode = i->second;
-        if( remoteNode->isReachable( ))
+        peer = i->second;
+        if( peer->isReachable( ))
         {
             // Node exists, probably simultaneous connect from peer
             LBINFO << "Already got node " << nodeID << ", refusing connect"
@@ -1496,26 +1495,29 @@ bool LocalNode::_cmdConnect( Command& command )
     }
 
     // create and add connected node
-    if( !remoteNode )
-        remoteNode = createNode( nodeType );
+    if( !peer )
+        peer = createNode( nodeType );
 
-    if( !remoteNode->deserialize( data ))
+    if( !peer->deserialize( data ))
         LBWARN << "Error during node initialization" << std::endl;
     LBASSERTINFO( data.empty(), data );
-    LBASSERTINFO( remoteNode->getNodeID() == nodeID,
-                  remoteNode->getNodeID() << "!=" << nodeID );
+    LBASSERTINFO( peer->getNodeID() == nodeID,
+                  peer->getNodeID() << "!=" << nodeID );
+    LBASSERT( peer->getType() == nodeType );
 
-    remoteNode->_connect( connection );
-    _impl->connectionNodes[ connection ] = remoteNode;
+    peer->_connect( connection );
+    _impl->connectionNodes[ connection ] = peer;
     {
         lunchbox::ScopedFastWrite mutex( _impl->nodes );
-        _impl->nodes.data[ remoteNode->getNodeID() ] = remoteNode;
+        _impl->nodes.data[ peer->getNodeID() ] = peer;
     }
     LBVERB << "Added node " << nodeID << std::endl;
 
     // send our information as reply
     NodeOCommand( Connections( 1, connection ), CMD_NODE_CONNECT_REPLY )
         << getNodeID() << requestID << getType() << serialize();
+
+    notifyConnect( peer );
     return true;
 }
 
@@ -1597,6 +1599,7 @@ bool LocalNode::_cmdConnectReply( Command& command )
 
     peer->send( CMD_NODE_CONNECT_ACK );
     _connectMulticast( peer );
+    notifyConnect( peer );
     return true;
 }
 
@@ -1660,7 +1663,7 @@ bool LocalNode::_cmdID( Command& command )
         else
             node = i->second;
     }
-    LBASSERT( node.isValid( ));
+    LBASSERT( node );
     LBASSERTINFO( node->getNodeID() == nodeID,
                   node->getNodeID() << "!=" << nodeID );
 

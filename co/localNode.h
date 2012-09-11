@@ -427,8 +427,11 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          */
         CO_API bool connect( NodePtr node, ConnectionPtr connection );
 
-        /** Notify remote node disconnection from the receiver thread. */
-        virtual void notifyDisconnect( NodePtr node ) { }
+        /** @internal Notify remote node connection. */
+        virtual void notifyConnect( NodePtr node ) {}
+
+        /** @internal Notify remote node disconnection. */
+        virtual void notifyDisconnect( NodePtr node ) {}
 
         /** 
          * Factory method to create a new node.
