@@ -53,7 +53,7 @@ namespace co
 {
 namespace
 {
-typedef CommandFunc<LocalNode> CmdFunc;
+typedef CommandFunc< LocalNode > CmdFunc;
 typedef std::list< Command > CommandList;
 typedef lunchbox::RefPtrHash< Connection, NodePtr > ConnectionNodeHash;
 typedef ConnectionNodeHash::const_iterator ConnectionNodeHashCIter;
@@ -1025,9 +1025,8 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
 
     _addConnection( connection );
 
-    const uint32_t requestID = registerRequest( node.get( ));
-
     // send connect command to peer
+    const uint32_t requestID = registerRequest( node.get( ));
     NodeOCommand( Connections( 1, connection ), CMD_NODE_CONNECT )
         << getNodeID() << requestID << getType() << serialize();
 
