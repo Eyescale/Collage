@@ -213,7 +213,7 @@ int main( int argc, char **argv )
     for( size_t i = 0; i < bufferElems; ++i )
         buffer[i] = i;
 
-    const float mBytesSec = buffer.getSize() / 1024.0f / 1024.0f * 1000.0f;
+    const float mBytesSec = buffer.getNumBytes() / 1024.0f / 1024.0f * 1000.0f;
     lunchbox::Clock clock;
     size_t sentPackets = 0;
 
