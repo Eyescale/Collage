@@ -27,18 +27,7 @@ namespace detail
 class ObjectOCommand
 {
 public:
-    ObjectOCommand( const UUID& id_, const uint32_t instanceID_ )
-        : id( id_ )
-        , instanceID( instanceID_ )
-    {}
-
-    ObjectOCommand( const ObjectOCommand& rhs )
-        : id( rhs.id )
-        , instanceID( rhs.instanceID )
-    {}
-
-    const UUID& id;
-    const uint32_t instanceID;
+    ObjectOCommand() {}
 };
 
 }
@@ -47,9 +36,9 @@ ObjectOCommand::ObjectOCommand( const Connections& receivers,
                                 const uint32_t cmd, const uint32_t type,
                                 const UUID& id, const uint32_t instanceID )
     : OCommand( receivers, cmd, type )
-    , _impl( new detail::ObjectOCommand( id, instanceID ))
+    , _impl( new detail::ObjectOCommand )
 {
-    _init();
+    _init( id, instanceID );
 }
 
 ObjectOCommand::ObjectOCommand( Dispatcher* const dispatcher,
@@ -57,21 +46,20 @@ ObjectOCommand::ObjectOCommand( Dispatcher* const dispatcher,
                                 const uint32_t type, const UUID& id,
                                 const uint32_t instanceID )
     : OCommand( dispatcher, localNode, cmd, type )
-    , _impl( new detail::ObjectOCommand( id, instanceID ))
+    , _impl( new detail::ObjectOCommand )
 {
-    _init();
+    _init( id, instanceID );
 }
 
 ObjectOCommand::ObjectOCommand( const ObjectOCommand& rhs )
     : OCommand( rhs )
     , _impl( new detail::ObjectOCommand( *rhs._impl ))
 {
-    _init();
 }
 
-void ObjectOCommand::_init()
+void ObjectOCommand::_init( const UUID& id, const uint32_t instanceID )
 {
-    *this << _impl->id << _impl->instanceID;
+    *this << id << instanceID;
 }
 
 ObjectOCommand::~ObjectOCommand()

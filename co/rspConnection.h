@@ -298,11 +298,10 @@ namespace co
         void _repeatData();
         void _finishWriteQueue( const uint16_t sequence );
 
-        bool _handleData( Buffer& buffer );
-        bool _handleAck( const DatagramAck& ack );
-        bool _handleNack( const DatagramNack& nack );
-        bool _handleAckRequest( const DatagramAckRequest& ackRequest );
-        void _handleCountNode( const DatagramNode& node );
+        bool _handleData( const size_t bytes );
+        bool _handleAck( const size_t bytes );
+        bool _handleNack( const size_t bytes );
+        bool _handleAckRequest( const size_t bytes );
 
         Buffer* _newDataBuffer( Buffer& inBuffer );
         void _pushDataBuffer( Buffer* buffer );
@@ -317,9 +316,9 @@ namespace co
         /* handle data about the comunication state */
         void _handlePacket( const boost::system::error_code& error,
                             const size_t bytes );
-        void _handleConnectedData( Buffer& buffer );
-        void _handleInitData( const DatagramNode& node, const bool connected );
-        void _handleAcceptIDData( const DatagramNode& node );
+        void _handleConnectedData( const size_t bytes );
+        void _handleInitData( const size_t bytes, const bool connected );
+        void _handleAcceptIDData( const size_t bytes );
 
         /* handle timeout about the comunication state */
         void _handleTimeout( const boost::system::error_code& error );

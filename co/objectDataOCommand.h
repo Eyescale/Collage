@@ -73,11 +73,12 @@ protected:
                            const bool last );
 
 private:
-    ObjectDataOCommand();    
+    ObjectDataOCommand();
     ObjectDataOCommand& operator = ( const ObjectDataOCommand& );
     detail::ObjectDataOCommand* const _impl;
 
-    void _init();
+    void _init( const uint128_t& version, const uint32_t sequence,
+                const uint64_t dataSize, const bool isLast );
     void _addUserData( const void* data, uint64_t size );
 };
 }

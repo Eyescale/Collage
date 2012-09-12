@@ -72,7 +72,7 @@ private:
     ObjectOCommand& operator = ( const ObjectOCommand& );
     detail::ObjectOCommand* const _impl;
 
-    void _init();
+    void _init( const UUID& id, const uint32_t instanceID );
 };
 }
 
