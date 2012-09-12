@@ -92,8 +92,8 @@ int main( int argc, char **argv )
 
     co::ObjectDataOCommand ocommand( co::Connections(),
                                      co::CMD_NODE_OBJECT_INSTANCE,
-                                     co::COMMANDTYPE_CO_NODE, co::UUID(), 0, 1,
-                                     0, COMMAND_SIZE, true, 0 );
+                                     co::COMMANDTYPE_NODE, co::UUID(), 0, 1, 0,
+                                     COMMAND_SIZE, true, 0 );
     buffer->swap( ocommand.getBuffer( ));
     co::ObjectDataCommand command( buffer );
 

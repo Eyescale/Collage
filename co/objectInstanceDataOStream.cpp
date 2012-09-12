@@ -119,7 +119,7 @@ void ObjectInstanceDataOStream::sendData( const void* buffer,
 {
     LBASSERT( _command );
 
-    ObjectDataOStream::send( _command, COMMANDTYPE_CO_NODE, _instanceID, size,
+    ObjectDataOStream::send( _command, COMMANDTYPE_NODE, _instanceID, size,
                              last )
         << _nodeID << _cm->getObject()->getInstanceID();
 }

@@ -42,7 +42,7 @@ public:
 
 CustomOCommand::CustomOCommand( const Connections& receivers,
                                 const uint128_t& commandID )
-    : OCommand( receivers, CMD_NODE_COMMAND, COMMANDTYPE_CO_NODE )
+    : OCommand( receivers, CMD_NODE_COMMAND, COMMANDTYPE_NODE )
     , _impl( new detail::CustomOCommand( commandID ))
 {
     _init();
@@ -50,8 +50,7 @@ CustomOCommand::CustomOCommand( const Connections& receivers,
 
 CustomOCommand::CustomOCommand( LocalNodePtr localNode,
                                 const uint128_t& commandID )
-    : OCommand( localNode.get(), localNode, CMD_NODE_COMMAND,
-                    COMMANDTYPE_CO_NODE )
+    : OCommand( localNode.get(), localNode, CMD_NODE_COMMAND, COMMANDTYPE_NODE )
     , _impl( new detail::CustomOCommand( commandID ))
 {
     _init();
