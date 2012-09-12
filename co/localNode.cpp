@@ -1274,17 +1274,6 @@ bool LocalNode::_handleData()
         return false;
     }
 
-    // This is one of the initial commands during the connection handshake, at
-    // this point the remote node is not yet available.
-    // TODO #146 need external byteswap here for these commands, because buffer
-    //           also lacks node for bigEndian query
-    LBASSERTINFO( node.isValid() ||
-                 ( command.getType() == COMMANDTYPE_CO_NODE &&
-                  ( command.getCommand() == CMD_NODE_CONNECT  ||
-                    command.getCommand() == CMD_NODE_CONNECT_REPLY ||
-                    command.getCommand() == CMD_NODE_ID )),
-                  command << " connection " << connection );
-
     _dispatchCommand( command );
     return true;
 }
@@ -1298,6 +1287,23 @@ BufferPtr LocalNode::allocCommand( const uint64_t size )
 void LocalNode::_dispatchCommand( Command& command )
 {
     LBASSERT( command.isValid( ));
+
+    // This is one of the initial commands during the connection handshake, at
+    // which point the remote node is not yet available. Handle endianness. The
+    // initial idea was to register a command handler for the byteswapped
+    // initial handshake commands below. This would require using a
+    // unordered_map instead of vector in the dispatcher, hence this heuristic
+    // approach:
+    if( !command.getNode() && command.getCommand() > CMD_NODE_MAXIMUM )
+    {
+        command.setSwapping( true );
+        command.reread();
+    }
+    LBASSERTINFO( command.getNode() ||
+                  ( command.getType() == COMMANDTYPE_CO_NODE &&
+                    ( command.getCommand() == CMD_NODE_CONNECT  ||
+                      command.getCommand() == CMD_NODE_CONNECT_REPLY ||
+                      command.getCommand() == CMD_NODE_ID )), command );
 
     if( dispatchCommand( command ))
         _redispatchCommands();

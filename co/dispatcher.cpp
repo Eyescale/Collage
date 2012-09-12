@@ -100,16 +100,16 @@ bool Dispatcher::dispatchCommand( Command& command )
     }
 #endif
 
-    CommandQueue* queue = _impl->qTable[which];
+    CommandQueue* queue = _impl->qTable[ which ];
     if( queue )
     {
-        command.setDispatchFunction( _impl->fTable[which] );
+        command.setDispatchFunction( _impl->fTable[ which ] );
         queue->push( command );
         return true;
     }
     // else
 
-    LBCHECK( _impl->fTable[which]( command ));
+    LBCHECK( _impl->fTable[ which ]( command ));
     return true;
 }
 
