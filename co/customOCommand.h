@@ -54,7 +54,6 @@ public:
 
     CO_API CustomOCommand( const CustomOCommand& rhs ); //!< @internal
 
-
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~CustomOCommand();
 
