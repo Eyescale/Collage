@@ -33,8 +33,6 @@ namespace co
 
     enum
     {
-        CMD_NODE_COMMAND, //!< @internal
-        CMD_NODE_INTERNAL, //!< @internal
         CMD_NODE_CUSTOM = 50,  //!< Commands for Node subclasses start here
         CMD_NODE_MAXIMUM = 0xFFFFFFu, //!< Highest allowed node command (2^24-1)
         CMD_OBJECT_CUSTOM = 10, //!< Commands for Object subclasses start here
