@@ -66,8 +66,6 @@ LocalNodePtr Buffer::getLocalNode() const
 
 bool Buffer::needsSwapping() const
 {
-    if( !_impl->node )  // node is 0 for connection handshake commands
-        return false;
     return _impl->node->isBigEndian() != _impl->localNode->isBigEndian();
 }
 

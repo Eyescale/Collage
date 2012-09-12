@@ -38,7 +38,9 @@ public:
         , size( 0 )
         , dispatcher( dispatcher_ )
         , localNode( localNode_ )
-    {}
+    {
+        LBASSERT( cmd_ < CMD_NODE_MAXIMUM );
+    }
 
     NodeOCommand( const NodeOCommand& rhs )
         : type( rhs.type )
