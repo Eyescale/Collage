@@ -110,8 +110,7 @@ namespace detail { class Node; }
          * @param multicast prefer multicast connection for sending
          * @return the command object to pass additional data to
          */
-        CO_API NodeOCommand send( const uint32_t cmd,
-                                  const bool multicast = false );
+        CO_API OCommand send( const uint32_t cmd, const bool multicast = false);
 
         /**
          * Send a custom command with optional data to the node.
