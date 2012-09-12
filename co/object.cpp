@@ -150,7 +150,7 @@ ObjectOCommand Object::send( NodePtr node, const uint32_t cmd,
                              const uint32_t instanceID )
 {
     Connections connections( 1, node->getConnection( ));
-    return ObjectOCommand( connections, cmd, COMMANDTYPE_CO_OBJECT, _id,
+    return ObjectOCommand( connections, cmd, COMMANDTYPE_OBJECT, _id,
                            instanceID );
 }
 

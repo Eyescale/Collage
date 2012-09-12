@@ -25,16 +25,14 @@ namespace co
 {
     enum CommandType
     {
-        COMMANDTYPE_CO_NODE,
-        COMMANDTYPE_CO_OBJECT,
-        COMMANDTYPE_CO_CUSTOM = 1<<7,
+        COMMANDTYPE_NODE,
+        COMMANDTYPE_OBJECT,
+        COMMANDTYPE_CUSTOM = 1<<7,
         COMMANDTYPE_INVALID = 0xFFFFFFFFu //!< @internal
     };
 
     enum
     {
-        CMD_NODE_COMMAND, //!< @internal
-        CMD_NODE_INTERNAL, //!< @internal
         CMD_NODE_CUSTOM = 50,  //!< Commands for Node subclasses start here
         CMD_NODE_MAXIMUM = 0xFFFFFFu, //!< Highest allowed node command (2^24-1)
         CMD_OBJECT_CUSTOM = 10, //!< Commands for Object subclasses start here

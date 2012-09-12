@@ -1301,7 +1301,7 @@ void LocalNode::_dispatchCommand( Command& command )
         command.reread();
     }
     LBASSERTINFO( command.getNode() ||
-                  ( command.getType() == COMMANDTYPE_CO_NODE &&
+                  ( command.getType() == COMMANDTYPE_NODE &&
                     ( command.getCommand() == CMD_NODE_CONNECT  ||
                       command.getCommand() == CMD_NODE_CONNECT_REPLY ||
                       command.getCommand() == CMD_NODE_ID )), command );
@@ -1323,11 +1323,11 @@ bool LocalNode::dispatchCommand( Command& command )
     const uint32_t type = command.getType();
     switch( type )
     {
-        case COMMANDTYPE_CO_NODE:
+        case COMMANDTYPE_NODE:
             LBCHECK( Dispatcher::dispatchCommand( command ));
             return true;
 
-        case COMMANDTYPE_CO_OBJECT:
+        case COMMANDTYPE_OBJECT:
             return _impl->objectStore->dispatchObjectCommand( command );
 
         default:

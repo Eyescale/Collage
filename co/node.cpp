@@ -308,8 +308,7 @@ OCommand Node::send( const uint32_t cmd, const bool multicast )
     if( !connection )
         connection = getConnection();
     LBASSERT( connection );
-    return OCommand( Connections( 1, connection ), cmd,
-                         COMMANDTYPE_CO_NODE );
+    return OCommand( Connections( 1, connection ), cmd, COMMANDTYPE_NODE );
 }
 
 CustomOCommand Node::send( const uint128_t& commandID, const bool multicast )

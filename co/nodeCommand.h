@@ -24,9 +24,9 @@ namespace co
 {
     enum NodeCommand
     {
-        CMD_NODE_CONNECT = CMD_NODE_INTERNAL, // must be on top
-        CMD_NODE_CONNECT_REPLY,               // must be on top
-        CMD_NODE_ID,                          // must be on top (really!)
+        CMD_NODE_CONNECT, // must be on top
+        CMD_NODE_CONNECT_REPLY, // must be on top
+        CMD_NODE_ID, // must be on top (really!)
         CMD_NODE_STOP_RCV,
         CMD_NODE_STOP_CMD,
         CMD_NODE_SET_AFFINITY_RCV,
@@ -60,6 +60,7 @@ namespace co
         CMD_NODE_DISABLE_SEND_ON_REGISTER,
         CMD_NODE_REMOVE_NODE,
         CMD_NODE_OBJECT_PUSH,
+        CMD_NODE_COMMAND,
         CMD_NODE_PING,
         CMD_NODE_PING_REPLY
         // check that not more then CMD_NODE_CUSTOM have been defined!
