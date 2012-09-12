@@ -44,6 +44,8 @@ class CommandQueue;
 class Connection;
 class ConnectionDescription;
 class ConnectionListener;
+class CustomCommand;
+class CustomOCommand;
 class DataIStream;
 class DataOStream;
 class Global;

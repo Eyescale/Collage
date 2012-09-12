@@ -33,7 +33,7 @@ namespace co
 
     enum
     {
-        CMD_NODE_COMMAND, //!< A node command
+        CMD_NODE_COMMAND, //!< @internal
         CMD_NODE_INTERNAL, //!< @internal
         CMD_NODE_CUSTOM = 50,  //!< Commands for subclasses of Node start here
         CMD_OBJECT_CUSTOM = 10, //!< Commands for subclasses of Object start here
