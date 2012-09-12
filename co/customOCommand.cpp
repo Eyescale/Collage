@@ -50,11 +50,7 @@ CustomOCommand::CustomOCommand( const Connections& receivers,
 
 CustomOCommand::CustomOCommand( LocalNodePtr localNode,
                                 const uint128_t& commandID )
-<<<<<<< HEAD
-    : NodeOCommand( localNode.get(), localNode, CMD_NODE_COMMAND,
-=======
-    : OCommand( dispatcher, localNode, CMD_NODE_COMMAND,
->>>>>>> 9bb038ccad178a010d93622e6137de3416892ee2
+    : OCommand( localNode.get(), localNode, CMD_NODE_COMMAND,
                     COMMANDTYPE_CO_NODE )
     , _impl( new detail::CustomOCommand( commandID ))
 {
