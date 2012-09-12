@@ -75,7 +75,7 @@
 #include <co/dataOStreamArchive.h>
 #include <co/global.h>
 #include <co/init.h>
-#include <co/nodeOCommand.h>
+#include <co/oCommand.h>
 #include <co/object.h>
 #include <co/objectCommand.h>
 #include <co/serializable.h>

@@ -23,7 +23,7 @@
 #include <co/connectionDescription.h>
 #include <co/init.h>
 #include <co/node.h>
-#include <co/nodeOCommand.h>
+#include <co/oCommand.h>
 #include <lunchbox/clock.h>
 #include <lunchbox/monitor.h>
 #include <lunchbox/rng.h>
@@ -111,7 +111,7 @@ int main( int argc, char **argv )
         serverProxy->send( co::CMD_NODE_CUSTOM ) << message;
     const float time = clock.getTimef();
 
-    const size_t size = NMESSAGES * ( co::NodeOCommand::getSize() +
+    const size_t size = NMESSAGES * ( co::OCommand::getSize() +
                                       message.length() - 7 );
     std::cout << "Send " << size << " bytes using " << NMESSAGES
               << " commands in " << time << "ms" << " ("

@@ -30,7 +30,7 @@
 #include "exception.h"
 #include "global.h"
 #include "nodeCommand.h"
-#include "nodeOCommand.h"
+#include "oCommand.h"
 #include "object.h"
 #include "objectCommand.h"
 #include "objectStore.h"
@@ -1028,7 +1028,7 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
 
     // send connect command to peer
     const uint32_t requestID = registerRequest( node.get( ));
-    NodeOCommand( Connections( 1, connection ), CMD_NODE_CONNECT )
+    OCommand( Connections( 1, connection ), CMD_NODE_CONNECT )
         << getNodeID() << requestID << getType() << serialize();
 
     bool connected = false;
@@ -1202,7 +1202,7 @@ void LocalNode::_handleDisconnect()
         node->ref(); // extend lifetime to give cmd handler a chance
 
         // local command dispatching
-        NodeOCommand( this, this, CMD_NODE_REMOVE_NODE )
+        OCommand( this, this, CMD_NODE_REMOVE_NODE )
                 << node.get() << uint32_t( LB_UNDEFINED_UINT32 );
 
         if( node->getConnection() == connection )
@@ -1492,7 +1492,7 @@ bool LocalNode::_cmdConnect( Command& command )
                    << std::endl;
 
             // refuse connection
-            NodeOCommand( Connections( 1, connection ), CMD_NODE_CONNECT_REPLY )
+            OCommand( Connections( 1, connection ), CMD_NODE_CONNECT_REPLY )
                     << nodeID << requestID << nodeType;
 
             // NOTE: There is no close() here. The reply command above has to be
@@ -1522,7 +1522,7 @@ bool LocalNode::_cmdConnect( Command& command )
     LBVERB << "Added node " << nodeID << std::endl;
 
     // send our information as reply
-    NodeOCommand( Connections( 1, connection ), CMD_NODE_CONNECT_REPLY )
+    OCommand( Connections( 1, connection ), CMD_NODE_CONNECT_REPLY )
         << getNodeID() << requestID << getType() << serialize();
 
     notifyConnect( peer );

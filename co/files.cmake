@@ -38,7 +38,7 @@ set(CO_PUBLIC_HEADERS
   localNode.h
   log.h
   node.h
-  nodeOCommand.h
+  oCommand.h
   nodeType.h
   object.h
   objectFactory.h
@@ -119,7 +119,7 @@ set(CO_SOURCES
   localNode.cpp
   masterCMCommand.cpp
   node.cpp
-  nodeOCommand.cpp
+  oCommand.cpp
   object.cpp
   objectCM.cpp
   objectDataIStream.cpp

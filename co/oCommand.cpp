@@ -15,7 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "nodeOCommand.h"
+#include "oCommand.h"
 
 #include "buffer.h"
 #include "command.h"
@@ -27,10 +27,10 @@ namespace co
 namespace detail
 {
 
-class NodeOCommand
+class OCommand
 {
 public:
-    NodeOCommand( const uint32_t cmd_, const uint32_t type_,
+    OCommand( const uint32_t cmd_, const uint32_t type_,
                   co::Dispatcher* const dispatcher_, LocalNodePtr localNode_ )
         : type( type_ )
         , cmd( cmd_ )
@@ -42,7 +42,7 @@ public:
         LBASSERT( cmd_ < CMD_NODE_MAXIMUM );
     }
 
-    NodeOCommand( const NodeOCommand& rhs )
+    OCommand( const OCommand& rhs )
         : type( rhs.type )
         , cmd( rhs.cmd )
         , lockSend( rhs.lockSend )
@@ -61,37 +61,37 @@ public:
 
 }
 
-NodeOCommand::NodeOCommand( const Connections& receivers, const uint32_t cmd,
+OCommand::OCommand( const Connections& receivers, const uint32_t cmd,
                             const uint32_t type )
     : DataOStream()
-    , _impl( new detail::NodeOCommand( cmd, type, 0, 0 ))
+    , _impl( new detail::OCommand( cmd, type, 0, 0 ))
 {
     _setupConnections( receivers );
     _init();
 }
 
-NodeOCommand::NodeOCommand( Dispatcher* const dispatcher,
+OCommand::OCommand( Dispatcher* const dispatcher,
                             LocalNodePtr localNode, const uint32_t cmd,
                             const uint32_t type )
     : DataOStream()
-    , _impl( new detail::NodeOCommand( cmd, type, dispatcher, localNode ))
+    , _impl( new detail::OCommand( cmd, type, dispatcher, localNode ))
 {
     _init();
 }
 
-NodeOCommand::NodeOCommand( const NodeOCommand& rhs )
+OCommand::OCommand( const OCommand& rhs )
     : DataOStream()
-    , _impl( new detail::NodeOCommand( *rhs._impl ))
+    , _impl( new detail::OCommand( *rhs._impl ))
 {
     _setupConnections( rhs.getConnections( ));
     _init();
 
     // disable send of rhs
-    const_cast< NodeOCommand& >( rhs )._setupConnections( Connections( ));
-    const_cast< NodeOCommand& >( rhs ).disable();
+    const_cast< OCommand& >( rhs )._setupConnections( Connections( ));
+    const_cast< OCommand& >( rhs ).disable();
 }
 
-NodeOCommand::~NodeOCommand()
+OCommand::~OCommand()
 {
     disable();
 
@@ -110,7 +110,7 @@ NodeOCommand::~NodeOCommand()
     delete _impl;
 }
 
-void NodeOCommand::sendHeaderUnlocked( const uint64_t additionalSize )
+void OCommand::sendHeaderUnlocked( const uint64_t additionalSize )
 {
     LBASSERT( !_impl->dispatcher );
     _impl->lockSend = false;
@@ -118,19 +118,19 @@ void NodeOCommand::sendHeaderUnlocked( const uint64_t additionalSize )
     disable();
 }
 
-size_t NodeOCommand::getSize()
+size_t OCommand::getSize()
 {
     return sizeof( uint32_t ) + sizeof( uint32_t );
 }
 
-void NodeOCommand::_init()
+void OCommand::_init()
 {
     enableSave();
     _enable();
     *this << _impl->type << _impl->cmd;
 }
 
-void NodeOCommand::sendData( const void* buffer, const uint64_t size,
+void OCommand::sendData( const void* buffer, const uint64_t size,
                              const bool last )
 {
     LBASSERT( !_impl->dispatcher );

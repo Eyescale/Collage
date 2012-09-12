@@ -18,7 +18,7 @@
 #ifndef CO_CUSTOMOCOMMAND_H
 #define CO_CUSTOMOCOMMAND_H
 
-#include <co/nodeOCommand.h>    // base class
+#include <co/oCommand.h>    // base class
 
 
 namespace co
@@ -29,9 +29,9 @@ namespace detail { class CustomOCommand; }
 /**
  * A class for sending custom commands and data to local & external nodes.
  *
- * @sa co::NodeOCommand
+ * @sa co::OCommand
  */
-class CustomOCommand : public NodeOCommand
+class CustomOCommand : public OCommand
 {
 public:
     /**

@@ -51,7 +51,7 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
     os.enablePush( getVersion(), nodes );
     _object->getInstanceData( os );
 
-    NodeOCommand( os.getConnections(), CMD_NODE_OBJECT_PUSH )
+    OCommand( os.getConnections(), CMD_NODE_OBJECT_PUSH )
             << _object->getID() << groupID << typeID;
     os.disable();
 }

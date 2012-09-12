@@ -51,7 +51,6 @@ class DataOStream;
 class Global;
 class LocalNode;
 class Node;
-class NodeOCommand;
 class Object;
 class ObjectFactory;
 class ObjectHandler;
@@ -60,6 +59,7 @@ class ObjectDataIStream;
 class ObjectDataOCommand;
 class ObjectCommand;
 class ObjectOCommand;
+class OCommand;
 class Plugin;        //!< @internal
 class PluginRegistry;
 class QueueItem;

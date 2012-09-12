@@ -46,7 +46,7 @@ public:
 ObjectOCommand::ObjectOCommand( const Connections& receivers,
                                 const uint32_t cmd, const uint32_t type,
                                 const UUID& id, const uint32_t instanceID )
-    : NodeOCommand( receivers, cmd, type )
+    : OCommand( receivers, cmd, type )
     , _impl( new detail::ObjectOCommand( id, instanceID ))
 {
     _init();
@@ -56,14 +56,14 @@ ObjectOCommand::ObjectOCommand( Dispatcher* const dispatcher,
                                 LocalNodePtr localNode, const uint32_t cmd,
                                 const uint32_t type, const UUID& id,
                                 const uint32_t instanceID )
-    : NodeOCommand( dispatcher, localNode, cmd, type )
+    : OCommand( dispatcher, localNode, cmd, type )
     , _impl( new detail::ObjectOCommand( id, instanceID ))
 {
     _init();
 }
 
 ObjectOCommand::ObjectOCommand( const ObjectOCommand& rhs )
-    : NodeOCommand( rhs )
+    : OCommand( rhs )
     , _impl( new detail::ObjectOCommand( *rhs._impl ))
 {
     _init();

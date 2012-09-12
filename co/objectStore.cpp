@@ -27,7 +27,7 @@
 #include "log.h"
 #include "masterCMCommand.h"
 #include "nodeCommand.h"
-#include "nodeOCommand.h"
+#include "oCommand.h"
 #include "objectCM.h"
 #include "objectDataIStream.h"
 #include "objectDataCommand.h"

@@ -75,7 +75,7 @@ void ObjectInstanceDataOStream::push( const Nodes& receivers,
     _setupConnections( receivers );
 
     _resend();
-    NodeOCommand( getConnections(), CMD_NODE_OBJECT_PUSH )
+    OCommand( getConnections(), CMD_NODE_OBJECT_PUSH )
         << objectID << groupID << typeID;
 
     _clearConnections();
