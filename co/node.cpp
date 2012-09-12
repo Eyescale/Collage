@@ -312,7 +312,7 @@ NodeOCommand Node::send( const uint32_t cmd, const bool multicast )
                          COMMANDTYPE_CO_NODE );
 }
 
-CustomOCommand  Node::send( const uint128_t& commandID, const bool multicast )
+CustomOCommand Node::send( const uint128_t& commandID, const bool multicast )
 {
     ConnectionPtr connection = multicast ? useMulticast() : 0;
     if( !connection )

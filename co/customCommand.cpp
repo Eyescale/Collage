@@ -26,8 +26,7 @@ namespace detail
 class CustomCommand
 {
 public:
-    CustomCommand()
-    {}
+    CustomCommand() {}
 
     uint128_t commandID;
 };

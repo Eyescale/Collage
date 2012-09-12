@@ -183,7 +183,7 @@ namespace co
                 lunchbox::byteswap( readerID );
                 lunchbox::byteswap( writerID );
                 lunchbox::byteswap( count );
-                for( size_t i = 0; i < EQ_RSP_MAX_NACKS; ++i )
+                for( uint16_t i = 0; i < count; ++i )
                 {
                     lunchbox::byteswap( nacks[i].start );
                     lunchbox::byteswap( nacks[i].end );

@@ -35,7 +35,7 @@ public:
         : commandID( rhs.commandID )
     {}
 
-    const uint128_t& commandID;
+    const uint128_t commandID;
 };
 
 }
@@ -48,10 +48,9 @@ CustomOCommand::CustomOCommand( const Connections& receivers,
     _init();
 }
 
-CustomOCommand::CustomOCommand( Dispatcher* const dispatcher,
-                                LocalNodePtr localNode,
+CustomOCommand::CustomOCommand( LocalNodePtr localNode,
                                 const uint128_t& commandID )
-    : NodeOCommand( dispatcher, localNode, CMD_NODE_COMMAND,
+    : NodeOCommand( localNode.get(), localNode, CMD_NODE_COMMAND,
                     COMMANDTYPE_CO_NODE )
     , _impl( new detail::CustomOCommand( commandID ))
 {

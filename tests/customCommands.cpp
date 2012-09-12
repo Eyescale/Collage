@@ -24,8 +24,8 @@
 
 const co::uint128_t cmdID1( lunchbox::make_uint128( "cmdID1" ));
 const co::uint128_t cmdID2( lunchbox::make_uint128( "cmdID2" ));
-lunchbox::Monitor<bool> wasInCmd1;
-lunchbox::Monitor<bool> wasInCmd2;
+lunchbox::Monitor<bool> gotCmd1;
+lunchbox::Monitor<bool> gotCmd2;
 
 class MyLocalNode : public co::LocalNode
 {
@@ -33,14 +33,14 @@ public:
     bool cmdCustom1( co::CustomCommand& command )
     {
         TEST( command.getCommandID() == cmdID1 );
-        wasInCmd1 = true;
+        gotCmd1 = true;
         return true;
     }
 
     bool cmdCustom2( co::CustomCommand& command )
     {
         TEST( command.getCommandID() == cmdID2 );
-        wasInCmd2 = true;
+        gotCmd2 = true;
         TEST( command.get< std::string >() == "hello" );
         return true;
     }
@@ -86,8 +86,8 @@ int main( int argc, char **argv )
     serverProxy->send( cmdID1 );
     serverProxy->send( cmdID2 ) << std::string( "hello" );
 
-    TEST( wasInCmd1.timedWaitEQ( true, 1000 ));
-    TEST( wasInCmd2.timedWaitEQ( true, 1000 ));
+    TEST( gotCmd1.timedWaitEQ( true, 1000 ));
+    TEST( gotCmd2.timedWaitEQ( true, 1000 ));
 
     TEST( client->disconnect( serverProxy ));
     TEST( client->close( ));

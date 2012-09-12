@@ -117,7 +117,7 @@ namespace detail { class Node; }
          * Send a custom command with optional data to the node.
          *
          * The command handler for this command being send is registered with
-         * LocalNode::registerCommandHandler.
+         * the remote LocalNode::registerCommandHandler().
          *
          * The returned command can be used to pass additional data. The data
          * will be send after the command object is destroyed, aka when it is

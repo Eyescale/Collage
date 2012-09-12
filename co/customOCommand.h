@@ -35,7 +35,8 @@ class CustomOCommand : public NodeOCommand
 {
 public:
     /**
-     * Construct a command which is send & dispatched to a co::Object.
+     * Construct a command dispatched to a remote LocalNode custom command
+     * handler.
      *
      * @param receivers list of connections where to send the command to.
      * @param commandID the custom command identifier
@@ -44,17 +45,15 @@ public:
                            const uint128_t& commandID );
 
     /**
-     * Construct a command which is dispatched locally to a co::Object.
+     * Construct a command dispatched to a local custom command handler.
      *
-     * @param dispatcher the dispatcher to dispatch this command.
      * @param localNode the local node that holds the command cache.
      * @param commandID the custom command identifier
      */
-    CO_API CustomOCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
-                           const uint128_t& commandID );
+    CO_API CustomOCommand( LocalNodePtr localNode, const uint128_t& commandID );
 
-    /** @internal */
-    CO_API CustomOCommand( const CustomOCommand& rhs );
+    CO_API CustomOCommand( const CustomOCommand& rhs ); //!< @internal
+
 
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~CustomOCommand();

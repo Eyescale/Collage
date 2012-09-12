@@ -694,9 +694,8 @@ void RSPConnection::_repeatData()
 
             // send data
             _waitWritable( size ); // OPT: process incoming in between
-            header->byteswap();
+            // already done by _writeData: header->byteswap();
             _write->send( boost::asio::buffer( header, size ) );
-            header->byteswap(); // swap back if repeat occurs again
 #ifdef EQ_INSTRUMENT_RSP
             ++nRepeated;
 #endif
@@ -793,7 +792,7 @@ void RSPConnection::_finishWriteQueue( const uint16_t sequence )
 }
 
 void RSPConnection::_handlePacket( const boost::system::error_code& /* error */,
-                                   const size_t /* bytes */ )
+                                   const size_t bytes )
 {
     if( isListening( ))
     {
@@ -807,7 +806,7 @@ void RSPConnection::_handlePacket( const boost::system::error_code& /* error */,
             return;
         }
     }
-    else if( _recvBuffer.getSize() >= sizeof( DatagramNode ))
+    else if( bytes >= sizeof( DatagramNode ))
     {
         DatagramNode& node =
                     *reinterpret_cast< DatagramNode* >( _recvBuffer.getData( ));
