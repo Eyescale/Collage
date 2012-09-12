@@ -16,7 +16,7 @@
  */
 
 #include "customOCommand.h"
-
+#include "nodeCommand.h"
 
 namespace co
 {
