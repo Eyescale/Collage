@@ -40,11 +40,18 @@ namespace detail { class Node; }
     class Node : public Dispatcher, public lunchbox::Referenced
     {
     public:
-        /** Construct a new Node. */
-        CO_API Node();
+        /**
+         * Construct a new node proxy.
+         *
+         * @param type the type of the node, used during connect().
+         */
+        CO_API Node( const uint32_t type = co::NODETYPE_NODE );
 
         /** @name Data Access. */
         //@{
+        /** @return the type of the node. */
+        CO_API uint32_t getType() const;
+
         bool operator == ( const Node* n ) const;
 
         bool isBigEndian() const; //!< @internal
@@ -103,8 +110,24 @@ namespace detail { class Node; }
          * @param multicast prefer multicast connection for sending
          * @return the command object to pass additional data to
          */
-        CO_API NodeOCommand send( const uint32_t cmd,
-                                  const bool multicast = false );
+        CO_API OCommand send( const uint32_t cmd, const bool multicast = false);
+
+        /**
+         * Send a custom command with optional data to the node.
+         *
+         * The command handler for this command being send is registered with
+         * the remote LocalNode::registerCommandHandler().
+         *
+         * The returned command can be used to pass additional data. The data
+         * will be send after the command object is destroyed, aka when it is
+         * running out of scope.
+         *
+         * @param commandID the ID of the registered custom command
+         * @param multicast prefer multicast connection for sending
+         * @return the command object to pass additional data to
+         */
+        CO_API CustomOCommand send( const uint128_t& commandID,
+                                    const bool multicast = false );
         //@}
 
         CO_API const NodeID& getNodeID() const;
@@ -116,9 +139,6 @@ namespace detail { class Node; }
 
         /** @return last receive time. */
         int64_t getLastReceiveTime() const;
-
-        /** @return the type of the node, used during connect(). */
-        virtual uint32_t getType() const { return NODETYPE_CO_NODE; }
 
     protected:
         /** Destructs this node. */

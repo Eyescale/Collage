@@ -45,7 +45,7 @@ void ObjectSlaveDataOStream::enableCommit( NodePtr node )
 void ObjectSlaveDataOStream::sendData( const void* buffer, const uint64_t size,
                                        const bool last )
 {
-    ObjectDataOStream::send( CMD_OBJECT_SLAVE_DELTA, COMMANDTYPE_CO_OBJECT,
+    ObjectDataOStream::send( CMD_OBJECT_SLAVE_DELTA, COMMANDTYPE_OBJECT,
                              _cm->getObject()->getMasterInstanceID(), size,
                              last ) << _commit;
 

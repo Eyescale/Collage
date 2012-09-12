@@ -15,17 +15,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_NODEOCOMMAND_H
-#define CO_NODEOCOMMAND_H
+#ifndef CO_OCOMMAND_H
+#define CO_OCOMMAND_H
 
-#include <co/commands.h>       // for COMMANDTYPE_CO_NODE
+#include <co/commands.h>       // for COMMANDTYPE_NODE
 #include <co/dataOStream.h>    // base class
 
 
 namespace co
 {
 
-namespace detail { class NodeOCommand; }
+namespace detail { class OCommand; }
 
 /**
  * A class for sending commands with data to local and external nodes.
@@ -34,7 +34,7 @@ namespace detail { class NodeOCommand; }
  * The command is send or dispatched after it goes out of scope, i.e. during
  * destruction.
  */
-class NodeOCommand : public DataOStream
+class OCommand : public DataOStream
 {
 public:
     /**
@@ -44,8 +44,8 @@ public:
      * @param cmd the command.
      * @param type the command type for dispatching.
      */
-    CO_API NodeOCommand( const Connections& receivers, const uint32_t cmd,
-                         const uint32_t type = COMMANDTYPE_CO_NODE );
+    CO_API OCommand( const Connections& receivers, const uint32_t cmd,
+                     const uint32_t type = COMMANDTYPE_NODE );
 
     /**
      * Construct a command which is dispatched locally typically to a co::Node.
@@ -55,15 +55,14 @@ public:
      * @param cmd the command.
      * @param type the command type for dispatching.
      */
-    CO_API NodeOCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
-                         const uint32_t cmd,
-                         const uint32_t type = COMMANDTYPE_CO_NODE );
+    CO_API OCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
+                     const uint32_t cmd, const uint32_t type=COMMANDTYPE_NODE );
 
     /** @internal */
-    CO_API NodeOCommand( const NodeOCommand& rhs );
+    CO_API OCommand( const OCommand& rhs );
 
     /** Send or dispatch this command during destruction. */
-    CO_API virtual ~NodeOCommand();
+    CO_API virtual ~OCommand();
 
     /**
      * Allow external send of data along with this command.
@@ -80,10 +79,11 @@ protected:
                                   const bool last );
 
 private:
-    detail::NodeOCommand* const _impl;
+    OCommand& operator = ( const OCommand& );
+    detail::OCommand* const _impl;
 
     void _init();
 };
 }
 
-#endif //CO_NODEOCOMMAND_H
+#endif //CO_OCOMMAND_H

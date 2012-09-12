@@ -74,7 +74,7 @@ public:
         for( Items::const_iterator i = items.begin(); i != items.end(); ++i )
         {
             co::ObjectOCommand cmd( connections, CMD_QUEUE_ITEM,
-                                    COMMANDTYPE_CO_OBJECT, _parent.getID(),
+                                    COMMANDTYPE_OBJECT, _parent.getID(),
                                     slaveInstanceID );
 
             const ItemBufferPtr item = *i;
@@ -84,7 +84,7 @@ public:
 
         if( itemsRequested > items.size( ))
             co::ObjectOCommand( connections, CMD_QUEUE_EMPTY,
-                                COMMANDTYPE_CO_OBJECT, command.getObjectID(),
+                                COMMANDTYPE_OBJECT, command.getObjectID(),
                                 slaveInstanceID ) << requestID;
         return true;
     }

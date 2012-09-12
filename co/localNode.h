@@ -43,7 +43,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
                       public ObjectHandler
     {
     public:
-        CO_API LocalNode();
+        CO_API LocalNode( const uint32_t type = co::NODETYPE_NODE );
         CO_API virtual ~LocalNode();
 
         typedef NodePtr SendToken; //!< An acquired send token
@@ -55,7 +55,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
                                        DataIStream& ) > PushHandler;
 
         /** Function signature for custom command handlers. */
-        typedef boost::function< bool( Command& ) > CommandHandler;
+        typedef boost::function< bool( CustomCommand& ) > CommandHandler;
 
         /**
          * @name State Changes
@@ -427,15 +427,18 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          */
         CO_API bool connect( NodePtr node, ConnectionPtr connection );
 
-        /** Notify remote node disconnection from the receiver thread. */
-        virtual void notifyDisconnect( NodePtr node ) { }
+        /** @internal Notify remote node connection. */
+        virtual void notifyConnect( NodePtr node ) {}
 
-        /** 
+        /** @internal Notify remote node disconnection. */
+        virtual void notifyDisconnect( NodePtr node ) {}
+
+        /**
          * Factory method to create a new node.
-         * 
+         *
          * @param type the type the node type
          * @return the node.
-         * @sa getType()
+         * @sa ctor type parameter
          */
         CO_API virtual NodePtr createNode( const uint32_t type );
 

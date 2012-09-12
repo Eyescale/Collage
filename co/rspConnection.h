@@ -1,6 +1,7 @@
 
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
+/* Copyright (c)      2009, Cedric Stalder <cedric.stalder@gmail.com>
  *               2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -110,21 +111,27 @@ namespace co
             ID_CONFIRM,//!< a new node is connected
             ID_EXIT,   //!< a node is disconnected
             COUNTNODE  //!< send to other the number of nodes which I have found
+            // NOTE: Do not use more than 255 types here, since the endianness
+            // detection magic relies on only using the LSB.
         };
 
-        /** ID_HELLO, ID_DENY, ID_CONFIRM or ID_EXIT packet */
+        /** ID_HELLO, ID_DENY, ID_CONFIRM, ID_EXIT or COUNTNODE packet */
         struct DatagramNode
         {
             uint16_t type;
-            uint16_t connectionID;
-        };
-
-        /** Announce number of known connections */
-        struct DatagramCount
-        {
-            uint16_t type;
-            uint16_t clientID;
+            uint16_t protocolVersion;
+            uint16_t connectionID;  // clientID for type COUNTNODE
             uint16_t numConnections;
+
+            void byteswap()
+            {
+#ifdef COLLAGE_BIGENDIAN
+                lunchbox::byteswap( type );
+                lunchbox::byteswap( protocolVersion );
+                lunchbox::byteswap( connectionID );
+                lunchbox::byteswap( numConnections );
+#endif
+            }
         };
 
         /** Request receive confirmation of all packets up to sequence. */
@@ -133,6 +140,15 @@ namespace co
             uint16_t type;
             uint16_t writerID;
             uint16_t sequence;
+
+            void byteswap()
+            {
+#ifdef COLLAGE_BIGENDIAN
+                lunchbox::byteswap( type );
+                lunchbox::byteswap( writerID );
+                lunchbox::byteswap( sequence );
+#endif
+            }
         };
 
         /** Missing packets from start..end sequence */
@@ -159,6 +175,21 @@ namespace co
             uint16_t       writerID;
             uint16_t       count;       //!< number of NACK requests used
             Nack           nacks[ EQ_RSP_MAX_NACKS ];
+
+            void byteswap()
+            {
+#ifdef COLLAGE_BIGENDIAN
+                lunchbox::byteswap( type );
+                lunchbox::byteswap( readerID );
+                lunchbox::byteswap( writerID );
+                lunchbox::byteswap( count );
+                for( uint16_t i = 0; i < count; ++i )
+                {
+                    lunchbox::byteswap( nacks[i].start );
+                    lunchbox::byteswap( nacks[i].end );
+                }
+#endif
+            }
         };
 
         /** Acknowledge reception of all packets including sequence .*/
@@ -168,6 +199,16 @@ namespace co
             uint16_t        readerID;
             uint16_t        writerID;
             uint16_t        sequence;
+
+            void byteswap()
+            {
+#ifdef COLLAGE_BIGENDIAN
+                lunchbox::byteswap( type );
+                lunchbox::byteswap( readerID );
+                lunchbox::byteswap( writerID );
+                lunchbox::byteswap( sequence );
+#endif
+            }
         };
 
         /** Data packet */
@@ -177,6 +218,16 @@ namespace co
             uint16_t    size;
             uint16_t    writerID;
             uint16_t    sequence;
+
+            void byteswap()
+            {
+#ifdef COLLAGE_BIGENDIAN
+                lunchbox::byteswap( type );
+                lunchbox::byteswap( size );
+                lunchbox::byteswap( writerID );
+                lunchbox::byteswap( sequence );
+#endif
+            }
         };
 
         typedef std::vector< RSPConnectionPtr > RSPConnections;
@@ -248,10 +299,10 @@ namespace co
         void _finishWriteQueue( const uint16_t sequence );
 
         bool _handleData( Buffer& buffer );
-        bool _handleAck( const DatagramAck* ack );
-        bool _handleNack( const DatagramNack* nack );
-        bool _handleAckRequest( const DatagramAckRequest* ackRequest );
-        void _handleCountNode();
+        bool _handleAck( const DatagramAck& ack );
+        bool _handleNack( const DatagramNack& nack );
+        bool _handleAckRequest( const DatagramAckRequest& ackRequest );
+        void _handleCountNode( const DatagramNode& node );
 
         Buffer* _newDataBuffer( Buffer& inBuffer );
         void _pushDataBuffer( Buffer* buffer );
@@ -266,9 +317,9 @@ namespace co
         /* handle data about the comunication state */
         void _handlePacket( const boost::system::error_code& error,
                             const size_t bytes );
-        void _handleConnectedData( const void* data );
-        void _handleInitData( const void* data );
-        void _handleAcceptIDData( const void* data );
+        void _handleConnectedData( Buffer& buffer );
+        void _handleInitData( const DatagramNode& node, const bool connected );
+        void _handleAcceptIDData( const DatagramNode& node );
 
         /* handle timeout about the comunication state */
         void _handleTimeout( const boost::system::error_code& error );
@@ -277,7 +328,7 @@ namespace co
         void _handleAcceptIDTimeout();
 
         /** find the connection corresponding to the identifier */
-        RSPConnectionPtr _findConnection( const uint16_t id ) const;
+        RSPConnectionPtr _findConnection( const uint16_t id );
 
         /** Sleep until allowed to send according to send rate */
         void _waitWritable( const uint64_t bytes );

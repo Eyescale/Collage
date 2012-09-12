@@ -25,7 +25,7 @@
 #include <co/dispatcher.h>
 #include <co/init.h>
 #include <co/localNode.h>
-#include <co/nodeOCommand.h>
+#include <co/oCommand.h>
 #include <lunchbox/clock.h>
 
 // Tests the functionality of the network command cache
@@ -94,10 +94,10 @@ int main( int argc, char **argv )
         while( clock.getTime64() < RUNTIME )
         {
             co::BufferPtr buffer = cache.alloc( node, node,
-                                                co::NodeOCommand::getSize( ));
+                                                co::OCommand::getSize( ));
             co::Command command( buffer );
             command.setCommand( 0 );
-            command.setType( co::COMMANDTYPE_CO_CUSTOM );
+            command.setType( co::COMMANDTYPE_CUSTOM );
 
             readers[0].dispatchCommand( command );
 
@@ -113,7 +113,7 @@ int main( int argc, char **argv )
         for( size_t i = 0; i < N_READER; ++i )
         {
             co::BufferPtr buffer = cache.alloc( node, node,
-                                                co::NodeOCommand::getSize( ));
+                                                co::OCommand::getSize( ));
             co::Command command( buffer );
             command.setCommand( 1 );
 

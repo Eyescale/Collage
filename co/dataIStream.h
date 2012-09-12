@@ -47,11 +47,11 @@ namespace detail { class DataIStream; }
         /** @name Data input */
         //@{
         /** Read a plain data item. @version 1.0 */
-        template< typename T > DataIStream& operator >> ( T& value )
+        template< class T > DataIStream& operator >> ( T& value )
             { _read( &value, sizeof( value )); _swap( value ); return *this; }
 
         /** Read a C array. @version 1.0 */
-        template< typename T > DataIStream& operator >> ( Array< T > array )
+        template< class T > DataIStream& operator >> ( Array< T > array )
             {
                 _read( array.data, array.getNumBytes( ));
                 _swap( array );
@@ -59,21 +59,14 @@ namespace detail { class DataIStream; }
             }
 
         /** Byte-swap a plain data item. @version 1.0 */
-        template< typename T > static void swap( T& value )
+        template< class T > static void swap( T& value )
             { lunchbox::byteswap( value ); }
 
-        /** Read a std::vector of serializable items. @version 1.0 */
-        template< typename T >
-        DataIStream& operator >> ( std::vector< T >& value )
-        {
-            uint64_t nElems = 0;
-            (*this) >> nElems;
-            value.resize( nElems );
-            for( uint64_t i = 0; i < nElems; i++ )
-                (*this) >> value[i];
+        /** Read a lunchbox::Buffer. @version 1.0 */
+        template< class T > DataIStream& operator >> ( lunchbox::Buffer< T >& );
 
-            return *this;
-        }
+        /** Read a std::vector of serializable items. @version 1.0 */
+        template< class T > DataIStream& operator >> ( std::vector< T >& );
 
         /** @internal
          * Deserialize child objects.
@@ -154,25 +147,25 @@ namespace detail { class DataIStream; }
                                     const uint64_t dataSize );
 
         /** Read a vector of trivial data. */
-        template< typename T >
+        template< class T >
         DataIStream& _readFlatVector ( std::vector< T >& value )
         {
             uint64_t nElems = 0;
-            (*this) >> nElems;
+            *this >> nElems;
             LBASSERTINFO( nElems < LB_BIT48,
                   "Out-of-sync co::DataIStream: " << nElems << " elements?" );
             value.resize( size_t( nElems ));
             if( nElems > 0 )
-                (*this) >> Array< T >( &value.front(), nElems );
+                *this >> Array< T >( &value.front(), nElems );
             return *this;
         }
 
         /** Byte-swap a plain data item. @version 1.0 */
-        template< typename T > void _swap( T& value ) const 
+        template< class T > void _swap( T& value ) const 
             { if( isSwapping( )) swap( value ); }
 
         /** Byte-swap a C array. @version 1.0 */
-        template< typename T > void _swap( Array< T > array ) const
+        template< class T > void _swap( Array< T > array ) const
             {
                 if( !isSwapping( ))
                     return;
@@ -195,7 +188,7 @@ namespace co
     inline DataIStream& DataIStream::operator >> ( std::string& str )
     {
         uint64_t nElems = 0;
-        (*this) >> nElems;
+        *this >> nElems;
         LBASSERTINFO( nElems <= getRemainingBufferSize(),
                       nElems << " > " << getRemainingBufferSize( ));
         if( nElems == 0 )
@@ -210,9 +203,32 @@ namespace co
     template<> inline DataIStream& DataIStream::operator >> ( Object*& object )
     {
         ObjectVersion data;
-        (*this) >> data;
+        *this >> data;
         LBASSERT( object->getID() == data.identifier );
         object->sync( data.version );
+        return *this;
+    }
+
+/** @cond IGNORE */
+    template< class T > inline DataIStream&
+    DataIStream::operator >> ( lunchbox::Buffer< T >& buffer )
+    {
+        uint64_t nElems = 0;
+        *this >> nElems;
+        buffer.resize( nElems );
+        return *this >> Array< T >( buffer.getData(), nElems );
+    }
+
+
+    template< class T > inline DataIStream&
+    DataIStream::operator >> ( std::vector< T >& value )
+    {
+        uint64_t nElems = 0;
+        *this >> nElems;
+        value.resize( nElems );
+        for( uint64_t i = 0; i < nElems; i++ )
+            *this >> value[i];
+
         return *this;
     }
 
@@ -230,7 +246,6 @@ namespace co
     };
     }
 
-/** @cond IGNORE */
     template<> inline void DataIStream::_swap( Array< void > ) const { /*NOP*/ }
 
     template< typename O, typename C > inline void
@@ -238,7 +253,7 @@ namespace co
                                       std::vector< C* >& result )
     {
         ObjectVersions versions;
-        (*this) >> versions;
+        *this >> versions;
         std::vector< C* > old = old_;
 
         // rebuild vector from serialized list

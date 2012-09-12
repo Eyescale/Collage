@@ -19,8 +19,9 @@
 #include "node.h"
 
 #include "connectionDescription.h"
+#include "customOCommand.h"
 #include "nodeCommand.h"
-#include "nodeOCommand.h"
+#include "oCommand.h"
 
 #include <lunchbox/scopedMutex.h>
 
@@ -53,6 +54,8 @@ public:
     /** Globally unique node identifier. */
     NodeID id;
 
+    const uint32_t type;
+
     /** The current state of this node. */
     State state;
 
@@ -81,8 +84,8 @@ public:
     /** Is a big endian host? */
     bool bigEndian;
 
-    Node()
-        : id( true ), state( STATE_CLOSED ), lastReceive ( 0 )
+    Node( const uint32_t type_ )
+        : id( true ), type( type_ ), state( STATE_CLOSED ), lastReceive ( 0 )
 #ifdef COLLAGE_BIGENDIAN
         , bigEndian( true )
 #else
@@ -98,8 +101,8 @@ public:
 };
 }
 
-Node::Node()
-        : _impl( new detail::Node )
+Node::Node( const uint32_t type )
+        : _impl( new detail::Node( type ))
 {
     LBVERB << "New Node @" << (void*)this << " " << _impl->id << std::endl;
 }
@@ -146,7 +149,7 @@ ConnectionPtr Node::useMulticast()
     LBINFO << "Announcing id " << node->getNodeID() << " to multicast group "
            << data.connection->getDescription() << std::endl;
 
-    NodeOCommand( Connections( 1, data.connection ), CMD_NODE_ID )
+    OCommand( Connections( 1, data.connection ), CMD_NODE_ID )
             << node->getNodeID() << getType() << node->serialize();
 
     _impl->outMulticast.data = data.connection;
@@ -217,6 +220,7 @@ bool Node::deserialize( std::string& data )
         return false;
     }
 
+    is.clear();
     is.str( data.substr( 0, nextPos ));
     data = data.substr( nextPos + 1 );
     is >> minor;
@@ -247,6 +251,7 @@ bool Node::deserialize( std::string& data )
         return false;
     }
 
+    is.clear();
     is.str( data.substr( 0, nextPos ));
     data = data.substr( nextPos + 1 );
     is >> _impl->bigEndian;
@@ -297,14 +302,22 @@ ConnectionPtr Node::getMulticast() const
     return _impl->outMulticast.data;
 }
 
-NodeOCommand Node::send( const uint32_t cmd, const bool multicast )
+OCommand Node::send( const uint32_t cmd, const bool multicast )
 {
     ConnectionPtr connection = multicast ? useMulticast() : 0;
     if( !connection )
         connection = getConnection();
     LBASSERT( connection );
-    return NodeOCommand( Connections( 1, connection ), cmd,
-                         COMMANDTYPE_CO_NODE );
+    return OCommand( Connections( 1, connection ), cmd, COMMANDTYPE_NODE );
+}
+
+CustomOCommand Node::send( const uint128_t& commandID, const bool multicast )
+{
+    ConnectionPtr connection = multicast ? useMulticast() : 0;
+    if( !connection )
+        connection = getConnection();
+    LBASSERT( connection );
+    return CustomOCommand( Connections( 1, connection ), commandID );
 }
 
 const NodeID& Node::getNodeID() const
@@ -315,6 +328,11 @@ const NodeID& Node::getNodeID() const
 int64_t Node::getLastReceiveTime() const
 {
     return _impl->lastReceive;
+}
+
+uint32_t Node::getType() const
+{
+    return _impl->type;
 }
 
 ConnectionPtr Node::_getConnection()
