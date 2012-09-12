@@ -83,7 +83,7 @@ private:
     OCommand& operator = ( const OCommand& );
     detail::OCommand* const _impl;
 
-    void _init();
+    void _init( const uint32_t cmd, const uint32_t type );
 };
 }
 

@@ -30,29 +30,21 @@ namespace detail
 class OCommand
 {
 public:
-    OCommand( const uint32_t cmd_, const uint32_t type_,
-                  co::Dispatcher* const dispatcher_, LocalNodePtr localNode_ )
-        : type( type_ )
-        , cmd( cmd_ )
-        , lockSend( true )
+    OCommand( co::Dispatcher* const dispatcher_, LocalNodePtr localNode_ )
+        : lockSend( true )
         , size( 0 )
         , dispatcher( dispatcher_ )
         , localNode( localNode_ )
     {
-        LBASSERT( cmd_ < CMD_NODE_MAXIMUM );
     }
 
     OCommand( const OCommand& rhs )
-        : type( rhs.type )
-        , cmd( rhs.cmd )
-        , lockSend( rhs.lockSend )
+        : lockSend( rhs.lockSend )
         , size( rhs.size )
         , dispatcher( rhs.dispatcher )
         , localNode( rhs.localNode )
     {}
 
-    uint32_t type;
-    uint32_t cmd;
     bool lockSend;
     uint64_t size;
     co::Dispatcher* const dispatcher;
@@ -62,21 +54,20 @@ public:
 }
 
 OCommand::OCommand( const Connections& receivers, const uint32_t cmd,
-                            const uint32_t type )
+                    const uint32_t type )
     : DataOStream()
-    , _impl( new detail::OCommand( cmd, type, 0, 0 ))
+    , _impl( new detail::OCommand( 0, 0 ))
 {
     _setupConnections( receivers );
-    _init();
+    _init( cmd, type );
 }
 
-OCommand::OCommand( Dispatcher* const dispatcher,
-                            LocalNodePtr localNode, const uint32_t cmd,
-                            const uint32_t type )
+OCommand::OCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
+                    const uint32_t cmd, const uint32_t type )
     : DataOStream()
-    , _impl( new detail::OCommand( cmd, type, dispatcher, localNode ))
+    , _impl( new detail::OCommand( dispatcher, localNode ))
 {
-    _init();
+    _init( cmd, type );
 }
 
 OCommand::OCommand( const OCommand& rhs )
@@ -84,7 +75,7 @@ OCommand::OCommand( const OCommand& rhs )
     , _impl( new detail::OCommand( *rhs._impl ))
 {
     _setupConnections( rhs.getConnections( ));
-    _init();
+    getBuffer().swap( const_cast< OCommand& >( rhs ).getBuffer( ));
 
     // disable send of rhs
     const_cast< OCommand& >( rhs )._setupConnections( Connections( ));
@@ -123,15 +114,16 @@ size_t OCommand::getSize()
     return sizeof( uint32_t ) + sizeof( uint32_t );
 }
 
-void OCommand::_init()
+void OCommand::_init( const uint32_t cmd, const uint32_t type )
 {
+    LBASSERT( cmd < CMD_NODE_MAXIMUM );
     enableSave();
     _enable();
-    *this << _impl->type << _impl->cmd;
+    *this << type << cmd;
 }
 
 void OCommand::sendData( const void* buffer, const uint64_t size,
-                             const bool last )
+                         const bool last )
 {
     LBASSERT( !_impl->dispatcher );
     LBASSERT( last );
