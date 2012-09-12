@@ -1,15 +1,16 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -30,7 +31,7 @@ namespace co
 
 #  define CO_COMMIT_NEXT LB_UNDEFINED_UINT32 //!< the next commit incarnation
 
-    /** 
+    /**
      * A generic, distributed object.
      *
      * Please refer to the Programming Guide and examples on how to develop and
@@ -88,7 +89,7 @@ namespace co
         /** @internal @return if this object keeps instance data buffers. */
         CO_API bool isBuffered() const;
 
-        /** 
+        /**
          * @return true if this instance is the master version, false otherwise.
          */
         CO_API bool isMaster() const;
@@ -131,20 +132,20 @@ namespace co
          */
         CO_API virtual uint32_t chooseCompressor() const;
 
-        /** 
+        /**
          * Return if this object needs a commit.
-         * 
+         *
          * This function is used for optimization, to detect early that no
          * commit is needed. If it returns true, pack() or getInstanceData()
          * will be executed. The serialization methods can still decide to not
          * write any data, upon which no new version will be created. If it
          * returns false, commit() will exit early.
-         * 
+         *
          * @return true if a commit is needed.
          */
         virtual bool isDirty() const { return true; }
 
-        /** 
+        /**
          * Push the instance data of the object to the given nodes.
          *
          * Used to push object data from a Node, instead of pulling it during
@@ -164,7 +165,7 @@ namespace co
         CO_API void push( const uint128_t& groupID, const uint128_t& objectType,
                           const Nodes& nodes );
 
-        /** 
+        /**
          * Commit a new version of this object.
          *
          * Objects using the change type STATIC can not be committed.
@@ -199,13 +200,13 @@ namespace co
         CO_API virtual uint128_t commit( const uint32_t incarnation =
                                          CO_COMMIT_NEXT );
 
-        /** 
+        /**
          * Automatically obsolete old versions.
          *
          * The versions for the last count commits are retained. The actual
          * number of versions retained may be less since a commit does not
          * always generate a new version.
-         * 
+         *
          * @param count the number of versions to retain, excluding the head
          *              version.
          */
@@ -214,7 +215,7 @@ namespace co
         /** @return get the number of versions this object retains. */
         CO_API uint32_t getAutoObsolete() const;
 
-        /** 
+        /**
          * Sync to a given version.
          *
          * Objects using the change type STATIC can not be synced.
@@ -240,7 +241,7 @@ namespace co
          * This function is not thread safe, that is, calling sync()
          * simultaneously on the same object from multiple threads has to be
          * protected by the caller using a mutex.
-         * 
+         *
          * @param version the version to synchronize (see above).
          * @return the last version applied.
          */
@@ -252,7 +253,7 @@ namespace co
         /** @return the currently synchronized version. */
         CO_API uint128_t getVersion() const;
 
-        /** 
+        /**
          * Notification that a new head version was received by a slave object.
          *
          * The notification is send from the receiver thread, which is different
@@ -262,12 +263,12 @@ namespace co
          * object. Its purpose is to send a message to the application, which
          * then takes the appropriate action. In particular do not perform any
          * potentially blocking operations from this method.
-         * 
+         *
          * @param version The new head version.
          */
         CO_API virtual void notifyNewHeadVersion( const uint128_t& version );
 
-        /** 
+        /**
          * Notification that a new version was received by a master object.
          * @sa comment in notifyNewHeadVersion().
          */
@@ -276,7 +277,7 @@ namespace co
 
         /** @name Serialization methods for instantiation and versioning. */
         //@{
-        /** 
+        /**
          * Serialize all instance information of this distributed object.
          *
          * @param os The output stream.
@@ -288,17 +289,17 @@ namespace co
          *
          * This method is called during object mapping to populate slave
          * instances with the master object's data.
-         * 
+         *
          * @param is the input stream.
          */
         virtual void applyInstanceData( DataIStream& is ) = 0;
 
-        /** 
+        /**
          * Serialize the modifications since the last call to commit().
-         * 
+         *
          * No new version will be created if no data is written to the
          * output stream.
-         * 
+         *
          * @param os the output stream.
          */
         virtual void pack( DataOStream& os ) { getInstanceData( os ); }
@@ -317,16 +318,16 @@ namespace co
          * Send a command with optional data to object instance(s) on another
          * node.
          *
-         * The returned data stream can be used to pass additional data to the
-         * given command. The data will be send after the stream is destroyed,
-         * aka when it is running out of scope.
+         * The returned command can be used to pass additional data. The data
+         * will be send after the command object is destroyed, aka when it is
+         * running out of scope.
          *
          * @param node the node where to send the command to
          * @param cmd the object command to execute
          * @param instanceID the object instance which should handle the command
-         * @return the stream object to pass additional data to
+         * @return the command object to pass additional data to
          */
-        CO_API ObjectOCommand send( NodePtr node, uint32_t cmd,
+        CO_API ObjectOCommand send( NodePtr node, const uint32_t cmd,
                                   const uint32_t instanceID = EQ_INSTANCE_ALL );
         //@}
 
@@ -375,7 +376,7 @@ namespace co
         NodePtr getMasterNode();
 
         /** @internal */
-        void addSlave( Command& command );
+        void addSlave( MasterCMCommand& command );
         CO_API void removeSlave( NodePtr node, const uint32_t instanceID );
         CO_API void removeSlaves( NodePtr node ); //!< @internal
         void setMasterNode( NodePtr node ); //!< @internal
@@ -385,21 +386,21 @@ namespace co
         /**
          * @internal
          * Setup the change manager.
-         * 
+         *
          * @param type the type of the change manager.
          * @param master true if this object is the master.
          * @param localNode the node the object will be attached to.
          * @param masterInstanceID the instance identifier of the master object,
          *                         used when master == false.
          */
-        void setupChangeManager( const Object::ChangeType type, 
+        void setupChangeManager( const Object::ChangeType type,
                                  const bool master, LocalNodePtr localNode,
                                  const uint32_t masterInstanceID );
         /**
          * @internal
          * Called when object is attached from the receiver thread.
          */
-        CO_API virtual void attach( const UUID& id, 
+        CO_API virtual void attach( const UUID& id,
                                     const uint32_t instanceID );
         /**
          * @internal

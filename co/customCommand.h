@@ -15,39 +15,42 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_NODEOCOMMAND_H
-#define CO_NODEOCOMMAND_H
+#ifndef CO_CUSTOMCOMMAND_H
+#define CO_CUSTOMCOMMAND_H
 
-#include <co/dataOStream.h>   // base class
-
+#include <co/command.h>   // base class
 
 namespace co
 {
 
-namespace detail { class NodeOCommand; }
+namespace detail { class CustomCommand; }
 
-/** A DataOStream based command for co::Node. */
-class NodeOCommand : public DataOStream
+/** A command specialization for custom commands. */
+class CustomCommand : public Command
 {
 public:
-    CO_API NodeOCommand( const Connections& connections, const uint32_t type,
-                         const uint32_t cmd );
+    /** @internal */
+    CO_API CustomCommand( const Command& command );
 
-    NodeOCommand( NodeOCommand const& rhs );
+    /** Copy-construct a custom command. */
+    CO_API CustomCommand( const CustomCommand& rhs );
 
-    CO_API virtual ~NodeOCommand();
+    /** Destruct a custom command. */
+    CO_API virtual ~CustomCommand();
 
-    void sendUnlocked( const uint64_t additionalSize );
-
-protected:
-    virtual void sendData( const void* buffer, const uint64_t size,
-                           const bool last );
+    /** @internal @return the custom command identifier. */
+    CO_API const uint128_t& getCommandID() const;
 
 private:
-    detail::NodeOCommand* const _impl;
+    CustomCommand();
+    CustomCommand& operator = ( const CustomCommand& );
+    detail::CustomCommand* const _impl;
 
     void _init();
 };
+
+CO_API std::ostream& operator << ( std::ostream& os, const CustomCommand& );
+
 }
 
-#endif //CO_NODEOCOMMAND_H
+#endif //CO_CUSTOMCOMMAND_H

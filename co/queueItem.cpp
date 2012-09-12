@@ -59,6 +59,7 @@ QueueItem::~QueueItem()
 {
     _impl->queueMaster._addItem( *this );
     disable();
+    delete _impl;
 }
 
 }

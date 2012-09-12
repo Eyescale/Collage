@@ -19,11 +19,10 @@
 #define CO_QUEUEITEM_H
 
 #include <co/dataOStream.h> // base class
-
+#include <co/types.h>
 
 namespace co
 {
-class QueueMaster;
 namespace detail { class QueueItem; }
 
 /**
@@ -42,10 +41,8 @@ public:
 private:
     friend class QueueMaster;
 
-    /** @internal Construct a new queue item. @version 1.0 */
     QueueItem( QueueMaster& master );
 
-    /** @internal Copy-construct a new queue item. @version 1.0 */
     QueueItem( const QueueItem& rhs );
 
     virtual void sendData( const void*, const uint64_t, const bool )

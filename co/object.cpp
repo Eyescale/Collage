@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -145,13 +146,12 @@ void Object::setID( const UUID& identifier )
     _id = identifier;
 }
 
-ObjectOCommand Object::send( NodePtr node, uint32_t cmd,
+ObjectOCommand Object::send( NodePtr node, const uint32_t cmd,
                              const uint32_t instanceID )
 {
-    LBASSERT( isAttached() );
     Connections connections( 1, node->getConnection( ));
-    return ObjectOCommand( connections, COMMANDTYPE_CO_OBJECT,
-                           cmd, _id, instanceID );
+    return ObjectOCommand( connections, cmd, COMMANDTYPE_OBJECT, _id,
+                           instanceID );
 }
 
 void Object::push( const uint128_t& groupID, const uint128_t& typeID,
@@ -241,7 +241,7 @@ bool Object::isMaster() const
     return _cm->isMaster();
 }
 
-void Object::addSlave( Command& command )
+void Object::addSlave( MasterCMCommand& command )
 {
     _cm->addSlave( command );
 }

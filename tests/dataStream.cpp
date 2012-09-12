@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -21,9 +22,9 @@
 #include <co/dataOStream.h>
 
 #include <co/buffer.h>
+#include <co/bufferCache.h>
 #include <co/connectionDescription.h>
 #include <co/command.h>
-#include <co/commandCache.h>
 #include <co/commandQueue.h>
 #include <co/connection.h>
 #include <co/init.h>
@@ -50,18 +51,16 @@ protected:
     virtual void sendData( const void* buffer, const uint64_t size,
                            const bool last )
         {
-            co::ObjectDataOCommand command( getConnections(),
-                                            co::COMMANDTYPE_CO_OBJECT,
-                                            co::CMD_OBJECT_DELTA, co::UUID(),
-                                            0, co::uint128_t(), 0, size, last,
-                                            buffer, this );
+            co::ObjectDataOCommand( getConnections(), co::CMD_OBJECT_DELTA,
+                                    co::COMMANDTYPE_OBJECT, co::UUID(), 0,
+                                    co::uint128_t(), 0, size, last, this );
         }
 };
 
 class DataIStream : public co::DataIStream
 {
 public:
-    void addDataCommand( co::BufferPtr buffer )
+    void addDataCommand( co::ConstBufferPtr buffer )
         {
             co::ObjectDataCommand command( buffer );
             TESTINFO( command.getCommand() == co::CMD_OBJECT_DELTA, command );
@@ -73,21 +72,21 @@ public:
     virtual co::NodePtr getMaster() { return 0; }
 
 protected:
-    virtual bool getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
-                                const void** chunkData, uint64_t* size )
+    virtual bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
+                                const void** chunkData, uint64_t& size )
         {
-            co::BufferPtr buffer = _commands.tryPop();
-            if( !buffer )
+            co::Command cmd = _commands.tryPop();
+            if( !cmd.isValid( ))
                 return false;
 
-            co::ObjectDataCommand command( buffer );
+            co::ObjectDataCommand command( cmd );
 
             TEST( command.getCommand() == co::CMD_OBJECT_DELTA );
 
-            *size = command.getDataSize();
-            *compressor = command.getCompressor();
-            *nChunks = command.getChunks();
-            *chunkData = command.getRemainingBuffer( *size );
+            size = command.getDataSize();
+            compressor = command.getCompressor();
+            nChunks = command.getChunks();
+            *chunkData = command.getRemainingBuffer( size );
             return true;
         }
 
@@ -153,7 +152,7 @@ int main( int argc, char **argv )
     TEST( sender.start( ));
 
     ::DataIStream stream;
-    co::CommandCache commandCache;
+    co::BufferCache bufferCache;
     bool receiving = true;
 
     while( receiving )
@@ -163,7 +162,7 @@ int main( int argc, char **argv )
         TEST( connection->recvSync( 0, 0 ));
         TEST( size );
 
-        co::BufferPtr buffer = commandCache.alloc( 0, 0, size );
+        co::BufferPtr buffer = bufferCache.alloc( 0, 0, size );
         connection->recvNB( buffer->getData(), size );
         TEST( connection->recvSync( 0, 0 ) );
         TEST( buffer->isValid( ));

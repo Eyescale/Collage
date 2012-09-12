@@ -1,16 +1,17 @@
 
 /* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -20,7 +21,6 @@
 #define CO_NODE_H
 
 #include <co/dispatcher.h>        // base class
-#include <co/commands.h>          // for COMMANDTYPE_CO_NODE enum
 #include <co/connection.h>        // used in inline template method
 #include <co/nodeType.h>          // for NODETYPE_CO_NODE enum
 #include <co/types.h>
@@ -40,12 +40,21 @@ namespace detail { class Node; }
     class Node : public Dispatcher, public lunchbox::Referenced
     {
     public:
-        /** Construct a new Node. */
-        CO_API Node();
+        /**
+         * Construct a new node proxy.
+         *
+         * @param type the type of the node, used during connect().
+         */
+        CO_API Node( const uint32_t type = co::NODETYPE_NODE );
 
         /** @name Data Access. */
         //@{
+        /** @return the type of the node. */
+        CO_API uint32_t getType() const;
+
         bool operator == ( const Node* n ) const;
+
+        bool isBigEndian() const; //!< @internal
 
         CO_API bool isReachable() const;
         CO_API bool isConnected() const;
@@ -59,16 +68,16 @@ namespace detail { class Node; }
         /** @return true if the node is local (listening), false otherwise. */
         bool isLocal() const { return isListening(); }
 
-        /** 
+        /**
          * Adds a new description how this node can be reached.
-         * 
+         *
          * @param cd the connection description.
          */
         CO_API void addConnectionDescription( ConnectionDescriptionPtr cd );
-        
-        /** 
+
+        /**
          * Removes a connection description.
-         * 
+         *
          * @param cd the connection description.
          * @return true if the connection description was removed, false
          *         otherwise.
@@ -93,18 +102,32 @@ namespace detail { class Node; }
         /**
          * Send a command with optional data to the node.
          *
-         * The returned data stream can be used to pass additional data to the
-         * given command. The data will be send after the stream is destroyed,
-         * aka when it is running out of scope.
+         * The returned command can be used to pass additional data. The data
+         * will be send after the command object is destroyed, aka when it is
+         * running out of scope.
          *
          * @param cmd the node command to execute
-         * @param type the type of object that should handle this command
          * @param multicast prefer multicast connection for sending
-         * @return the stream object to pass additional data to
+         * @return the command object to pass additional data to
          */
-        CO_API NodeOCommand send( uint32_t cmd,
-                                  uint32_t type = COMMANDTYPE_CO_NODE,
-                                  bool multicast = false );
+        CO_API OCommand send( const uint32_t cmd, const bool multicast = false);
+
+        /**
+         * Send a custom command with optional data to the node.
+         *
+         * The command handler for this command being send is registered with
+         * the remote LocalNode::registerCommandHandler().
+         *
+         * The returned command can be used to pass additional data. The data
+         * will be send after the command object is destroyed, aka when it is
+         * running out of scope.
+         *
+         * @param commandID the ID of the registered custom command
+         * @param multicast prefer multicast connection for sending
+         * @return the command object to pass additional data to
+         */
+        CO_API CustomOCommand send( const uint128_t& commandID,
+                                    const bool multicast = false );
         //@}
 
         CO_API const NodeID& getNodeID() const;
@@ -117,21 +140,9 @@ namespace detail { class Node; }
         /** @return last receive time. */
         int64_t getLastReceiveTime() const;
 
-        /** @return the type of the node, used during connect(). */
-        virtual uint32_t getType() const { return NODETYPE_CO_NODE; }
-
     protected:
         /** Destructs this node. */
         CO_API virtual ~Node();
-
-        /** 
-         * Factory method to create a new node.
-         * 
-         * @param type the type the node type
-         * @return the node.
-         * @sa getType()
-         */
-        CO_API virtual NodePtr createNode( const uint32_t type );
 
     private:
         detail::Node* const _impl;

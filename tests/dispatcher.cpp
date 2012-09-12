@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Stefan Eilemann <eile@eyescale.ch>
+ *               2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -20,11 +21,12 @@
 
 #include <test.h>
 #include <co/buffer.h>
+#include <co/bufferCache.h>
 #include <co/command.h>
-#include <co/commandCache.h>
 #include <co/commandFunc.h>
 #include <co/dispatcher.h>
 #include <co/localNode.h>
+#include <co/oCommand.h>
 
 size_t calls = 0;
 
@@ -112,21 +114,21 @@ public:
 
 int main( int argc, char **argv )
 {
-    co::CommandCache cache;
+    co::BufferCache cache;
     co::LocalNodePtr node = new co::LocalNode;
-    co::BufferPtr buffer = cache.alloc( node, node, 8 );
+    co::BufferPtr buffer = cache.alloc( node, node, co::OCommand::getSize( ));
 
     co::Command command( buffer );
-    command.setType( co::COMMANDTYPE_CO_NODE );
+    command.setType( co::COMMANDTYPE_NODE );
     command.setCommand( co::CMD_NODE_CUSTOM );
 
     Bar bar;
     FooBar fooBar;
     BarFoo barFoo;
 
-    bar.dispatchCommand( buffer );
-    fooBar.dispatchCommand( buffer );
-    barFoo.dispatchCommand ( buffer );
+    bar.dispatchCommand( command );
+    fooBar.dispatchCommand( command );
+    barFoo.dispatchCommand ( command );
     TESTINFO( calls == 3, calls );
 
     return EXIT_SUCCESS;

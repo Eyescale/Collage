@@ -37,39 +37,37 @@ public:
         , instanceID( rhs.instanceID )
     {}
 
-    void operator=( const ObjectCommand& rhs )
-    {
-        objectID = rhs.objectID;
-        instanceID = rhs.instanceID;
-    }
-
     UUID objectID;
     uint32_t instanceID;
 };
 
 }
 
-ObjectCommand::ObjectCommand( BufferPtr buffer )
+ObjectCommand::ObjectCommand( ConstBufferPtr buffer )
     : Command( buffer )
     , _impl( new detail::ObjectCommand )
 {
-    if( buffer )
-        *this >> _impl->objectID >> _impl->instanceID;
+    _init();
+}
+
+ObjectCommand::ObjectCommand( const Command& command )
+    : Command( command )
+    , _impl( new detail::ObjectCommand )
+{
+    _init();
 }
 
 ObjectCommand::ObjectCommand( const ObjectCommand& rhs )
     : Command( rhs )
     , _impl( new detail::ObjectCommand( *rhs._impl ))
 {
-    if( getBuffer( ))
-        *this >> _impl->objectID >> _impl->instanceID;
+    _init();
 }
 
-ObjectCommand& ObjectCommand::operator = ( const ObjectCommand& rhs )
+void ObjectCommand::_init()
 {
-    if( this != &rhs )
-        *_impl = *rhs._impl;
-    return *this;
+    if( isValid( ))
+        *this >> _impl->objectID >> _impl->instanceID;
 }
 
 ObjectCommand::~ObjectCommand()
@@ -85,6 +83,17 @@ const UUID& ObjectCommand::getObjectID() const
 uint32_t ObjectCommand::getInstanceID() const
 {
     return _impl->instanceID;
+}
+
+std::ostream& operator << ( std::ostream& os, const ObjectCommand& command )
+{
+    os << static_cast< const Command& >( command );
+    if( command.isValid( ))
+    {
+        os << " object " << command.getObjectID()
+           << "." << command.getInstanceID();
+    }
+    return os;
 }
 
 }

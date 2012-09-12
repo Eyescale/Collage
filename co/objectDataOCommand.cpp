@@ -28,15 +28,27 @@ namespace detail
 class ObjectDataOCommand
 {
 public:
-    ObjectDataOCommand( const void* buffer, const uint64_t dataSize_,
-                        co::DataOStream* stream_ )
-        : objectBuffer( buffer )
-        , dataSize( dataSize_ )
+    ObjectDataOCommand( co::DataOStream* stream_, const uint64_t dataSize_ )
+        : dataSize( 0 )
         , userBuffer()
         , stream( stream_ )
-    {}
+    {
+        if( stream )
+        {
+            dataSize = stream->getCompressedDataSize();
+            if( dataSize == 0 )
+                dataSize = dataSize_;
+        }
+    }
 
-    const void* objectBuffer;
+    ObjectDataOCommand( ObjectDataOCommand& rhs )
+        : dataSize( rhs.dataSize )
+        , userBuffer()
+        , stream( rhs.stream )
+    {
+        userBuffer.swap( rhs.userBuffer );
+    }
+
     uint64_t dataSize;
     lunchbox::Bufferb userBuffer;
     co::DataOStream* stream;
@@ -45,29 +57,35 @@ public:
 }
 
 ObjectDataOCommand::ObjectDataOCommand( const Connections& receivers,
-                                        const uint32_t type, const uint32_t cmd,
+                                        const uint32_t cmd, const uint32_t type,
                                         const UUID& id,
                                         const uint32_t instanceID,
                                         const uint128_t& version,
                                         const uint32_t sequence,
                                         const uint64_t dataSize,
                                         const bool isLast,
-                                        const void* buffer,
                                         DataOStream* stream )
-    : ObjectOCommand( receivers, type, cmd, id, instanceID )
-    , _impl( new detail::ObjectDataOCommand( buffer, dataSize, stream ))
+    : ObjectOCommand( receivers, cmd, type, id, instanceID )
+    , _impl( new detail::ObjectDataOCommand( stream, dataSize ))
 {
-    const uint32_t compressor = stream ? stream->getCompressor()
-                                       : EQ_COMPRESSOR_NONE;
-    const uint32_t nChunks = stream ? stream->getNumChunks() : 1;
+    _init( version, sequence, dataSize, isLast );
+}
 
-    if( compressor != EQ_COMPRESSOR_NONE )
-        _impl->dataSize = stream->getCompressedDataSize() +
-                          nChunks * sizeof( uint64_t );
+ObjectDataOCommand::ObjectDataOCommand( const ObjectDataOCommand& rhs )
+    : ObjectOCommand( rhs )
+    , _impl( new detail::ObjectDataOCommand( *rhs._impl ))
+{
+}
 
+void ObjectDataOCommand::_init( const uint128_t& version,
+                                const uint32_t sequence,
+                                const uint64_t dataSize, const bool isLast )
+{
     // cast to avoid call to our user data operator << overload
-    (ObjectOCommand&)(*this) << version << sequence << dataSize << isLast
-                             << compressor << nChunks;
+    (ObjectOCommand&)(*this) << version << sequence << dataSize << isLast;
+
+    if( _impl->stream )
+        _impl->stream->streamDataHeader( *this );
 }
 
 ObjectDataOCommand::~ObjectDataOCommand()
@@ -87,9 +105,9 @@ void ObjectDataOCommand::sendData( const void* buffer, const uint64_t size,
     LBASSERT( last );
     LBASSERT( size > 0 );
 
-    const uint64_t finalSize = size +                        // packet header
+    const uint64_t finalSize = size +                        // command header
                                _impl->userBuffer.getSize() + // userBuffer
-                               _impl->dataSize;              // objectBuffer
+                               _impl->dataSize;
 
     for( ConnectionsCIter it = getConnections().begin();
          it != getConnections().end(); ++it )
@@ -97,21 +115,13 @@ void ObjectDataOCommand::sendData( const void* buffer, const uint64_t size,
         ConnectionPtr conn = *it;
 
         conn->lockSend();
-        conn->send( &finalSize, sizeof( uint64_t ), true );
-        conn->send( buffer, size, true );
+        LBCHECK( conn->send( &finalSize, sizeof( uint64_t ), true ));
+        LBCHECK( conn->send( buffer, size, true ));
         if( !_impl->userBuffer.isEmpty( ))
-            conn->send( _impl->userBuffer.getData(),
-                        _impl->userBuffer.getSize(), true );
-        if( !_impl->stream || _impl->dataSize == 0 )
-        {
-            conn->unlockSend();
-            continue;
-        }
-
-        if( _impl->stream->getCompressor() == EQ_COMPRESSOR_NONE )
-            conn->send( _impl->objectBuffer, _impl->dataSize, true );
-        else
-            _impl->stream->sendCompressedData( conn );
+            LBCHECK( conn->send( _impl->userBuffer.getData(),
+                                 _impl->userBuffer.getSize(), true ));
+        if( _impl->stream )
+            _impl->stream->sendData( conn, _impl->dataSize );
 
         conn->unlockSend();
     }

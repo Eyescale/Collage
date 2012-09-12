@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -17,7 +18,6 @@
 
 #include "objectCM.h"
 
-#include "buffer.h"
 #include "nodeCommand.h"
 #include "nullCM.h"
 #include "node.h"
@@ -51,50 +51,34 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
     os.enablePush( getVersion(), nodes );
     _object->getInstanceData( os );
 
-    NodeOCommand cmd( os.getConnections(), COMMANDTYPE_CO_NODE,
-                      CMD_NODE_OBJECT_PUSH );
-    cmd << _object->getID() << groupID << typeID;
+    OCommand( os.getConnections(), CMD_NODE_OBJECT_PUSH )
+            << _object->getID() << groupID << typeID;
     os.disable();
 }
 
-void ObjectCM::_addSlave( Command& comd, const uint128_t& version )
+void ObjectCM::_addSlave( MasterCMCommand command, const uint128_t& version )
 {
-    Command command( comd.getBuffer( ));
-
     LBASSERT( version != VERSION_NONE );
-    LBASSERT( command.getType() == COMMANDTYPE_CO_NODE );
+    LBASSERT( command.getType() == COMMANDTYPE_NODE );
     LBASSERT( command.getCommand() == CMD_NODE_MAP_OBJECT );
 
-    NodePtr node = command.getNode();
-
-    const uint128_t& requested = command.get< uint128_t >();
-    /*const uint128_t& minCachedVersion = */command.get< uint128_t >();
-    /*const uint128_t& maxCachedVersion = */command.get< uint128_t >();
-    const UUID& id = command.get< UUID >();
-    /*const uint64_t maxVersion = */command.get< uint64_t >();
-    const uint32_t requestID = command.get< uint32_t >();
-    const uint32_t instanceID = command.get< uint32_t >();
-    const uint32_t masterInstanceID = command.get< uint32_t >();
-    const bool useCache = command.get< bool >();
-
     // process request
-    if( requested == VERSION_NONE ) // no data to send, send empty version
+    if( command.getRequestedVersion() == VERSION_NONE )
     {
-        _sendMapSuccess( node, id, requestID, instanceID, false );
-        _sendEmptyVersion( node, instanceID, version, false /* mc */ );
-        _sendMapReply( node, id, requestID, version, true, useCache, false,
-                       false );
+        // no data to send, send empty version
+        _sendMapSuccess( command, false /* mc */ );
+        _sendEmptyVersion( command, version, false /* mc */ );
+        _sendMapReply( command, version, true, false, false /* mc */ );
 
         return;
     }
 
-    const bool replyUseCache = useCache &&
-                               (masterInstanceID == _object->getInstanceID( ));
-    _initSlave( node, requested, command, version, replyUseCache );
+    const bool replyUseCache = command.useCache() &&
+                   (command.getMasterInstanceID() == _object->getInstanceID( ));
+    _initSlave( command, version, replyUseCache );
 }
 
-void ObjectCM::_initSlave( NodePtr node, const uint128_t& version,
-                           Command& comd, uint128_t replyVersion,
+void ObjectCM::_initSlave( MasterCMCommand command, const uint128_t& replyVersion,
                            bool replyUseCache )
 {
 #if 0
@@ -104,33 +88,21 @@ void ObjectCM::_initSlave( NodePtr node, const uint128_t& version,
 #endif
 
 #ifndef NDEBUG
+    const uint128_t& version = command.getRequestedVersion();
     if( version != VERSION_OLDEST && version < replyVersion )
         LBINFO << "Mapping version " << replyVersion << " instead of "
                << version << std::endl;
 #endif
 
-    Command command( comd.getBuffer( ));
-
-    /*const uint128_t& requested = */command.get< uint128_t >();
-    const uint128_t& minCachedVersion = command.get< uint128_t >();
-    const uint128_t& maxCachedVersion = command.get< uint128_t >();
-    const UUID& id = command.get< UUID >();
-    /*const uint64_t maxVersion = */command.get< uint64_t >();
-    const uint32_t requestID = command.get< uint32_t >();
-    const uint32_t instanceID = command.get< uint32_t >();
-    /*const uint32_t masterInstanceID = */command.get< uint32_t >();
-    const bool useCache = command.get< bool >();
-
     if( replyUseCache &&
-        minCachedVersion <= replyVersion &&
-        maxCachedVersion >= replyVersion )
+        command.getMinCachedVersion() <= replyVersion &&
+        command.getMaxCachedVersion() >= replyVersion )
     {
 #ifdef EQ_INSTRUMENT_MULTICAST
         ++_hit;
 #endif
-        _sendMapSuccess( node, id, requestID, instanceID, false );
-        _sendMapReply( node, id, requestID, replyVersion, true, useCache,
-                       replyUseCache, false );
+        _sendMapSuccess( command, false );
+        _sendMapReply( command, replyVersion, true, replyUseCache, false );
         return;
     }
 
@@ -139,54 +111,53 @@ void ObjectCM::_initSlave( NodePtr node, const uint128_t& version,
 #endif
     replyUseCache = false;
 
-    _sendMapSuccess( node, id, requestID, instanceID, true );
+    _sendMapSuccess( command, true );
 
     // send instance data
     ObjectInstanceDataOStream os( this );
 
-    os.enableMap( replyVersion, node, instanceID );
+    os.enableMap( replyVersion, command.getNode(), command.getInstanceID( ));
     _object->getInstanceData( os );
     os.disable();
     if( !os.hasSentData( ))
-        // no data, send empty packet to set version
-        _sendEmptyVersion( node, instanceID, replyVersion, true /* mc */ );
+        // no data, send empty command to set version
+        _sendEmptyVersion( command, replyVersion, true /* mc */ );
 
-    _sendMapReply( node, id, requestID, replyVersion, true, useCache,
-                   replyUseCache, true );
+    _sendMapReply( command, replyVersion, true, replyUseCache, true );
 }
 
-void ObjectCM::_sendMapSuccess( NodePtr node, const UUID& objectID,
-                                const uint32_t requestID,
-                                const uint32_t instanceID, bool multicast )
+void ObjectCM::_sendMapSuccess( const MasterCMCommand& command,
+                                const bool multicast )
 {
-    node->send( CMD_NODE_MAP_OBJECT_SUCCESS, COMMANDTYPE_CO_NODE, multicast )
-            << node->getNodeID() << objectID << requestID << instanceID
+    command.getNode()->send( CMD_NODE_MAP_OBJECT_SUCCESS, multicast )
+            << command.getNode()->getNodeID() << command.getObjectID()
+            << command.getRequestID() << command.getInstanceID()
             << _object->getChangeType() << _object->getInstanceID();
 }
 
-void ObjectCM::_sendMapReply( NodePtr node, const UUID& objectID,
-                              const uint32_t requestID,
-                              const uint128_t& version, bool result,
-                              bool releaseCache, bool useCache, bool multicast )
+void ObjectCM::_sendMapReply( const MasterCMCommand& command,
+                              const uint128_t& version, const bool result,
+                              const bool useCache, const bool multicast )
 {
-    node->send( CMD_NODE_MAP_OBJECT_REPLY, COMMANDTYPE_CO_NODE, multicast )
-            << node->getNodeID() << objectID << version << requestID << result
-            << releaseCache << useCache;
+    command.getNode()->send( CMD_NODE_MAP_OBJECT_REPLY, multicast )
+            << command.getNode()->getNodeID() << command.getObjectID()
+            << version << command.getRequestID() << result
+            << command.useCache() << useCache;
 }
 
-void ObjectCM::_sendEmptyVersion( NodePtr node, const uint32_t instanceID,
+void ObjectCM::_sendEmptyVersion( const MasterCMCommand& command,
                                   const uint128_t& version,
                                   const bool multicast )
 {
+    NodePtr node = command.getNode();
     ConnectionPtr connection = multicast ? node->useMulticast() : 0;
     if( !connection )
         connection = node->getConnection();
-    Connections connections( 1, connection );
 
-    ObjectDataOCommand command( connections, COMMANDTYPE_CO_OBJECT,
-                                CMD_OBJECT_INSTANCE, _object->getID(),
-                                instanceID, version, 0, 0, true, 0, 0 );
-    command << NodeID::ZERO << _object->getInstanceID();
+    ObjectDataOCommand( Connections( 1, connection ), CMD_OBJECT_INSTANCE,
+                        COMMANDTYPE_OBJECT, _object->getID(),
+                        command.getInstanceID(), version, 0, 0, true, 0 )
+            << NodeID::ZERO << _object->getInstanceID();
 }
 
 }

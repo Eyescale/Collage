@@ -1,15 +1,16 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -22,7 +23,7 @@
 #include <co/connectionDescription.h>
 #include <co/init.h>
 #include <co/node.h>
-#include <co/nodeOCommand.h>
+#include <co/oCommand.h>
 #include <lunchbox/clock.h>
 #include <lunchbox/monitor.h>
 #include <lunchbox/rng.h>
@@ -32,7 +33,7 @@
 namespace
 {
 
-lunchbox::Monitor<bool> monitor( false ); 
+lunchbox::Monitor<bool> monitor( false );
 
 static const std::string message =
     "Don't Panic! And now some more text to make the message bigger";
@@ -110,9 +111,10 @@ int main( int argc, char **argv )
         serverProxy->send( co::CMD_NODE_CUSTOM ) << message;
     const float time = clock.getTimef();
 
-    const size_t size = NMESSAGES * ( /*packet.size +*/ message.length() - 7 );
+    const size_t size = NMESSAGES * ( co::OCommand::getSize() +
+                                      message.length() - 7 );
     std::cout << "Send " << size << " bytes using " << NMESSAGES
-              << " packets in " << time << "ms" << " (" 
+              << " commands in " << time << "ms" << " ("
               << size / 1024. * 1000.f / time << " KB/s)" << std::endl;
 
     monitor.waitEQ( true );

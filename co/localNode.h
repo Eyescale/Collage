@@ -1,6 +1,7 @@
 
 /* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -42,7 +43,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
                       public ObjectHandler
     {
     public:
-        CO_API LocalNode();
+        CO_API LocalNode( const uint32_t type = co::NODETYPE_NODE );
         CO_API virtual ~LocalNode();
 
         typedef NodePtr SendToken; //!< An acquired send token
@@ -54,7 +55,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
                                        DataIStream& ) > PushHandler;
 
         /** Function signature for custom command handlers. */
-        typedef boost::function< bool( Command& ) > CommandHandler;
+        typedef boost::function< bool( CustomCommand& ) > CommandHandler;
 
         /**
          * @name State Changes
@@ -372,20 +373,17 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          */
         CO_API void flushCommands();
 
-        /** @internal Clone the given command. */
-        CO_API BufferPtr cloneCommand( BufferPtr command );
-
         /** @internal Allocate a local command from the receiver thread. */
         CO_API BufferPtr allocCommand( const uint64_t size );
 
         /**
-         * Dispatches a packet to the registered command queue.
+         * Dispatches a command to the registered command queue.
          *
          * @param command the command.
          * @return the result of the operation.
          * @sa Command::invoke
          */
-        CO_API virtual bool dispatchCommand( BufferPtr command );
+        CO_API virtual bool dispatchCommand( Command& command );
 
         /**
          * Acquire a singular send token from the given node.
@@ -429,8 +427,20 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          */
         CO_API bool connect( NodePtr node, ConnectionPtr connection );
 
-        /** Notify remote node disconnection from the receiver thread. */
-        virtual void notifyDisconnect( NodePtr node ) { }
+        /** @internal Notify remote node connection. */
+        virtual void notifyConnect( NodePtr node ) {}
+
+        /** @internal Notify remote node disconnection. */
+        virtual void notifyDisconnect( NodePtr node ) {}
+
+        /**
+         * Factory method to create a new node.
+         *
+         * @param type the type the node type
+         * @return the node.
+         * @sa ctor type parameter
+         */
+        CO_API virtual NodePtr createNode( const uint32_t type );
 
     private:
         detail::LocalNode* const _impl;
@@ -468,7 +478,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
             registerCommand( command, func, destinationQueue );
         }
 
-        void _dispatchCommand( BufferPtr command );
+        void _dispatchCommand( Command& command );
         void   _redispatchCommands();
 
         /** The command functions. */

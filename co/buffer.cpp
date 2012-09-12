@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -29,20 +30,14 @@ class Buffer
 {
 public:
     Buffer( lunchbox::a_int32_t& freeCounter )
-        : _freeCount( freeCounter )
-        , _node()
-        , _localNode()
-        , _master()
-        , _dataSize( 0 )
-        , _func( 0, 0 )
+        : freeCount( freeCounter )
+        , node()
+        , localNode()
     {}
 
-    lunchbox::a_int32_t& _freeCount;
-    NodePtr _node; //!< The node sending the packet
-    LocalNodePtr  _localNode; //!< The node receiving the packet
-    BufferPtr _master;
-    uint64_t _dataSize;
-    co::Dispatcher::Func _func;
+    lunchbox::a_int32_t& freeCount;
+    NodePtr node; //!< The node sending the command
+    LocalNodePtr  localNode; //!< The node receiving the command
 };
 }
 
@@ -61,17 +56,17 @@ Buffer::~Buffer()
 
 NodePtr Buffer::getNode() const
 {
-    return _impl->_node;
+    return _impl->node;
 }
 
 LocalNodePtr Buffer::getLocalNode() const
 {
-    return _impl->_localNode;
+    return _impl->localNode;
 }
 
-uint64_t Buffer::getDataSize() const
+bool Buffer::needsSwapping() const
 {
-    return _impl->_dataSize;
+    return _impl->node->isBigEndian() != _impl->localNode->isBigEndian();
 }
 
 bool Buffer::isValid() const
@@ -82,85 +77,33 @@ bool Buffer::isValid() const
 size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
 {
     LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller CommandCache
-    LBASSERT( _impl->_freeCount > 0 );
+    LBASSERT( getRefCount() == 1 ); // caller BufferCache
+    LBASSERT( _impl->freeCount > 0 );
 
-    // 'unclone' ourselves
-    if( _impl->_master )
-    {
-        _data = 0;
-        _size = 0;
-        _maxSize = 0;
-    }
+    --_impl->freeCount;
+    _impl->node = node;
+    _impl->localNode = localNode;
 
-    --_impl->_freeCount;
-    _impl->_dataSize = size;
-    _impl->_node = node;
-    _impl->_localNode = localNode;
-    _impl->_master = 0;
-
-    reset( LB_MAX( getMinSize(), size ));
+    reserve( LB_MAX( getMinSize(), size ));
+    resize( size );
 
     return getSize();
-}
-
-void Buffer::clone( BufferPtr from )
-{
-    LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller CommandCache
-    LBASSERT( from->getRefCount() > 1 ); // caller CommandCache, self
-    LBASSERT( _impl->_freeCount > 0 );
-
-    free();
-
-    --_impl->_freeCount;
-
-    _data = from->getData();
-    _size = from->getSize();
-
-    _impl->_dataSize = from->_impl->_dataSize;
-    _impl->_node = from->_impl->_node;
-    _impl->_localNode = from->_impl->_localNode;
-    _impl->_master = from;
 }
 
 void Buffer::free()
 {
     LB_TS_THREAD( _writeThread );
 
-    // if this buffer is a clone, don't dare to free the owner's data
-    if( _impl->_master )
-    {
-        _data = 0;
-        _size = 0;
-        _maxSize = 0;
-    }
-    else
-        clear();
+    clear();
 
-    _impl->_dataSize = 0;
-    _impl->_node = 0;
-    _impl->_localNode = 0;
-    _impl->_master = 0;
+    _impl->node = 0;
+    _impl->localNode = 0;
 }
 
 void Buffer::deleteReferenced( const Referenced* object ) const
 {
     Buffer* buffer = const_cast< Buffer* >( this );
-    // DON'T 'command->_master = 0;', command is already reusable and _master
-    // may be set any time. alloc or clone_ will free old master.
-    ++buffer->_impl->_freeCount;
-}
-
-void Buffer::setDispatchFunction( const Dispatcher::Func& func )
-{
-    _impl->_func = func;
-}
-
-Dispatcher::Func Buffer::getDispatchFunction() const
-{
-    LBASSERT( _impl->_func.isValid( ));
-    return _impl->_func;
+    ++buffer->_impl->freeCount;
 }
 
 size_t Buffer::getMinSize()

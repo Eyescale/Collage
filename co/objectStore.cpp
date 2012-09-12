@@ -1,6 +1,7 @@
 
 /* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -19,15 +20,14 @@
 #include "objectStore.h"
 
 #include "barrier.h"
-#include "buffer.h"
-#include "command.h"
 #include "connection.h"
 #include "connectionDescription.h"
 #include "global.h"
 #include "instanceCache.h"
 #include "log.h"
+#include "masterCMCommand.h"
 #include "nodeCommand.h"
-#include "nodeOCommand.h"
+#include "oCommand.h"
 #include "objectCM.h"
 #include "objectDataIStream.h"
 #include "objectDataCommand.h"
@@ -452,7 +452,7 @@ void ObjectStore::unmapObject( Object* object )
 
     object->notifyDetach();
 
-    // send unsubscribe to master, master will send detach packet.
+    // send unsubscribe to master, master will send detach command.
     LBASSERT( !object->isMaster( ));
     LB_TS_NOT_THREAD( _commandThread );
 
@@ -582,24 +582,24 @@ void ObjectStore::removeNode( NodePtr node )
 }
 
 //===========================================================================
-// Packet handling
+// Command handling
 //===========================================================================
-bool ObjectStore::dispatchObjectCommand( BufferPtr buffer )
+bool ObjectStore::dispatchObjectCommand( Command& cmd )
 {
     LB_TS_THREAD( _receiverThread );
-    ObjectCommand command( buffer );
+    ObjectCommand command( cmd );
     const UUID& id = command.getObjectID();
     const uint32_t instanceID = command.getInstanceID();
 
     ObjectsHash::const_iterator i = _objects->find( id );
 
     if( i == _objects->end( ))
-        // When the instance ID is set to none, we only care about the packet
+        // When the instance ID is set to none, we only care about the command
         // when we have an object of the given ID (multicast)
         return ( instanceID == EQ_INSTANCE_NONE );
 
     const Objects& objects = i->second;
-    LBASSERT( !objects.empty( ));
+    LBASSERTINFO( !objects.empty(), command );
 
     if( instanceID <= EQ_INSTANCE_MAX )
     {
@@ -608,7 +608,7 @@ bool ObjectStore::dispatchObjectCommand( BufferPtr buffer )
             Object* object = *j;
             if( instanceID == object->getInstanceID( ))
             {
-                LBCHECK( object->dispatchCommand( buffer ));
+                LBCHECK( object->dispatchCommand( command ));
                 return true;
             }
         }
@@ -618,13 +618,12 @@ bool ObjectStore::dispatchObjectCommand( BufferPtr buffer )
 
     Objects::const_iterator j = objects.begin();
     Object* object = *j;
-    LBCHECK( object->dispatchCommand( buffer ));
+    LBCHECK( object->dispatchCommand( command ));
 
     for( ++j; j != objects.end(); ++j )
     {
         object = *j;
-        BufferPtr clone = _localNode->cloneCommand( buffer );
-        LBCHECK( object->dispatchCommand( clone ));
+        LBCHECK( object->dispatchCommand( command ));
     }
     return true;
 }
@@ -774,20 +773,16 @@ bool ObjectStore::_cmdDeregisterObject( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdMapObject( Command& command )
+bool ObjectStore::_cmdMapObject( Command& cmd )
 {
     LB_TS_THREAD( _commandThread );
-    LBLOG( LOG_OBJECTS ) << "Cmd map object " << command << std::endl;
 
-    const uint128_t& version = command.get< uint128_t >();
-    /*const uint128_t& minCachedVersion = */command.get< uint128_t >();
-    /*const uint128_t& maxCachedVersion = */command.get< uint128_t >();
-    const UUID& id = command.get< UUID >();
-    /*const uint64_t maxVersion = */command.get< uint64_t >();
-    const uint32_t requestID = command.get< uint32_t >();
-    /*const uint32_t instanceID = */command.get< uint32_t >();
-    /*const uint32_t masterInstanceID = */command.get< uint32_t >();
-    const bool useCache = command.get< bool >();
+    MasterCMCommand command( cmd );
+    const UUID& id = command.getObjectID();
+
+    LBLOG( LOG_OBJECTS ) << "Cmd map object " << command << " id " << id << "."
+                         << command.getInstanceID() << " req "
+                         << command.getRequestID() << std::endl;
 
     Object* master = 0;
     {
@@ -816,8 +811,8 @@ bool ObjectStore::_cmdMapObject( Command& command )
         LBWARN << "Can't find master object to map " << id << std::endl;
         NodePtr node = command.getNode();
         node->send( CMD_NODE_MAP_OBJECT_REPLY )
-            << node->getNodeID() << id << version << requestID << false
-            << useCache << false;
+            << node->getNodeID() << id << command.getRequestedVersion()
+            << command.getRequestID() << false << command.useCache() << false;
     }
     return true;
 }
@@ -833,12 +828,14 @@ bool ObjectStore::_cmdMapObjectSuccess( Command& command )
     const Object::ChangeType changeType = command.get< Object::ChangeType >();
     const uint32_t masterInstanceID = command.get< uint32_t >();
 
-    // Map success packets are potentially multicasted (see above)
+    // Map success commands are potentially multicasted (see above)
     // verify that we are the intended receiver
     if( nodeID != _localNode->getNodeID( ))
         return true;
 
-    LBLOG( LOG_OBJECTS ) << "Cmd map object success " << command << std::endl;
+    LBLOG( LOG_OBJECTS ) << "Cmd map object success " << command
+                         << " id " << objectID << "." << instanceID
+                         << " req " << requestID << std::endl;
 
     // set up change manager and attach object to dispatch table
     Object* object = static_cast<Object*>( _localNode->getRequestData(
@@ -855,7 +852,6 @@ bool ObjectStore::_cmdMapObjectSuccess( Command& command )
 bool ObjectStore::_cmdMapObjectReply( Command& command )
 {
     LB_TS_THREAD( _receiverThread );
-    LBLOG( LOG_OBJECTS ) << "Cmd map object reply " << command << std::endl;
 
     const UUID& nodeID = command.get< UUID >();
     const UUID& objectID = command.get< UUID >();
@@ -865,7 +861,10 @@ bool ObjectStore::_cmdMapObjectReply( Command& command )
     const bool releaseCache = command.get< bool >();
     const bool useCache = command.get< bool >();
 
-    // Map reply packets are potentially multicasted (see above)
+    LBLOG( LOG_OBJECTS ) << "Cmd map object reply " << command << " id "
+                         << objectID << " req " << requestID << std::endl;
+
+    // Map reply commands are potentially multicasted (see above)
     // verify that we are the intended receiver
     if( nodeID != _localNode->getNodeID( ))
         return true;
@@ -977,20 +976,18 @@ bool ObjectStore::_cmdUnmapObject( Command& command )
 
 bool ObjectStore::_cmdInstance( Command& comd )
 {
-    ObjectDataCommand command( comd.getBuffer( ));
-
     LB_TS_THREAD( _receiverThread );
     LBASSERT( _localNode );
-    LBLOG( LOG_OBJECTS ) << "Cmd instance " << command << std::endl;
 
+    ObjectDataCommand command( comd );
     const NodeID nodeID = command.get< NodeID >();
     const uint32_t masterInstanceID = command.get< uint32_t >();
-#ifndef NDEBUG
-    const uint32_t instanceID = command.getInstanceID();
-#endif
     const uint32_t cmd = command.getCommand();
 
-    command.setType( COMMANDTYPE_CO_OBJECT );
+    LBLOG( LOG_OBJECTS ) << "Cmd instance " << command << " master "
+                         << masterInstanceID << " node " << nodeID << std::endl;
+
+    command.setType( COMMANDTYPE_OBJECT );
     command.setCommand( CMD_OBJECT_INSTANCE );
 
     if( _instanceCache )
@@ -999,33 +996,32 @@ bool ObjectStore::_cmdInstance( Command& comd )
 #ifndef CO_AGGRESSIVE_CACHING // Issue #82:
         if( cmd != CMD_NODE_OBJECT_INSTANCE_PUSH )
 #endif
-            _instanceCache->add( rev, masterInstanceID,
-                                 command.getBuffer(), 0 );
+            _instanceCache->add( rev, masterInstanceID, command, 0 );
     }
 
     switch( cmd )
     {
       case CMD_NODE_OBJECT_INSTANCE:
         LBASSERT( nodeID == NodeID::ZERO );
-        LBASSERT( instanceID == EQ_INSTANCE_NONE );
+        LBASSERT( command.getInstanceID() == EQ_INSTANCE_NONE );
         return true;
 
       case CMD_NODE_OBJECT_INSTANCE_MAP:
         if( nodeID != _localNode->getNodeID( )) // not for me
             return true;
 
-        LBASSERT( instanceID <= EQ_INSTANCE_MAX );
-        return dispatchObjectCommand( command.getBuffer( ));
+        LBASSERT( command.getInstanceID() <= EQ_INSTANCE_MAX );
+        return dispatchObjectCommand( command );
 
       case CMD_NODE_OBJECT_INSTANCE_COMMIT:
         LBASSERT( nodeID == NodeID::ZERO );
-        LBASSERT( instanceID == EQ_INSTANCE_NONE );
-        return dispatchObjectCommand( command.getBuffer( ));
+        LBASSERT( command.getInstanceID() == EQ_INSTANCE_NONE );
+        return dispatchObjectCommand( command );
 
       case CMD_NODE_OBJECT_INSTANCE_PUSH:
         LBASSERT( nodeID == NodeID::ZERO );
-        LBASSERT( instanceID == EQ_INSTANCE_NONE );
-        _pushData.addDataPacket( command.getObjectID(), command.getBuffer( ));
+        LBASSERT( command.getInstanceID() == EQ_INSTANCE_NONE );
+        _pushData.addDataCommand( command.getObjectID(), command );
         return true;
 
       default:
@@ -1037,7 +1033,7 @@ bool ObjectStore::_cmdInstance( Command& comd )
 bool ObjectStore::_cmdDisableSendOnRegister( Command& command )
 {
     LB_TS_THREAD( _commandThread );
-    LBASSERTINFO( _sendOnRegister > 0, size_t( _sendOnRegister ));
+    LBASSERTINFO( _sendOnRegister > 0, _sendOnRegister );
 
     if( --_sendOnRegister == 0 )
     {

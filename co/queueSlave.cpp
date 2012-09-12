@@ -1,16 +1,17 @@
 
 /* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
- *               2011, Carsten Rohn <carsten.rohn@rtt.ag>
+ *                    2011, Carsten Rohn <carsten.rohn@rtt.ag>
+ *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -94,13 +95,13 @@ ObjectCommand QueueSlave::pop()
 
         ObjectCommand cmd( _impl->queue.pop( ));
         if( cmd.getCommand() == CMD_QUEUE_ITEM )
-            return ObjectCommand( cmd.getBuffer( ));
+            return ObjectCommand( cmd );
 
         LBASSERT( cmd.getCommand() == CMD_QUEUE_EMPTY );
         const int32_t requestID = cmd.get< int32_t >();
         if( requestID == request )
             return ObjectCommand( 0 );
-        // else left-over or not our empty packet, discard and retry
+        // else left-over or not our empty command, discard and retry
     }
 }
 

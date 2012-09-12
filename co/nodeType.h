@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2009, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com> 
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -25,9 +25,9 @@ namespace co
     /** Node types to identify connecting nodes. */
     enum NodeType
     {
-        NODETYPE_CO_INVALID,         //!< Invalid type
-        NODETYPE_CO_NODE,            //!< A plain co::Node
-        NODETYPE_CO_USER = 0x100     //!< Application-specific types
+        NODETYPE_INVALID,         //!< Invalid type
+        NODETYPE_NODE,            //!< A plain co::Node
+        NODETYPE_USER = 0x100     //!< Application-specific types
     };
 
     inline std::ostream& operator << ( std::ostream& os, const NodeType& type )
