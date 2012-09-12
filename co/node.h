@@ -112,6 +112,23 @@ namespace detail { class Node; }
          */
         CO_API NodeOCommand send( const uint32_t cmd,
                                   const bool multicast = false );
+
+        /**
+         * Send a custom command with optional data to the node.
+         *
+         * The command handler for this command being send is registered with
+         * LocalNode::registerCommandHandler.
+         *
+         * The returned command can be used to pass additional data. The data
+         * will be send after the command object is destroyed, aka when it is
+         * running out of scope.
+         *
+         * @param commandID the ID of the registered custom command
+         * @param multicast prefer multicast connection for sending
+         * @return the command object to pass additional data to
+         */
+        CO_API CustomOCommand send( const uint128_t& commandID,
+                                    const bool multicast = false );
         //@}
 
         CO_API const NodeID& getNodeID() const;

@@ -125,10 +125,12 @@ namespace co
 
             void byteswap()
             {
+#ifdef COLLAGE_BIGENDIAN
                 lunchbox::byteswap( type );
                 lunchbox::byteswap( protocolVersion );
                 lunchbox::byteswap( connectionID );
                 lunchbox::byteswap( numConnections );
+#endif
             }
         };
 
@@ -141,9 +143,11 @@ namespace co
 
             void byteswap()
             {
+#ifdef COLLAGE_BIGENDIAN
                 lunchbox::byteswap( type );
                 lunchbox::byteswap( writerID );
                 lunchbox::byteswap( sequence );
+#endif
             }
         };
 
@@ -174,6 +178,7 @@ namespace co
 
             void byteswap()
             {
+#ifdef COLLAGE_BIGENDIAN
                 lunchbox::byteswap( type );
                 lunchbox::byteswap( readerID );
                 lunchbox::byteswap( writerID );
@@ -183,6 +188,7 @@ namespace co
                     lunchbox::byteswap( nacks[i].start );
                     lunchbox::byteswap( nacks[i].end );
                 }
+#endif
             }
         };
 
@@ -196,10 +202,12 @@ namespace co
 
             void byteswap()
             {
+#ifdef COLLAGE_BIGENDIAN
                 lunchbox::byteswap( type );
                 lunchbox::byteswap( readerID );
                 lunchbox::byteswap( writerID );
                 lunchbox::byteswap( sequence );
+#endif
             }
         };
 
@@ -213,10 +221,12 @@ namespace co
 
             void byteswap()
             {
+#ifdef COLLAGE_BIGENDIAN
                 lunchbox::byteswap( type );
                 lunchbox::byteswap( size );
                 lunchbox::byteswap( writerID );
                 lunchbox::byteswap( sequence );
+#endif
             }
         };
 
@@ -307,7 +317,7 @@ namespace co
         /* handle data about the comunication state */
         void _handlePacket( const boost::system::error_code& error,
                             const size_t bytes );
-        void _handleConnectedData( void* data );
+        void _handleConnectedData( Buffer& buffer );
         void _handleInitData( const DatagramNode& node, const bool connected );
         void _handleAcceptIDData( const DatagramNode& node );
 

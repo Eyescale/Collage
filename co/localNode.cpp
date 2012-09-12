@@ -25,6 +25,7 @@
 #include "commandQueue.h"
 #include "connectionDescription.h"
 #include "connectionSet.h"
+#include "customCommand.h"
 #include "dataIStream.h"
 #include "exception.h"
 #include "global.h"
@@ -1902,7 +1903,8 @@ bool LocalNode::_cmdCommand( Command& command )
         func = i->second.first;
     }
 
-    return func( command );
+    CustomCommand customCmd( command );
+    return func( customCmd );
 }
 
 bool LocalNode::_cmdCommandAsync( Command& command )
@@ -1917,7 +1919,8 @@ bool LocalNode::_cmdCommandAsync( Command& command )
             return true; // deregistered between dispatch and now
         func = i->second.first;
     }
-    return func( command );
+    CustomCommand customCmd( command );
+    return func( customCmd );
 }
 
 }

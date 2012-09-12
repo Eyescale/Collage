@@ -19,6 +19,7 @@
 #include "node.h"
 
 #include "connectionDescription.h"
+#include "customOCommand.h"
 #include "nodeCommand.h"
 #include "nodeOCommand.h"
 
@@ -309,6 +310,15 @@ NodeOCommand Node::send( const uint32_t cmd, const bool multicast )
     LBASSERT( connection );
     return NodeOCommand( Connections( 1, connection ), cmd,
                          COMMANDTYPE_CO_NODE );
+}
+
+CustomOCommand  Node::send( const uint128_t& commandID, const bool multicast )
+{
+    ConnectionPtr connection = multicast ? useMulticast() : 0;
+    if( !connection )
+        connection = getConnection();
+    LBASSERT( connection );
+    return CustomOCommand( Connections( 1, connection ), commandID );
 }
 
 const NodeID& Node::getNodeID() const
