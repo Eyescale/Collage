@@ -18,7 +18,7 @@
 #ifndef CO_OCOMMAND_H
 #define CO_OCOMMAND_H
 
-#include <co/commands.h>       // for COMMANDTYPE_CO_NODE
+#include <co/commands.h>       // for COMMANDTYPE_NODE
 #include <co/dataOStream.h>    // base class
 
 
@@ -45,7 +45,7 @@ public:
      * @param type the command type for dispatching.
      */
     CO_API OCommand( const Connections& receivers, const uint32_t cmd,
-                     const uint32_t type = COMMANDTYPE_CO_NODE );
+                     const uint32_t type = COMMANDTYPE_NODE );
 
     /**
      * Construct a command which is dispatched locally typically to a co::Node.
@@ -56,8 +56,7 @@ public:
      * @param type the command type for dispatching.
      */
     CO_API OCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
-                     const uint32_t cmd,
-                     const uint32_t type = COMMANDTYPE_CO_NODE );
+                     const uint32_t cmd, const uint32_t type=COMMANDTYPE_NODE );
 
     /** @internal */
     CO_API OCommand( const OCommand& rhs );

@@ -119,7 +119,7 @@ int main( int argc, char **argv )
     co::BufferPtr buffer = cache.alloc( node, node, co::OCommand::getSize( ));
 
     co::Command command( buffer );
-    command.setType( co::COMMANDTYPE_CO_NODE );
+    command.setType( co::COMMANDTYPE_NODE );
     command.setCommand( co::CMD_NODE_CUSTOM );
 
     Bar bar;

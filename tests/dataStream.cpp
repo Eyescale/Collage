@@ -52,7 +52,7 @@ protected:
                            const bool last )
         {
             co::ObjectDataOCommand( getConnections(), co::CMD_OBJECT_DELTA,
-                                    co::COMMANDTYPE_CO_OBJECT, co::UUID(), 0,
+                                    co::COMMANDTYPE_OBJECT, co::UUID(), 0,
                                     co::uint128_t(), 0, size, last, this );
         }
 };

@@ -25,9 +25,9 @@ namespace co
 {
     enum CommandType
     {
-        COMMANDTYPE_CO_NODE,
-        COMMANDTYPE_CO_OBJECT,
-        COMMANDTYPE_CO_CUSTOM = 1<<7,
+        COMMANDTYPE_NODE,
+        COMMANDTYPE_OBJECT,
+        COMMANDTYPE_CUSTOM = 1<<7,
         COMMANDTYPE_INVALID = 0xFFFFFFFFu //!< @internal
     };
 

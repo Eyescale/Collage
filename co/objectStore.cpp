@@ -987,7 +987,7 @@ bool ObjectStore::_cmdInstance( Command& comd )
     LBLOG( LOG_OBJECTS ) << "Cmd instance " << command << " master "
                          << masterInstanceID << " node " << nodeID << std::endl;
 
-    command.setType( COMMANDTYPE_CO_OBJECT );
+    command.setType( COMMANDTYPE_OBJECT );
     command.setCommand( CMD_OBJECT_INSTANCE );
 
     if( _instanceCache )

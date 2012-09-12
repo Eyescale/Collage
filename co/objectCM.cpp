@@ -59,7 +59,7 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
 void ObjectCM::_addSlave( MasterCMCommand command, const uint128_t& version )
 {
     LBASSERT( version != VERSION_NONE );
-    LBASSERT( command.getType() == COMMANDTYPE_CO_NODE );
+    LBASSERT( command.getType() == COMMANDTYPE_NODE );
     LBASSERT( command.getCommand() == CMD_NODE_MAP_OBJECT );
 
     // process request
@@ -155,7 +155,7 @@ void ObjectCM::_sendEmptyVersion( const MasterCMCommand& command,
         connection = node->getConnection();
 
     ObjectDataOCommand( Connections( 1, connection ), CMD_OBJECT_INSTANCE,
-                        COMMANDTYPE_CO_OBJECT, _object->getID(),
+                        COMMANDTYPE_OBJECT, _object->getID(),
                         command.getInstanceID(), version, 0, 0, true, 0 )
             << NodeID::ZERO << _object->getInstanceID();
 }
