@@ -39,7 +39,7 @@ public:
     CO_API virtual ~CustomCommand();
 
     /** @internal @return the custom command identifier. */
-    const uint128_t& getCommandID() const;
+    CO_API const uint128_t& getCommandID() const;
 
 private:
     CustomCommand();
