@@ -1461,7 +1461,7 @@ bool LocalNode::_cmdSetAffinity( Command& command )
 
 bool LocalNode::_cmdConnect( Command& command )
 {
-    LBASSERT( !command.getNode().isValid( ));
+    LBASSERTINFO( !command.getNode(), command );
     LBASSERT( _impl->inReceiverThread( ));
 
     const NodeID& nodeID = command.get< NodeID >();

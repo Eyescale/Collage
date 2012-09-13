@@ -228,7 +228,7 @@ std::ostream& operator << ( std::ostream& os, const Command& command )
         os << lunchbox::disableFlush << "command< ";
         os << " type " << uint32_t( command.getType( ))
            << " cmd " << command.getCommand();
-        os << ", " << command.getNode() << " >" << lunchbox::enableFlush;
+        os << " from " << command.getNode() << " >" << lunchbox::enableFlush;
     }
     else
         os << "command< empty >";

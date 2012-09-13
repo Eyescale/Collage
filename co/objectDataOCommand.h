@@ -64,10 +64,6 @@ public:
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~ObjectDataOCommand();
 
-    /** Adds additional data to this command. */
-    template< typename T > ObjectDataOCommand& operator << ( const T& value )
-        { _addUserData( &value, sizeof( value )); return *this; }
-
 protected:
     virtual void sendData( const void* buffer, const uint64_t size,
                            const bool last );
@@ -79,7 +75,6 @@ private:
 
     void _init( const uint128_t& version, const uint32_t sequence,
                 const uint64_t dataSize, const bool isLast );
-    void _addUserData( const void* data, uint64_t size );
 };
 }
 

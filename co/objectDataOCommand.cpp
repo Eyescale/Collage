@@ -30,7 +30,6 @@ class ObjectDataOCommand
 public:
     ObjectDataOCommand( co::DataOStream* stream_, const uint64_t dataSize_ )
         : dataSize( 0 )
-        , userBuffer()
         , stream( stream_ )
     {
         if( stream )
@@ -41,16 +40,12 @@ public:
         }
     }
 
-    ObjectDataOCommand( ObjectDataOCommand& rhs )
+    ObjectDataOCommand( const ObjectDataOCommand& rhs )
         : dataSize( rhs.dataSize )
-        , userBuffer()
         , stream( rhs.stream )
-    {
-        userBuffer.swap( rhs.userBuffer );
-    }
+    {}
 
     uint64_t dataSize;
-    lunchbox::Bufferb userBuffer;
     co::DataOStream* stream;
 };
 
@@ -81,8 +76,7 @@ void ObjectDataOCommand::_init( const uint128_t& version,
                                 const uint32_t sequence,
                                 const uint64_t dataSize, const bool isLast )
 {
-    // cast to avoid call to our user data operator << overload
-    (ObjectOCommand&)(*this) << version << sequence << dataSize << isLast;
+    *this << version << sequence << dataSize << isLast;
 
     if( _impl->stream )
         _impl->stream->streamDataHeader( *this );
@@ -94,32 +88,26 @@ ObjectDataOCommand::~ObjectDataOCommand()
     delete _impl;
 }
 
-void ObjectDataOCommand::_addUserData( const void* data, uint64_t size )
-{
-    _impl->userBuffer.append( static_cast< const uint8_t* >( data ), size );
-}
-
-void ObjectDataOCommand::sendData( const void* buffer, const uint64_t size,
+void ObjectDataOCommand::sendData( const void* ptr, const uint64_t size,
                                    const bool last )
 {
+    lunchbox::Bufferb& buffer = getBuffer();
     LBASSERT( last );
     LBASSERT( size > 0 );
+    LBASSERT( buffer.getData() == ptr );
+    LBASSERT( buffer.getSize() == size );
 
-    const uint64_t finalSize = size +                        // command header
-                               _impl->userBuffer.getSize() + // userBuffer
-                               _impl->dataSize;
+    // Update size field ( header + stream size )
+    uint8_t* bytes = buffer.getData();
+    reinterpret_cast< uint64_t* >( bytes )[ 0 ] = size - 8 + _impl->dataSize;
 
-    for( ConnectionsCIter it = getConnections().begin();
-         it != getConnections().end(); ++it )
+    const Connections& connections = getConnections();
+    for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )
     {
-        ConnectionPtr conn = *it;
-
+        ConnectionPtr conn = *i;
         conn->lockSend();
-        LBCHECK( conn->send( &finalSize, sizeof( uint64_t ), true ));
-        LBCHECK( conn->send( buffer, size, true ));
-        if( !_impl->userBuffer.isEmpty( ))
-            LBCHECK( conn->send( _impl->userBuffer.getData(),
-                                 _impl->userBuffer.getSize(), true ));
+
+        LBCHECK( conn->send( buffer.getData(), buffer.getSize(), true ));
         if( _impl->stream )
             _impl->stream->sendData( conn, _impl->dataSize );
 

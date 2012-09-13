@@ -178,7 +178,7 @@ int main( int argc, char **argv )
                 break;
             }
             default:
-                TEST( false );
+                TESTINFO( false, command.getCommand( ));
         }
     }
 
