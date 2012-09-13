@@ -92,7 +92,7 @@ OCommand::~OCommand()
 
         // #145 proper local command dispatch?
         BufferPtr buffer =
-                _impl->localNode->allocCommand( getBuffer().getSize( ));
+                _impl->localNode->allocBuffer( getBuffer().getSize( ));
         buffer->swap( getBuffer( ));
         Command cmd( buffer );
         _impl->dispatcher->dispatchCommand( cmd );
