@@ -1279,7 +1279,7 @@ bool LocalNode::_handleData()
     return true;
 }
 
-BufferPtr LocalNode::allocCommand( const uint64_t size )
+BufferPtr LocalNode::allocBuffer( const uint64_t size )
 {
     LBASSERT( _impl->inReceiverThread( ));
     return _impl->bufferCache.alloc( this, this, size );

@@ -23,9 +23,11 @@ set(CO_PUBLIC_HEADERS
   customCommand.h
   customOCommand.h
   dataIStream.h
+  dataIStream.ipp
   dataIStreamArchive.h
   dataIStreamArchive.ipp
   dataOStream.h
+  dataOStream.ipp
   dataOStreamArchive.h
   dataOStreamArchive.ipp
   dataStreamArchiveException.h

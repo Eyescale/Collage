@@ -74,7 +74,7 @@ bool Buffer::isValid() const
     return getSize() > 0;
 }
 
-size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
+void Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
 {
     LB_TS_THREAD( _writeThread );
     LBASSERT( getRefCount() == 1 ); // caller BufferCache
@@ -86,8 +86,6 @@ size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
 
     reserve( LB_MAX( getMinSize(), size ));
     resize( size );
-
-    return getSize();
 }
 
 void Buffer::free()
