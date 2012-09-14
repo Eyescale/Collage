@@ -92,8 +92,7 @@ OCommand::~OCommand()
 
         // #145 proper local command dispatch?
         const uint64_t size = getBuffer().getSize() - 8;
-        BufferPtr buffer =
-                _impl->localNode->allocCommand( size );
+        BufferPtr buffer = _impl->localNode->allocBuffer( size );
         buffer->replace( getBuffer().getData() + 8, size );
         Command cmd( buffer );
         _impl->dispatcher->dispatchCommand( cmd );

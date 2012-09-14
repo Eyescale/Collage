@@ -24,8 +24,10 @@
 #include <co/array.h> // used inline
 #include <co/types.h>
 #include <lunchbox/nonCopyable.h> // base class
+#include <lunchbox/stdExt.h>
 
-#include <iostream>
+#include <map>
+#include <set>
 #include <vector>
 
 namespace co
@@ -89,6 +91,22 @@ namespace DataStreamTest { class Sender; }
         /** Write a std::vector of serializable items. @version 1.0 */
         template< class T >
         DataOStream& operator << ( const std::vector< T >& value );
+
+        /** Write a std::map of serializable items. @version 1.0 */
+        template< class K, class V >
+        DataOStream& operator << ( const std::map< K, V >& value );
+
+        /** Write a std::set of serializable items. @version 1.0 */
+        template< class T >
+        DataOStream& operator << ( const std::set< T >& value );
+
+        /** Write a stde::hash_map of serializable items. @version 1.0 */
+        template< class K, class V >
+        DataOStream& operator << ( const stde::hash_map< K, V >& value );
+
+        /** Write a stde::hash_set of serializable items. @version 1.0 */
+        template< class T >
+        DataOStream& operator << ( const stde::hash_set< T >& value );
 
         /** @internal
          * Serialize child objects.
@@ -177,122 +195,8 @@ namespace DataStreamTest { class Sender; }
     };
 
     std::ostream& operator << ( std::ostream&, const DataOStream& );
-
 }
 
-#include <co/object.h>
-#include <co/objectVersion.h>
+#include "dataOStream.ipp" // template implementation
 
-namespace co
-{
-    /** @name Specialized output operators */
-    //@{
-    /** Write a std::string. */
-    template<>
-    inline DataOStream& DataOStream::operator << ( const std::string& str )
-    {
-        const uint64_t nElems = str.length();
-        _write( &nElems, sizeof( nElems ));
-        if ( nElems > 0 )
-            _write( str.c_str(), nElems );
-
-        return *this;
-    }
-
-    /** Write an object identifier and version. */
-    template<> inline DataOStream&
-    DataOStream::operator << ( const Object* const& object )
-    {
-        LBASSERT( !object || object->isAttached( ));
-        (*this) << ObjectVersion( object );
-        return *this;
-    }
-
-/** @cond IGNORE */
-    template< class T > inline DataOStream&
-    DataOStream::operator << ( const lunchbox::Buffer< T >& buffer )
-    {
-        return (*this) << buffer.getSize()
-                       << Array< const T >( buffer.getData(), buffer.getSize());
-    }
-
-    /** Write a std::vector of serializable items. */
-    template< class T > inline DataOStream&
-    DataOStream::operator << ( const std::vector< T >& value )
-    {
-        const uint64_t nElems = value.size();
-        (*this) << nElems;
-        for( uint64_t i = 0; i < nElems; ++i )
-            (*this) << value[i];
-        return *this;
-    }
-
-    template< typename C > inline void
-    DataOStream::serializeChildren( const std::vector<C*>& children )
-    {
-        const uint64_t nElems = children.size();
-        (*this) << nElems;
-
-        for( typename std::vector< C* >::const_iterator i = children.begin();
-             i != children.end(); ++i )
-        {
-            C* child = *i;
-            (*this) << ObjectVersion( child );
-            LBASSERTINFO( !child || child->isAttached(),
-                          "Found unmapped object during serialization" );
-        }
-    }
-/** @endcond */
-
-    /** Optimized specialization to write a std::vector of uint8_t. */
-    template<> inline DataOStream&
-    DataOStream::operator << ( const std::vector< uint8_t >& value )
-    { return _writeFlatVector( value ); }
-
-    /** Optimized specialization to write a std::vector of uint16_t. */
-    template<> inline DataOStream&
-    DataOStream::operator << ( const std::vector< uint16_t >& value )
-    { return _writeFlatVector( value ); }
-
-    /** Optimized specialization to write a std::vector of int16_t. */
-    template<> inline DataOStream&
-    DataOStream::operator << ( const std::vector< int16_t >& value )
-    { return _writeFlatVector( value ); }
-
-    /** Optimized specialization to write a std::vector of uint32_t. */
-    template<> inline DataOStream&
-    DataOStream::operator << ( const std::vector< uint32_t >& value )
-    { return _writeFlatVector( value ); }
-
-    /** Optimized specialization to write a std::vector of int32_t. */
-    template<> inline DataOStream&
-    DataOStream::operator << ( const std::vector< int32_t >& value )
-    { return _writeFlatVector( value ); }
-
-    /** Optimized specialization to write a std::vector of uint64_t. */
-    template<> inline DataOStream&
-    DataOStream::operator << ( const std::vector< uint64_t >& value )
-    { return _writeFlatVector( value ); }
-
-    /** Optimized specialization to write a std::vector of int64_t. */
-    template<> inline DataOStream&
-    DataOStream::operator << ( const std::vector< int64_t >& value )
-    { return _writeFlatVector( value ); }
-
-    /** Optimized specialization to write a std::vector of float. */
-    template<> inline DataOStream&
-    DataOStream::operator << ( const std::vector< float >& value )
-    { return _writeFlatVector( value ); }
-
-    /** Optimized specialization to write a std::vector of double. */
-    template<> inline DataOStream&
-    DataOStream::operator << ( const std::vector< double >& value )
-    { return _writeFlatVector( value ); }
-
-    /** Optimized specialization to write a std::vector of ObjectVersion. */
-    template<> inline DataOStream&
-    DataOStream::operator << ( const std::vector< ObjectVersion >& value )
-    { return _writeFlatVector( value ); }
-    //@}
-}
 #endif //CO_DATAOSTREAM_H
