@@ -66,8 +66,8 @@ ObjectDataCommand::ObjectDataCommand( const Command& command )
     _init();
 }
 
-ObjectDataCommand::ObjectDataCommand( ConstBufferPtr buffer )
-    : ObjectCommand( buffer )
+ObjectDataCommand::ObjectDataCommand( ConstBufferPtr buffer, const bool swap_ )
+    : ObjectCommand( buffer, swap_ )
     , _impl( new detail::ObjectDataCommand )
 {
     _init();

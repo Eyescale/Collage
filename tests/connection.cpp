@@ -23,10 +23,14 @@
 #include <co/connectionSet.h>
 #include <co/init.h>
 
+#include <co/buffer.h> // #145 resolve not use internal header
+
 #include <iostream>
 
 #define PACKETSIZE (2048)
 
+namespace
+{
 static co::ConnectionType types[] =
 {
     co::CONNECTIONTYPE_TCPIP,
@@ -40,7 +44,8 @@ static co::ConnectionType types[] =
 #endif
     co::CONNECTIONTYPE_NONE // must be last
 };
-
+lunchbox::a_int32_t _counter;
+}
 
 int main( int argc, char **argv )
 {
@@ -48,9 +53,9 @@ int main( int argc, char **argv )
 
     for( size_t i = 0; types[i] != co::CONNECTIONTYPE_NONE; ++i )
     {
-        co::ConnectionDescriptionPtr desc = 
-            new co::ConnectionDescription;
+        co::ConnectionDescriptionPtr desc = new co::ConnectionDescription;
         desc->type = types[i];
+
         if( desc->type >= co::CONNECTIONTYPE_MULTICAST )
             desc->setHostname( "239.255.12.34" );
         else
@@ -91,16 +96,19 @@ int main( int argc, char **argv )
         TEST( writer.isValid( ));
         TEST( reader.isValid( ));
 
-        uint8_t in[ PACKETSIZE ];
-        reader->recvNB( in, PACKETSIZE );
+        co::BufferPtr buffer = new co::Buffer( _counter );
+        reader->recvNB( buffer, PACKETSIZE );
 
         uint8_t out[ PACKETSIZE ];
         TEST( writer->send( out, PACKETSIZE ));
-        TEST( reader->recvSync( 0, 0 ));
+        TEST( reader->recvSync( buffer ));
+        TEST( buffer );
+        TEST( buffer->getSize() == PACKETSIZE );
 
         writer->close();
-        reader->recvNB( in, PACKETSIZE );
-        TEST( !reader->recvSync( 0, 0 ));
+        buffer->setSize( 0 );
+        reader->recvNB( buffer, PACKETSIZE );
+        TEST( !reader->recvSync( buffer ));
         TEST( reader->isClosed( ));
 
         if( listener == writer )

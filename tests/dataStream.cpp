@@ -60,11 +60,13 @@ protected:
 class DataIStream : public co::DataIStream
 {
 public:
+    DataIStream() : co::DataIStream( false /*swap*/ ){}
+
     void addDataCommand( co::ConstBufferPtr buffer )
         {
-            co::ObjectDataCommand command( buffer );
+            co::ObjectDataCommand command( buffer, false /*swap*/ );
             TESTINFO( command.getCommand() == co::CMD_OBJECT_DELTA, command );
-            _commands.push( buffer );
+            _commands.push( command );
         }
 
     virtual size_t nRemainingBuffers() const { return _commands.getSize(); }
@@ -154,15 +156,16 @@ int main( int argc, char **argv )
     ::DataIStream stream;
     co::BufferCache bufferCache;
     bool receiving = true;
+    const size_t minSize = Buffer::getMinSize();
 
     while( receiving )
     {
+        co::BufferPtr buffer = bufferCache.alloc( minSize );
         uint64_t size;
         connection->recvNB( &size, sizeof( size ));
         TEST( connection->recvSync( 0, 0 ));
         TEST( size );
 
-        co::BufferPtr buffer = bufferCache.alloc( 0, 0, size );
         connection->recvNB( buffer->getData(), size );
         TEST( connection->recvSync( 0, 0 ) );
         TEST( buffer->isValid( ));

@@ -28,7 +28,7 @@ namespace co
 namespace detail { class BufferCache; }
 
     /**
-     * A buffercache handles the reuse of allocated buffers for a node.
+     * The buffer cache handles the reuse of allocated buffers for a node.
      *
      * Buffers are retained and released whenever they are not directly
      * processed, e.g., when pushed to another thread using a CommandQueue.
@@ -40,8 +40,7 @@ namespace detail { class BufferCache; }
         CO_API ~BufferCache();
 
         /** @return a new buffer. */
-        CO_API BufferPtr alloc( NodePtr node, LocalNodePtr localNode,
-                                const uint64_t size );
+        CO_API BufferPtr alloc( const uint64_t size );
 
         /** Flush all allocated buffers. */
         void flush();

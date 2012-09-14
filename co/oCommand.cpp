@@ -20,10 +20,8 @@
 #include "buffer.h"
 #include "command.h"
 
-
 namespace co
 {
-
 namespace detail
 {
 
@@ -84,27 +82,57 @@ OCommand::OCommand( const OCommand& rhs )
 
 OCommand::~OCommand()
 {
-    disable();
+    if( _impl->isLocked )
+    {
+        LBASSERT( _impl->size > 0 );
+        const uint64_t size = _impl->size + getBuffer().getSize();
+        const size_t minSize = Buffer::getMinSize();
+        if( size < minSize ) // Fill send to minimal size
+        {
+            const size_t delta = minSize - size;
+            void* padding = alloca( delta );
+            const Connections& connections = getConnections();
+            for( ConnectionsCIter i = connections.begin();
+                 i != connections.end(); ++i )
+            {
+                ConnectionPtr connection = *i;
+                connection->send( padding, delta, true );
+            }
+            connection->unlockSend();
+        }
+        _impl->isLocked = false;
+        _impl->size = 0;
+    }
+    else
+        disable();
 
     if( _impl->dispatcher )
     {
         LBASSERT( _impl->localNode );
 
         // #145 proper local command dispatch?
-        const uint64_t size = getBuffer().getSize() - 8;
         BufferPtr buffer =
-                _impl->localNode->allocCommand( size );
-        buffer->replace( getBuffer().getData() + 8, size );
-        Command cmd( buffer );
+            _impl->localNode->allocCommand( getBuffer().getSize( ));
+        buffer->swap( getBuffer( ));
+        Command cmd( buffer, false, _impl->localNode, _impl->localNode );
         _impl->dispatcher->dispatchCommand( cmd );
     }
 
     delete _impl;
 }
 
-void OCommand::sendHeaderUnlocked( const uint64_t additionalSize )
+void OCommand::sendHeader( const uint64_t additionalSize )
 {
     LBASSERT( !_impl->dispatcher );
+    LBASSERT( !_impl->isLocked );
+    LBASSERT( additionalSize > 0 );
+
+    const Connections& connections = getConnections();
+    for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )
+    {
+        ConnectionPtr connection = *i;
+        connection->lockSend();
+    }
     _impl->isLocked = true;
     _impl->size = additionalSize;
     disable();
@@ -131,20 +159,20 @@ void OCommand::sendData( const void* buffer, const uint64_t size,
     LBASSERTINFO( size >= 16, size );
     LBASSERT( getBuffer().getData() == buffer );
     LBASSERT( getBuffer().getSize() == size );
+    LBASSERT( getBuffer().getMaxSize() >= Buffer::getMinSize( ));
 
     // Update size field
     uint8_t* bytes = getBuffer().getData();
-    reinterpret_cast< uint64_t* >( bytes )[ 0 ] = _impl->size + size - 8;
+    reinterpret_cast< uint64_t* >( bytes )[ 0 ] = _impl->size + size;
+    const uint64_t sendSize = _impl->isLocked ?
+        size : LB_MAX( size, Buffer::getMinSize( ));
 
     const Connections& connections = getConnections();
     for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )
     {
         ConnectionPtr connection = *i;
-        connection->send( bytes, size, _impl->isLocked );
+        connection->send( bytes, sendSize, _impl->isLocked );
     }
-
-    _impl->isLocked = false;
-    _impl->size = 0;
 }
 
 }

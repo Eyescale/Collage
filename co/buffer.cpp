@@ -31,13 +31,13 @@ class Buffer
 public:
     Buffer( lunchbox::a_int32_t& freeCounter )
         : freeCount( freeCounter )
-        , node()
-        , localNode()
+        , remote()
+        , local()
     {}
 
     lunchbox::a_int32_t& freeCount;
-    NodePtr node; //!< The node sending the command
-    LocalNodePtr  localNode; //!< The node receiving the command
+    NodePtr remote; //!< The node sending the command
+    LocalNodePtr local; //!< The node receiving the command
 };
 }
 
@@ -56,17 +56,12 @@ Buffer::~Buffer()
 
 NodePtr Buffer::getNode() const
 {
-    return _impl->node;
+    return _impl->remote;
 }
 
 LocalNodePtr Buffer::getLocalNode() const
 {
-    return _impl->localNode;
-}
-
-bool Buffer::needsSwapping() const
-{
-    return _impl->node->isBigEndian() != _impl->localNode->isBigEndian();
+    return _impl->local;
 }
 
 bool Buffer::isValid() const
@@ -74,20 +69,25 @@ bool Buffer::isValid() const
     return getSize() > 0;
 }
 
-size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
+void Buffer::setNodes( LocalNodePtr local, NodePtr remote )
+{
+    _impl->local = local;
+    _impl->remote = remote;
+}
+
+size_t Buffer::alloc( const uint64_t size )
 {
     LB_TS_THREAD( _writeThread );
     LBASSERT( getRefCount() == 1 ); // caller BufferCache
     LBASSERT( _impl->freeCount > 0 );
 
     --_impl->freeCount;
-    _impl->node = node;
-    _impl->localNode = localNode;
+    _impl->local = 0;
+    _impl->remote = 0;
 
-    reserve( LB_MAX( getMinSize(), size ));
+    reserve( LB_MAX( getCacheSize(), size ));
     resize( size );
-
-    return getSize();
+    return size;
 }
 
 void Buffer::free()
@@ -96,8 +96,8 @@ void Buffer::free()
 
     clear();
 
-    _impl->node = 0;
-    _impl->localNode = 0;
+    _impl->local = 0;
+    _impl->remote = 0;
 }
 
 void Buffer::deleteReferenced( const Referenced* object ) const
@@ -108,7 +108,12 @@ void Buffer::deleteReferenced( const Referenced* object ) const
 
 size_t Buffer::getMinSize()
 {
-    return 4096;
+    return 256;
+}
+
+size_t Buffer::getCacheSize()
+{
+    return 4096; // Bigger than minSize!
 }
 
 }

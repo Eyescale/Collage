@@ -100,7 +100,7 @@ ObjectCommand QueueSlave::pop()
         LBASSERT( cmd.getCommand() == CMD_QUEUE_EMPTY );
         const int32_t requestID = cmd.get< int32_t >();
         if( requestID == request )
-            return ObjectCommand( 0 );
+            return ObjectCommand( 0, false );
         // else left-over or not our empty command, discard and retry
     }
 }

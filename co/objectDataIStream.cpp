@@ -26,11 +26,7 @@
 namespace co
 {
 ObjectDataIStream::ObjectDataIStream()
-{
-    _reset();
-}
-
-ObjectDataIStream::~ObjectDataIStream()
+    : DataIStream( false )
 {
     _reset();
 }
@@ -40,6 +36,11 @@ ObjectDataIStream::ObjectDataIStream( const ObjectDataIStream& from )
         , _commands( from._commands )
         , _version( from._version )
 {
+}
+
+ObjectDataIStream::~ObjectDataIStream()
+{
+    _reset();
 }
 
 void ObjectDataIStream::reset()

@@ -24,7 +24,6 @@
 #include <co/commandQueue.h>
 #include <co/dispatcher.h>
 #include <co/init.h>
-#include <co/localNode.h>
 #include <co/oCommand.h>
 #include <lunchbox/clock.h>
 
@@ -87,15 +86,13 @@ int main( int argc, char **argv )
         }
 
         co::BufferCache cache;
-        co::LocalNodePtr node = new co::LocalNode;
         size_t nOps = 0;
 
         lunchbox::Clock clock;
         while( clock.getTime64() < RUNTIME )
         {
-            co::BufferPtr buffer = cache.alloc( node, node,
-                                                co::OCommand::getSize( ));
-            co::Command command( buffer );
+            co::BufferPtr buffer = cache.alloc( co::OCommand::getSize( ));
+            co::Command command( buffer, false /*swap*/ );
             command.setCommand( 0 );
             command.setType( co::COMMANDTYPE_CUSTOM );
 
@@ -112,9 +109,8 @@ int main( int argc, char **argv )
 
         for( size_t i = 0; i < N_READER; ++i )
         {
-            co::BufferPtr buffer = cache.alloc( node, node,
-                                                co::OCommand::getSize( ));
-            co::Command command( buffer );
+            co::BufferPtr buffer = cache.alloc( co::OCommand::getSize( ));
+            co::Command command( buffer, false /*swap*/ );
             command.setCommand( 1 );
 
             readers[i].dispatchCommand( command );

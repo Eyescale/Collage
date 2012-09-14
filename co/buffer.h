@@ -53,8 +53,11 @@ public:
     /** @return the receiving node. */
     LocalNodePtr getLocalNode() const;
 
-    /** @return true if the content needs to be endian-converted. */
-    bool needsSwapping() const;
+    /** Set local and remote nodes. */
+    void setNodes( LocalNodePtr local, NodePtr remote );
+
+    /** @return the number of newly allocated bytes. */
+    size_t alloc( const uint64_t size );
 
     /** @return true if the buffer has valid data. */
     CO_API bool isValid() const;
@@ -67,7 +70,8 @@ public:
 
     void free();
 
-    static size_t getMinSize();
+    static size_t getMinSize(); //!< Size of first read on receiver
+    static size_t getCacheSize(); //!< 'small' CommandCache allocation size
 
 private:
     detail::Buffer* const _impl;

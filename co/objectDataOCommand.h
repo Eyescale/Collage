@@ -64,10 +64,6 @@ public:
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~ObjectDataOCommand();
 
-protected:
-    virtual void sendData( const void* buffer, const uint64_t size,
-                           const bool last );
-
 private:
     ObjectDataOCommand();
     ObjectDataOCommand& operator = ( const ObjectDataOCommand& );

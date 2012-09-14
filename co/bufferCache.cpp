@@ -250,16 +250,16 @@ void BufferCache::flush()
     _impl->flush();
 }
 
-BufferPtr BufferCache::alloc( NodePtr node, LocalNodePtr localNode,
-                              const uint64_t size )
+BufferPtr BufferCache::alloc( const uint64_t size )
 {
     LB_TS_THREAD( _thread );
     LBASSERTINFO( size < LB_BIT48,
                   "Out-of-sync network stream: buffer size " << size << "?" );
 
-    const Cache which = (size > Buffer::getMinSize()) ? CACHE_BIG : CACHE_SMALL;
+    const Cache which = size > Buffer::getCacheSize() ?
+                            CACHE_BIG : CACHE_SMALL;
     BufferPtr buffer = _impl->newBuffer( which );
-    buffer->alloc( node, localNode, size );
+    buffer->alloc( size );
     return buffer;
 }
 
@@ -275,7 +275,7 @@ std::ostream& operator << ( std::ostream& os, const BufferCache& cache )
     {
         Buffer* buffer = *i;
         if( !buffer->isFree( ))
-            os << Command( buffer ) << std::endl;
+            os << Command( buffer, false /*swap*/ ) << std::endl;
     }
     return os << lunchbox::enableHeader << lunchbox::exdent
               << lunchbox::enableFlush;

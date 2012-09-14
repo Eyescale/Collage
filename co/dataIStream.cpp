@@ -35,11 +35,11 @@ namespace detail
 class DataIStream
 {
 public:
-    DataIStream()
+    DataIStream( const bool swap_ )
             : input( 0 )
             , inputSize( 0 )
             , position( 0 )
-            , swap( false )
+            , swap( swap_ )
         {}
 
     /** The current input buffer */
@@ -57,12 +57,12 @@ public:
 };
 }
 
-DataIStream::DataIStream()
-        : _impl( new detail::DataIStream )
+DataIStream::DataIStream( const bool swap_ )
+        : _impl( new detail::DataIStream( swap_ ))
 {}
 
-DataIStream::DataIStream( const DataIStream& )
-        : _impl( new detail::DataIStream )
+DataIStream::DataIStream( const DataIStream& rhs )
+        : _impl( new detail::DataIStream( rhs._impl->swap ))
 {}
 
 DataIStream::~DataIStream()

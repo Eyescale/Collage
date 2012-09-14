@@ -42,13 +42,12 @@ namespace detail { class Command; }
     {
     public:
         CO_API Command(); //!< @internal
-        CO_API Command( ConstBufferPtr buffer ); //!< @internal
+        CO_API Command( ConstBufferPtr buffer, const bool swap ); //!< @internal
         CO_API Command( const Command& rhs ); //!< @internal
 
         CO_API Command& operator = ( const Command& rhs ); //!< @internal
 
         CO_API void clear(); //!< @internal
-        void reread(); //!< @internal see LocalNode::_dispatchCommand()
 
         CO_API virtual ~Command(); //!< @internal
 

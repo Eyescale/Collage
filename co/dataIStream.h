@@ -122,7 +122,7 @@ namespace detail { class DataIStream; }
     protected:
         /** @name Internal */
         //@{
-        CO_API DataIStream();
+        CO_API DataIStream( const bool swap );
         DataIStream( const DataIStream& );
         CO_API virtual ~DataIStream();
         //@}

@@ -84,35 +84,19 @@ void ObjectDataOCommand::_init( const uint128_t& version,
 
 ObjectDataOCommand::~ObjectDataOCommand()
 {
-    disable();
-    delete _impl;
-}
-
-void ObjectDataOCommand::sendData( const void* ptr, const uint64_t size,
-                                   const bool last )
-{
-    lunchbox::Bufferb& buffer = getBuffer();
-    LBASSERT( last );
-    LBASSERT( size > 0 );
-    LBASSERT( buffer.getData() == ptr );
-    LBASSERT( buffer.getSize() == size );
-
-    // Update size field ( header + stream size )
-    uint8_t* bytes = buffer.getData();
-    reinterpret_cast< uint64_t* >( bytes )[ 0 ] = size - 8 + _impl->dataSize;
-
-    const Connections& connections = getConnections();
-    for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )
+    if( _impl->stream )
     {
-        ConnectionPtr conn = *i;
-        conn->lockSend();
-
-        LBCHECK( conn->send( buffer.getData(), buffer.getSize(), true ));
-        if( _impl->stream )
+        sendHeader( _impl->dataSize );
+        const Connections& connections = getConnections();
+        for( ConnectionsCIter i = connections.begin(); i != connections.end();
+             ++i )
+        {
+            ConnectionPtr conn = *i;
             _impl->stream->sendData( conn, _impl->dataSize );
-
-        conn->unlockSend();
+        }
     }
+
+    delete _impl;
 }
 
 }

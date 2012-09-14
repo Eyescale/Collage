@@ -35,6 +35,7 @@ public:
         , buffer( 0 )
         , type( COMMANDTYPE_INVALID )
         , cmd( CMD_INVALID )
+        , size( 0 )
     {}
 
     Command( ConstBufferPtr buffer_ )
@@ -42,6 +43,7 @@ public:
         , buffer( buffer_ )
         , type( COMMANDTYPE_INVALID )
         , cmd( CMD_INVALID )
+        , size( 0 )
     {}
 
     Command( const Command& rhs )
@@ -49,6 +51,7 @@ public:
         , buffer( rhs.buffer )
         , type( rhs.type )
         , cmd( rhs.cmd )
+        , size( rhs.size )
     {}
 
     void operator = ( const Command& rhs )
@@ -57,44 +60,41 @@ public:
         buffer = rhs.buffer;
         type = rhs.type;
         cmd = rhs.cmd;
+        size = rhs.size;
     }
 
     void clear()
     {
-        func.clear();
-        buffer = 0;
-        type = COMMANDTYPE_INVALID;
-        cmd = CMD_INVALID;
+        *this = Command();
     }
 
     co::Dispatcher::Func func;
     ConstBufferPtr buffer;
     uint32_t type;
     uint32_t cmd;
+    uint64_t size;
 };
 }
 
 Command::Command()
-    : DataIStream()
+    : DataIStream( false )
     , _impl( new detail::Command )
 {
 }
 
-Command::Command( ConstBufferPtr buffer )
-    : DataIStream()
+Command::Command( ConstBufferPtr buffer, const bool swap_ )
+    : DataIStream( swap_ )
     , _impl( new detail::Command( buffer ))
 {
     if( _impl->buffer )
-        *this >> _impl->type >> _impl->cmd;
+        *this >> _impl->type >> _impl->cmd >> _impl->size;
 }
 
 Command::Command( const Command& rhs )
-    : DataIStream()
+    : DataIStream( rhs )
     , _impl( new detail::Command( *rhs._impl ))
 {
-    setSwapping( rhs.isSwapping( )); // needed for node handshake commands
-    if( _impl->buffer )
-        _skipHeader();
+    _skipHeader();
 }
 
 Command& Command::operator = ( const Command& rhs )
@@ -117,19 +117,10 @@ void Command::clear()
     _impl->clear();
 }
 
-void Command::reread()
-{
-    LBASSERT( _impl->buffer );
-    if( !_impl->buffer )
-        return;
-
-    getRemainingBuffer( getRemainingBufferSize( )); // yuck. resets packet.
-    *this >> _impl->type >> _impl->cmd;
-}
-
 void Command::_skipHeader()
 {
-    const size_t headerSize = sizeof( _impl->type ) + sizeof( _impl->cmd );
+    const size_t headerSize = sizeof( _impl->type ) + sizeof( _impl->cmd ) +
+                              sizeof( _impl->size );
     if( isValid() && getRemainingBufferSize() >= headerSize )
         getRemainingBuffer( headerSize );
 }
@@ -191,9 +182,6 @@ bool Command::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
     compressor = EQ_COMPRESSOR_NONE;
     nChunks = 1;
 
-    if( _impl->buffer->getNode( ))
-        setSwapping( _impl->buffer->needsSwapping( ));
-    // else handshake command. see copy ctor and LocalNode::_dispatchCommand()
     return true;
 }
 
