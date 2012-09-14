@@ -67,13 +67,15 @@
 #include <co/connectionDescription.h>
 #include <co/connectionSet.h>
 #include <co/connectionType.h>
+#include <co/customCommand.h>
+#include <co/customOCommand.h>
 #include <co/dataIStream.h>
 #include <co/dataIStreamArchive.h>
 #include <co/dataOStream.h>
 #include <co/dataOStreamArchive.h>
 #include <co/global.h>
 #include <co/init.h>
-#include <co/nodeOCommand.h>
+#include <co/oCommand.h>
 #include <co/object.h>
 #include <co/objectCommand.h>
 #include <co/serializable.h>

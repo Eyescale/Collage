@@ -20,6 +20,8 @@ set(CO_PUBLIC_HEADERS
   connectionSet.h
   connectionType.h
   cpuCompressor.h
+  customCommand.h
+  customOCommand.h
   dataIStream.h
   dataIStreamArchive.h
   dataIStreamArchive.ipp
@@ -36,7 +38,7 @@ set(CO_PUBLIC_HEADERS
   localNode.h
   log.h
   node.h
-  nodeOCommand.h
+  oCommand.h
   nodeType.h
   object.h
   objectFactory.h
@@ -102,6 +104,8 @@ set(CO_SOURCES
   connectionDescription.cpp
   connectionSet.cpp
   cpuCompressor.cpp
+  customCommand.cpp
+  customOCommand.cpp
   dataIStream.cpp
   dataIStreamQueue.cpp
   dataOStream.cpp
@@ -115,7 +119,7 @@ set(CO_SOURCES
   localNode.cpp
   masterCMCommand.cpp
   node.cpp
-  nodeOCommand.cpp
+  oCommand.cpp
   object.cpp
   objectCM.cpp
   objectDataIStream.cpp
