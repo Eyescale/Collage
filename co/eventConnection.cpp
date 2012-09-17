@@ -22,7 +22,6 @@
 
 namespace co
 {
-namespace { lunchbox::a_int32_t counter; }
 
 EventConnection::EventConnection()
 #ifdef _WIN32
@@ -30,7 +29,6 @@ EventConnection::EventConnection()
 #else
         : _set( false )
 #endif
-        , _buffer( new Buffer( counter ))
 {
 }
 
@@ -97,8 +95,8 @@ void EventConnection::reset()
     if( !_set )
         return;
     
-    _buffer->setSize( 0 );
-    _connection->recvNB( _buffer, 1 );
+    _buffer.setSize( 0 );
+    _connection->recvNB( &_buffer, 1 );
 
     BufferPtr buffer;
     _connection->recvSync( buffer );

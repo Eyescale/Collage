@@ -247,6 +247,8 @@ void Connection::recvNB( BufferPtr buffer, const uint64_t bytes )
     LBASSERT( _impl->bytes == 0 );
     LBASSERT( buffer );
     LBASSERT( bytes > 0 );
+    LBASSERTINFO( bytes < LB_BIT48,
+                  "Out-of-sync network stream: read size " << bytes << "?" );
 
     _impl->buffer = buffer;
     _impl->bytes = bytes;
@@ -266,6 +268,8 @@ bool Connection::recvSync( BufferPtr& outBuffer, const bool block )
 
     if( _impl->state != STATE_CONNECTED || !outBuffer || bytes == 0 )
         return false;
+    LBASSERTINFO( bytes < LB_BIT48,
+                  "Out-of-sync network stream: read size " << bytes << "?" );
 
     // 'Iterators' for receive loop
     uint8_t* ptr = outBuffer->getData() + outBuffer->getSize();

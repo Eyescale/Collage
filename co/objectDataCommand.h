@@ -32,7 +32,8 @@ class ObjectDataCommand : public ObjectCommand
 public:
     CO_API ObjectDataCommand( const Command& command );
 
-    CO_API ObjectDataCommand( ConstBufferPtr buffer, const bool swap );
+    CO_API ObjectDataCommand( LocalNodePtr local, NodePtr remote,
+                              ConstBufferPtr buffer, const bool swap );
 
     ObjectDataCommand( const ObjectDataCommand& rhs );
 

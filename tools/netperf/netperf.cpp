@@ -42,19 +42,17 @@ enum
     SEQUENCE,
     DATA // must be last
 };
-lunchbox::a_int32_t _counter;
 
 class Receiver : public lunchbox::Thread
 {
 public:
     Receiver( const size_t packetSize, co::ConnectionPtr connection )
-            : _buffer( new co::Buffer( _counter ))
-            , _connection( connection )
+            : _connection( connection )
             , _mBytesSec( packetSize / 1024.f / 1024.f * 1000.f )
             , _nSamples( 0 )
             , _lastPacket( 0 )
         { 
-            connection->recvNB( _buffer, packetSize );
+            connection->recvNB( &_buffer, packetSize );
         }
 
     virtual ~Receiver() {}
@@ -65,22 +63,22 @@ public:
             if( !_connection->recvSync( buffer ))
                 return false;
 
-            LBASSERT( buffer == _buffer );
+            LBASSERT( buffer == &_buffer );
             LBASSERTINFO( _lastPacket == 0 || _lastPacket - 1 ==
-                          (*_buffer)[ SEQUENCE ],
+                          _buffer[ SEQUENCE ],
                           static_cast< int >( _lastPacket ) << ", " <<
-                          static_cast< int >( (*_buffer)[ SEQUENCE ] ));
-            _lastPacket = (*_buffer)[SEQUENCE];
+                          static_cast< int >( _buffer[ SEQUENCE ] ));
+            _lastPacket = _buffer[SEQUENCE];
 
-            _buffer->setSize( 0 );
-            _connection->recvNB( _buffer, _buffer->getMaxSize( ));
+            _buffer.setSize( 0 );
+            _connection->recvNB( &_buffer, _buffer.getMaxSize( ));
             const float time = _clock.getTimef();
             ++_nSamples;
 
             const size_t probe = (_rng.get< size_t >() %
-                                  ( _buffer->getSize() - DATA )) + DATA;
-            LBASSERTINFO( (*_buffer)[probe] == static_cast< uint8_t >( probe ),
-                          (int)(*_buffer)[probe] << " != " << (probe&0xff) );
+                                  ( _buffer.getSize() - DATA )) + DATA;
+            LBASSERTINFO( _buffer[probe] == static_cast< uint8_t >( probe ),
+                          (int)_buffer[probe] << " != " << (probe&0xff) );
 
             if( _delay > 0 )
                 lunchbox::sleep( _delay );
@@ -135,7 +133,7 @@ private:
     lunchbox::Clock _clock;
     lunchbox::RNG _rng;
 
-    co::BufferPtr _buffer;
+    co::Buffer _buffer;
     lunchbox::Monitor< bool > _hasConnection;
     co::ConnectionPtr _connection;
     const float _mBytesSec;

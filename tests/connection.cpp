@@ -17,14 +17,13 @@
 
 // Tests basic connection functionality
 #include <test.h>
-#include <lunchbox/monitor.h>
+#include <co/buffer.h>
 #include <co/connection.h>
 #include <co/connectionDescription.h>
 #include <co/connectionSet.h>
 #include <co/init.h>
 
-#include <co/buffer.h> // #145 resolve not use internal header
-
+#include <lunchbox/monitor.h>
 #include <iostream>
 
 #define PACKETSIZE (2048)
@@ -44,7 +43,6 @@ static co::ConnectionType types[] =
 #endif
     co::CONNECTIONTYPE_NONE // must be last
 };
-lunchbox::a_int32_t _counter;
 }
 
 int main( int argc, char **argv )
@@ -96,19 +94,21 @@ int main( int argc, char **argv )
         TEST( writer.isValid( ));
         TEST( reader.isValid( ));
 
-        co::BufferPtr buffer = new co::Buffer( _counter );
-        reader->recvNB( buffer, PACKETSIZE );
+        co::Buffer buffer;
+        reader->recvNB( &buffer, PACKETSIZE );
 
         uint8_t out[ PACKETSIZE ];
         TEST( writer->send( out, PACKETSIZE ));
-        TEST( reader->recvSync( buffer ));
-        TEST( buffer );
-        TEST( buffer->getSize() == PACKETSIZE );
+
+        co::BufferPtr syncBuffer;
+        TEST( reader->recvSync( syncBuffer ));
+        TEST( syncBuffer == &buffer );
+        TEST( buffer.getSize() == PACKETSIZE );
 
         writer->close();
-        buffer->setSize( 0 );
-        reader->recvNB( buffer, PACKETSIZE );
-        TEST( !reader->recvSync( buffer ));
+        buffer.setSize( 0 );
+        reader->recvNB( &buffer, PACKETSIZE );
+        TEST( !reader->recvSync( syncBuffer ));
         TEST( reader->isClosed( ));
 
         if( listener == writer )

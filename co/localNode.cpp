@@ -111,8 +111,13 @@ class LocalNode
 {
 public:
     LocalNode()
-            : sendToken( true ), lastSendToken( 0 ), objectStore( 0 )
-            , receiverThread( 0 ), commandThread( 0 )
+            : smallBuffers( 200 )
+            , bigBuffers( 20 )
+            , sendToken( true )
+            , lastSendToken( 0 )
+            , objectStore( 0 )
+            , receiverThread( 0 )
+            , commandThread( 0 )
             , service( "_collage._tcp" )
         {
         }
@@ -140,8 +145,11 @@ public:
     /** Commands re-scheduled for dispatch. */
     CommandList  pendingCommands;
 
-    /** The command buffer 'allocator' */
-    co::BufferCache bufferCache;
+    /** The command buffer 'allocator' for small packets */
+    co::BufferCache smallBuffers;
+
+    /** The command buffer 'allocator' for big packets */
+    co::BufferCache bigBuffers;
 
     bool sendToken; //!< send token availability.
     uint64_t lastSendToken; //!< last used time for timeout detection
@@ -460,10 +468,8 @@ uint32_t LocalNode::_removeListenerNB( ConnectionPtr connection )
 void LocalNode::_addConnection( ConnectionPtr connection )
 {
     _impl->incoming.addConnection( connection );
-    const size_t minSize = Buffer::getMinSize();
-    BufferPtr buffer = _impl->bufferCache.alloc( minSize );
-    buffer->setSize( 0 );
-    connection->recvNB( buffer, minSize );
+    BufferPtr buffer = _impl->smallBuffers.alloc( Buffer::getCacheSize( ));
+    connection->recvNB( buffer, Buffer::getMinSize( ));
 }
 
 void LocalNode::_removeConnection( ConnectionPtr connection )
@@ -481,27 +487,9 @@ void LocalNode::_cleanup()
     LBVERB << "Clean up stopped node" << std::endl;
     LBASSERTINFO( isClosed(), *this );
 
-    ConnectionPtr connection = getConnection();
-    PipeConnectionPtr pipe = LBSAFECAST( PipeConnection*, connection.get( ));
-    connection = pipe->acceptSync();
-    _removeConnection( connection );
-    _impl->connectionNodes.erase( connection );
-    _disconnect();
-
-    const Connections& connections = _impl->incoming.getConnections();
-    while( !connections.empty( ))
-    {
-        connection = connections.back();
-        NodePtr node = _impl->connectionNodes[ connection ];
-
-        if( node )
-            _closeNode( node );
-        _removeConnection( connection );
-    }
-
     if( !_impl->connectionNodes.empty( ))
-        LBINFO << _impl->connectionNodes.size() << " open connections during cleanup"
-               << std::endl;
+        LBINFO << _impl->connectionNodes.size()
+               << " open connections during cleanup" << std::endl;
 #ifndef NDEBUG
     for( ConnectionNodeHashCIter i = _impl->connectionNodes.begin();
          i != _impl->connectionNodes.end(); ++i )
@@ -1172,11 +1160,30 @@ void LocalNode::_runReceiverThread()
         LBWARN << _impl->pendingCommands.size()
                << " commands pending while leaving command thread" << std::endl;
 
+    ConnectionPtr connection = getConnection();
+    PipeConnectionPtr pipe = LBSAFECAST( PipeConnection*, connection.get( ));
+    connection = pipe->acceptSync();
+    _removeConnection( connection );
+    _impl->connectionNodes.erase( connection );
+    _disconnect();
+
+    const Connections& connections = _impl->incoming.getConnections();
+    while( !connections.empty( ))
+    {
+        connection = connections.back();
+        NodePtr node = _impl->connectionNodes[ connection ];
+
+        if( node )
+            _closeNode( node );
+        _removeConnection( connection );
+    }
+
     _impl->pendingCommands.clear();
     LBCHECK( _impl->commandThread->join( ));
     _impl->objectStore->clear();
     _impl->pendingCommands.clear();
-    _impl->bufferCache.flush();
+    _impl->smallBuffers.flush();
+    _impl->bigBuffers.flush();
 
     LBINFO << "Leaving receiver thread of " << lunchbox::className( this )
            << std::endl;
@@ -1224,9 +1231,61 @@ void LocalNode::_handleDisconnect()
 
 bool LocalNode::_handleData()
 {
+    _impl->smallBuffers.compact();
+    _impl->bigBuffers.compact();
+
     ConnectionPtr connection = _impl->incoming.getConnection();
     LBASSERT( connection );
 
+    BufferPtr buffer = _readHead( connection );
+    if( !buffer ) // fluke signal
+        return false;
+
+    Command command = _setupCommand( connection, buffer );
+    const bool gotCommand = _readTail( command, buffer, connection );
+    LBASSERT( gotCommand );
+
+    // start next receive
+    BufferPtr nextBuffer = _impl->smallBuffers.alloc( Buffer::getCacheSize( ));
+    connection->recvNB( nextBuffer, Buffer::getMinSize( ));
+
+    if( gotCommand )
+    {
+        _dispatchCommand( command );
+        return true;
+    }
+
+    LBERROR << "Incomplete command read: " << command << std::endl;
+    return false;
+}
+
+BufferPtr LocalNode::_readHead( ConnectionPtr connection )
+{
+    BufferPtr buffer;
+    const bool gotSize = connection->recvSync( buffer, false );
+    const size_t minSize = Buffer::getMinSize();
+
+    if( !buffer ) // fluke signal
+    {
+        LBWARN << "Erronous network event on " << connection->getDescription()
+               << std::endl;
+        _impl->incoming.setDirty();
+        return 0;
+    }
+
+    if( !gotSize ) // Some systems signal data on dead connections.
+    {
+        buffer->setSize( 0 );
+        connection->recvNB( buffer, minSize );
+        return 0;
+    }
+
+    return buffer;
+}
+
+Command LocalNode::_setupCommand( ConnectionPtr connection,
+                                  ConstBufferPtr buffer )
+{
     NodePtr node;
     ConnectionNodeHashCIter i = _impl->connectionNodes.find( connection );
     if( i != _impl->connectionNodes.end( ))
@@ -1235,32 +1294,11 @@ bool LocalNode::_handleData()
                   *(node->getConnection()) == *connection || // correct UC conn
                   connection->getDescription()->type>=CONNECTIONTYPE_MULTICAST,
                   lunchbox::className( node ));
-
     LBVERB << "Handle data from " << node << std::endl;
 
-    // Read initial, and in the case of small packets final, buffer from conn.
-    BufferPtr buffer;
-    const bool gotSize = connection->recvSync( buffer, false );
-    const size_t minSize = Buffer::getMinSize();
+    const bool swapping = node ? node->isBigEndian() != isBigEndian() : false;
+    Command command( this, node, buffer, swapping );
 
-    if( !gotSize ) // Some systems signal data on dead connections.
-    {
-        buffer->setSize( 0 );
-        connection->recvNB( buffer, minSize );
-        return false;
-    }
-
-    if( !buffer ) // fluke signal
-    {
-        LBWARN << "Erronous network event on " << connection->getDescription()
-               << std::endl;
-        _impl->incoming.setDirty();
-        return false;
-    }
-
-    buffer->setNodes( this, node );
-    Command command( buffer,
-                     node ? node->isBigEndian() != isBigEndian() : false );
     if( node )
         node->_setLastReceive( getTime64( ));
     else
@@ -1275,7 +1313,7 @@ bool LocalNode::_handleData()
           case CMD_NODE_CONNECT_REPLY:
           case CMD_NODE_ID:
 #ifdef COLLAGE_BIGENDIAN
-              command = Command( buffer, true );
+              command = Command( this, node, buffer, true );
 #endif
               break;
 
@@ -1283,60 +1321,54 @@ bool LocalNode::_handleData()
           case CMD_NODE_CONNECT_REPLY_BE:
           case CMD_NODE_ID_BE:
 #ifndef COLLAGE_BIGENDIAN
-              command = Command( buffer, true );
+              command = Command( this, node, buffer, true );
 #endif
               break;
 
           default:
               LBUNIMPLEMENTED;
-              return false;
+              return Command();
         }
         command.setCommand( cmd ); // reset correctly swapped version
     }
 
-    if( command.getSize() > buffer->getMaxSize( ))
+    return command;
+}
+
+bool LocalNode::_readTail( Command& command, BufferPtr buffer,
+                           ConnectionPtr connection )
+{
+    const uint64_t needed = command.getSize_();
+    if( needed <= buffer->getSize( ))
+        return true;
+
+    if( needed > buffer->getMaxSize( ))
     {
+        LBASSERT( needed > co::Buffer::getCacheSize( ));
         // not enough space for remaining data, alloc and copy to new buffer
-        BufferPtr newBuffer = _impl->bufferCache.alloc( command.getSize( ));
+        BufferPtr newBuffer = _impl->bigBuffers.alloc( needed );
         newBuffer->replace( *buffer );
-        command = Command( newBuffer, command.isSwapping( ));
+        command = Command( this, command.getNode(), newBuffer,
+                           command.isSwapping( ));
     }
 
-    bool gotData = true;
-    if( command.getSize() > buffer->getSize( ))
-    {
-        // read remaining data
-        connection->recvNB( buffer, command.getSize() - buffer->getSize( ));
-        gotData = connection->recvSync( buffer, false );
-        LBASSERT( gotData );
-    }
-
-    // start next receive
-    BufferPtr nextBuffer = _impl->bufferCache.alloc( minSize );
-    nextBuffer->setSize( 0 );
-    connection->recvNB( nextBuffer, minSize );
-
-    if( !gotData )
-    {
-        LBERROR << "Incomplete command read: " << command << std::endl;
-        return false;
-    }
-
-    _dispatchCommand( command );
-    return true;
+    // read remaining data
+    connection->recvNB( buffer, command.getSize_() - buffer->getSize( ));
+    return connection->recvSync( buffer );
 }
 
 BufferPtr LocalNode::allocBuffer( const uint64_t size )
 {
     LBASSERT( _impl->inReceiverThread( ));
-    BufferPtr buffer = _impl->bufferCache.alloc( size );
-    buffer->setNodes( this, this );
+    BufferPtr buffer = size > co::Buffer::getCacheSize() ? 
+        _impl->bigBuffers.alloc( size ) :
+        _impl->smallBuffers.alloc( Buffer::getCacheSize( ));
     return buffer;
 }
 
 void LocalNode::_dispatchCommand( Command& command )
 {
-    LBASSERT( command.isValid( ));
+    LBASSERTINFO( command.isValid(), command );
 
     if( dispatchCommand( command ))
         _redispatchCommands();
@@ -1350,7 +1382,7 @@ void LocalNode::_dispatchCommand( Command& command )
 bool LocalNode::dispatchCommand( Command& command )
 {
     LBVERB << "dispatch " << command << " by " << getNodeID() << std::endl;
-    LBASSERT( command.isValid( ));
+    LBASSERTINFO( command.isValid(), command );
 
     const uint32_t type = command.getType();
     switch( type )

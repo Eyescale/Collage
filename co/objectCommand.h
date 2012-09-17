@@ -41,7 +41,8 @@ class ObjectCommand : public Command
 {
 public:
     /** @internal */
-    CO_API ObjectCommand( ConstBufferPtr buffer, const bool swap );
+    CO_API ObjectCommand( LocalNodePtr local, NodePtr remote,
+                          ConstBufferPtr buffer, const bool swap );
 
     /** @internal */
     CO_API ObjectCommand( const Command& command );

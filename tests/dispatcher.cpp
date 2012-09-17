@@ -114,11 +114,11 @@ public:
 
 int main( int argc, char **argv )
 {
-    co::BufferCache cache;
+    co::BufferCache cache( 10 );
     co::LocalNodePtr node = new co::LocalNode;
-    co::BufferPtr buffer = cache.alloc( node, node, co::OCommand::getSize( ));
+    co::BufferPtr buffer = cache.alloc( co::OCommand::getSize( ));
 
-    co::Command command( buffer );
+    co::Command command( node, node, buffer, false );
     command.setType( co::COMMANDTYPE_NODE );
     command.setCommand( co::CMD_NODE_CUSTOM );
 

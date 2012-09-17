@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2008-2011, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2008-2012, Stefan Eilemann <eile@equalizergraphics.com> 
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -21,10 +21,11 @@
 
 #define EQ_TEST_RUNTIME 600 // seconds, needed for NighlyMemoryCheck
 #include <test.h>
-#include <lunchbox/clock.h>
-#include <lunchbox/monitor.h>
+#include <co/buffer.h>
 #include <co/connectionSet.h>
 #include <co/init.h>
+#include <lunchbox/clock.h>
+#include <lunchbox/monitor.h>
 
 #include <iostream>
 
@@ -82,7 +83,8 @@ int main( int argc, char **argv )
     Sender sender( connection->acceptSync( ));
     TEST( sender.start( ));
 
-    void* buffer = calloc( 1, MAXPACKETSIZE );
+    co::Buffer buffer;
+    co::BufferPtr syncBuffer;
     lunchbox::Clock clock;
 
     unsigned stage = 2;
@@ -99,8 +101,9 @@ int main( int argc, char **argv )
         clock.reset();
         while( --i )
         {
-            connection->recvNB( buffer, packetSize );
-            TEST( connection->recvSync( 0, 0 ));
+            connection->recvNB( &buffer, packetSize );
+            TEST( connection->recvSync( syncBuffer ));
+            TEST( syncBuffer == &buffer );
         }
         const float time = clock.getTimef();
         if( mBytes > 0.2f )
@@ -119,6 +122,5 @@ int main( int argc, char **argv )
 
     TEST( sender.join( ));
     connection->close();
-    free( buffer );
     return EXIT_SUCCESS;
 }

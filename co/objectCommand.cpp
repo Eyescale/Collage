@@ -44,8 +44,9 @@ public:
 
 }
 
-ObjectCommand::ObjectCommand( ConstBufferPtr buffer, const bool swap_ )
-    : Command( buffer, swap_ )
+ObjectCommand::ObjectCommand( LocalNodePtr local, NodePtr remote,
+                        ConstBufferPtr buffer, const bool swap_ )
+        : Command( local, remote, buffer, swap_ )
     , _impl( new detail::ObjectCommand )
 {
     _init();

@@ -86,16 +86,15 @@ int main( int argc, char **argv )
 {
     co::init( argc, argv );
 
-    co::BufferCache bufferCache;
+    co::BufferCache bufferCache( 200 );
     co::LocalNodePtr node = new co::LocalNode;
-    co::BufferPtr buffer = bufferCache.alloc( node, node, COMMAND_SIZE );
+    co::BufferPtr buffer = bufferCache.alloc( COMMAND_SIZE );
 
-    co::ObjectDataOCommand ocommand( co::Connections(),
-                                     co::CMD_NODE_OBJECT_INSTANCE,
-                                     co::COMMANDTYPE_NODE, co::UUID(), 0, 1, 0,
-                                     COMMAND_SIZE, true, 0 );
-    buffer->swap( ocommand.getBuffer( ));
-    co::ObjectDataCommand command( buffer );
+    co::ObjectDataOCommand out( co::Connections(), co::CMD_NODE_OBJECT_INSTANCE,
+                                co::COMMANDTYPE_NODE, co::UUID(), 0, 1, 0,
+                                COMMAND_SIZE, true, 0 );
+    buffer->swap( out.getBuffer( ));
+    co::ObjectDataCommand in( node, node, buffer, false );
 
     Reader** readers = static_cast< Reader** >(
         alloca( N_READER * sizeof( Reader* )));
@@ -107,7 +106,7 @@ int main( int argc, char **argv )
     size_t ops = 0;
 
     for( lunchbox::UUID key; key.low() < 65536; ++key ) // Fill cache
-        if( !cache.add( co::ObjectVersion( key, 1 ), 1, command ))
+        if( !cache.add( co::ObjectVersion( key, 1 ), 1, in ))
             break;
 
     _clock.reset();
@@ -127,12 +126,12 @@ int main( int argc, char **argv )
             ++ops;
             if( cache.erase( key.identifier ))
             {
-                TEST( cache.add( key, 1, command ));
+                TEST( cache.add( key, 1, in ));
                 ops += 2;
                 hits += 2;
             }
         }
-        else if( cache.add( key, 1, command ))
+        else if( cache.add( key, 1, in ))
             ++hits;
         ++ops;
     }

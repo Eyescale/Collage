@@ -62,7 +62,7 @@ namespace co
         bool _set;
 #endif
 
-        BufferPtr _buffer;
+        Buffer _buffer;
 
         void _close();
     };

@@ -33,14 +33,6 @@ public:
         , size( 0 )
         , dispatcher( dispatcher_ )
         , localNode( localNode_ )
-    {
-    }
-
-    OCommand( const OCommand& rhs )
-        : isLocked( rhs.isLocked )
-        , size( rhs.size )
-        , dispatcher( rhs.dispatcher )
-        , localNode( rhs.localNode )
     {}
 
     bool isLocked;
@@ -97,8 +89,8 @@ OCommand::~OCommand()
             {
                 ConnectionPtr connection = *i;
                 connection->send( padding, delta, true );
+                connection->unlockSend();
             }
-            connection->unlockSend();
         }
         _impl->isLocked = false;
         _impl->size = 0;
@@ -111,10 +103,13 @@ OCommand::~OCommand()
         LBASSERT( _impl->localNode );
 
         // #145 proper local command dispatch?
-        BufferPtr buffer =
-            _impl->localNode->allocBuffer( getBuffer().getSize( ));
+        LBASSERT( _impl->size == 0 );
+        const uint64_t size = getBuffer().getSize();
+        BufferPtr buffer = _impl->localNode->allocBuffer( size );
         buffer->swap( getBuffer( ));
-        Command cmd( buffer, false, _impl->localNode, _impl->localNode );
+        reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
+
+        Command cmd( _impl->localNode, _impl->localNode, buffer, false );
         _impl->dispatcher->dispatchCommand( cmd );
     }
 
