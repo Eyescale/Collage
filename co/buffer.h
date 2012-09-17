@@ -65,8 +65,7 @@ public:
     /** @return true if the buffer is no longer in use. */
     bool isFree() const { return getRefCount() == 0; }
 
-    /** @return the number of newly allocated bytes. */
-    size_t alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size );
+    void alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size );
 
     void free();
 

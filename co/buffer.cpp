@@ -75,7 +75,7 @@ void Buffer::setNodes( LocalNodePtr local, NodePtr remote )
     _impl->remote = remote;
 }
 
-size_t Buffer::alloc( const uint64_t size )
+void Buffer::alloc( const uint64_t size )
 {
     LB_TS_THREAD( _writeThread );
     LBASSERT( getRefCount() == 1 ); // caller BufferCache
@@ -87,7 +87,6 @@ size_t Buffer::alloc( const uint64_t size )
 
     reserve( LB_MAX( getCacheSize(), size ));
     resize( size );
-    return size;
 }
 
 void Buffer::free()
