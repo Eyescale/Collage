@@ -116,7 +116,11 @@ int main( int argc, char **argv )
 {
     co::BufferCache cache( 10 );
     co::LocalNodePtr node = new co::LocalNode;
-    co::BufferPtr buffer = cache.alloc( co::OCommand::getSize( ));
+
+    const uint64_t size = co::OCommand::getSize();
+    co::BufferPtr buffer = cache.alloc( co::Buffer::getCacheSize( ));
+    buffer->resize( size );
+    reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
 
     co::Command command( node, node, buffer, false );
     command.setType( co::COMMANDTYPE_NODE );
