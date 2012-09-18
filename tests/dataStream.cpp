@@ -157,10 +157,11 @@ int main( int argc, char **argv )
     co::BufferCache bufferCache( 200 );
     bool receiving = true;
     const size_t minSize = co::Buffer::getMinSize();
+    const size_t cacheSize = co::Buffer::getCacheSize();
 
     while( receiving )
     {
-        co::BufferPtr buffer = bufferCache.alloc( minSize );
+        co::BufferPtr buffer = bufferCache.alloc( cacheSize );
         connection->recvNB( buffer, minSize );
         TEST( connection->recvSync( buffer ));
         TEST( !buffer->isEmpty( ));

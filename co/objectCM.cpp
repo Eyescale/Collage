@@ -50,10 +50,11 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
     ObjectInstanceDataOStream os( this );
     os.enablePush( getVersion(), nodes );
     _object->getInstanceData( os );
-
-    OCommand( os.getConnections(), CMD_NODE_OBJECT_PUSH )
-            << _object->getID() << groupID << typeID;
     os.disable();
+
+    if( !os.hasSentData( ))
+        OCommand( os.getConnections(), CMD_NODE_OBJECT_PUSH )
+            << _object->getID() << groupID << typeID;
 }
 
 void ObjectCM::_addSlave( MasterCMCommand command, const uint128_t& version )

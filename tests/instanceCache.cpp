@@ -40,11 +40,7 @@
 
 #define N_READER 1
 #define RUNTIME 5000
-#ifdef NDEBUG
-#  define COMMAND_SIZE 4096
-#else
-#  define COMMAND_SIZE 2048
-#endif
+#define COMMAND_SIZE 4096
 
 lunchbox::Clock _clock;
 

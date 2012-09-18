@@ -118,9 +118,7 @@ void ObjectInstanceDataOStream::sendData( const void* buffer,
                                           const uint64_t size, const bool last )
 {
     LBASSERT( _command );
-
-    ObjectDataOStream::send( _command, COMMANDTYPE_NODE, _instanceID, size,
-                             last )
+    send( _command, COMMANDTYPE_NODE, _instanceID, size, last )
         << _nodeID << _cm->getObject()->getInstanceID();
 }
 

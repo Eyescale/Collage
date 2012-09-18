@@ -1160,6 +1160,9 @@ void LocalNode::_runReceiverThread()
         LBWARN << _impl->pendingCommands.size()
                << " commands pending while leaving command thread" << std::endl;
 
+    _impl->pendingCommands.clear();
+    LBCHECK( _impl->commandThread->join( ));
+
     ConnectionPtr connection = getConnection();
     PipeConnectionPtr pipe = LBSAFECAST( PipeConnection*, connection.get( ));
     connection = pipe->acceptSync();
@@ -1178,8 +1181,6 @@ void LocalNode::_runReceiverThread()
         _removeConnection( connection );
     }
 
-    _impl->pendingCommands.clear();
-    LBCHECK( _impl->commandThread->join( ));
     _impl->objectStore->clear();
     _impl->pendingCommands.clear();
     _impl->smallBuffers.flush();
@@ -1509,7 +1510,7 @@ bool LocalNode::_cmdStopRcv( Command& command )
 bool LocalNode::_cmdStopCmd( Command& command )
 {
     LB_TS_THREAD( _cmdThread );
-    LBASSERT( isClosing( ));
+    LBASSERTINFO( isClosing(), *this );
 
     _setClosed();
     return true;

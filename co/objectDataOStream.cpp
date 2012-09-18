@@ -55,11 +55,9 @@ void ObjectDataOStream::enableCommit( const uint128_t& version,
     _enable();
 }
 
-ObjectDataOCommand ObjectDataOStream::send( const uint32_t cmd,
-                                            const uint32_t type,
-                                            const uint32_t instanceID,
-                                            const uint64_t size,
-                                            const bool last )
+ObjectDataOCommand ObjectDataOStream::send(
+    const uint32_t cmd, const uint32_t type, const uint32_t instanceID,
+    const uint64_t size, const bool last )
 {
     LBASSERT( _version != VERSION_INVALID );
     const uint32_t sequence = _sequence++;

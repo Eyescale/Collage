@@ -79,21 +79,27 @@ OCommand::~OCommand()
         LBASSERT( _impl->size > 0 );
         const uint64_t size = _impl->size + getBuffer().getSize();
         const size_t minSize = Buffer::getMinSize();
+            const Connections& connections = getConnections();
         if( size < minSize ) // Fill send to minimal size
         {
             const size_t delta = minSize - size;
             void* padding = alloca( delta );
-            const Connections& connections = getConnections();
             for( ConnectionsCIter i = connections.begin();
                  i != connections.end(); ++i )
             {
                 ConnectionPtr connection = *i;
                 connection->send( padding, delta, true );
-                connection->unlockSend();
             }
+        }
+        for( ConnectionsCIter i = connections.begin();
+             i != connections.end(); ++i )
+        {
+            ConnectionPtr connection = *i;
+            connection->unlockSend();
         }
         _impl->isLocked = false;
         _impl->size = 0;
+        reset();
     }
     else
         disable();
@@ -130,12 +136,12 @@ void OCommand::sendHeader( const uint64_t additionalSize )
     }
     _impl->isLocked = true;
     _impl->size = additionalSize;
-    disable();
+    flush( true );
 }
 
 size_t OCommand::getSize()
 {
-    return sizeof( uint32_t ) + sizeof( uint32_t );
+    return sizeof( uint64_t ) + sizeof( uint32_t ) + sizeof( uint32_t );
 }
 
 void OCommand::_init( const uint32_t cmd, const uint32_t type )

@@ -35,7 +35,7 @@ namespace detail { class Buffer; }
  *
  * The buffer does not auto-delete, that is, a BufferPtr is not a smart
  * pointer. The BufferCache uses the BufferListener interface to reuse buffers
- * which are free, i.e., unused by any Command.
+ * which are unreferenced, i.e., unused by any Command.
  */
 class Buffer : public lunchbox::Bufferb, public lunchbox::Referenced
 {
