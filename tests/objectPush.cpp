@@ -82,7 +82,6 @@ protected:
         {
             const co::Object::ChangeType type =
                 co::Object::ChangeType( typeID.low( ));
-            std::cout << type << std::endl;
             TESTINFO( istream.nRemainingBuffers() == 1 || // buffered
                       istream.nRemainingBuffers() == 2,   // unbuffered
                       istream.nRemainingBuffers( ));
