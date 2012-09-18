@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -33,25 +34,16 @@ class ObjectDataCommand
 public:
     ObjectDataCommand()
         : version( 0, 0 )
-        , sequence( 0 )
         , datasize( 0 )
+        , sequence( 0 )
         , compressor( EQ_COMPRESSOR_NONE )
         , chunks( 1 )
         , isLast( false )
     {}
 
-    ObjectDataCommand( const ObjectDataCommand& rhs )
-        : version( rhs.version )
-        , sequence( rhs.sequence )
-        , datasize( rhs.datasize )
-        , compressor( rhs.compressor )
-        , chunks( rhs.chunks )
-        , isLast( rhs.isLast )
-    {}
-
     uint128_t version;
-    uint32_t sequence;
     uint64_t datasize;
+    uint32_t sequence;
     uint32_t compressor;
     uint32_t chunks;
     bool isLast;
@@ -85,7 +77,7 @@ ObjectDataCommand::ObjectDataCommand( const ObjectDataCommand& rhs )
 void ObjectDataCommand::_init()
 {
     if( isValid( ))
-        *this >> _impl->version >> _impl->sequence >> _impl->datasize
+        *this >> _impl->version >> _impl->datasize >> _impl->sequence
               >> _impl->isLast >> _impl->compressor >> _impl->chunks;
 }
 

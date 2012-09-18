@@ -605,7 +605,7 @@ void LocalNode::ackRequest( NodePtr node, const uint32_t requestID )
 
 void LocalNode::ping( NodePtr peer )
 {
-    LBASSERT( !_impl->inReceiverThread( ) );
+    LBASSERT( !_impl->inReceiverThread( ));
     peer->send( CMD_NODE_PING );
 }
 
@@ -1360,7 +1360,7 @@ bool LocalNode::_readTail( Command& command, BufferPtr buffer,
 
 BufferPtr LocalNode::allocBuffer( const uint64_t size )
 {
-    LBASSERT( _impl->inReceiverThread( ));
+    LBASSERT( _impl->receiverThread->isStopped() || _impl->inReceiverThread( ));
     BufferPtr buffer = size > co::Buffer::getCacheSize() ? 
         _impl->bigBuffers.alloc( size ) :
         _impl->smallBuffers.alloc( Buffer::getCacheSize( ));

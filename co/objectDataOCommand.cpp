@@ -18,6 +18,8 @@
 
 #include "objectDataOCommand.h"
 
+#include "buffer.h"
+#include "objectDataCommand.h"
 #include "plugins/compressorTypes.h"
 
 namespace co
@@ -77,10 +79,12 @@ void ObjectDataOCommand::_init( const uint128_t& version,
                                 const uint32_t sequence,
                                 const uint64_t dataSize, const bool isLast )
 {
-    *this << version << sequence << dataSize << isLast;
+    *this << version << dataSize << sequence << isLast;
 
     if( _impl->stream )
         _impl->stream->streamDataHeader( *this );
+    else
+        *this << EQ_COMPRESSOR_NONE << 0u; // compressor, nChunks
 }
 
 ObjectDataOCommand::~ObjectDataOCommand()
@@ -98,6 +102,17 @@ ObjectDataOCommand::~ObjectDataOCommand()
     }
 
     delete _impl;
+}
+
+ObjectDataCommand ObjectDataOCommand::_getCommand( LocalNodePtr node )
+{
+    lunchbox::Bufferb& outBuffer = getBuffer();
+    uint8_t* bytes = outBuffer.getData();
+    reinterpret_cast< uint64_t* >( bytes )[ 0 ] = outBuffer.getSize();
+
+    BufferPtr inBuffer = node->allocBuffer( outBuffer.getSize( ));
+    inBuffer->swap( outBuffer );
+    return ObjectDataCommand( node, node, inBuffer, false );
 }
 
 }

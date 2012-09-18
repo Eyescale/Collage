@@ -23,7 +23,6 @@
 #include <test.h>
 
 #include <co/buffer.h>
-#include <co/bufferCache.h>
 #include <co/init.h>
 #include <co/instanceCache.h>
 #include <co/nodeCommand.h>
@@ -55,23 +54,23 @@ public:
 
 protected:
     virtual void run()
+    {
+        size_t hits = 0;
+        size_t ops = 0;
+        while( _clock.getTime64() < RUNTIME )
         {
-            size_t hits = 0;
-            size_t ops = 0;
-            while( _clock.getTime64() < RUNTIME )
+            const lunchbox::UUID key( _rng.get< uint16_t >(), 0 );
+            if( _cache[ key ] != co::InstanceCache::Data::NONE )
             {
-                const lunchbox::UUID key( _rng.get< uint16_t >(), 0 );
-                if( _cache[ key ] != co::InstanceCache::Data::NONE )
-                {
-                    ++hits;
-                    _cache.release( key, 1 );
-                }
-                ++ops;
+                ++hits;
+                _cache.release( key, 1 );
             }
-            const uint64_t time = _clock.getTime64();
-            std::cout << hits << " read hits in " << ops << " operations, "
-                      << ops / time << " ops/ms" << std::endl;
+            ++ops;
         }
+        const uint64_t time = _clock.getTime64();
+        std::cout << hits << " read hits in " << ops << " operations, "
+                  << ops / time << " ops/ms" << std::endl;
+    }
 
 private:
     co::InstanceCache& _cache;
@@ -82,15 +81,13 @@ int main( int argc, char **argv )
 {
     co::init( argc, argv );
 
-    co::BufferCache bufferCache( 200 );
-    co::LocalNodePtr node = new co::LocalNode;
-    co::BufferPtr buffer = bufferCache.alloc( COMMAND_SIZE );
-
     co::ObjectDataOCommand out( co::Connections(), co::CMD_NODE_OBJECT_INSTANCE,
                                 co::COMMANDTYPE_NODE, co::UUID(), 0, 1, 0,
                                 COMMAND_SIZE, true, 0 );
-    buffer->swap( out.getBuffer( ));
-    co::ObjectDataCommand in( node, node, buffer, false );
+    co::LocalNodePtr node = new co::LocalNode;
+    co::ObjectDataCommand in = out._getCommand( node );
+    TESTINFO( in.isValid(), in );
+    TEST( in.isLast( ));
 
     Reader** readers = static_cast< Reader** >(
         alloca( N_READER * sizeof( Reader* )));
@@ -161,9 +158,6 @@ int main( int argc, char **argv )
     std::cout << cache << std::endl;
 
     TESTINFO( cache.getSize() == 0, cache.getSize( ));
-    TEST( buffer->getRefCount() ==  2 ); // self + command
-    buffer = 0;
-
     TEST( co::exit( ));
     return EXIT_SUCCESS;
 }

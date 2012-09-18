@@ -61,9 +61,6 @@ namespace DataStreamTest { class Sender; }
         /** @internal */
         CO_API const Connections& getConnections() const;
 
-        /** @internal */
-        CO_API lunchbox::Bufferb& getBuffer();
-
         /** @internal Stream the data header (compressor, nChunks). */
         DataOStream& streamDataHeader( DataOStream& os );
 
@@ -121,6 +118,9 @@ namespace DataStreamTest { class Sender; }
     protected:
         CO_API DataOStream(); //!< @internal
         virtual CO_API ~DataOStream(); //!< @internal
+
+        /** @internal */
+        CO_API lunchbox::Bufferb& getBuffer();
 
         /** @internal Initialize the given compressor. */
         void _initCompressor( const uint32_t compressor );

@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -21,6 +22,10 @@
 #include <co/objectOCommand.h>   // base class
 #include <co/objectCommand.h>    // CMD enums
 
+
+/** @cond IGNORE */
+int testMain( int, char ** );
+/** @endcond */
 
 namespace co
 {
@@ -68,6 +73,9 @@ private:
     ObjectDataOCommand();
     ObjectDataOCommand& operator = ( const ObjectDataOCommand& );
     detail::ObjectDataOCommand* const _impl;
+
+    CO_API ObjectDataCommand _getCommand( LocalNodePtr node ); // needed by:
+    friend int ::testMain( int, char ** );
 
     void _init( const uint128_t& version, const uint32_t sequence,
                 const uint64_t dataSize, const bool isLast );
