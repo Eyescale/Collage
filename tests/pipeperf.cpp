@@ -101,6 +101,7 @@ int main( int argc, char **argv )
         clock.reset();
         while( --i )
         {
+            buffer.setSize( 0 );
             connection->recvNB( &buffer, packetSize );
             TEST( connection->recvSync( syncBuffer ));
             TEST( syncBuffer == &buffer );
