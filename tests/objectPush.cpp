@@ -88,6 +88,7 @@ protected:
             TEST( !object );
             object = new Object( type, istream );
             TESTINFO( !istream.hasData(), istream.nRemainingBuffers( ));
+            TESTINFO( monitor != type, monitor << " == " << type );
             monitor = type;
         }
 

@@ -24,7 +24,6 @@
 #include <co/commandQueue.h>
 #include <co/dispatcher.h>
 #include <co/init.h>
-#include <co/localNode.h>
 #include <co/oCommand.h>
 #include <lunchbox/clock.h>
 
@@ -86,16 +85,19 @@ int main( int argc, char **argv )
             readers[i].start();
         }
 
-        co::BufferCache cache;
-        co::LocalNodePtr node = new co::LocalNode;
+        co::BufferCache cache( 100 );
+        const uint64_t size = co::OCommand::getSize();
+        const uint64_t allocSize = co::Buffer::getCacheSize();
         size_t nOps = 0;
 
         lunchbox::Clock clock;
         while( clock.getTime64() < RUNTIME )
         {
-            co::BufferPtr buffer = cache.alloc( node, node,
-                                                co::OCommand::getSize( ));
-            co::Command command( buffer );
+            co::BufferPtr buffer = cache.alloc( allocSize );
+            buffer->resize( size );
+            reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
+
+            co::Command command( 0, 0, buffer, false /*swap*/ );
             command.setCommand( 0 );
             command.setType( co::COMMANDTYPE_CUSTOM );
 
@@ -112,9 +114,11 @@ int main( int argc, char **argv )
 
         for( size_t i = 0; i < N_READER; ++i )
         {
-            co::BufferPtr buffer = cache.alloc( node, node,
-                                                co::OCommand::getSize( ));
-            co::Command command( buffer );
+            co::BufferPtr buffer = cache.alloc( allocSize );
+            buffer->resize( size );
+            reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
+
+            co::Command command( 0, 0, buffer, false /*swap*/ );
             command.setCommand( 1 );
 
             readers[i].dispatchCommand( command );

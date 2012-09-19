@@ -18,6 +18,7 @@
 #include <test.h>
 
 #include <lunchbox/thread.h>
+#include <co/buffer.h>
 #include <co/init.h>
 
 #include <iostream>
@@ -40,10 +41,13 @@ protected:
             TEST( _connection->getState() == 
                   co::Connection::STATE_CONNECTED );
 
-            char text[5];
-            _connection->recvNB( &text, 5 );
-            TEST( _connection->recvSync( 0, 0 ));
-            TEST( strcmp( "buh!", text ) == 0 );
+            co::Buffer buffer;
+            _connection->recvNB( &buffer, 5 );
+
+            co::BufferPtr syncBuffer;
+            TEST( _connection->recvSync( syncBuffer ));
+            TEST( syncBuffer == &buffer );
+            TEST( strcmp( "buh!", (char*)buffer.getData( )) == 0 );
 
             _connection->close();
             _connection = 0;

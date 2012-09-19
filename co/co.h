@@ -62,6 +62,7 @@
  */
 
 #include <co/barrier.h>
+#include <co/buffer.h>
 #include <co/command.h>
 #include <co/connection.h>
 #include <co/connectionDescription.h>

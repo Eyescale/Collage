@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -17,6 +18,8 @@
 
 #include "objectDataOCommand.h"
 
+#include "buffer.h"
+#include "objectDataCommand.h"
 #include "plugins/compressorTypes.h"
 
 namespace co
@@ -76,43 +79,40 @@ void ObjectDataOCommand::_init( const uint128_t& version,
                                 const uint32_t sequence,
                                 const uint64_t dataSize, const bool isLast )
 {
-    *this << version << sequence << dataSize << isLast;
+    *this << version << dataSize << sequence << isLast;
 
     if( _impl->stream )
         _impl->stream->streamDataHeader( *this );
+    else
+        *this << EQ_COMPRESSOR_NONE << 0u; // compressor, nChunks
 }
 
 ObjectDataOCommand::~ObjectDataOCommand()
 {
-    disable();
+    if( _impl->stream )
+    {
+        sendHeader( _impl->dataSize );
+        const Connections& connections = getConnections();
+        for( ConnectionsCIter i = connections.begin(); i != connections.end();
+             ++i )
+        {
+            ConnectionPtr conn = *i;
+            _impl->stream->sendData( conn, _impl->dataSize );
+        }
+    }
+
     delete _impl;
 }
 
-void ObjectDataOCommand::sendData( const void* ptr, const uint64_t size,
-                                   const bool last )
+ObjectDataCommand ObjectDataOCommand::_getCommand( LocalNodePtr node )
 {
-    lunchbox::Bufferb& buffer = getBuffer();
-    LBASSERT( last );
-    LBASSERT( size > 0 );
-    LBASSERT( buffer.getData() == ptr );
-    LBASSERT( buffer.getSize() == size );
+    lunchbox::Bufferb& outBuffer = getBuffer();
+    uint8_t* bytes = outBuffer.getData();
+    reinterpret_cast< uint64_t* >( bytes )[ 0 ] = outBuffer.getSize();
 
-    // Update size field ( header + stream size )
-    uint8_t* bytes = buffer.getData();
-    reinterpret_cast< uint64_t* >( bytes )[ 0 ] = size - 8 + _impl->dataSize;
-
-    const Connections& connections = getConnections();
-    for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )
-    {
-        ConnectionPtr conn = *i;
-        conn->lockSend();
-
-        LBCHECK( conn->send( buffer.getData(), buffer.getSize(), true ));
-        if( _impl->stream )
-            _impl->stream->sendData( conn, _impl->dataSize );
-
-        conn->unlockSend();
-    }
+    BufferPtr inBuffer = node->allocBuffer( outBuffer.getSize( ));
+    inBuffer->swap( outBuffer );
+    return ObjectDataCommand( node, node, inBuffer, false );
 }
 
 }

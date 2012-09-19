@@ -172,34 +172,33 @@ namespace detail { class Connection; }
          *
          * This function returns immediately. The Notifier will signal data
          * availability, upon which recvSync() should be used to finish the
-         * operation.
+         * operation. The data will be appended to the buffer.
          *
          * @param buffer the buffer receiving the data.
          * @param bytes the number of bytes to read.
          * @sa recvSync()
          * @version 1.0
          */
-        CO_API void recvNB( void* buffer, const uint64_t bytes );
+        CO_API void recvNB( BufferPtr buffer, const uint64_t bytes );
 
         /**
          * Finish reading data from the connection.
          *
          * This function may block even if data availability was signaled, i.e.,
-         * when only a part of the data requested has been received. The buffer
-         * and bytes return value pointers can be 0. This method uses readNB()
-         * and readSync() to fill a buffer, potentially by using multiple reads.
+         * when only a part of the data requested has been received. The
+         * received data is appended to the buffer, at most the number of bytes
+         * given to recvNB(). This method uses readNB() and readSync() to fill a
+         * buffer, potentially by using multiple reads.
          *
-         * @param buffer return value, the buffer pointer passed to recvNB().
-         * @param bytes return value, the number of bytes read.
+         * @param buffer return value, the buffer passed to recvNB().
          * @param block internal WAR parameter, do not use unless you know
          *              exactly why.
          * @return true if all requested data has been read, false otherwise.
          * @version 1.0
          */
-        CO_API bool recvSync( void** buffer, uint64_t* bytes,
-                              const bool block = true );
+        CO_API bool recvSync( BufferPtr& buffer, const bool block = true );
 
-        void resetRecvData( void** buffer, uint64_t* bytes ); //!< @internal
+        BufferPtr resetRecvData(); //!< @internal
         //@}
 
         /** @name Synchronous write to the connection */

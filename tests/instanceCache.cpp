@@ -23,7 +23,6 @@
 #include <test.h>
 
 #include <co/buffer.h>
-#include <co/bufferCache.h>
 #include <co/init.h>
 #include <co/instanceCache.h>
 #include <co/nodeCommand.h>
@@ -40,11 +39,7 @@
 
 #define N_READER 1
 #define RUNTIME 5000
-#ifdef NDEBUG
-#  define COMMAND_SIZE 4096
-#else
-#  define COMMAND_SIZE 2048
-#endif
+#define COMMAND_SIZE 4096
 
 lunchbox::Clock _clock;
 
@@ -59,23 +54,23 @@ public:
 
 protected:
     virtual void run()
+    {
+        size_t hits = 0;
+        size_t ops = 0;
+        while( _clock.getTime64() < RUNTIME )
         {
-            size_t hits = 0;
-            size_t ops = 0;
-            while( _clock.getTime64() < RUNTIME )
+            const lunchbox::UUID key( _rng.get< uint16_t >(), 0 );
+            if( _cache[ key ] != co::InstanceCache::Data::NONE )
             {
-                const lunchbox::UUID key( _rng.get< uint16_t >(), 0 );
-                if( _cache[ key ] != co::InstanceCache::Data::NONE )
-                {
-                    ++hits;
-                    _cache.release( key, 1 );
-                }
-                ++ops;
+                ++hits;
+                _cache.release( key, 1 );
             }
-            const uint64_t time = _clock.getTime64();
-            std::cout << hits << " read hits in " << ops << " operations, "
-                      << ops / time << " ops/ms" << std::endl;
+            ++ops;
         }
+        const uint64_t time = _clock.getTime64();
+        std::cout << hits << " read hits in " << ops << " operations, "
+                  << ops / time << " ops/ms" << std::endl;
+    }
 
 private:
     co::InstanceCache& _cache;
@@ -86,17 +81,13 @@ int main( int argc, char **argv )
 {
     co::init( argc, argv );
 
-    co::BufferCache bufferCache;
+    co::ObjectDataOCommand out( co::Connections(), co::CMD_NODE_OBJECT_INSTANCE,
+                                co::COMMANDTYPE_NODE, co::UUID(), 0, 1, 0,
+                                COMMAND_SIZE, true, 0 );
     co::LocalNodePtr node = new co::LocalNode;
-    co::BufferPtr buffer = bufferCache.alloc( node, node, COMMAND_SIZE );
-
-    co::ObjectDataOCommand ocommand( co::Connections(),
-                                     co::CMD_NODE_OBJECT_INSTANCE,
-                                     co::COMMANDTYPE_NODE, co::UUID(), 0, 1, 0,
-                                     COMMAND_SIZE, true, 0 );
-    buffer->replace( ocommand.getBuffer().getData() + 8,
-                     ocommand.getBuffer().getSize() - 8 );
-    co::ObjectDataCommand command( buffer );
+    co::ObjectDataCommand in = out._getCommand( node );
+    TESTINFO( in.isValid(), in );
+    TEST( in.isLast( ));
 
     Reader** readers = static_cast< Reader** >(
         alloca( N_READER * sizeof( Reader* )));
@@ -108,7 +99,7 @@ int main( int argc, char **argv )
     size_t ops = 0;
 
     for( lunchbox::UUID key; key.low() < 65536; ++key ) // Fill cache
-        if( !cache.add( co::ObjectVersion( key, 1 ), 1, command ))
+        if( !cache.add( co::ObjectVersion( key, 1 ), 1, in ))
             break;
 
     _clock.reset();
@@ -128,12 +119,12 @@ int main( int argc, char **argv )
             ++ops;
             if( cache.erase( key.identifier ))
             {
-                TEST( cache.add( key, 1, command ));
+                TEST( cache.add( key, 1, in ));
                 ops += 2;
                 hits += 2;
             }
         }
-        else if( cache.add( key, 1, command ))
+        else if( cache.add( key, 1, in ))
             ++hits;
         ++ops;
     }
@@ -167,9 +158,6 @@ int main( int argc, char **argv )
     std::cout << cache << std::endl;
 
     TESTINFO( cache.getSize() == 0, cache.getSize( ));
-    TEST( buffer->getRefCount() ==  2 ); // self + command
-    buffer = 0;
-
     TEST( co::exit( ));
     return EXIT_SUCCESS;
 }

@@ -348,7 +348,6 @@ uint128_t FullMasterCM::commit( const uint32_t incarnation )
 void FullMasterCM::_commit()
 {
     InstanceData* instanceData = _newInstanceData();
-
     instanceData->os.enableCommit( _version + 1, *_slaves );
     _object->getInstanceData( instanceData->os );
     instanceData->os.disable();

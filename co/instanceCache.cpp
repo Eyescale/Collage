@@ -86,6 +86,8 @@ InstanceCache::Item::Item()
 bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
                          Command& command, const uint32_t usage )
 {
+    LBASSERTINFO( command.isValid(), command );
+
 #ifdef EQ_INSTRUMENT_CACHE
     ++nWrite;
 #endif

@@ -17,16 +17,19 @@
 
 // Tests basic connection functionality
 #include <test.h>
-#include <lunchbox/monitor.h>
+#include <co/buffer.h>
 #include <co/connection.h>
 #include <co/connectionDescription.h>
 #include <co/connectionSet.h>
 #include <co/init.h>
 
+#include <lunchbox/monitor.h>
 #include <iostream>
 
 #define PACKETSIZE (2048)
 
+namespace
+{
 static co::ConnectionType types[] =
 {
     co::CONNECTIONTYPE_TCPIP,
@@ -40,7 +43,7 @@ static co::ConnectionType types[] =
 #endif
     co::CONNECTIONTYPE_NONE // must be last
 };
-
+}
 
 int main( int argc, char **argv )
 {
@@ -48,9 +51,9 @@ int main( int argc, char **argv )
 
     for( size_t i = 0; types[i] != co::CONNECTIONTYPE_NONE; ++i )
     {
-        co::ConnectionDescriptionPtr desc = 
-            new co::ConnectionDescription;
+        co::ConnectionDescriptionPtr desc = new co::ConnectionDescription;
         desc->type = types[i];
+
         if( desc->type >= co::CONNECTIONTYPE_MULTICAST )
             desc->setHostname( "239.255.12.34" );
         else
@@ -91,16 +94,21 @@ int main( int argc, char **argv )
         TEST( writer.isValid( ));
         TEST( reader.isValid( ));
 
-        uint8_t in[ PACKETSIZE ];
-        reader->recvNB( in, PACKETSIZE );
+        co::Buffer buffer;
+        reader->recvNB( &buffer, PACKETSIZE );
 
         uint8_t out[ PACKETSIZE ];
         TEST( writer->send( out, PACKETSIZE ));
-        TEST( reader->recvSync( 0, 0 ));
+
+        co::BufferPtr syncBuffer;
+        TEST( reader->recvSync( syncBuffer ));
+        TEST( syncBuffer == &buffer );
+        TEST( buffer.getSize() == PACKETSIZE );
 
         writer->close();
-        reader->recvNB( in, PACKETSIZE );
-        TEST( !reader->recvSync( 0, 0 ));
+        buffer.setSize( 0 );
+        reader->recvNB( &buffer, PACKETSIZE );
+        TEST( !reader->recvSync( syncBuffer ));
         TEST( reader->isClosed( ));
 
         if( listener == writer )

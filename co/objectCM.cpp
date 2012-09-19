@@ -51,9 +51,11 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
     os.enablePush( getVersion(), nodes );
     _object->getInstanceData( os );
 
+    // Send push notification to remote cmd thread while connections are valid
     OCommand( os.getConnections(), CMD_NODE_OBJECT_PUSH )
-            << _object->getID() << groupID << typeID;
-    os.disable();
+        << _object->getID() << groupID << typeID;
+
+    os.disable(); // handled by remote recv thread
 }
 
 void ObjectCM::_addSlave( MasterCMCommand command, const uint128_t& version )

@@ -323,4 +323,13 @@ std::ostream& operator << ( std::ostream& os, const Object& object )
     return os;
 }
 
+std::ostream& operator << ( std::ostream& os,const Object::ChangeType& type )
+{
+    return os << ( type == Object::NONE ? "none" :
+                   type == Object::STATIC ? "static" :
+                   type == Object::INSTANCE ? "instance" :
+                   type == Object::DELTA ? "delta" :
+                   type == Object::UNBUFFERED ? "unbuffered" : "ERROR" );
+}
+
 }

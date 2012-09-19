@@ -450,6 +450,7 @@ namespace co
         LB_TS_VAR( _thread );
     };
     CO_API std::ostream& operator << ( std::ostream&, const Object& );
+    CO_API std::ostream& operator << ( std::ostream&,const Object::ChangeType&);
 }
 
 namespace lunchbox

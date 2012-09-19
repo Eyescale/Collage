@@ -207,7 +207,7 @@ void DataOStream::_enable()
     _impl->enabled     = true;
     _impl->buffer.setSize( 0 );
 #ifdef CO_AGGRESSIVE_CACHING
-    _impl->buffer.reserve( Buffer::getMinSize( ));
+    _impl->buffer.reserve( Buffer::getCacheSize( ));
 #endif
 }
 
@@ -246,62 +246,41 @@ void DataOStream::_resend()
     sendData( _impl->buffer.getData(), _impl->dataSize, true );
 }
 
-void DataOStream::disable()
-{
-    if( !_disable( ))
-        return;
-    _impl->connections.clear();
-}
-
 void DataOStream::_clearConnections()
 {
     _impl->connections.clear();
 }
 
-bool DataOStream::_disable()
+void DataOStream::disable()
 {
     if( !_impl->enabled )
-        return false;
+        return;
 
-    if( _impl->dataSent )
+    _impl->dataSize = _impl->buffer.getSize();
+    _impl->dataSent = _impl->dataSize > 0;
+
+    if( _impl->dataSent && !_impl->connections.empty( ))
     {
-        _impl->dataSize = _impl->buffer.getSize();
-        if( !_impl->connections.empty( ))
+        void* ptr = _impl->buffer.getData() + _impl->bufferStart;
+        const uint64_t size = _impl->buffer.getSize() - _impl->bufferStart;
+
+        if( size == 0 && _impl->state == STATE_PARTIAL )
         {
-            void* ptr = _impl->buffer.getData() + _impl->bufferStart;
-            const uint64_t size = _impl->buffer.getSize() - _impl->bufferStart;
-
-            if( size == 0 && _impl->bufferStart == _impl->dataSize &&
-                _impl->state == STATE_PARTIAL )
-            {
-                // OPT: all data has been sent in one compressed chunk
-                _impl->state = STATE_COMPLETE;
+            // OPT: all data has been sent in one compressed chunk
+            _impl->state = STATE_COMPLETE;
 #ifndef CO_AGGRESSIVE_CACHING
-                _impl->buffer.clear();
+            _impl->buffer.clear();
 #endif
-            }
-            else
-            {
-                _impl->state = STATE_UNCOMPRESSED;
-                _impl->compress( ptr, size, STATE_PARTIAL );
-            }
-
-            sendData( ptr, size, true ); // always send to finalize istream
         }
-    }
-    else if( _impl->buffer.getSize() > 0 )
-    {
-        _impl->dataSize = _impl->buffer.getSize();
-        _impl->dataSent = true;
-
-        LBASSERT( _impl->bufferStart == 0 );
-        if( !_impl->connections.empty( ))
+        else
         {
             _impl->state = STATE_UNCOMPRESSED;
-            _impl->compress( _impl->buffer.getData(), _impl->dataSize,
-                             STATE_COMPLETE );
-            sendData( _impl->buffer.getData(), _impl->dataSize, true );
+            const CompressorState state = _impl->bufferStart == 0 ?
+                                              STATE_COMPLETE : STATE_PARTIAL;
+            _impl->compress( ptr, size, state );
         }
+
+        sendData( ptr, size, true ); // always send to finalize istream
     }
 
 #ifndef CO_AGGRESSIVE_CACHING
@@ -309,7 +288,7 @@ bool DataOStream::_disable()
         _impl->buffer.clear();
 #endif
     _impl->enabled = false;
-    return true;
+    _impl->connections.clear();
 }
 
 void DataOStream::enableSave()
@@ -345,12 +324,12 @@ void DataOStream::_write( const void* data, uint64_t size )
     if( _impl->buffer.getSize() - _impl->bufferStart >
         Global::getObjectBufferSize( ))
     {
-        _flush();
+        flush( false );
     }
     _impl->buffer.append( static_cast< const uint8_t* >( data ), size );
 }
 
-void DataOStream::_flush()
+void DataOStream::flush( const bool last )
 {
     LBASSERT( _impl->enabled );
     if( !_impl->connections.empty( ))
@@ -360,7 +339,7 @@ void DataOStream::_flush()
 
         _impl->state = STATE_UNCOMPRESSED;
         _impl->compress( ptr, size, STATE_PARTIAL );
-        sendData( ptr, size, false );
+        sendData( ptr, size, last );
     }
     _impl->dataSent = true;
     _resetBuffer();
@@ -369,6 +348,8 @@ void DataOStream::_flush()
 void DataOStream::reset()
 {
     _resetBuffer();
+    _impl->enabled = false;
+    _impl->connections.clear();
 }
 
 const Connections& DataOStream::getConnections() const

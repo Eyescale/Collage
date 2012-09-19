@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -40,7 +41,8 @@ class ObjectCommand : public Command
 {
 public:
     /** @internal */
-    CO_API ObjectCommand( ConstBufferPtr buffer );
+    CO_API ObjectCommand( LocalNodePtr local, NodePtr remote,
+                          ConstBufferPtr buffer, const bool swap );
 
     /** @internal */
     CO_API ObjectCommand( const Command& command );

@@ -42,13 +42,13 @@ namespace detail { class Command; }
     {
     public:
         CO_API Command(); //!< @internal
-        CO_API Command( ConstBufferPtr buffer ); //!< @internal
+        CO_API Command( LocalNodePtr local, NodePtr remote,
+                        ConstBufferPtr buffer, const bool swap ); //!< @internal
         CO_API Command( const Command& rhs ); //!< @internal
 
         CO_API Command& operator = ( const Command& rhs ); //!< @internal
 
         CO_API void clear(); //!< @internal
-        void reread(); //!< @internal see LocalNode::_dispatchCommand()
 
         CO_API virtual ~Command(); //!< @internal
 
@@ -60,8 +60,11 @@ namespace detail { class Command; }
         /** @return the command. @version 1.0 */
         CO_API uint32_t getCommand() const;
 
-        /** @internal @return the size of this command. @version 1.0 */
-        CO_API uint64_t getSize() const;
+        /** @return the command payload size. @version 1.0 */
+        uint64_t getSize_() const;
+
+        /** @internal @return the buffer */
+        CO_API ConstBufferPtr getBuffer() const;
 
         /** @return a value from the command. @version 1.0 */
         template< typename T > T get()

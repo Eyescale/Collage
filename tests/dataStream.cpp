@@ -60,11 +60,13 @@ protected:
 class DataIStream : public co::DataIStream
 {
 public:
+    DataIStream() : co::DataIStream( false /*swap*/ ){}
+
     void addDataCommand( co::ConstBufferPtr buffer )
         {
-            co::ObjectDataCommand command( buffer );
+            co::ObjectDataCommand command( 0, 0, buffer, false /*swap*/ );
             TESTINFO( command.getCommand() == co::CMD_OBJECT_DELTA, command );
-            _commands.push( buffer );
+            _commands.push( command );
         }
 
     virtual size_t nRemainingBuffers() const { return _commands.getSize(); }
@@ -152,29 +154,42 @@ int main( int argc, char **argv )
     TEST( sender.start( ));
 
     ::DataIStream stream;
-    co::BufferCache bufferCache;
+    co::BufferCache bufferCache( 200 );
     bool receiving = true;
+    const size_t minSize = co::Buffer::getMinSize();
+    const size_t cacheSize = co::Buffer::getCacheSize();
 
     while( receiving )
     {
-        uint64_t size;
-        connection->recvNB( &size, sizeof( size ));
-        TEST( connection->recvSync( 0, 0 ));
-        TEST( size );
+        co::BufferPtr buffer = bufferCache.alloc( cacheSize );
+        connection->recvNB( buffer, minSize );
+        TEST( connection->recvSync( buffer ));
+        TEST( !buffer->isEmpty( ));
 
-        co::BufferPtr buffer = bufferCache.alloc( 0, 0, size );
-        connection->recvNB( buffer->getData(), size );
-        TEST( connection->recvSync( 0, 0 ) );
-        TEST( buffer->isValid( ));
+        co::Command command( 0, 0, buffer, false );
+        if( command.getSize_() > buffer->getMaxSize( ))
+        {
+            // not enough space for remaining data, alloc and copy to new buffer
+            co::BufferPtr newBuffer = bufferCache.alloc( command.getSize_( ));
+            newBuffer->replace( *buffer );
+            command = co::Command( 0, 0, newBuffer, false );
+        }
+        if( command.getSize_() > buffer->getSize( ))
+        {
+            // read remaining data
+            connection->recvNB( buffer, command.getSize_() - buffer->getSize( ));
+            TEST( connection->recvSync( buffer ));
+        }
 
-        co::ObjectDataCommand command( buffer );
         switch( command.getCommand( ))
         {
             case co::CMD_OBJECT_DELTA:
             {
                 stream.addDataCommand( buffer );
                 TEST( !buffer->isFree( ));
-                receiving = !command.isLast();
+
+                co::ObjectDataCommand dataCmd( command );
+                receiving = !dataCmd.isLast();
                 break;
             }
             default:
