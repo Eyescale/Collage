@@ -90,6 +90,7 @@ Command& Command::operator = ( const Command& rhs )
 {
     if( this != &rhs )
     {
+        DataIStream::operator = ( rhs );
         *_impl = *rhs._impl;
         _skipHeader();
     }
