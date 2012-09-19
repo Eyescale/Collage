@@ -401,12 +401,12 @@ ConnectionPtr LocalNode::addListener( ConnectionDescriptionPtr desc )
     LBASSERT( isListening( ));
 
     ConnectionPtr connection = Connection::create( desc );
-
     if( connection && connection->listen( ))
     {
         addListener( connection );
         return connection;
     }
+
     return 0;
 }
 
