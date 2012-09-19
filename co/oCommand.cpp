@@ -31,7 +31,7 @@ class OCommand
 {
 public:
     OCommand( co::Dispatcher* const dispatcher_, LocalNodePtr localNode_ )
-        : lockSend( true )
+        : isLocked( false )
         , size( 0 )
         , dispatcher( dispatcher_ )
         , localNode( localNode_ )
@@ -39,13 +39,13 @@ public:
     }
 
     OCommand( const OCommand& rhs )
-        : lockSend( rhs.lockSend )
+        : isLocked( rhs.isLocked )
         , size( rhs.size )
         , dispatcher( rhs.dispatcher )
         , localNode( rhs.localNode )
     {}
 
-    bool lockSend;
+    bool isLocked;
     uint64_t size;
     co::Dispatcher* const dispatcher;
     LocalNodePtr localNode;
@@ -91,9 +91,9 @@ OCommand::~OCommand()
         LBASSERT( _impl->localNode );
 
         // #145 proper local command dispatch?
-        BufferPtr buffer =
-                _impl->localNode->allocBuffer( getBuffer().getSize( ));
-        buffer->swap( getBuffer( ));
+        const uint64_t size = getBuffer().getSize() - 8;
+        BufferPtr buffer = _impl->localNode->allocBuffer( size );
+        buffer->replace( getBuffer().getData() + 8, size );
         Command cmd( buffer );
         _impl->dispatcher->dispatchCommand( cmd );
     }
@@ -104,7 +104,7 @@ OCommand::~OCommand()
 void OCommand::sendHeaderUnlocked( const uint64_t additionalSize )
 {
     LBASSERT( !_impl->dispatcher );
-    _impl->lockSend = false;
+    _impl->isLocked = true;
     _impl->size = additionalSize;
     disable();
 }
@@ -119,7 +119,7 @@ void OCommand::_init( const uint32_t cmd, const uint32_t type )
     LBASSERT( cmd < CMD_NODE_MAXIMUM );
     enableSave();
     _enable();
-    *this << type << cmd;
+    *this << 0ull /* size */ << type << cmd;
 }
 
 void OCommand::sendData( const void* buffer, const uint64_t size,
@@ -127,24 +127,22 @@ void OCommand::sendData( const void* buffer, const uint64_t size,
 {
     LBASSERT( !_impl->dispatcher );
     LBASSERT( last );
-    LBASSERT( size > 0 );
+    LBASSERTINFO( size >= 16, size );
+    LBASSERT( getBuffer().getData() == buffer );
+    LBASSERT( getBuffer().getSize() == size );
 
-    _impl->size += size;
+    // Update size field
+    uint8_t* bytes = getBuffer().getData();
+    reinterpret_cast< uint64_t* >( bytes )[ 0 ] = _impl->size + size - 8;
 
-    for( ConnectionsCIter it = getConnections().begin();
-         it != getConnections().end(); ++it )
+    const Connections& connections = getConnections();
+    for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )
     {
-        ConnectionPtr conn = *it;
-
-        if( _impl->lockSend )
-            conn->lockSend();
-        conn->send( &_impl->size, sizeof( uint64_t ), true );
-        conn->send( buffer, size, true );
-        if( _impl->lockSend )
-            conn->unlockSend();
+        ConnectionPtr connection = *i;
+        connection->send( bytes, size, _impl->isLocked );
     }
 
-    _impl->lockSend = true;
+    _impl->isLocked = false;
     _impl->size = 0;
 }
 

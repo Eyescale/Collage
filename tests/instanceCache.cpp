@@ -94,7 +94,8 @@ int main( int argc, char **argv )
                                      co::CMD_NODE_OBJECT_INSTANCE,
                                      co::COMMANDTYPE_NODE, co::UUID(), 0, 1, 0,
                                      COMMAND_SIZE, true, 0 );
-    buffer->swap( ocommand.getBuffer( ));
+    buffer->replace( ocommand.getBuffer().getData() + 8,
+                     ocommand.getBuffer().getSize() - 8 );
     co::ObjectDataCommand command( buffer );
 
     Reader** readers = static_cast< Reader** >(

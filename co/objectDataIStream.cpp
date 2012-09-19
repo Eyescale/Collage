@@ -66,7 +66,7 @@ void ObjectDataIStream::addDataCommand( ObjectDataCommand command )
 
     if( _commands.empty( ))
     {
-        LBASSERT( sequence == 0 );
+        LBASSERTINFO( sequence == 0, sequence << " in " << command );
     }
     else
     {
