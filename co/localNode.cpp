@@ -1350,7 +1350,9 @@ bool LocalNode::_readTail( Command& command, BufferPtr buffer,
         // not enough space for remaining data, alloc and copy to new buffer
         BufferPtr newBuffer = _impl->bigBuffers.alloc( needed );
         newBuffer->replace( *buffer );
-        command = Command( this, command.getNode(), newBuffer,
+        buffer = newBuffer;
+
+        command = Command( this, command.getNode(), buffer,
                            command.isSwapping( ));
     }
 
