@@ -424,7 +424,8 @@ void LocalNode::addListener( ConnectionPtr connection )
 
     for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
         (*i)->send( CMD_NODE_ADD_LISTENER )
-            << connection.get() << connection->getDescription()->toString();
+            << (uint64_t)(connection.get( ))
+            << connection->getDescription()->toString();
 }
 
 void LocalNode::removeListeners( const Connections& connections )
@@ -1893,7 +1894,7 @@ bool LocalNode::_cmdReleaseSendToken( Command& )
 
 bool LocalNode::_cmdAddListener( Command& command )
 {
-    Connection* rawConnection = command.get< Connection* >();
+    Connection* rawConnection = (Connection*)(command.get< uint64_t >( ));
     std::string data = command.get< std::string >();
 
     ConnectionDescriptionPtr description = new ConnectionDescription( data );
