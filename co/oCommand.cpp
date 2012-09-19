@@ -146,7 +146,10 @@ size_t OCommand::getSize()
 
 void OCommand::_init( const uint32_t cmd, const uint32_t type )
 {
-    LBASSERT( cmd < CMD_NODE_MAXIMUM );
+#ifndef COLLAGE_BIGENDIAN
+    // big endian hosts swap handshake commands to little endian...
+    LBASSERTINFO( cmd < CMD_NODE_MAXIMUM, std::hex << "0x" << cmd << std::dec );
+#endif
     enableSave();
     _enable();
     *this << 0ull /* size */ << type << cmd;
