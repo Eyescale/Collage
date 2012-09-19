@@ -1658,7 +1658,8 @@ bool LocalNode::_cmdConnectReply( Command& command )
             peer = createNode( nodeType );
     }
 
-    LBASSERT( peer->getType() == nodeType );
+    LBASSERTINFO( peer->getType() == nodeType,
+                  peer->getType() << " != " << nodeType );
     LBASSERT( peer->isClosed( ));
 
     if( !peer->deserialize( data ))
