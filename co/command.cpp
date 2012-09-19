@@ -51,7 +51,7 @@ public:
         , cmd( rhs.cmd )
     {}
 
-    void operator=( const Command& rhs )
+    void operator = ( const Command& rhs )
     {
         func = rhs.func;
         buffer = rhs.buffer;
@@ -92,6 +92,7 @@ Command::Command( const Command& rhs )
     : DataIStream()
     , _impl( new detail::Command( *rhs._impl ))
 {
+    setSwapping( rhs.isSwapping( )); // needed for node handshake commands
     if( _impl->buffer )
         _skipHeader();
 }
@@ -114,6 +115,16 @@ Command::~Command()
 void Command::clear()
 {
     _impl->clear();
+}
+
+void Command::reread()
+{
+    LBASSERT( _impl->buffer );
+    if( !_impl->buffer )
+        return;
+
+    getRemainingBuffer( getRemainingBufferSize( )); // yuck. resets packet.
+    *this >> _impl->type >> _impl->cmd;
 }
 
 void Command::_skipHeader()
@@ -169,17 +180,20 @@ NodePtr Command::getMaster()
     return getNode();
 }
 
-bool Command::getNextBuffer( uint32_t* compressor, uint32_t* nChunks,
-                             const void** chunkData, uint64_t* size )
+bool Command::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
+                             const void** chunkData, uint64_t& size )
 {
     if( !_impl->buffer )
         return false;
 
     *chunkData = _impl->buffer->getData();
-    *size = _impl->buffer->getSize();
-    *compressor = EQ_COMPRESSOR_NONE;
-    *nChunks = 1;
+    size = _impl->buffer->getSize();
+    compressor = EQ_COMPRESSOR_NONE;
+    nChunks = 1;
 
+    if( _impl->buffer->getNode( ))
+        setSwapping( _impl->buffer->needsSwapping( ));
+    // else handshake command. see copy ctor and LocalNode::_dispatchCommand()
     return true;
 }
 

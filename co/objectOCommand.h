@@ -18,7 +18,7 @@
 #ifndef CO_OBJECTOCOMMAND_H
 #define CO_OBJECTOCOMMAND_H
 
-#include <co/nodeOCommand.h>   // base class
+#include <co/oCommand.h>   // base class
 
 
 namespace co
@@ -29,9 +29,9 @@ namespace detail { class ObjectOCommand; }
 /**
  * A class for sending commands and data to local & external objects.
  *
- * @sa co::NodeOCommand
+ * @sa co::OCommand
  */
-class ObjectOCommand : public NodeOCommand
+class ObjectOCommand : public OCommand
 {
 public:
     /**
@@ -61,13 +61,18 @@ public:
                            const uint32_t cmd, const uint32_t type,
                            const UUID& id, const uint32_t instanceID );
 
+    /** @internal */
+    CO_API ObjectOCommand( const ObjectOCommand& rhs );
+
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~ObjectOCommand();
 
 private:
+    ObjectOCommand();
+    ObjectOCommand& operator = ( const ObjectOCommand& );
     detail::ObjectOCommand* const _impl;
 
-    void _init();
+    void _init( const UUID& id, const uint32_t instanceID );
 };
 }
 

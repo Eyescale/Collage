@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -29,14 +30,14 @@ class Buffer
 {
 public:
     Buffer( lunchbox::a_int32_t& freeCounter )
-        : _freeCount( freeCounter )
-        , _node()
-        , _localNode()
+        : freeCount( freeCounter )
+        , node()
+        , localNode()
     {}
 
-    lunchbox::a_int32_t& _freeCount;
-    NodePtr _node; //!< The node sending the command
-    LocalNodePtr  _localNode; //!< The node receiving the command
+    lunchbox::a_int32_t& freeCount;
+    NodePtr node; //!< The node sending the command
+    LocalNodePtr  localNode; //!< The node receiving the command
 };
 }
 
@@ -55,12 +56,17 @@ Buffer::~Buffer()
 
 NodePtr Buffer::getNode() const
 {
-    return _impl->_node;
+    return _impl->node;
 }
 
 LocalNodePtr Buffer::getLocalNode() const
 {
-    return _impl->_localNode;
+    return _impl->localNode;
+}
+
+bool Buffer::needsSwapping() const
+{
+    return _impl->node->isBigEndian() != _impl->localNode->isBigEndian();
 }
 
 bool Buffer::isValid() const
@@ -68,20 +74,18 @@ bool Buffer::isValid() const
     return getSize() > 0;
 }
 
-size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
+void Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
 {
     LB_TS_THREAD( _writeThread );
     LBASSERT( getRefCount() == 1 ); // caller BufferCache
-    LBASSERT( _impl->_freeCount > 0 );
+    LBASSERT( _impl->freeCount > 0 );
 
-    --_impl->_freeCount;
-    _impl->_node = node;
-    _impl->_localNode = localNode;
+    --_impl->freeCount;
+    _impl->node = node;
+    _impl->localNode = localNode;
 
     reserve( LB_MAX( getMinSize(), size ));
     resize( size );
-
-    return getSize();
 }
 
 void Buffer::free()
@@ -90,14 +94,14 @@ void Buffer::free()
 
     clear();
 
-    _impl->_node = 0;
-    _impl->_localNode = 0;
+    _impl->node = 0;
+    _impl->localNode = 0;
 }
 
 void Buffer::deleteReferenced( const Referenced* object ) const
 {
     Buffer* buffer = const_cast< Buffer* >( this );
-    ++buffer->_impl->_freeCount;
+    ++buffer->_impl->freeCount;
 }
 
 size_t Buffer::getMinSize()

@@ -26,7 +26,7 @@
 #include <co/commandFunc.h>
 #include <co/dispatcher.h>
 #include <co/localNode.h>
-#include <co/nodeOCommand.h>
+#include <co/oCommand.h>
 
 size_t calls = 0;
 
@@ -116,11 +116,10 @@ int main( int argc, char **argv )
 {
     co::BufferCache cache;
     co::LocalNodePtr node = new co::LocalNode;
-    co::BufferPtr buffer = cache.alloc( node, node,
-                                        co::NodeOCommand::getSize( ));
+    co::BufferPtr buffer = cache.alloc( node, node, co::OCommand::getSize( ));
 
     co::Command command( buffer );
-    command.setType( co::COMMANDTYPE_CO_NODE );
+    command.setType( co::COMMANDTYPE_NODE );
     command.setCommand( co::CMD_NODE_CUSTOM );
 
     Bar bar;

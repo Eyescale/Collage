@@ -36,7 +36,7 @@ ObjectDeltaDataOStream::~ObjectDeltaDataOStream()
 void ObjectDeltaDataOStream::sendData( const void* buffer, const uint64_t size,
                                        const bool last )
 {
-    ObjectDataOStream::send( CMD_OBJECT_DELTA, COMMANDTYPE_CO_OBJECT,
+    ObjectDataOStream::send( CMD_OBJECT_DELTA, COMMANDTYPE_OBJECT,
                              EQ_INSTANCE_ALL, size, last );
 }
 

@@ -28,12 +28,26 @@ namespace detail
 class ObjectDataOCommand
 {
 public:
-    ObjectDataOCommand( const uint64_t dataSize_,
-                        co::DataOStream* stream_ )
-        : dataSize( dataSize_ )
+    ObjectDataOCommand( co::DataOStream* stream_, const uint64_t dataSize_ )
+        : dataSize( 0 )
         , userBuffer()
         , stream( stream_ )
-    {}
+    {
+        if( stream )
+        {
+            dataSize = stream->getCompressedDataSize();
+            if( dataSize == 0 )
+                dataSize = dataSize_;
+        }
+    }
+
+    ObjectDataOCommand( ObjectDataOCommand& rhs )
+        : dataSize( rhs.dataSize )
+        , userBuffer()
+        , stream( rhs.stream )
+    {
+        userBuffer.swap( rhs.userBuffer );
+    }
 
     uint64_t dataSize;
     lunchbox::Bufferb userBuffer;
@@ -52,18 +66,26 @@ ObjectDataOCommand::ObjectDataOCommand( const Connections& receivers,
                                         const bool isLast,
                                         DataOStream* stream )
     : ObjectOCommand( receivers, cmd, type, id, instanceID )
-    , _impl( new detail::ObjectDataOCommand( dataSize, stream ))
+    , _impl( new detail::ObjectDataOCommand( stream, dataSize ))
+{
+    _init( version, sequence, dataSize, isLast );
+}
+
+ObjectDataOCommand::ObjectDataOCommand( const ObjectDataOCommand& rhs )
+    : ObjectOCommand( rhs )
+    , _impl( new detail::ObjectDataOCommand( *rhs._impl ))
+{
+}
+
+void ObjectDataOCommand::_init( const uint128_t& version,
+                                const uint32_t sequence,
+                                const uint64_t dataSize, const bool isLast )
 {
     // cast to avoid call to our user data operator << overload
     (ObjectOCommand&)(*this) << version << sequence << dataSize << isLast;
-    if( stream )
-    {
-        stream->streamDataHeader( *this );
 
-        _impl->dataSize = stream->getCompressedDataSize();
-        if( _impl->dataSize == 0 )
-            _impl->dataSize = dataSize;
-    }
+    if( _impl->stream )
+        _impl->stream->streamDataHeader( *this );
 }
 
 ObjectDataOCommand::~ObjectDataOCommand()
