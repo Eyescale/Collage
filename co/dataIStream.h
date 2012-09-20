@@ -47,6 +47,7 @@ namespace detail { class DataIStream; }
         virtual void reset() { _reset(); } //!< @internal
         void setSwapping( const bool onOff ); //!< @internal enable endian swap
         CO_API bool isSwapping() const; //!< @internal
+        DataIStream& operator = ( const DataIStream& rhs ); //!< @internal
         //@}
 
         /** @name Data input */

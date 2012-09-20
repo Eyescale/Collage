@@ -401,12 +401,12 @@ ConnectionPtr LocalNode::addListener( ConnectionDescriptionPtr desc )
     LBASSERT( isListening( ));
 
     ConnectionPtr connection = Connection::create( desc );
-
     if( connection && connection->listen( ))
     {
         addListener( connection );
         return connection;
     }
+
     return 0;
 }
 
@@ -424,7 +424,8 @@ void LocalNode::addListener( ConnectionPtr connection )
 
     for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
         (*i)->send( CMD_NODE_ADD_LISTENER )
-            << connection.get() << connection->getDescription()->toString();
+            << (uint64_t)(connection.get( ))
+            << connection->getDescription()->toString();
 }
 
 void LocalNode::removeListeners( const Connections& connections )
@@ -1349,7 +1350,9 @@ bool LocalNode::_readTail( Command& command, BufferPtr buffer,
         // not enough space for remaining data, alloc and copy to new buffer
         BufferPtr newBuffer = _impl->bigBuffers.alloc( needed );
         newBuffer->replace( *buffer );
-        command = Command( this, command.getNode(), newBuffer,
+        buffer = newBuffer;
+
+        command = Command( this, command.getNode(), buffer,
                            command.isSwapping( ));
     }
 
@@ -1658,7 +1661,8 @@ bool LocalNode::_cmdConnectReply( Command& command )
             peer = createNode( nodeType );
     }
 
-    LBASSERT( peer->getType() == nodeType );
+    LBASSERTINFO( peer->getType() == nodeType,
+                  peer->getType() << " != " << nodeType );
     LBASSERT( peer->isClosed( ));
 
     if( !peer->deserialize( data ))
@@ -1892,7 +1896,7 @@ bool LocalNode::_cmdReleaseSendToken( Command& )
 
 bool LocalNode::_cmdAddListener( Command& command )
 {
-    Connection* rawConnection = command.get< Connection* >();
+    Connection* rawConnection = (Connection*)(command.get< uint64_t >( ));
     std::string data = command.get< std::string >();
 
     ConnectionDescriptionPtr description = new ConnectionDescription( data );

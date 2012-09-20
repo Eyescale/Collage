@@ -34,9 +34,10 @@ public:
     ICommand()
         : func( 0, 0 )
         , buffer( 0 )
+        , size( 0 )
         , type( COMMANDTYPE_INVALID )
         , cmd( CMD_INVALID )
-        , size( 0 )
+        , consumed( false )
     {}
 
     ICommand( LocalNodePtr local_, NodePtr remote_, ConstBufferPtr buffer_ )
@@ -44,9 +45,10 @@ public:
         , remote( remote_ )
         , func( 0, 0 )
         , buffer( buffer_ )
+        , size( 0 )
         , type( COMMANDTYPE_INVALID )
         , cmd( CMD_INVALID )
-        , size( 0 )
+        , consumed( false )
     {}
 
     void clear()
@@ -58,9 +60,10 @@ public:
     NodePtr remote; //!< The node sending the command
     co::Dispatcher::Func func;
     ConstBufferPtr buffer;
+    uint64_t size;
     uint32_t type;
     uint32_t cmd;
-    uint64_t size;
+    bool consumed;
 };
 }
 
@@ -83,6 +86,7 @@ ICommand::ICommand( const ICommand& rhs )
     : DataIStream( rhs )
     , _impl( new detail::ICommand( *rhs._impl ))
 {
+    _impl->consumed = false;
     _skipHeader();
 }
 
@@ -90,7 +94,9 @@ ICommand& ICommand::operator = ( const ICommand& rhs )
 {
     if( this != &rhs )
     {
+        DataIStream::operator = ( rhs );
         *_impl = *rhs._impl;
+        _impl->consumed = false;
         _skipHeader();
     }
     return *this;
@@ -171,11 +177,15 @@ bool ICommand::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
     if( !_impl->buffer )
         return false;
 
+#ifndef NDEBUG
+    LBASSERT( !_impl->consumed );
+    _impl->consumed = true;
+#endif
+
     *chunkData = _impl->buffer->getData();
     size = _impl->buffer->getSize();
     compressor = EQ_COMPRESSOR_NONE;
     nChunks = 1;
-
     return true;
 }
 

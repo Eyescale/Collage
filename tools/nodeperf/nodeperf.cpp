@@ -177,7 +177,7 @@ int main( int argc, char **argv )
     // run
     if( remote )
     {
-        co::NodePtr node = new co::Node;
+        co::NodePtr node = new co::Node( 0xC0FFEEu );
         node->addConnectionDescription( remote );
         localNode->connect( node );
     }

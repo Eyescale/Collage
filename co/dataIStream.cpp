@@ -71,6 +71,13 @@ DataIStream::~DataIStream()
     delete _impl;
 }
 
+DataIStream& DataIStream::operator = ( const DataIStream& rhs )
+{
+    _reset();
+    setSwapping( rhs.isSwapping( ));
+    return *this;
+}
+
 void DataIStream::setSwapping( const bool onOff )
 {
     _impl->swap = onOff;
