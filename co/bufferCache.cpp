@@ -20,7 +20,7 @@
 
 #include "buffer.h"
 #include "bufferListener.h"
-#include "command.h"
+#include "iCommand.h"
 #include "node.h"
 
 #include <lunchbox/atomic.h>
@@ -240,7 +240,7 @@ std::ostream& operator << ( std::ostream& os, const BufferCache& cache )
     {
         Buffer* buffer = *i;
         if( !buffer->isFree( ))
-            os << Command( 0, 0, buffer, false /*swap*/ ) << std::endl;
+            os << ICommand( 0, 0, buffer, false /*swap*/ ) << std::endl;
     }
     return os << lunchbox::enableHeader << lunchbox::exdent
               << lunchbox::enableFlush;

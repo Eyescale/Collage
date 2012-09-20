@@ -20,9 +20,9 @@
 
 #include <co/buffer.h>
 #include <co/bufferCache.h>
-#include <co/command.h>
 #include <co/commandQueue.h>
 #include <co/dispatcher.h>
+#include <co/iCommand.h>
 #include <co/init.h>
 #include <co/oCommand.h>
 #include <lunchbox/clock.h>
@@ -38,8 +38,8 @@ lunchbox::SpinLock _lock;
 class Reader : public co::Dispatcher, public lunchbox::Thread
 {
 public:
-    bool _cmd( co::Command& command ) { return true; }
-    bool _cmdStop( co::Command& command ) { _running = false; return true; }
+    bool _cmd( co::ICommand& command ) { return true; }
+    bool _cmdStop( co::ICommand& command ) { _running = false; return true; }
 
     Reader() : index( 0 ), _running( false )
         {
@@ -61,7 +61,7 @@ protected:
             _running = true;
             while( _running )
             {
-                co::Command command = _queue.pop();
+                co::ICommand command = _queue.pop();
                 TEST( command( ));
             }
             TEST( _queue.isEmpty( ));
@@ -97,7 +97,7 @@ int main( int argc, char **argv )
             buffer->resize( size );
             reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
 
-            co::Command command( 0, 0, buffer, false /*swap*/ );
+            co::ICommand command( 0, 0, buffer, false /*swap*/ );
             command.setCommand( 0 );
             command.setType( co::COMMANDTYPE_CUSTOM );
 
@@ -105,7 +105,7 @@ int main( int argc, char **argv )
 
             for( size_t i = 1; i < N_READER; ++i )
             {
-                co::Command clonedCmd( command );
+                co::ICommand clonedCmd( command );
                 readers[i].dispatchCommand( clonedCmd );
             }
             ++nOps;
@@ -118,7 +118,7 @@ int main( int argc, char **argv )
             buffer->resize( size );
             reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
 
-            co::Command command( 0, 0, buffer, false /*swap*/ );
+            co::ICommand command( 0, 0, buffer, false /*swap*/ );
             command.setCommand( 1 );
 
             readers[i].dispatchCommand( command );

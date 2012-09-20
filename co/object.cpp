@@ -18,7 +18,6 @@
 
 #include "object.h"
 
-#include "command.h"
 #include "cpuCompressor.h"
 #include "dataIStream.h"
 #include "dataOStream.h"

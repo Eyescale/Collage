@@ -19,7 +19,7 @@
 
 #include "barrier.h"
 
-#include "command.h"
+#include "iCommand.h"
 #include "connection.h"
 #include "dataIStream.h"
 #include "dataOStream.h"

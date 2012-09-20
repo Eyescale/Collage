@@ -19,12 +19,10 @@
 #ifndef CO_OBJECTICOMMAND_H
 #define CO_OBJECTICOMMAND_H
 
-#include <co/command.h>   // base class
-
+#include <co/iCommand.h>   // base class
 
 namespace co
 {
-
 enum ObjectCommands
 {
     CMD_OBJECT_INSTANCE,
@@ -37,7 +35,7 @@ enum ObjectCommands
 namespace detail { class ObjectCommand; }
 
 /** A command specialization for objects. */
-class ObjectCommand : public Command
+class ObjectCommand : public ICommand
 {
 public:
     /** @internal */

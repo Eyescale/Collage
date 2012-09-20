@@ -11,7 +11,7 @@ set(CO_PUBLIC_HEADERS
   bufferListener.h
   bufferConnection.h
   co.h
-  command.h
+  iCommand.h
   commandFunc.h
   commandQueue.h
   commands.h
@@ -100,7 +100,7 @@ set(CO_SOURCES
   buffer.cpp
   bufferCache.cpp
   bufferConnection.cpp
-  command.cpp
+  iCommand.cpp
   commandQueue.cpp
   compressor.cpp
   connection.cpp

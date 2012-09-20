@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "command.h"
+#include "iCommand.h"
 
 #include "buffer.h"
 #include "localNode.h"
@@ -28,10 +28,10 @@ namespace co
 {
 namespace detail
 {
-class Command
+class ICommand
 {
 public:
-    Command()
+    ICommand()
         : func( 0, 0 )
         , buffer( 0 )
         , type( COMMANDTYPE_INVALID )
@@ -39,7 +39,7 @@ public:
         , size( 0 )
     {}
 
-    Command( LocalNodePtr local_, NodePtr remote_, ConstBufferPtr buffer_ )
+    ICommand( LocalNodePtr local_, NodePtr remote_, ConstBufferPtr buffer_ )
         : local( local_ )
         , remote( remote_ )
         , func( 0, 0 )
@@ -51,7 +51,7 @@ public:
 
     void clear()
     {
-        *this = Command();
+        *this = ICommand();
     }
 
     LocalNodePtr local; //!< The node receiving the command
@@ -64,29 +64,29 @@ public:
 };
 }
 
-Command::Command()
+ICommand::ICommand()
     : DataIStream( false )
-    , _impl( new detail::Command )
+    , _impl( new detail::ICommand )
 {
 }
 
-Command::Command( LocalNodePtr local, NodePtr remote, ConstBufferPtr buffer,
+ICommand::ICommand( LocalNodePtr local, NodePtr remote, ConstBufferPtr buffer,
                   const bool swap_ )
     : DataIStream( swap_ )
-    , _impl( new detail::Command( local, remote, buffer ))
+    , _impl( new detail::ICommand( local, remote, buffer ))
 {
     if( _impl->buffer )
         *this >> _impl->size >> _impl->type >> _impl->cmd;
 }
 
-Command::Command( const Command& rhs )
+ICommand::ICommand( const ICommand& rhs )
     : DataIStream( rhs )
-    , _impl( new detail::Command( *rhs._impl ))
+    , _impl( new detail::ICommand( *rhs._impl ))
 {
     _skipHeader();
 }
 
-Command& Command::operator = ( const Command& rhs )
+ICommand& ICommand::operator = ( const ICommand& rhs )
 {
     if( this != &rhs )
     {
@@ -96,17 +96,17 @@ Command& Command::operator = ( const Command& rhs )
     return *this;
 }
 
-Command::~Command()
+ICommand::~ICommand()
 {
     delete _impl;
 }
 
-void Command::clear()
+void ICommand::clear()
 {
     _impl->clear();
 }
 
-void Command::_skipHeader()
+void ICommand::_skipHeader()
 {
     const size_t headerSize = sizeof( _impl->size ) + sizeof( _impl->type ) +
                               sizeof( _impl->cmd );
@@ -114,58 +114,58 @@ void Command::_skipHeader()
         getRemainingBuffer( headerSize );
 }
 
-uint32_t Command::getType() const
+uint32_t ICommand::getType() const
 {
     return _impl->type;
 }
 
-uint32_t Command::getCommand() const
+uint32_t ICommand::getCommand() const
 {
     return _impl->cmd;
 }
 
-uint64_t Command::getSize_() const
+uint64_t ICommand::getSize_() const
 {
     return _impl->size;
 }
 
-void Command::setType( const CommandType type )
+void ICommand::setType( const CommandType type )
 {
     _impl->type = type;
 }
 
-void Command::setCommand( const uint32_t cmd )
+void ICommand::setCommand( const uint32_t cmd )
 {
     _impl->cmd = cmd;
 }
 
-void Command::setDispatchFunction( const Dispatcher::Func& func )
+void ICommand::setDispatchFunction( const Dispatcher::Func& func )
 {
     _impl->func = func;
 }
 
-ConstBufferPtr Command::getBuffer() const
+ConstBufferPtr ICommand::getBuffer() const
 {
     LBASSERT( _impl->buffer );
     return _impl->buffer;
 }
 
-size_t Command::nRemainingBuffers() const
+size_t ICommand::nRemainingBuffers() const
 {
     return _impl->buffer ? 1 : 0;
 }
 
-uint128_t Command::getVersion() const
+uint128_t ICommand::getVersion() const
 {
     return VERSION_NONE;
 }
 
-NodePtr Command::getMaster()
+NodePtr ICommand::getMaster()
 {
     return getNode();
 }
 
-bool Command::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
+bool ICommand::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
                              const void** chunkData, uint64_t& size )
 {
     if( !_impl->buffer )
@@ -179,24 +179,24 @@ bool Command::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
     return true;
 }
 
-NodePtr Command::getNode() const
+NodePtr ICommand::getNode() const
 {
     return _impl->remote;
 }
 
-LocalNodePtr Command::getLocalNode() const
+LocalNodePtr ICommand::getLocalNode() const
 {
     return _impl->local;
 }
 
-bool Command::isValid() const
+bool ICommand::isValid() const
 {
     return _impl->buffer && !_impl->buffer->isEmpty() &&
            _impl->type != COMMANDTYPE_INVALID && _impl->cmd != CMD_INVALID &&
            _impl->size > 0;
 }
 
-bool Command::operator()()
+bool ICommand::operator()()
 {
     LBASSERT( _impl->func.isValid( ));
     Dispatcher::Func func = _impl->func;
@@ -204,7 +204,7 @@ bool Command::operator()()
     return func( *this );
 }
 
-std::ostream& operator << ( std::ostream& os, const Command& command )
+std::ostream& operator << ( std::ostream& os, const ICommand& command )
 {
     ConstBufferPtr buffer = command.getBuffer();
     if( buffer )

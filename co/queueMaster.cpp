@@ -19,7 +19,6 @@
 
 #include "queueMaster.h"
 
-#include "command.h"
 #include "dataOStream.h"
 #include "objectCommand.h"
 #include "objectOCommand.h"
@@ -57,7 +56,7 @@ public:
     {}
 
     /** The command handler functions. */
-    bool cmdGetItem( co::Command& comd )
+    bool cmdGetItem( co::ICommand& comd )
     {
         co::ObjectCommand command( comd );
 

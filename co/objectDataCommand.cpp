@@ -19,13 +19,10 @@
 #include "objectDataCommand.h"
 
 #include "buffer.h"
-#include "command.h"
 #include "plugins/compressorTypes.h"
-
 
 namespace co
 {
-
 namespace detail
 {
 

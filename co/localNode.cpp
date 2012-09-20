@@ -21,7 +21,6 @@
 
 #include "buffer.h"
 #include "bufferCache.h"
-#include "command.h"
 #include "commandQueue.h"
 #include "connectionDescription.h"
 #include "connectionSet.h"
@@ -29,6 +28,7 @@
 #include "dataIStream.h"
 #include "exception.h"
 #include "global.h"
+#include "iCommand.h"
 #include "nodeCommand.h"
 #include "oCommand.h"
 #include "object.h"

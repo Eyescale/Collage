@@ -18,17 +18,14 @@
 
 #include <test.h>
 
-#include <co/dataIStream.h>
-#include <co/dataOStream.h>
-
 #include <co/buffer.h>
 #include <co/bufferCache.h>
-#include <co/connectionDescription.h>
-#include <co/command.h>
 #include <co/commandQueue.h>
 #include <co/connection.h>
+#include <co/connectionDescription.h>
+#include <co/dataIStream.h>
+#include <co/dataOStream.h>
 #include <co/init.h>
-#include <co/types.h>
 
 #include <lunchbox/thread.h>
 
