@@ -17,7 +17,7 @@
 
 #include "commandQueue.h"
 
-#include "command.h"
+#include "iCommand.h"
 #include "exception.h"
 #include "node.h"
 
@@ -31,7 +31,7 @@ class CommandQueue
 {
 public:
     /** Thread-safe buffer queue. */
-    lunchbox::MTQueue< co::Command > commands;
+    lunchbox::MTQueue< co::ICommand > commands;
 };
 }
 

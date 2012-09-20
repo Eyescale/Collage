@@ -18,7 +18,7 @@
 #include "oCommand.h"
 
 #include "buffer.h"
-#include "command.h"
+#include "iCommand.h"
 
 namespace co
 {
@@ -115,7 +115,7 @@ OCommand::~OCommand()
         buffer->swap( getBuffer( ));
         reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
 
-        Command cmd( _impl->localNode, _impl->localNode, buffer, false );
+        ICommand cmd( _impl->localNode, _impl->localNode, buffer, false );
         _impl->dispatcher->dispatchCommand( cmd );
     }
 

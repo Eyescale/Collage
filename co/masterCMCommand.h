@@ -18,16 +18,14 @@
 #ifndef CO_MASTERCMCOMMAND_H
 #define CO_MASTERCMCOMMAND_H
 
-#include <co/command.h>   // base class
-
+#include <co/iCommand.h>   // base class
 
 namespace co
 {
-
 namespace detail { class MasterCMCommand; }
 
 /** @internal A command specialization for masterCM commands. */
-class MasterCMCommand : public Command
+class MasterCMCommand : public ICommand
 {
 public:
     MasterCMCommand( const Command& command );
