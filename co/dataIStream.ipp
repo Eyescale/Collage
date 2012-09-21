@@ -54,6 +54,8 @@ namespace co
     {
         uint64_t nElems = 0;
         *this >> nElems;
+        LBASSERTINFO( nElems < LB_BIT48,
+                    "Out-of-sync co::DataIStream: " << nElems << " elements?" );
         buffer.resize( nElems );
         return *this >> Array< T >( buffer.getData(), nElems );
     }

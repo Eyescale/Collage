@@ -79,6 +79,7 @@
 #include <co/oCommand.h>
 #include <co/object.h>
 #include <co/objectCommand.h>
+#include <co/objectOCommand.h>
 #include <co/serializable.h>
 #include <co/zeroconf.h>
 #include <lunchbox/lunchbox.h>

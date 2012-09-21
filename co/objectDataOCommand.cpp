@@ -89,7 +89,7 @@ void ObjectDataOCommand::_init( const uint128_t& version,
 
 ObjectDataOCommand::~ObjectDataOCommand()
 {
-    if( _impl->stream )
+    if( _impl->stream && _impl->dataSize > 0 )
     {
         sendHeader( _impl->dataSize );
         const Connections& connections = getConnections();
