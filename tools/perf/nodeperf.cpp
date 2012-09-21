@@ -222,7 +222,7 @@ int main( int argc, char **argv )
     // run
     if( remote )
     {
-        co::NodePtr node = new co::Node( 0xC0FFEEu );
+        co::NodePtr node = new PerfNodeProxy;
         node->addConnectionDescription( remote );
         localNode->connect( node );
     }
@@ -277,6 +277,7 @@ int main( int argc, char **argv )
                     if( j == nodes.end( ))
                     {
                         // new node, map perf object
+                        LBASSERT( node->getType() == 0xC0FFEEu );
                         PerfNodeProxyPtr peer =
                                     static_cast< PerfNodeProxy* >( node.get( ));
                         LBCHECK( localNode->mapObject( &peer->object,
