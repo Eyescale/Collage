@@ -22,6 +22,7 @@
 
 namespace co
 {
+
 EventConnection::EventConnection()
 #ifdef _WIN32
         : _event( 0 )
@@ -94,9 +95,11 @@ void EventConnection::reset()
     if( !_set )
         return;
     
-    char c = 42;
-    _connection->recvNB( &c, 1 );
-    _connection->recvSync( 0, 0 );
+    _buffer.setSize( 0 );
+    _connection->recvNB( &_buffer, 1 );
+
+    BufferPtr buffer;
+    _connection->recvSync( buffer );
     _set = false;
 #endif
 }

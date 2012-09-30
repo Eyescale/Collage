@@ -18,7 +18,7 @@
 #ifndef CO_CUSTOMCOMMAND_H
 #define CO_CUSTOMCOMMAND_H
 
-#include <co/command.h>   // base class
+#include <co/iCommand.h>   // base class
 
 namespace co
 {

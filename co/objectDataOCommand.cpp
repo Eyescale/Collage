@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -17,6 +18,8 @@
 
 #include "objectDataOCommand.h"
 
+#include "buffer.h"
+#include "objectDataCommand.h"
 #include "plugins/compressorTypes.h"
 
 namespace co
@@ -30,7 +33,6 @@ class ObjectDataOCommand
 public:
     ObjectDataOCommand( co::DataOStream* stream_, const uint64_t dataSize_ )
         : dataSize( 0 )
-        , userBuffer()
         , stream( stream_ )
     {
         if( stream )
@@ -41,16 +43,12 @@ public:
         }
     }
 
-    ObjectDataOCommand( ObjectDataOCommand& rhs )
+    ObjectDataOCommand( const ObjectDataOCommand& rhs )
         : dataSize( rhs.dataSize )
-        , userBuffer()
         , stream( rhs.stream )
-    {
-        userBuffer.swap( rhs.userBuffer );
-    }
+    {}
 
     uint64_t dataSize;
-    lunchbox::Bufferb userBuffer;
     co::DataOStream* stream;
 };
 
@@ -81,50 +79,40 @@ void ObjectDataOCommand::_init( const uint128_t& version,
                                 const uint32_t sequence,
                                 const uint64_t dataSize, const bool isLast )
 {
-    // cast to avoid call to our user data operator << overload
-    (ObjectOCommand&)(*this) << version << sequence << dataSize << isLast;
+    *this << version << dataSize << sequence << isLast;
 
     if( _impl->stream )
         _impl->stream->streamDataHeader( *this );
+    else
+        *this << EQ_COMPRESSOR_NONE << 0u; // compressor, nChunks
 }
 
 ObjectDataOCommand::~ObjectDataOCommand()
 {
-    disable();
+    if( _impl->stream && _impl->dataSize > 0 )
+    {
+        sendHeader( _impl->dataSize );
+        const Connections& connections = getConnections();
+        for( ConnectionsCIter i = connections.begin(); i != connections.end();
+             ++i )
+        {
+            ConnectionPtr conn = *i;
+            _impl->stream->sendData( conn, _impl->dataSize );
+        }
+    }
+
     delete _impl;
 }
 
-void ObjectDataOCommand::_addUserData( const void* data, uint64_t size )
+ObjectDataCommand ObjectDataOCommand::_getCommand( LocalNodePtr node )
 {
-    _impl->userBuffer.append( static_cast< const uint8_t* >( data ), size );
-}
+    lunchbox::Bufferb& outBuffer = getBuffer();
+    uint8_t* bytes = outBuffer.getData();
+    reinterpret_cast< uint64_t* >( bytes )[ 0 ] = outBuffer.getSize();
 
-void ObjectDataOCommand::sendData( const void* buffer, const uint64_t size,
-                                   const bool last )
-{
-    LBASSERT( last );
-    LBASSERT( size > 0 );
-
-    const uint64_t finalSize = size +                        // command header
-                               _impl->userBuffer.getSize() + // userBuffer
-                               _impl->dataSize;
-
-    for( ConnectionsCIter it = getConnections().begin();
-         it != getConnections().end(); ++it )
-    {
-        ConnectionPtr conn = *it;
-
-        conn->lockSend();
-        LBCHECK( conn->send( &finalSize, sizeof( uint64_t ), true ));
-        LBCHECK( conn->send( buffer, size, true ));
-        if( !_impl->userBuffer.isEmpty( ))
-            LBCHECK( conn->send( _impl->userBuffer.getData(),
-                                 _impl->userBuffer.getSize(), true ));
-        if( _impl->stream )
-            _impl->stream->sendData( conn, _impl->dataSize );
-
-        conn->unlockSend();
-    }
+    BufferPtr inBuffer = node->allocBuffer( outBuffer.getSize( ));
+    inBuffer->swap( outBuffer );
+    return ObjectDataCommand( node, node, inBuffer, false );
 }
 
 }

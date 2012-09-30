@@ -19,8 +19,9 @@
 #ifndef CO_BUFFERCACHE_H
 #define CO_BUFFERCACHE_H
 
-#include <co/types.h>
 #include <co/api.h>
+#include <co/types.h>
+
 #include <lunchbox/thread.h> // thread-safety checks
 
 namespace co
@@ -28,7 +29,7 @@ namespace co
 namespace detail { class BufferCache; }
 
     /**
-     * A buffercache handles the reuse of allocated buffers for a node.
+     * The buffer cache handles the reuse of allocated buffers for a node.
      *
      * Buffers are retained and released whenever they are not directly
      * processed, e.g., when pushed to another thread using a CommandQueue.
@@ -36,12 +37,14 @@ namespace detail { class BufferCache; }
     class BufferCache
     {
     public:
-        CO_API BufferCache();
+        CO_API BufferCache( const int32_t minFree );
         CO_API ~BufferCache();
 
         /** @return a new buffer. */
-        CO_API BufferPtr alloc( NodePtr node, LocalNodePtr localNode,
-                                const uint64_t size );
+        CO_API BufferPtr alloc( const uint64_t reserve );
+
+        /** Compact buffer if too many commands are free. */
+        void compact();
 
         /** Flush all allocated buffers. */
         void flush();

@@ -21,7 +21,6 @@
 
 #include "buffer.h"
 #include "bufferCache.h"
-#include "command.h"
 #include "commandQueue.h"
 #include "connectionDescription.h"
 #include "connectionSet.h"
@@ -29,6 +28,7 @@
 #include "dataIStream.h"
 #include "exception.h"
 #include "global.h"
+#include "iCommand.h"
 #include "nodeCommand.h"
 #include "oCommand.h"
 #include "object.h"
@@ -111,8 +111,13 @@ class LocalNode
 {
 public:
     LocalNode()
-            : sendToken( true ), lastSendToken( 0 ), objectStore( 0 )
-            , receiverThread( 0 ), commandThread( 0 )
+            : smallBuffers( 200 )
+            , bigBuffers( 20 )
+            , sendToken( true )
+            , lastSendToken( 0 )
+            , objectStore( 0 )
+            , receiverThread( 0 )
+            , commandThread( 0 )
             , service( "_collage._tcp" )
         {
         }
@@ -140,8 +145,11 @@ public:
     /** Commands re-scheduled for dispatch. */
     CommandList  pendingCommands;
 
-    /** The command buffer 'allocator' */
-    co::BufferCache bufferCache;
+    /** The command buffer 'allocator' for small packets */
+    co::BufferCache smallBuffers;
+
+    /** The command buffer 'allocator' for big packets */
+    co::BufferCache bigBuffers;
 
     bool sendToken; //!< send token availability.
     uint64_t lastSendToken; //!< last used time for timeout detection
@@ -187,6 +195,18 @@ LocalNode::LocalNode( const uint32_t type )
     _impl->objectStore = new ObjectStore( this );
 
     CommandQueue* queue = getCommandThreadQueue();
+    registerCommand( CMD_NODE_CONNECT,
+                     CmdFunc( this, &LocalNode::_cmdConnect ), 0 );
+    registerCommand( CMD_NODE_CONNECT_BE,
+                     CmdFunc( this, &LocalNode::_cmdConnect ), 0 );
+    registerCommand( CMD_NODE_CONNECT_REPLY,
+                     CmdFunc( this, &LocalNode::_cmdConnectReply ), 0 );
+    registerCommand( CMD_NODE_CONNECT_REPLY_BE,
+                     CmdFunc( this, &LocalNode::_cmdConnectReply ), 0 );
+    registerCommand( CMD_NODE_ID,
+                     CmdFunc( this, &LocalNode::_cmdID ), 0 );
+    registerCommand( CMD_NODE_ID_BE,
+                     CmdFunc( this, &LocalNode::_cmdID ), 0 );
     registerCommand( CMD_NODE_ACK_REQUEST,
                      CmdFunc( this, &LocalNode::_cmdAckRequest ), 0 );
     registerCommand( CMD_NODE_STOP_RCV,
@@ -197,14 +217,8 @@ LocalNode::LocalNode( const uint32_t type )
                      CmdFunc( this, &LocalNode::_cmdSetAffinity ), 0 );
     registerCommand( CMD_NODE_SET_AFFINITY_CMD,
                      CmdFunc( this, &LocalNode::_cmdSetAffinity ), queue );
-    registerCommand( CMD_NODE_CONNECT,
-                     CmdFunc( this, &LocalNode::_cmdConnect ), 0);
-    registerCommand( CMD_NODE_CONNECT_REPLY,
-                     CmdFunc( this, &LocalNode::_cmdConnectReply ), 0 );
     registerCommand( CMD_NODE_CONNECT_ACK,
                      CmdFunc( this, &LocalNode::_cmdConnectAck ), 0 );
-    registerCommand( CMD_NODE_ID,
-                     CmdFunc( this, &LocalNode::_cmdID ), 0 );
     registerCommand( CMD_NODE_DISCONNECT,
                      CmdFunc( this, &LocalNode::_cmdDisconnect ), 0 );
     registerCommand( CMD_NODE_GET_NODE_DATA,
@@ -387,12 +401,12 @@ ConnectionPtr LocalNode::addListener( ConnectionDescriptionPtr desc )
     LBASSERT( isListening( ));
 
     ConnectionPtr connection = Connection::create( desc );
-
     if( connection && connection->listen( ))
     {
         addListener( connection );
         return connection;
     }
+
     return 0;
 }
 
@@ -410,7 +424,8 @@ void LocalNode::addListener( ConnectionPtr connection )
 
     for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
         (*i)->send( CMD_NODE_ADD_LISTENER )
-            << connection.get() << connection->getDescription()->toString();
+            << (uint64_t)(connection.get( ))
+            << connection->getDescription()->toString();
 }
 
 void LocalNode::removeListeners( const Connections& connections )
@@ -454,7 +469,8 @@ uint32_t LocalNode::_removeListenerNB( ConnectionPtr connection )
 void LocalNode::_addConnection( ConnectionPtr connection )
 {
     _impl->incoming.addConnection( connection );
-    connection->recvNB( new uint64_t, sizeof( uint64_t ));
+    BufferPtr buffer = _impl->smallBuffers.alloc( Buffer::getCacheSize( ));
+    connection->recvNB( buffer, Buffer::getMinSize( ));
 }
 
 void LocalNode::_removeConnection( ConnectionPtr connection )
@@ -462,16 +478,9 @@ void LocalNode::_removeConnection( ConnectionPtr connection )
     LBASSERT( connection );
 
     _impl->incoming.removeConnection( connection );
-
-    void* buffer( 0 );
-    uint64_t bytes( 0 );
-    connection->resetRecvData( &buffer, &bytes );
-    LBASSERTINFO( !connection->isConnected() || buffer, *connection );
-    LBASSERT( !buffer || bytes == sizeof( uint64_t ));
-
+    connection->resetRecvData();
     if( !connection->isClosed( ))
-        connection->close(); // cancels pending IO's
-    delete reinterpret_cast< uint64_t* >( buffer );
+        connection->close(); // cancel pending IO's
 }
 
 void LocalNode::_cleanup()
@@ -479,27 +488,9 @@ void LocalNode::_cleanup()
     LBVERB << "Clean up stopped node" << std::endl;
     LBASSERTINFO( isClosed(), *this );
 
-    ConnectionPtr connection = getConnection();
-    PipeConnectionPtr pipe = LBSAFECAST( PipeConnection*, connection.get( ));
-    connection = pipe->acceptSync();
-    _removeConnection( connection );
-    _impl->connectionNodes.erase( connection );
-    _disconnect();
-
-    const Connections& connections = _impl->incoming.getConnections();
-    while( !connections.empty( ))
-    {
-        connection = connections.back();
-        NodePtr node = _impl->connectionNodes[ connection ];
-
-        if( node )
-            _closeNode( node );
-        _removeConnection( connection );
-    }
-
     if( !_impl->connectionNodes.empty( ))
-        LBINFO << _impl->connectionNodes.size() << " open connections during cleanup"
-               << std::endl;
+        LBINFO << _impl->connectionNodes.size()
+               << " open connections during cleanup" << std::endl;
 #ifndef NDEBUG
     for( ConnectionNodeHashCIter i = _impl->connectionNodes.begin();
          i != _impl->connectionNodes.end(); ++i )
@@ -615,7 +606,7 @@ void LocalNode::ackRequest( NodePtr node, const uint32_t requestID )
 
 void LocalNode::ping( NodePtr peer )
 {
-    LBASSERT( !_impl->inReceiverThread( ) );
+    LBASSERT( !_impl->inReceiverThread( ));
     peer->send( CMD_NODE_PING );
 }
 
@@ -1028,7 +1019,13 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
 
     // send connect command to peer
     const uint32_t requestID = registerRequest( node.get( ));
-    OCommand( Connections( 1, connection ), CMD_NODE_CONNECT )
+#ifdef COLLAGE_BIGENDIAN
+    uint32_t cmd = CMD_NODE_CONNECT_BE;
+    lunchbox::byteswap( cmd );
+#else
+    const uint32_t cmd = CMD_NODE_CONNECT;
+#endif
+    OCommand( Connections( 1, connection ), cmd )
         << getNodeID() << requestID << getType() << serialize();
 
     bool connected = false;
@@ -1166,9 +1163,29 @@ void LocalNode::_runReceiverThread()
 
     _impl->pendingCommands.clear();
     LBCHECK( _impl->commandThread->join( ));
+
+    ConnectionPtr connection = getConnection();
+    PipeConnectionPtr pipe = LBSAFECAST( PipeConnection*, connection.get( ));
+    connection = pipe->acceptSync();
+    _removeConnection( connection );
+    _impl->connectionNodes.erase( connection );
+    _disconnect();
+
+    const Connections& connections = _impl->incoming.getConnections();
+    while( !connections.empty( ))
+    {
+        connection = connections.back();
+        NodePtr node = _impl->connectionNodes[ connection ];
+
+        if( node )
+            _closeNode( node );
+        _removeConnection( connection );
+    }
+
     _impl->objectStore->clear();
     _impl->pendingCommands.clear();
-    _impl->bufferCache.flush();
+    _impl->smallBuffers.flush();
+    _impl->bigBuffers.flush();
 
     LBINFO << "Leaving receiver thread of " << lunchbox::className( this )
            << std::endl;
@@ -1216,9 +1233,61 @@ void LocalNode::_handleDisconnect()
 
 bool LocalNode::_handleData()
 {
+    _impl->smallBuffers.compact();
+    _impl->bigBuffers.compact();
+
     ConnectionPtr connection = _impl->incoming.getConnection();
     LBASSERT( connection );
 
+    BufferPtr buffer = _readHead( connection );
+    if( !buffer ) // fluke signal
+        return false;
+
+    Command command = _setupCommand( connection, buffer );
+    const bool gotCommand = _readTail( command, buffer, connection );
+    LBASSERT( gotCommand );
+
+    // start next receive
+    BufferPtr nextBuffer = _impl->smallBuffers.alloc( Buffer::getCacheSize( ));
+    connection->recvNB( nextBuffer, Buffer::getMinSize( ));
+
+    if( gotCommand )
+    {
+        _dispatchCommand( command );
+        return true;
+    }
+
+    LBERROR << "Incomplete command read: " << command << std::endl;
+    return false;
+}
+
+BufferPtr LocalNode::_readHead( ConnectionPtr connection )
+{
+    BufferPtr buffer;
+    const bool gotSize = connection->recvSync( buffer, false );
+    const size_t minSize = Buffer::getMinSize();
+
+    if( !buffer ) // fluke signal
+    {
+        LBWARN << "Erronous network event on " << connection->getDescription()
+               << std::endl;
+        _impl->incoming.setDirty();
+        return 0;
+    }
+
+    if( !gotSize ) // Some systems signal data on dead connections.
+    {
+        buffer->setSize( 0 );
+        connection->recvNB( buffer, minSize );
+        return 0;
+    }
+
+    return buffer;
+}
+
+Command LocalNode::_setupCommand( ConnectionPtr connection,
+                                  ConstBufferPtr buffer )
+{
     NodePtr node;
     ConnectionNodeHashCIter i = _impl->connectionNodes.find( connection );
     if( i != _impl->connectionNodes.end( ))
@@ -1227,84 +1296,83 @@ bool LocalNode::_handleData()
                   *(node->getConnection()) == *connection || // correct UC conn
                   connection->getDescription()->type>=CONNECTIONTYPE_MULTICAST,
                   lunchbox::className( node ));
-
     LBVERB << "Handle data from " << node << std::endl;
 
-    void* sizePtr( 0 );
-    uint64_t bytes( 0 );
-    const bool gotSize = connection->recvSync( &sizePtr, &bytes, false );
-
-    if( !gotSize ) // Some systems signal data on dead connections.
-    {
-        connection->recvNB( sizePtr, sizeof( uint64_t ));
-        return false;
-    }
-
-    LBASSERT( sizePtr );
-    const uint64_t size = *reinterpret_cast< uint64_t* >( sizePtr );
-    if( bytes == 0 ) // fluke signal
-    {
-        LBWARN << "Erronous network event on " << connection->getDescription()
-               << std::endl;
-        _impl->incoming.setDirty();
-        return false;
-    }
-
-    LBASSERT( size );
-    LBASSERTINFO( bytes == sizeof( uint64_t ), bytes );
+    const bool swapping = node ? node->isBigEndian() != isBigEndian() : false;
+    Command command( this, node, buffer, swapping );
 
     if( node )
         node->_setLastReceive( getTime64( ));
-
-    BufferPtr buffer = _impl->bufferCache.alloc( node, this, size );
-    LBASSERT( buffer->getRefCount() == 1 );
-    connection->recvNB( buffer->getData(), size );
-    const bool gotData = connection->recvSync( 0, 0 );
-
-    Command command( buffer );
-
-    LBASSERT( gotData );
-    LBASSERT( command.isValid( ));
-
-    // start next receive
-    connection->recvNB( sizePtr, sizeof( uint64_t ));
-
-    if( !gotData )
+    else
     {
-        LBERROR << "Incomplete command read: " << command << std::endl;
-        return false;
+        uint32_t cmd = command.getCommand();
+#ifdef COLLAGE_BIGENDIAN
+        lunchbox::byteswap( cmd ); // pre-node commands are sent little endian
+#endif
+        switch( cmd )
+        {
+          case CMD_NODE_CONNECT:
+          case CMD_NODE_CONNECT_REPLY:
+          case CMD_NODE_ID:
+#ifdef COLLAGE_BIGENDIAN
+              command = Command( this, node, buffer, true );
+#endif
+              break;
+
+          case CMD_NODE_CONNECT_BE:
+          case CMD_NODE_CONNECT_REPLY_BE:
+          case CMD_NODE_ID_BE:
+#ifndef COLLAGE_BIGENDIAN
+              command = Command( this, node, buffer, true );
+#endif
+              break;
+
+          default:
+              LBUNIMPLEMENTED;
+              return Command();
+        }
+        command.setCommand( cmd ); // reset correctly swapped version
     }
 
-    _dispatchCommand( command );
-    return true;
+    return command;
 }
 
-BufferPtr LocalNode::allocCommand( const uint64_t size )
+bool LocalNode::_readTail( Command& command, BufferPtr buffer,
+                           ConnectionPtr connection )
 {
-    LBASSERT( _impl->inReceiverThread( ));
-    return _impl->bufferCache.alloc( this, this, size );
+    const uint64_t needed = command.getSize_();
+    if( needed <= buffer->getSize( ))
+        return true;
+
+    if( needed > buffer->getMaxSize( ))
+    {
+        LBASSERT( needed > co::Buffer::getCacheSize( ));
+        // not enough space for remaining data, alloc and copy to new buffer
+        BufferPtr newBuffer = _impl->bigBuffers.alloc( needed );
+        newBuffer->replace( *buffer );
+        buffer = newBuffer;
+
+        command = Command( this, command.getNode(), buffer,
+                           command.isSwapping( ));
+    }
+
+    // read remaining data
+    connection->recvNB( buffer, command.getSize_() - buffer->getSize( ));
+    return connection->recvSync( buffer );
+}
+
+BufferPtr LocalNode::allocBuffer( const uint64_t size )
+{
+    LBASSERT( _impl->receiverThread->isStopped() || _impl->inReceiverThread( ));
+    BufferPtr buffer = size > co::Buffer::getCacheSize() ? 
+        _impl->bigBuffers.alloc( size ) :
+        _impl->smallBuffers.alloc( Buffer::getCacheSize( ));
+    return buffer;
 }
 
 void LocalNode::_dispatchCommand( Command& command )
 {
-    LBASSERT( command.isValid( ));
-
-    // This is one of the initial commands during the connection handshake, at
-    // which point the remote node is not yet available. Handle endianness. The
-    // initial idea was to register a command handler for the byteswapped
-    // initial handshake commands below. This would require using a
-    // unordered_map instead of vector in the dispatcher, hence this heuristic
-    // approach:
-    if( !command.getNode() && command.getCommand() > CMD_NODE_MAXIMUM )
-    {
-        command.setSwapping( true );
-        command.reread();
-    }
-    LBASSERTINFO( command.getNode() ||
-                  ( command.getType() == COMMANDTYPE_NODE &&
-                    ( command.getCommand() == CMD_NODE_CONNECT  ||
-                      command.getCommand() == CMD_NODE_CONNECT_REPLY ||
-                      command.getCommand() == CMD_NODE_ID )), command );
+    LBASSERTINFO( command.isValid(), command );
 
     if( dispatchCommand( command ))
         _redispatchCommands();
@@ -1318,7 +1386,7 @@ void LocalNode::_dispatchCommand( Command& command )
 bool LocalNode::dispatchCommand( Command& command )
 {
     LBVERB << "dispatch " << command << " by " << getNodeID() << std::endl;
-    LBASSERT( command.isValid( ));
+    LBASSERTINFO( command.isValid(), command );
 
     const uint32_t type = command.getType();
     switch( type )
@@ -1445,7 +1513,7 @@ bool LocalNode::_cmdStopRcv( Command& command )
 bool LocalNode::_cmdStopCmd( Command& command )
 {
     LB_TS_THREAD( _cmdThread );
-    LBASSERT( isClosing( ));
+    LBASSERTINFO( isClosing(), *this );
 
     _setClosed();
     return true;
@@ -1461,7 +1529,7 @@ bool LocalNode::_cmdSetAffinity( Command& command )
 
 bool LocalNode::_cmdConnect( Command& command )
 {
-    LBASSERT( !command.getNode().isValid( ));
+    LBASSERTINFO( !command.getNode(), command );
     LBASSERT( _impl->inReceiverThread( ));
 
     const NodeID& nodeID = command.get< NodeID >();
@@ -1479,6 +1547,12 @@ bool LocalNode::_cmdConnect( Command& command )
               _impl->connectionNodes.end( ));
 
     NodePtr peer;
+#ifdef COLLAGE_BIGENDIAN
+    uint32_t cmd = CMD_NODE_CONNECT_REPLY_BE;
+    lunchbox::byteswap( cmd );
+#else
+    const uint32_t cmd = CMD_NODE_CONNECT_REPLY;
+#endif
 
     // No locking needed, only recv thread modifies
     NodeHashCIter i = _impl->nodes->find( nodeID );
@@ -1492,8 +1566,8 @@ bool LocalNode::_cmdConnect( Command& command )
                    << std::endl;
 
             // refuse connection
-            OCommand( Connections( 1, connection ), CMD_NODE_CONNECT_REPLY )
-                    << nodeID << requestID << nodeType;
+            OCommand( Connections( 1, connection ), cmd )
+                << nodeID << requestID << nodeType;
 
             // NOTE: There is no close() here. The reply command above has to be
             // received by the peer first, before closing the connection.
@@ -1522,7 +1596,7 @@ bool LocalNode::_cmdConnect( Command& command )
     LBVERB << "Added node " << nodeID << std::endl;
 
     // send our information as reply
-    OCommand( Connections( 1, connection ), CMD_NODE_CONNECT_REPLY )
+    OCommand( Connections( 1, connection ), cmd )
         << getNodeID() << requestID << getType() << serialize();
 
     notifyConnect( peer );
@@ -1587,7 +1661,8 @@ bool LocalNode::_cmdConnectReply( Command& command )
             peer = createNode( nodeType );
     }
 
-    LBASSERT( peer->getType() == nodeType );
+    LBASSERTINFO( peer->getType() == nodeType,
+                  peer->getType() << " != " << nodeType );
     LBASSERT( peer->isClosed( ));
 
     if( !peer->deserialize( data ))
@@ -1821,7 +1896,7 @@ bool LocalNode::_cmdReleaseSendToken( Command& )
 
 bool LocalNode::_cmdAddListener( Command& command )
 {
-    Connection* rawConnection = command.get< Connection* >();
+    Connection* rawConnection = (Connection*)(command.get< uint64_t >( ));
     std::string data = command.get< std::string >();
 
     ConnectionDescriptionPtr description = new ConnectionDescription( data );

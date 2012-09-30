@@ -67,9 +67,12 @@ public:
     /**
      * Allow external send of data along with this command.
      *
+     * Locks all connections, which will be unlocked in the dtor after
+     * potentially send padding to fill up the send to Buffer::getMinSize().
+     *
      * @param additionalSize size in bytes of additional data after header.
      */
-    CO_API void sendHeaderUnlocked( const uint64_t additionalSize );
+    CO_API void sendHeader( const uint64_t additionalSize );
 
     /** @return the static size of this command. */
     CO_API static size_t getSize();

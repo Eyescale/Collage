@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2008-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2012, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -15,19 +15,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_CONNECTIONLISTENER_H
-#define CO_CONNECTIONLISTENER_H
+#ifndef CO_BUFFERLISTENER_H
+#define CO_BUFFERLISTENER_H
 
 namespace co
 {
-    /** A listener interface to connection changes. */
-    class ConnectionListener
+    /** A listener interface to buffer state changes. */
+    class BufferListener
     {
     public:
-        virtual ~ConnectionListener() {}
+        virtual ~BufferListener() {}
 
-        virtual void notifyStateChanged( Connection* ){}
+        virtual void notifyFree( Buffer* ) = 0; //!< No references left
     };
 }
 
-#endif // CO_CONNECTION_LISTENER_H
+#endif // CO_BUFFER_LISTENER_H

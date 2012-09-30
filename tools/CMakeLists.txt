@@ -18,11 +18,11 @@ macro(CO_ADD_TOOL NAME)
 endmacro(CO_ADD_TOOL NAME)
 
 co_add_tool(coNetperf
-  SOURCES netperf/netperf.cpp
+  SOURCES perf/netperf.cpp
   LINK_LIBRARIES shared Collage
   )
 
 co_add_tool(coNodeperf
-  SOURCES nodeperf/nodeperf.cpp
+  SOURCES perf/nodeperf.cpp
   LINK_LIBRARIES shared Collage
   )

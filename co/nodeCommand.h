@@ -24,9 +24,12 @@ namespace co
 {
     enum NodeCommand
     {
-        CMD_NODE_CONNECT, // must be on top
-        CMD_NODE_CONNECT_REPLY, // must be on top
-        CMD_NODE_ID, // must be on top (really!)
+        CMD_NODE_CONNECT,
+        CMD_NODE_CONNECT_BE,
+        CMD_NODE_CONNECT_REPLY,
+        CMD_NODE_CONNECT_REPLY_BE,
+        CMD_NODE_ID,
+        CMD_NODE_ID_BE,
         CMD_NODE_STOP_RCV,
         CMD_NODE_STOP_CMD,
         CMD_NODE_SET_AFFINITY_RCV,

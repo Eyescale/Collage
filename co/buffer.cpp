@@ -17,10 +17,7 @@
  */
 
 #include "buffer.h"
-
-#include "localNode.h"
-#include "node.h"
-
+#include "bufferListener.h"
 
 namespace co
 {
@@ -29,86 +26,48 @@ namespace detail
 class Buffer
 {
 public:
-    Buffer( lunchbox::a_int32_t& freeCounter )
-        : freeCount( freeCounter )
-        , node()
-        , localNode()
+    Buffer( BufferListener* listener_ )
+            : listener( listener_ )
     {}
 
-    lunchbox::a_int32_t& freeCount;
-    NodePtr node; //!< The node sending the command
-    LocalNodePtr  localNode; //!< The node receiving the command
+    BufferListener* const listener;
 };
 }
 
-Buffer::Buffer( lunchbox::a_int32_t& freeCounter )
+Buffer::Buffer( BufferListener* listener )
     : lunchbox::Bufferb()
     , lunchbox::Referenced()
-    , _impl( new detail::Buffer( freeCounter ))
+    , _impl( new detail::Buffer( listener ))
 {
 }
 
 Buffer::~Buffer()
 {
-    free();
     delete _impl;
-}
-
-NodePtr Buffer::getNode() const
-{
-    return _impl->node;
-}
-
-LocalNodePtr Buffer::getLocalNode() const
-{
-    return _impl->localNode;
-}
-
-bool Buffer::needsSwapping() const
-{
-    return _impl->node->isBigEndian() != _impl->localNode->isBigEndian();
-}
-
-bool Buffer::isValid() const
-{
-    return getSize() > 0;
-}
-
-size_t Buffer::alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size)
-{
-    LB_TS_THREAD( _writeThread );
-    LBASSERT( getRefCount() == 1 ); // caller BufferCache
-    LBASSERT( _impl->freeCount > 0 );
-
-    --_impl->freeCount;
-    _impl->node = node;
-    _impl->localNode = localNode;
-
-    reserve( LB_MAX( getMinSize(), size ));
-    resize( size );
-
-    return getSize();
-}
-
-void Buffer::free()
-{
-    LB_TS_THREAD( _writeThread );
-
-    clear();
-
-    _impl->node = 0;
-    _impl->localNode = 0;
 }
 
 void Buffer::deleteReferenced( const Referenced* object ) const
 {
     Buffer* buffer = const_cast< Buffer* >( this );
-    ++buffer->_impl->freeCount;
+    if( buffer->_impl->listener )
+        buffer->_impl->listener->notifyFree( buffer );
 }
 
 size_t Buffer::getMinSize()
 {
-    return 4096;
+    return 256;
 }
 
+size_t Buffer::getCacheSize()
+{
+    return 4096; // Bigger than minSize!
+}
+
+std::ostream& operator << ( std::ostream& os, const Buffer& buffer )
+{
+    os << lunchbox::disableFlush << "Buffer[" << buffer.getRefCount() << "@"
+       << &buffer << "]";
+    buffer.printHolders( os );
+    return os << lunchbox::enableFlush;
+}
 }

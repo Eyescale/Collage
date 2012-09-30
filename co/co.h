@@ -62,7 +62,7 @@
  */
 
 #include <co/barrier.h>
-#include <co/command.h>
+#include <co/buffer.h>
 #include <co/connection.h>
 #include <co/connectionDescription.h>
 #include <co/connectionSet.h>
@@ -74,10 +74,12 @@
 #include <co/dataOStream.h>
 #include <co/dataOStreamArchive.h>
 #include <co/global.h>
+#include <co/iCommand.h>
 #include <co/init.h>
 #include <co/oCommand.h>
 #include <co/object.h>
 #include <co/objectCommand.h>
+#include <co/objectOCommand.h>
 #include <co/serializable.h>
 #include <co/zeroconf.h>
 #include <lunchbox/lunchbox.h>

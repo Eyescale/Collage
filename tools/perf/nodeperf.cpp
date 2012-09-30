@@ -26,11 +26,35 @@
 namespace
 {
 class PerfNode;
-typedef co::CommandFunc< PerfNode > CmdFunc;
 typedef lunchbox::Lockable< co::Nodes, lunchbox::SpinLock > ConnectedNodes;
+typedef lunchbox::Buffer< uint64_t > Buffer;
 
 ConnectedNodes nodes_;
 lunchbox::Lock print_;
+static co::uint128_t _objectID( 0x25625429A197D730ull, 0x79F60861189007D5ull );
+template< class C >
+bool commandHandler( C command, Buffer& buffer, const uint64_t seed );
+
+class Object : public co::Serializable
+{
+private:
+    Buffer buffer_;
+
+    virtual void attach( const co::UUID& id, const uint32_t instanceID )
+    {
+        co::Serializable::attach( id, instanceID );
+
+        registerCommand( co::CMD_OBJECT_CUSTOM,
+                         co::CommandFunc< Object >( this, &Object::_cmdCustom ),
+                         getLocalNode()->getCommandThreadQueue( ));
+    }
+
+    bool _cmdCustom( co::Command& command )
+    {
+        return commandHandler< co::ObjectCommand >( command, buffer_,
+                                                    getID().low( ));
+    }
+};
 
 class PerfNodeProxy : public co::Node
 {
@@ -38,6 +62,7 @@ public:
     PerfNodeProxy() : co::Node( 0xC0FFEEu ), nPackets( 0 ) {}
 
     uint32_t nPackets;
+    Object object;
 };
 typedef lunchbox::RefPtr< PerfNodeProxy > PerfNodeProxyPtr;
 
@@ -47,12 +72,13 @@ public:
     PerfNode() : co::LocalNode( 0xC0FFEEu )
     {
         registerCommand( co::CMD_NODE_CUSTOM,
-                         CmdFunc( this, &PerfNode::_cmdCustom ),
+                         co::CommandFunc< PerfNode >( this,
+                                                      &PerfNode::_cmdCustom ),
                          getCommandThreadQueue( ));
     }
 
 private:
-    lunchbox::Buffer< uint64_t > buffer_;
+    Buffer buffer_;
 
     virtual co::NodePtr createNode( const uint32_t type )
         { return type == 0xC0FFEEu ? new PerfNodeProxy : new co::Node( type ); }
@@ -75,34 +101,44 @@ private:
 
     bool _cmdCustom( co::Command& command )
     {
-        co::NodePtr node = command.getNode();
-        if( node->getType() != 0xC0FFEEu )
-            return false;
-
-        PerfNodeProxyPtr peer = static_cast< PerfNodeProxy* >( node.get( ));
-        const uint32_t nPackets = command.get< uint32_t >();
-
-        if( peer->nPackets != 0 && peer->nPackets - 1 != nPackets )
-        {
-            LBERROR << "Got packet " << nPackets << ", expected "
-                    << peer->nPackets - 1 << std::endl;
-            return false;
-        }
-        peer->nPackets = nPackets;
-
-        command >> buffer_;
-        const size_t i = ( getNodeID().low() + nPackets ) % buffer_.getSize();
-        if( buffer_[ i ] != nPackets )
-        {
-            LBERROR << "Got " << buffer_[ i ] << " @ " << i << ", expected "
-                    << nPackets <<  " in buffer of size " << buffer_.getSize()
-                    << std::endl;
-            return false;
-        }
-        return true;
+        return commandHandler( command, buffer_, getNodeID().low( ));
     }
 };
 
+template< class C >
+bool commandHandler( C command, Buffer& buffer, const uint64_t seed )
+{
+    co::NodePtr node = command.getNode();
+    if( node->getType() != 0xC0FFEEu )
+        return false;
+
+    PerfNodeProxyPtr peer = static_cast< PerfNodeProxy* >( node.get( ));
+#if 0 // TODO 146: why doesn't this compile?
+    const uint32_t nPackets = command.get< uint32_t >();
+#else
+    uint32_t nPackets;
+    command >> nPackets;
+#endif
+
+    if( peer->nPackets != 0 && peer->nPackets - 1 != nPackets )
+    {
+        LBERROR << "Got packet " << nPackets << ", expected "
+                << peer->nPackets - 1 << std::endl;
+        return false;
+    }
+    peer->nPackets = nPackets;
+
+    command >> buffer;
+    const size_t i = ( seed + nPackets ) % buffer.getSize();
+    if( buffer[ i ] != nPackets )
+    {
+        LBERROR << "Got " << buffer[ i ] << " @ " << i << ", expected "
+                << nPackets <<  " in buffer of size " << buffer.getSize()
+                << std::endl;
+        return false;
+    }
+    return true;
+}
 }
 
 int main( int argc, char **argv )
@@ -115,6 +151,7 @@ int main( int argc, char **argv )
     uint32_t nPackets = 0xFFFFFFFFu;
     uint32_t waitTime = 0;
     bool useZeroconf = true;
+    bool useObjects = false;
 
     try // command line parsing
     {
@@ -129,6 +166,9 @@ int main( int argc, char **argv )
         TCLAP::SwitchArg zcArg( "d", "disableZeroconf",
                                 "Disable automatic connect using zeroconf",
                                 command, false );
+        TCLAP::SwitchArg objectsArg( "o", "object",
+                   "Benchmark object-object instead of node-node communication",
+                                     command, false );
         TCLAP::ValueArg<size_t> sizeArg( "p", "packetSize", "packet size",
                                          false, packetSize, "unsigned",
                                          command );
@@ -148,6 +188,7 @@ int main( int argc, char **argv )
             remote->fromString( remoteArg.getValue( ));
         }
         useZeroconf = !zcArg.isSet();
+        useObjects = objectsArg.isSet();
 
         if( sizeArg.isSet( ))
             packetSize = sizeArg.getValue();
@@ -174,10 +215,14 @@ int main( int argc, char **argv )
     }
     localNode->getZeroconf().set( "coNodeperf", co::Version::getString( ));
 
+    Object object;
+    object.setID( _objectID + localNode->getNodeID( ));
+    LBCHECK( localNode->registerObject( &object ));
+
     // run
     if( remote )
     {
-        co::NodePtr node = new co::Node;
+        co::NodePtr node = new PerfNodeProxy;
         node->addConnectionDescription( remote );
         localNode->connect( node );
     }
@@ -198,6 +243,7 @@ int main( int argc, char **argv )
             localNode->addListener( new co::ConnectionDescription );
     }
 
+    co::Nodes nodes;
     while( true )
     {
         lunchbox::Thread::yield();
@@ -207,7 +253,7 @@ int main( int argc, char **argv )
             break;
     }
 
-    lunchbox::Buffer< uint64_t > buffer;
+    Buffer buffer;
     const size_t bufferElems = packetSize / sizeof( uint64_t );
     buffer.resize( bufferElems );
     for( size_t i = 0; i < bufferElems; ++i )
@@ -220,10 +266,26 @@ int main( int argc, char **argv )
     clock.reset();
     while( nPackets-- )
     {
-        co::Nodes nodes;
         {
             lunchbox::ScopedFastRead _mutex( nodes_ );
-            nodes = *nodes_;
+            if( nodes != *nodes_ )
+            {
+                for( co::NodesCIter i = nodes_->begin(); i != nodes_->end();++i)
+                {
+                    co::NodePtr node = *i;
+                    co::NodesCIter j = stde::find( nodes, node );
+                    if( j == nodes.end( ))
+                    {
+                        // new node, map perf object
+                        LBASSERT( node->getType() == 0xC0FFEEu );
+                        PerfNodeProxyPtr peer =
+                                    static_cast< PerfNodeProxy* >( node.get( ));
+                        LBCHECK( localNode->mapObject( &peer->object,
+                                               _objectID + peer->getNodeID( )));
+                    }
+                }
+                nodes = *nodes_;
+            }
         }
         if( nodes.empty( ))
             break;
@@ -234,10 +296,22 @@ int main( int argc, char **argv )
             if( node->getType() != 0xC0FFEEu )
                 continue;
 
-            const size_t j = (node->getNodeID().low() + nPackets) % bufferElems;
-            buffer[ j ] = nPackets;
-            node->send( co::CMD_NODE_CUSTOM ) << nPackets << buffer;
-            buffer[ j ] = 0xDEADBEEFu;
+            if( useObjects )
+            {
+                const size_t j = (object.getID().low() + nPackets) %
+                                 bufferElems;
+                buffer[ j ] = nPackets;
+                object.send( node, co::CMD_OBJECT_CUSTOM ) << nPackets <<buffer;
+                buffer[ j ] = 0xDEADBEEFu;
+            }
+            else
+            {
+                const size_t j = (node->getNodeID().low() + nPackets) %
+                                 bufferElems;
+                buffer[ j ] = nPackets;
+                node->send( co::CMD_NODE_CUSTOM ) << nPackets << buffer;
+                buffer[ j ] = 0xDEADBEEFu;
+            }
             ++sentPackets;
 
             if( waitTime > 0 )
@@ -267,6 +341,8 @@ int main( int argc, char **argv )
         clock.reset();
     }
 
+    localNode->deregisterObject( &object );
+    LBCHECK( localNode->exitLocal( ));
     LBCHECK( co::exit( ));
     return EXIT_SUCCESS;
 }

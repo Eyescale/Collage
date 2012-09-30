@@ -20,15 +20,14 @@
 
 #include <co/buffer.h>
 #include <co/bufferCache.h>
-#include <co/command.h>
 #include <co/commandQueue.h>
 #include <co/dispatcher.h>
+#include <co/iCommand.h>
 #include <co/init.h>
-#include <co/localNode.h>
 #include <co/oCommand.h>
 #include <lunchbox/clock.h>
 
-// Tests the functionality of the network command cache
+// Tests the functionality of the network command buffer cache
 
 #define N_READER 13
 #define RUNTIME 5000
@@ -39,8 +38,8 @@ lunchbox::SpinLock _lock;
 class Reader : public co::Dispatcher, public lunchbox::Thread
 {
 public:
-    bool _cmd( co::Command& command ) { return true; }
-    bool _cmdStop( co::Command& command ) { _running = false; return true; }
+    bool _cmd( co::ICommand& command ) { return true; }
+    bool _cmdStop( co::ICommand& command ) { _running = false; return true; }
 
     Reader() : index( 0 ), _running( false )
         {
@@ -62,7 +61,7 @@ protected:
             _running = true;
             while( _running )
             {
-                co::Command command = _queue.pop();
+                co::ICommand command = _queue.pop();
                 TEST( command( ));
             }
             TEST( _queue.isEmpty( ));
@@ -86,16 +85,19 @@ int main( int argc, char **argv )
             readers[i].start();
         }
 
-        co::BufferCache cache;
-        co::LocalNodePtr node = new co::LocalNode;
+        co::BufferCache cache( 100 );
+        const uint64_t size = co::OCommand::getSize();
+        const uint64_t allocSize = co::Buffer::getCacheSize();
         size_t nOps = 0;
 
         lunchbox::Clock clock;
         while( clock.getTime64() < RUNTIME )
         {
-            co::BufferPtr buffer = cache.alloc( node, node,
-                                                co::OCommand::getSize( ));
-            co::Command command( buffer );
+            co::BufferPtr buffer = cache.alloc( allocSize );
+            buffer->resize( size );
+            reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
+
+            co::ICommand command( 0, 0, buffer, false /*swap*/ );
             command.setCommand( 0 );
             command.setType( co::COMMANDTYPE_CUSTOM );
 
@@ -103,7 +105,7 @@ int main( int argc, char **argv )
 
             for( size_t i = 1; i < N_READER; ++i )
             {
-                co::Command clonedCmd( command );
+                co::ICommand clonedCmd( command );
                 readers[i].dispatchCommand( clonedCmd );
             }
             ++nOps;
@@ -112,9 +114,11 @@ int main( int argc, char **argv )
 
         for( size_t i = 0; i < N_READER; ++i )
         {
-            co::BufferPtr buffer = cache.alloc( node, node,
-                                                co::OCommand::getSize( ));
-            co::Command command( buffer );
+            co::BufferPtr buffer = cache.alloc( allocSize );
+            buffer->resize( size );
+            reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
+
+            co::ICommand command( 0, 0, buffer, false /*swap*/ );
             command.setCommand( 1 );
 
             readers[i].dispatchCommand( command );

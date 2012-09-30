@@ -373,8 +373,8 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          */
         CO_API void flushCommands();
 
-        /** @internal Allocate a local command from the receiver thread. */
-        CO_API BufferPtr allocCommand( const uint64_t size );
+        /** @internal Allocate a command buffer from the receiver thread. */
+        CO_API BufferPtr allocBuffer( const uint64_t size );
 
         /**
          * Dispatches a command to the registered command queue.
@@ -467,6 +467,9 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         void   _handleConnect();
         void   _handleDisconnect();
         bool   _handleData();
+        BufferPtr _readHead( ConnectionPtr connection );
+        Command   _setupCommand( ConnectionPtr, ConstBufferPtr );
+        bool      _readTail( Command&, BufferPtr, ConnectionPtr );
         void   _initService();
         void   _exitService();
 

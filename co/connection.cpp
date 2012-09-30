@@ -18,6 +18,7 @@
 
 #include "connection.h"
 
+#include "buffer.h"
 #include "connectionDescription.h"
 #include "connectionListener.h"
 #include "log.h"
@@ -81,8 +82,8 @@ public:
     /** The lock used to protect concurrent write calls. */
     mutable lunchbox::Lock sendLock;
 
-    void*         aioBuffer;
-    uint64_t      aioBytes;
+    BufferPtr buffer; //!< Current async read buffer
+    uint64_t bytes; //!< Current read request size
 
     /** The listeners on state changes */
     ConnectionListeners listeners;
@@ -90,8 +91,7 @@ public:
     Connection()
             : state( co::Connection::STATE_CLOSED )
             , description( new ConnectionDescription )
-            , aioBuffer( 0 )
-            , aioBytes( 0 )
+            , bytes( 0 )
     {
         description->type = CONNECTIONTYPE_NONE;
     }
@@ -102,8 +102,8 @@ public:
         state = co::Connection::STATE_CLOSED;
         description = 0;
 
-        // LBASSERTINFO( !aioBytes && aioBytes == 0,
-        //               "Pending IO operation during connection destruction" );
+        LBASSERTINFO( !buffer,
+                      "Pending read operation during connection destruction" );
     }
 
     void fireStateChanged( co::Connection* connection )
@@ -241,70 +241,66 @@ void Connection::removeListener( ConnectionListener* listener )
 //----------------------------------------------------------------------
 // read
 //----------------------------------------------------------------------
-void Connection::recvNB( void* buffer, const uint64_t bytes )
+void Connection::recvNB( BufferPtr buffer, const uint64_t bytes )
 {
-    LBASSERT( !_impl->aioBuffer );
-    LBASSERT( !_impl->aioBytes );
+    LBASSERT( !_impl->buffer );
+    LBASSERT( _impl->bytes == 0 );
     LBASSERT( buffer );
-    LBASSERT( bytes );
+    LBASSERT( bytes > 0 );
+    LBASSERTINFO( bytes < LB_BIT48,
+                  "Out-of-sync network stream: read size " << bytes << "?" );
 
-    _impl->aioBuffer = buffer;
-    _impl->aioBytes  = bytes;
-    readNB( buffer, bytes );
+    _impl->buffer = buffer;
+    _impl->bytes = bytes;
+    buffer->reserve( buffer->getSize() + bytes );
+    readNB( buffer->getData() + buffer->getSize(), bytes );
 }
 
-bool Connection::recvSync( void** outBuffer, uint64_t* outBytes,
-                           const bool block )
+bool Connection::recvSync( BufferPtr& outBuffer, const bool block )
 {
-    // set up async IO data
-    LBASSERT( _impl->aioBuffer );
-    LBASSERT( _impl->aioBytes );
+    LBASSERT( _impl->buffer );
 
-    if( outBuffer )
-        *outBuffer = _impl->aioBuffer;
-    if( outBytes )
-        *outBytes = _impl->aioBytes;
+    // reset async IO data
+    outBuffer = _impl->buffer;
+    const uint64_t bytes = _impl->bytes;
+    _impl->buffer = 0;
+    _impl->bytes = 0;
 
-    void* buffer( _impl->aioBuffer );
-    const uint64_t bytes( _impl->aioBytes );
-    _impl->aioBuffer = 0;
-    _impl->aioBytes  = 0;
-
-    if( _impl->state != STATE_CONNECTED || !buffer || !bytes )
+    if( _impl->state != STATE_CONNECTED || !outBuffer || bytes == 0 )
         return false;
+    LBASSERTINFO( bytes < LB_BIT48,
+                  "Out-of-sync network stream: read size " << bytes << "?" );
 
-    // 'Iterator' data for receive loop
-    uint8_t* ptr = static_cast< uint8_t* >( buffer );
+    // 'Iterators' for receive loop
+    uint8_t* ptr = outBuffer->getData() + outBuffer->getSize();
     uint64_t bytesLeft = bytes;
-
-    // WAR: On Win32, we get occasionally a data notification and then deadlock
-    // when reading from the connection. The callee (Node::handleData) will flag
-    // the first read, the underlying SocketConnection will not block and we
-    // will restore the AIO operation if no data was present.
     int64_t got = readSync( ptr, bytesLeft, block );
-    if( got == READ_TIMEOUT ) // fluke notification
-    {
-        LBASSERTINFO( bytesLeft == bytes, bytesLeft << " != " << bytes );
-        if( outBytes )
-            *outBytes = 0;
 
-        _impl->aioBuffer = buffer;
-        _impl->aioBytes  = bytes;
+    // WAR: fluke notification: On Win32, we get occasionally a data
+    // notification and then deadlock when reading from the connection. The
+    // callee (Node::handleData) will flag the first read, the underlying
+    // SocketConnection will not block and we will restore the AIO operation if
+    // no data was present.
+    if( got == READ_TIMEOUT ) 
+    {
+        _impl->buffer = outBuffer;
+        _impl->bytes = bytes;
+        outBuffer = 0;
         return true;
     }
 
-    // From here on, blocking receive loop until all data read or error
+    // From here on, receive loop until all data read or error
     while( true )
     {
         if( got < 0 ) // error
         {
-            if( outBytes )
-                *outBytes -= bytesLeft;
+            const uint64_t read = bytes - bytesLeft;
+            outBuffer->resize( outBuffer->getSize() + read );
             if( bytes == bytesLeft )
                 LBINFO << "Read on dead connection" << std::endl;
             else
-                LBERROR << "Error during read after " << bytes - bytesLeft
-                        << " bytes on " << _impl->description << std::endl;
+                LBERROR << "Error during read after " << read << " bytes on "
+                        << _impl->description << std::endl;
             return false;
         }
         else if( got == 0 )
@@ -312,14 +308,9 @@ bool Connection::recvSync( void** outBuffer, uint64_t* outBytes,
             // ConnectionSet::select may report data on an 'empty' connection.
             // If we have nothing read so far, we have hit this case.
             if( bytes == bytesLeft )
-            {
-                if( outBytes )
-                    *outBytes = 0;
                 return false;
-            }
             LBVERB << "Zero bytes read" << std::endl;
         }
-
         if( bytesLeft > static_cast< uint64_t >( got )) // partial read
         {
             ptr += got;
@@ -327,45 +318,47 @@ bool Connection::recvSync( void** outBuffer, uint64_t* outBytes,
 
             readNB( ptr, bytesLeft );
             got = readSync( ptr, bytesLeft, true );
+            continue;
         }
-        else
-        {
-            LBASSERTINFO( static_cast< uint64_t >( got ) == bytesLeft,
-                          got << " != " << bytesLeft );
 
+        // read done
+        LBASSERTINFO( static_cast< uint64_t >( got ) == bytesLeft,
+                      got << " != " << bytesLeft );
+
+        outBuffer->resize( outBuffer->getSize() + bytes );
 #ifndef NDEBUG
-            if( bytes <= 1024 && ( lunchbox::Log::topics & LOG_PACKETS ))
+        if( bytes <= 1024 && ( lunchbox::Log::topics & LOG_PACKETS ))
+        {
+            ptr -= (bytes - bytesLeft); // rewind
+            LBINFO << "recv:" << std::hex << lunchbox::disableFlush
+                   << lunchbox::disableHeader;
+            for( size_t i = 0; i < bytes; ++i )
             {
-                ptr = static_cast< uint8_t* >( buffer );
-                LBINFO << "recv:" << std::hex << lunchbox::disableFlush
-                       << lunchbox::disableHeader;
-                for( size_t i = 0; i < bytes; ++i )
-                {
-                    if( (i % 16) == 0 )
-                        LBINFO << std::endl;
-                    if( (i % 4) == 0 )
-                        LBINFO << " 0x";
-                    LBINFO << std::setfill( '0' ) << std::setw(2)
-                           << static_cast< unsigned >( ptr[ i ] );
-                }
-                LBINFO << std::dec << lunchbox::enableFlush
-                       << std::endl << lunchbox::enableHeader;
+                if( (i % 16) == 0 )
+                    LBINFO << std::endl;
+                if( (i % 4) == 0 )
+                    LBINFO << " 0x";
+                LBINFO << std::setfill( '0' ) << std::setw(2)
+                       << static_cast< unsigned >( *ptr );
+                ++ptr;
             }
-#endif
-            return true;
+            LBINFO << std::dec << lunchbox::enableFlush
+                   << std::endl << lunchbox::enableHeader;
         }
+#endif
+        return true;
     }
 
     LBUNREACHABLE;
     return true;
 }
 
-void Connection::resetRecvData( void** buffer, uint64_t* bytes )
+BufferPtr Connection::resetRecvData()
 {
-    *buffer = _impl->aioBuffer;
-    *bytes = _impl->aioBytes;
-    _impl->aioBuffer = 0;
-    _impl->aioBytes = 0;
+    BufferPtr buffer = _impl->buffer;
+    _impl->buffer = 0;
+    _impl->bytes = 0;
+    return buffer;
 }
 
 //----------------------------------------------------------------------

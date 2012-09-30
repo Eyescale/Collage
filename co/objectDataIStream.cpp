@@ -26,11 +26,7 @@
 namespace co
 {
 ObjectDataIStream::ObjectDataIStream()
-{
-    _reset();
-}
-
-ObjectDataIStream::~ObjectDataIStream()
+    : DataIStream( false )
 {
     _reset();
 }
@@ -40,6 +36,11 @@ ObjectDataIStream::ObjectDataIStream( const ObjectDataIStream& from )
         , _commands( from._commands )
         , _version( from._version )
 {
+}
+
+ObjectDataIStream::~ObjectDataIStream()
+{
+    _reset();
 }
 
 void ObjectDataIStream::reset()
@@ -66,7 +67,7 @@ void ObjectDataIStream::addDataCommand( ObjectDataCommand command )
 
     if( _commands.empty( ))
     {
-        LBASSERT( sequence == 0 );
+        LBASSERTINFO( sequence == 0, sequence << " in " << command );
     }
     else
     {
@@ -110,11 +111,10 @@ NodePtr ObjectDataIStream::getMaster()
 size_t ObjectDataIStream::getDataSize() const
 {
     size_t size = 0;
-    for( CommandDeque::const_iterator i = _commands.begin();
-         i != _commands.end(); ++i )
+    for( CommandDequeCIter i = _commands.begin(); i != _commands.end(); ++i )
     {
         const Command& command = *i;
-        size += command.getSize();
+        size += command.getSize_();
     }
     return size;
 }

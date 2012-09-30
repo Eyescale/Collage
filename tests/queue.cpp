@@ -19,7 +19,6 @@
 
 #include <test.h>
 
-#include <co/command.h>
 #include <co/connectionDescription.h>
 #include <co/init.h>
 #include <co/node.h>

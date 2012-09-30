@@ -39,7 +39,6 @@ namespace co
 class Barrier;
 class Buffer;
 class CPUCompressor; //!< @internal
-class Command;
 class CommandQueue;
 class Connection;
 class ConnectionDescription;
@@ -49,17 +48,18 @@ class CustomOCommand;
 class DataIStream;
 class DataOStream;
 class Global;
+class ICommand;
 class LocalNode;
 class Node;
+class OCommand;
 class Object;
-class ObjectFactory;
-class ObjectHandler;
+class ObjectCommand;
 class ObjectDataCommand;
 class ObjectDataIStream;
 class ObjectDataOCommand;
-class ObjectCommand;
+class ObjectFactory;
+class ObjectHandler;
 class ObjectOCommand;
-class OCommand;
 class Plugin;        //!< @internal
 class PluginRegistry;
 class QueueItem;
@@ -129,10 +129,13 @@ typedef ConnectionDescriptions::iterator         ConnectionDescriptionsIter;
 typedef ConnectionDescriptions::const_iterator   ConnectionDescriptionsCIter;
 
 /** @cond IGNORE */
+class BufferListener;
 class MasterCMCommand;
+
 typedef lunchbox::RefPtr< Buffer > BufferPtr;
 typedef lunchbox::RefPtr< const Buffer > ConstBufferPtr;
-typedef std::deque< Command > CommandDeque;
+typedef std::deque< ICommand > CommandDeque;
+typedef CommandDeque::const_iterator CommandDequeCIter;
 
 typedef std::vector< ObjectVersion > ObjectVersions;
 typedef ObjectVersions::const_iterator ObjectVersionsCIter;
@@ -148,6 +151,7 @@ typedef Plugins::const_iterator PluginsCIter;
 /** @endcond */
 
 #ifndef EQ_2_0_API
+typedef ICommand Command; //TODO 145 rename internally.
 namespace base
 {
 using namespace lunchbox;

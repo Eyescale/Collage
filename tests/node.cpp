@@ -18,12 +18,13 @@
 
 #include <test.h>
 
-#include <co/command.h>
 #include <co/connection.h>
 #include <co/connectionDescription.h>
+#include <co/iCommand.h>
 #include <co/init.h>
 #include <co/node.h>
 #include <co/oCommand.h>
+
 #include <lunchbox/clock.h>
 #include <lunchbox/monitor.h>
 #include <lunchbox/rng.h>
@@ -58,7 +59,7 @@ public:
         }
 
 protected:
-    bool command( co::Command& cmd )
+    bool command( co::ICommand& cmd )
         {
             TEST( cmd.getCommand() == co::CMD_NODE_CUSTOM );
             TEST( _messagesLeft > 0 );
