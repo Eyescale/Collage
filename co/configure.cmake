@@ -5,9 +5,6 @@
 #               2010 Cedric Stalder <cedric.stalder@gmail.ch>
 ##
 
-if(NOT EQ_REVISION)
-  set(EQ_REVISION 0)
-endif()
 update_file(${CMAKE_CURRENT_SOURCE_DIR}/version.in.h ${OUTPUT_INCLUDE_DIR}/co/version.h)
 install(FILES ${OUTPUT_INCLUDE_DIR}/co/version.h DESTINATION include/co/ COMPONENT dev)
 
