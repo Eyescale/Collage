@@ -208,6 +208,8 @@ void DataOStream::_enable()
     _impl->buffer.setSize( 0 );
 #ifdef CO_AGGRESSIVE_CACHING
     _impl->buffer.reserve( Buffer::getCacheSize( ));
+#else
+    _impl->buffer.reserve( Buffer::getMinSize( ));
 #endif
 }
 
