@@ -7,9 +7,11 @@ set(CO_PUBLIC_HEADERS
   api.h
   array.h
   barrier.h
+  buffer.h
+  bufferListener.h
   bufferConnection.h
   co.h
-  command.h
+  iCommand.h
   commandFunc.h
   commandQueue.h
   commands.h
@@ -23,9 +25,11 @@ set(CO_PUBLIC_HEADERS
   customCommand.h
   customOCommand.h
   dataIStream.h
+  dataIStream.ipp
   dataIStreamArchive.h
   dataIStreamArchive.ipp
   dataOStream.h
+  dataOStream.ipp
   dataOStreamArchive.h
   dataOStreamArchive.ipp
   dataStreamArchiveException.h
@@ -62,7 +66,6 @@ set(CO_PUBLIC_HEADERS
 
 set(CO_HEADERS
   barrierCommand.h
-  buffer.h
   bufferCache.h
   connectionListener.h
   dataStreamArchive.h
@@ -97,7 +100,7 @@ set(CO_SOURCES
   buffer.cpp
   bufferCache.cpp
   bufferConnection.cpp
-  command.cpp
+  iCommand.cpp
   commandQueue.cpp
   compressor.cpp
   connection.cpp

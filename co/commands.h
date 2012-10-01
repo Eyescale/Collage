@@ -31,7 +31,7 @@ namespace co
         COMMANDTYPE_INVALID = 0xFFFFFFFFu //!< @internal
     };
 
-    enum
+    enum Commands
     {
         CMD_NODE_CUSTOM = 50,  //!< Commands for Node subclasses start here
         CMD_NODE_MAXIMUM = 0xFFFFFFu, //!< Highest allowed node command (2^24-1)

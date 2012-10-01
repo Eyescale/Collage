@@ -974,12 +974,12 @@ bool ObjectStore::_cmdUnmapObject( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdInstance( Command& comd )
+bool ObjectStore::_cmdInstance( Command& inCommand )
 {
     LB_TS_THREAD( _receiverThread );
     LBASSERT( _localNode );
 
-    ObjectDataCommand command( comd );
+    ObjectDataCommand command( inCommand );
     const NodeID nodeID = command.get< NodeID >();
     const uint32_t masterInstanceID = command.get< uint32_t >();
     const uint32_t cmd = command.getCommand();

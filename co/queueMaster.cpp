@@ -19,8 +19,6 @@
 
 #include "queueMaster.h"
 
-#include "bufferCache.h"
-#include "command.h"
 #include "dataOStream.h"
 #include "objectCommand.h"
 #include "objectOCommand.h"
@@ -58,7 +56,7 @@ public:
     {}
 
     /** The command handler functions. */
-    bool cmdGetItem( co::Command& comd )
+    bool cmdGetItem( co::ICommand& comd )
     {
         co::ObjectCommand command( comd );
 
@@ -92,7 +90,6 @@ public:
     typedef lunchbox::MTQueue< ItemBufferPtr > ItemQueue;
 
     ItemQueue queue;
-    co::BufferCache cache;
 
 private:
     const co::QueueMaster& _parent;
@@ -126,7 +123,6 @@ void QueueMaster::attach( const UUID& id, const uint32_t instanceID )
 void QueueMaster::clear()
 {
     _impl->queue.clear();
-    _impl->cache.flush();
 }
 
 void QueueMaster::getInstanceData( co::DataOStream& os )

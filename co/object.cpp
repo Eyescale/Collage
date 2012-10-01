@@ -18,7 +18,6 @@
 
 #include "object.h"
 
-#include "command.h"
 #include "cpuCompressor.h"
 #include "dataIStream.h"
 #include "dataOStream.h"
@@ -321,6 +320,15 @@ std::ostream& operator << ( std::ostream& os, const Object& object )
     os << lunchbox::className( &object ) << " " << object.getID() << "."
        << object.getInstanceID() << " v" << object.getVersion();
     return os;
+}
+
+std::ostream& operator << ( std::ostream& os,const Object::ChangeType& type )
+{
+    return os << ( type == Object::NONE ? "none" :
+                   type == Object::STATIC ? "static" :
+                   type == Object::INSTANCE ? "instance" :
+                   type == Object::DELTA ? "delta" :
+                   type == Object::UNBUFFERED ? "unbuffered" : "ERROR" );
 }
 
 }

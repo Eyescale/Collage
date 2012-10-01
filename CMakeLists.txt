@@ -42,18 +42,6 @@ endif()
 
 if(APPLE)
   add_definitions(-DDarwin)
-
-  if(_CMAKE_OSX_MACHINE MATCHES "ppc")
-    set(COLLAGE_OSX_ARCHITECTURES "ppc;ppc64" CACHE STRING
-      "Build architectures")
-  else()
-    set(COLLAGE_OSX_ARCHITECTURES "i386;x86_64" CACHE STRING
-      "Build architectures")
-  endif()
-  mark_as_advanced(COLLAGE_OSX_ARCHITECTURES)
-
-  set(CMAKE_OSX_ARCHITECTURES "${COLLAGE_OSX_ARCHITECTURES}")
-  message(STATUS "Building Collage ${VERSION} for ${CMAKE_OSX_ARCHITECTURES}")
 endif(APPLE)
 
 add_definitions(-DCO_BUILD_DIR="${CMAKE_BINARY_DIR}/")

@@ -35,7 +35,7 @@ namespace co
 #   define CO_VERSION_PATCH @VERSION_PATCH@
 
     /** The git wc hash revision, may be 0. @version 0.4 */
-#   define CO_VERSION_REVISION @EQ_REVISION@
+#   define CO_VERSION_REVISION @GIT_REVISION@
 
     /** The current DSO binary revision. @version 0.4 */
 #   define CO_VERSION_ABI @VERSION_ABI@

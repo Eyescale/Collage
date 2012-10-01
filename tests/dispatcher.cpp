@@ -22,9 +22,9 @@
 #include <test.h>
 #include <co/buffer.h>
 #include <co/bufferCache.h>
-#include <co/command.h>
 #include <co/commandFunc.h>
 #include <co/dispatcher.h>
+#include <co/iCommand.h>
 #include <co/localNode.h>
 #include <co/oCommand.h>
 
@@ -54,7 +54,7 @@ public:
     virtual uint64_t getBar2() const { return bar2; }
     uint64_t getBars() const { return bar1 + bar2; }
 
-    bool cmd( co::Command& )
+    bool cmd( co::ICommand& )
         {
             TESTINFO( bar1 == 7, bar1 );
             TESTINFO( bar2 == 6, bar2 );
@@ -75,7 +75,7 @@ public:
                              co::CommandFunc<FooBar>( this, &FooBar::cmd ), 0 );
         }
 
-    bool cmd( co::Command& )
+    bool cmd( co::ICommand& )
         {
             TESTINFO( foo == 42, foo );
             TESTINFO( bar1 == 7, bar1 );
@@ -98,7 +98,7 @@ public:
                              co::CommandFunc<BarFoo>( this, &BarFoo::cmd ), 0 );
         }
 
-    bool cmd( co::Command& )
+    bool cmd( co::ICommand& )
         {
             TESTINFO( foo == 42, foo );
             TESTINFO( bar1 == 7, bar1 );
@@ -114,11 +114,15 @@ public:
 
 int main( int argc, char **argv )
 {
-    co::BufferCache cache;
+    co::BufferCache cache( 10 );
     co::LocalNodePtr node = new co::LocalNode;
-    co::BufferPtr buffer = cache.alloc( node, node, co::OCommand::getSize( ));
 
-    co::Command command( buffer );
+    const uint64_t size = co::OCommand::getSize();
+    co::BufferPtr buffer = cache.alloc( co::Buffer::getCacheSize( ));
+    buffer->resize( size );
+    reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
+
+    co::ICommand command( node, node, buffer, false );
     command.setType( co::COMMANDTYPE_NODE );
     command.setCommand( co::CMD_NODE_CUSTOM );
 

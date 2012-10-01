@@ -19,7 +19,7 @@
 #ifndef CO_OBJECTDATAISTREAM_H
 #define CO_OBJECTDATAISTREAM_H
 
-#include <co/command.h>         // member
+#include <co/iCommand.h>         // member
 #include <co/dataIStream.h>     // base class
 #include <co/version.h>         // enum
 #include <lunchbox/monitor.h>   // member

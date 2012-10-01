@@ -16,8 +16,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_COMMAND_H
-#define CO_COMMAND_H
+#ifndef CO_ICOMMAND_H
+#define CO_ICOMMAND_H
 
 #include <co/api.h>
 #include <co/commands.h>        // for enum CommandType
@@ -26,7 +26,7 @@
 
 namespace co
 {
-namespace detail { class Command; }
+namespace detail { class ICommand; }
 
     /**
      * A class managing received commands.
@@ -38,19 +38,19 @@ namespace detail { class Command; }
      * data retrieval is possible with the provided DataIStream methods or with
      * the templated get() function.
      */
-    class Command : public DataIStream
+    class ICommand : public DataIStream
     {
     public:
-        CO_API Command(); //!< @internal
-        CO_API Command( ConstBufferPtr buffer ); //!< @internal
-        CO_API Command( const Command& rhs ); //!< @internal
+        CO_API ICommand(); //!< @internal
+        CO_API ICommand( LocalNodePtr local, NodePtr remote,
+                        ConstBufferPtr buffer, const bool swap ); //!< @internal
+        CO_API ICommand( const ICommand& rhs ); //!< @internal
 
-        CO_API Command& operator = ( const Command& rhs ); //!< @internal
+        CO_API ICommand& operator = ( const ICommand& rhs ); //!< @internal
 
         CO_API void clear(); //!< @internal
-        void reread(); //!< @internal see LocalNode::_dispatchCommand()
 
-        CO_API virtual ~Command(); //!< @internal
+        CO_API virtual ~ICommand(); //!< @internal
 
         /** @name Data Access */
         //@{
@@ -60,8 +60,11 @@ namespace detail { class Command; }
         /** @return the command. @version 1.0 */
         CO_API uint32_t getCommand() const;
 
-        /** @internal @return the size of this command. @version 1.0 */
-        CO_API uint64_t getSize() const;
+        /** @return the command payload size. @version 1.0 */
+        uint64_t getSize_() const;
+
+        /** @internal @return the buffer */
+        CO_API ConstBufferPtr getBuffer() const;
 
         /** @return a value from the command. @version 1.0 */
         template< typename T > T get()
@@ -97,9 +100,9 @@ namespace detail { class Command; }
         //@}
 
     private:
-        detail::Command* const _impl;
+        detail::ICommand* const _impl;
 
-        friend CO_API std::ostream& operator << (std::ostream&, const Command&);
+        friend CO_API std::ostream& operator << (std::ostream&,const ICommand&);
 
         /** @internal @name DataIStream functions. */
         //@{
@@ -115,6 +118,6 @@ namespace detail { class Command; }
         void _skipHeader(); //!< @internal
     };
 
-    CO_API std::ostream& operator << ( std::ostream& os, const Command& );
+    CO_API std::ostream& operator << ( std::ostream& os, const ICommand& );
 }
-#endif // CO_COMMAND_H
+#endif // CO_ICOMMAND_H
