@@ -20,7 +20,6 @@
 #include "queueSlave.h"
 
 #include "buffer.h"
-#include "command.h"
 #include "commandQueue.h"
 #include "dataIStream.h"
 #include "global.h"
@@ -94,14 +93,19 @@ ObjectCommand QueueSlave::pop()
         }
 
         ObjectCommand cmd( _impl->queue.pop( ));
-        if( cmd.getCommand() == CMD_QUEUE_ITEM )
-            return ObjectCommand( cmd );
+        switch( cmd.getCommand( ))
+        {
+          case CMD_QUEUE_ITEM:
+              return ObjectCommand( cmd );
 
-        LBASSERT( cmd.getCommand() == CMD_QUEUE_EMPTY );
-        const int32_t requestID = cmd.get< int32_t >();
-        if( requestID == request )
-            return ObjectCommand( 0 );
-        // else left-over or not our empty command, discard and retry
+          default:
+              LBUNIMPLEMENTED;
+          case CMD_QUEUE_EMPTY:
+              if( cmd.get< int32_t >() == request )
+                  return ObjectCommand( 0, 0, 0, false );
+              // else left-over or not our empty command, discard and retry
+              break;
+        }
     }
 }
 

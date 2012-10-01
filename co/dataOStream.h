@@ -61,9 +61,6 @@ namespace DataStreamTest { class Sender; }
         /** @internal */
         CO_API const Connections& getConnections() const;
 
-        /** @internal */
-        CO_API lunchbox::Bufferb& getBuffer();
-
         /** @internal Stream the data header (compressor, nChunks). */
         DataOStream& streamDataHeader( DataOStream& os );
 
@@ -122,6 +119,9 @@ namespace DataStreamTest { class Sender; }
         CO_API DataOStream(); //!< @internal
         virtual CO_API ~DataOStream(); //!< @internal
 
+        /** @internal */
+        CO_API lunchbox::Bufferb& getBuffer();
+
         /** @internal Initialize the given compressor. */
         void _initCompressor( const uint32_t compressor );
 
@@ -129,7 +129,7 @@ namespace DataStreamTest { class Sender; }
         CO_API void _enable();
 
         /** @internal Flush remaining data in the buffer. */
-        void _flush();
+        void flush( const bool last );
 
         /** @internal
          * Set up the connection list for a group of nodes, using multicast
@@ -171,8 +171,6 @@ namespace DataStreamTest { class Sender; }
 
         /** Write a number of bytes from data into the stream. */
         CO_API void _write( const void* data, uint64_t size );
-
-        bool _disable();
 
         /** Helper function preparing data for sendData() as needed. */
         void _sendData( const void* data, const uint64_t size );

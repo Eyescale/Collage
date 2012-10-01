@@ -54,6 +54,8 @@ namespace co
     {
         uint64_t nElems = 0;
         *this >> nElems;
+        LBASSERTINFO( nElems < LB_BIT48,
+                    "Out-of-sync co::DataIStream: " << nElems << " elements?" );
         buffer.resize( nElems );
         return *this >> Array< T >( buffer.getData(), nElems );
     }
@@ -65,22 +67,23 @@ namespace co
         uint64_t nElems = 0;
         *this >> nElems;
         value.resize( nElems );
-        for( uint64_t i = 0; i < nElems; i++ )
+        for( uint64_t i = 0; i < nElems; ++i )
             *this >> value[i];
         return *this;
     }
 
     template< class K, class V > inline DataIStream&
-    DataIStream::operator >> ( std::map< K, V >& value )
+    DataIStream::operator >> ( std::map< K, V >& map )
     {
+        map.clear();
         uint64_t nElems = 0;
         *this >> nElems;
-        for( uint64_t i = 0; i < nElems; i++ )
+        for( uint64_t i = 0; i < nElems; ++i )
         {
-            typename std::map< K, V >::key_type keyItem;
-            typename std::map< K, V >::mapped_type mappedItem;
-            *this >> keyItem >> mappedItem;
-            value.insert( std::make_pair( keyItem, mappedItem ));
+            typename std::map< K, V >::key_type key;
+            typename std::map< K, V >::mapped_type value;
+            *this >> key >> value;
+            map.insert( std::make_pair( key, value ));
         }
         return *this;
     }
@@ -88,9 +91,10 @@ namespace co
     template< class T > inline DataIStream&
     DataIStream::operator >> ( std::set< T >& value )
     {
+        value.clear();
         uint64_t nElems = 0;
         *this >> nElems;
-        for( uint64_t i = 0; i < nElems; i++ )
+        for( uint64_t i = 0; i < nElems; ++i )
         {
             T item;
             *this >> item;
@@ -100,16 +104,17 @@ namespace co
     }
 
     template< class K, class V > inline DataIStream&
-    DataIStream::operator >> ( stde::hash_map< K, V >& value )
+    DataIStream::operator >> ( stde::hash_map< K, V >& map )
     {
+        map.clear();
         uint64_t nElems = 0;
         *this >> nElems;
-        for( uint64_t i = 0; i < nElems; i++ )
+        for( uint64_t i = 0; i < nElems; ++i )
         {
-            typename stde::hash_map< K, V >::key_type keyItem;
-            typename stde::hash_map< K, V >::mapped_type mappedItem;
-            *this >> keyItem >> mappedItem;
-            value.insert( std::make_pair( keyItem, mappedItem ));
+            typename stde::hash_map< K, V >::key_type key;
+            typename stde::hash_map< K, V >::mapped_type value;
+            *this >> key >> value;
+            map.insert( std::make_pair( key, value ));
         }
         return *this;
     }
@@ -117,9 +122,10 @@ namespace co
     template< class T > inline DataIStream&
     DataIStream::operator >> ( stde::hash_set< T >& value )
     {
+        value.clear();
         uint64_t nElems = 0;
         *this >> nElems;
-        for( uint64_t i = 0; i < nElems; i++ )
+        for( uint64_t i = 0; i < nElems; ++i )
         {
             T item;
             *this >> item;

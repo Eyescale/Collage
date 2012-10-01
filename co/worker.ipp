@@ -18,7 +18,7 @@
 
 #include "worker.h"
 
-#include "command.h"
+#include "iCommand.h"
 
 namespace co
 {
@@ -26,7 +26,7 @@ template< class Q > void WorkerThread< Q >::run()
 {
     while( !stopRunning( ))
     {
-        Command command = _commands.pop();
+        ICommand command = _commands.pop();
         LBASSERT( command.isValid( ));
 
         if( !command( ))

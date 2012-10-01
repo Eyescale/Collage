@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -18,12 +19,10 @@
 #ifndef CO_OBJECTICOMMAND_H
 #define CO_OBJECTICOMMAND_H
 
-#include <co/command.h>   // base class
-
+#include <co/iCommand.h>   // base class
 
 namespace co
 {
-
 enum ObjectCommands
 {
     CMD_OBJECT_INSTANCE,
@@ -36,11 +35,12 @@ enum ObjectCommands
 namespace detail { class ObjectCommand; }
 
 /** A command specialization for objects. */
-class ObjectCommand : public Command
+class ObjectCommand : public ICommand
 {
 public:
     /** @internal */
-    CO_API ObjectCommand( ConstBufferPtr buffer );
+    CO_API ObjectCommand( LocalNodePtr local, NodePtr remote,
+                          ConstBufferPtr buffer, const bool swap );
 
     /** @internal */
     CO_API ObjectCommand( const Command& command );

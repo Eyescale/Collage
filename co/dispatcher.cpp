@@ -18,8 +18,8 @@
 
 #include "dispatcher.h"
 
-#include "command.h"
 #include "commandQueue.h"
+#include "iCommand.h"
 #include "node.h"
 
 #include <lunchbox/log.h>

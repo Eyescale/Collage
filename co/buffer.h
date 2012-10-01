@@ -31,42 +31,23 @@ namespace co
 namespace detail { class Buffer; }
 
 /**
- * @internal
- * The buffer containing the data of a co::Command.
+ * A receive buffer, containing the data for a co::Command.
  *
- * The command is required to extract the data from the buffer. The dispatching
- * methods are using the buffer for data forwarding because of the unknown
- * command type. The concrete command can be then instaniated with this buffer.
- *
- * The allocation of the buffer is always performed by the co::BufferCache. The
- * buffer API is supposed for internal use only.
-*/
+ * The buffer does not auto-delete, that is, a BufferPtr is not a smart
+ * pointer. The BufferCache uses the BufferListener interface to reuse buffers
+ * which are unreferenced, i.e., unused by any Command.
+ */
 class Buffer : public lunchbox::Bufferb, public lunchbox::Referenced
 {
 public:
-    Buffer( lunchbox::a_int32_t& freeCounter );
+    Buffer( BufferListener* listener = 0 );
     virtual ~Buffer();
-
-    /** @return the sending node proxy instance. */
-    NodePtr getNode() const;
-
-    /** @return the receiving node. */
-    LocalNodePtr getLocalNode() const;
-
-    /** @return true if the content needs to be endian-converted. */
-    bool needsSwapping() const;
-
-    /** @return true if the buffer has valid data. */
-    CO_API bool isValid() const;
 
     /** @return true if the buffer is no longer in use. */
     bool isFree() const { return getRefCount() == 0; }
 
-    void alloc( NodePtr node, LocalNodePtr localNode, const uint64_t size );
-
-    void free();
-
-    static size_t getMinSize();
+    static size_t getMinSize(); //!< Size of first read on receiver
+    static size_t getCacheSize(); //!< 'small' CommandCache allocation size
 
 private:
     detail::Buffer* const _impl;
@@ -74,6 +55,8 @@ private:
 
     virtual void deleteReferenced( const Referenced* object ) const;
 };
+
+std::ostream& operator << ( std::ostream&, const Buffer& );
 }
 
 #endif //CO_BUFFER_H

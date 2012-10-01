@@ -467,6 +467,9 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         void   _handleConnect();
         void   _handleDisconnect();
         bool   _handleData();
+        BufferPtr _readHead( ConnectionPtr connection );
+        Command   _setupCommand( ConnectionPtr, ConstBufferPtr );
+        bool      _readTail( Command&, BufferPtr, ConnectionPtr );
         void   _initService();
         void   _exitService();
 
