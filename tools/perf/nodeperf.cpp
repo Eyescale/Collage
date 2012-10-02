@@ -113,12 +113,7 @@ bool commandHandler( C command, Buffer& buffer, const uint64_t seed )
         return false;
 
     PerfNodeProxyPtr peer = static_cast< PerfNodeProxy* >( node.get( ));
-#if 0 // TODO 146: why doesn't this compile?
-    const uint32_t nPackets = command.get< uint32_t >();
-#else
-    uint32_t nPackets;
-    command >> nPackets;
-#endif
+    const uint32_t nPackets = command.template get< uint32_t >();
 
     if( peer->nPackets != 0 && peer->nPackets - 1 != nPackets )
     {
