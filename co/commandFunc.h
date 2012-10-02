@@ -40,7 +40,7 @@ namespace co
          * Create a new callback to the method on the given object.
          * @version 1.0
          */
-        CommandFunc( T* object, bool (T::*func)( Command& ))
+        CommandFunc( T* object, bool (T::*func)( ICommand& ))
             : _object( object ), _func( func ) {}
 
         /**
@@ -49,11 +49,11 @@ namespace co
          */
         template< typename O > CommandFunc( const CommandFunc< O >& from )
                 : _object( _convertThis< O >( from._object )),
-                  _func( static_cast<bool (T::*)( Command& )>(from._func))
+                  _func( static_cast<bool (T::*)( ICommand& )>(from._func))
             {}
 
         /** @internal Invoke the callback. */
-        bool operator()( Command& command )
+        bool operator()( ICommand& command )
         {
             LBASSERT( _object );
             LBASSERT( _func );
@@ -72,7 +72,7 @@ namespace co
         // template classes.
         //private:
         T* _object; //!< @internal
-        bool (T::*_func)( Command& ); //!< @internal
+        bool (T::*_func)( ICommand& ); //!< @internal
         //@}
 
     private:

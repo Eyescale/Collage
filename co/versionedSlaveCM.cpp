@@ -20,7 +20,7 @@
 
 #include "log.h"
 #include "object.h"
-#include "objectDataCommand.h"
+#include "objectDataICommand.h"
 #include "objectDataIStream.h"
 #include "objectDataOCommand.h"
 #include <lunchbox/scopedMutex.h>
@@ -315,9 +315,9 @@ void VersionedSlaveCM::addInstanceDatas( const ObjectDataIStreamDeque& cache,
 //---------------------------------------------------------------------------
 // command handlers
 //---------------------------------------------------------------------------
-bool VersionedSlaveCM::_cmdData( Command& cmd )
+bool VersionedSlaveCM::_cmdData( ICommand& cmd )
 {
-    ObjectDataCommand command( cmd );
+    ObjectDataICommand command( cmd );
 
     LB_TS_THREAD( _rcvThread );
     LBASSERT( command.getNode().isValid( ));

@@ -20,7 +20,7 @@
 
 #include "log.h"
 #include "object.h"
-#include "objectDataCommand.h"
+#include "objectDataICommand.h"
 #include "objectDataIStream.h"
 
 #include <lunchbox/scopedMutex.h>
@@ -97,7 +97,7 @@ void StaticSlaveCM::addInstanceDatas( const ObjectDataIStreamDeque& cache,
 //---------------------------------------------------------------------------
 // command handlers
 //---------------------------------------------------------------------------
-bool StaticSlaveCM::_cmdInstance( Command& command )
+bool StaticSlaveCM::_cmdInstance( ICommand& command )
 {
     LB_TS_THREAD( _rcvThread );
     LBASSERT( _currentIStream );

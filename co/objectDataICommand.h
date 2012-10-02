@@ -18,26 +18,26 @@
 #ifndef CO_OBJECTDATACOMMAND_H
 #define CO_OBJECTDATACOMMAND_H
 
-#include <co/objectCommand.h>   // base class
+#include <co/objectICommand.h>   // base class
 
 
 namespace co
 {
 
-namespace detail { class ObjectDataCommand; }
+namespace detail { class ObjectDataICommand; }
 
 /** @internal A command specialization for object data. */
-class ObjectDataCommand : public ObjectCommand
+class ObjectDataICommand : public ObjectICommand
 {
 public:
-    CO_API ObjectDataCommand( const Command& command );
+    CO_API ObjectDataICommand( const ICommand& command );
 
-    CO_API ObjectDataCommand( LocalNodePtr local, NodePtr remote,
+    CO_API ObjectDataICommand( LocalNodePtr local, NodePtr remote,
                               ConstBufferPtr buffer, const bool swap );
 
-    ObjectDataCommand( const ObjectDataCommand& rhs );
+    ObjectDataICommand( const ObjectDataICommand& rhs );
 
-    CO_API ~ObjectDataCommand();
+    CO_API ~ObjectDataICommand();
 
     /** @return the object version. */
     virtual uint128_t getVersion() const;
@@ -58,14 +58,14 @@ public:
     CO_API bool isLast() const;
 
 private:
-    ObjectDataCommand();
-    ObjectDataCommand& operator = ( const ObjectDataCommand& );
-    detail::ObjectDataCommand* const _impl;
+    ObjectDataICommand();
+    ObjectDataICommand& operator = ( const ObjectDataICommand& );
+    detail::ObjectDataICommand* const _impl;
 
     void _init();
 };
 
-CO_API std::ostream& operator << ( std::ostream& os, const ObjectDataCommand& );
+CO_API std::ostream& operator << ( std::ostream& os, const ObjectDataICommand& );
 
 }
 

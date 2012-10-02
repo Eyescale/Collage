@@ -28,7 +28,7 @@ namespace detail { class MasterCMCommand; }
 class MasterCMCommand : public ICommand
 {
 public:
-    MasterCMCommand( const Command& command );
+    MasterCMCommand( const ICommand& command );
 
     MasterCMCommand( const MasterCMCommand& rhs );
 

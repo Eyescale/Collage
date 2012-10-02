@@ -32,11 +32,11 @@ namespace co
 namespace detail { class Buffer; }
 
 /**
- * A receive buffer, containing the data for a co::Command.
+ * A receive buffer, containing the data for a co::ICommand.
  *
  * The buffer does not auto-delete, that is, a BufferPtr is not a smart
  * pointer. The BufferCache uses the BufferListener interface to reuse buffers
- * which are unreferenced, i.e., unused by any Command.
+ * which are unreferenced, i.e., unused by any ICommand.
  */
 class Buffer : public lunchbox::Bufferb, public lunchbox::Referenced
 {

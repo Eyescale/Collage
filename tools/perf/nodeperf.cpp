@@ -49,9 +49,9 @@ private:
                          getLocalNode()->getCommandThreadQueue( ));
     }
 
-    bool _cmdCustom( co::Command& command )
+    bool _cmdCustom( co::ICommand& command )
     {
-        return commandHandler< co::ObjectCommand >( command, buffer_,
+        return commandHandler< co::ObjectICommand >( command, buffer_,
                                                     getID().low( ));
     }
 };
@@ -99,7 +99,7 @@ private:
         LBINFO << "Disconnected from " << node << std::endl;
     }
 
-    bool _cmdCustom( co::Command& command )
+    bool _cmdCustom( co::ICommand& command )
     {
         return commandHandler( command, buffer_, getNodeID().low( ));
     }
@@ -113,12 +113,7 @@ bool commandHandler( C command, Buffer& buffer, const uint64_t seed )
         return false;
 
     PerfNodeProxyPtr peer = static_cast< PerfNodeProxy* >( node.get( ));
-#if 0 // TODO 146: why doesn't this compile?
-    const uint32_t nPackets = command.get< uint32_t >();
-#else
-    uint32_t nPackets;
-    command >> nPackets;
-#endif
+    const uint32_t nPackets = command.template get< uint32_t >();
 
     if( peer->nPackets != 0 && peer->nPackets - 1 != nPackets )
     {

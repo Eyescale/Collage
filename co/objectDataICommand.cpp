@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "objectDataCommand.h"
+#include "objectDataICommand.h"
 
 #include "buffer.h"
 #include "plugins/compressorTypes.h"
@@ -26,10 +26,10 @@ namespace co
 namespace detail
 {
 
-class ObjectDataCommand
+class ObjectDataICommand
 {
 public:
-    ObjectDataCommand()
+    ObjectDataICommand()
         : version( 0, 0 )
         , datasize( 0 )
         , sequence( 0 )
@@ -48,74 +48,74 @@ public:
 
 }
 
-ObjectDataCommand::ObjectDataCommand( const Command& command )
-    : ObjectCommand( command )
-    , _impl( new detail::ObjectDataCommand )
+ObjectDataICommand::ObjectDataICommand( const ICommand& command )
+    : ObjectICommand( command )
+    , _impl( new detail::ObjectDataICommand )
 {
     _init();
 }
 
-ObjectDataCommand::ObjectDataCommand( LocalNodePtr local, NodePtr remote,
+ObjectDataICommand::ObjectDataICommand( LocalNodePtr local, NodePtr remote,
                                       ConstBufferPtr buffer, const bool swap_ )
-    : ObjectCommand( local, remote, buffer, swap_ )
-    , _impl( new detail::ObjectDataCommand )
+    : ObjectICommand( local, remote, buffer, swap_ )
+    , _impl( new detail::ObjectDataICommand )
 {
     _init();
 }
 
 
-ObjectDataCommand::ObjectDataCommand( const ObjectDataCommand& rhs )
-    : ObjectCommand( rhs )
-    , _impl( new detail::ObjectDataCommand( *rhs._impl ))
+ObjectDataICommand::ObjectDataICommand( const ObjectDataICommand& rhs )
+    : ObjectICommand( rhs )
+    , _impl( new detail::ObjectDataICommand( *rhs._impl ))
 {
     _init();
 }
 
-void ObjectDataCommand::_init()
+void ObjectDataICommand::_init()
 {
     if( isValid( ))
         *this >> _impl->version >> _impl->datasize >> _impl->sequence
               >> _impl->isLast >> _impl->compressor >> _impl->chunks;
 }
 
-ObjectDataCommand::~ObjectDataCommand()
+ObjectDataICommand::~ObjectDataICommand()
 {
     delete _impl;
 }
 
-uint128_t ObjectDataCommand::getVersion() const
+uint128_t ObjectDataICommand::getVersion() const
 {
     return _impl->version;
 }
 
-uint32_t ObjectDataCommand::getSequence() const
+uint32_t ObjectDataICommand::getSequence() const
 {
     return _impl->sequence;
 }
 
-uint64_t ObjectDataCommand::getDataSize() const
+uint64_t ObjectDataICommand::getDataSize() const
 {
     return _impl->datasize;
 }
 
-uint32_t ObjectDataCommand::getCompressor() const
+uint32_t ObjectDataICommand::getCompressor() const
 {
     return _impl->compressor;
 }
 
-uint32_t ObjectDataCommand::getChunks() const
+uint32_t ObjectDataICommand::getChunks() const
 {
     return _impl->chunks;
 }
 
-bool ObjectDataCommand::isLast() const
+bool ObjectDataICommand::isLast() const
 {
     return _impl->isLast;
 }
 
-std::ostream& operator << ( std::ostream& os, const ObjectDataCommand& command )
+std::ostream& operator << ( std::ostream& os, const ObjectDataICommand& command )
 {
-    os << static_cast< const ObjectCommand& >( command );
+    os << static_cast< const ObjectICommand& >( command );
     if( command.isValid( ))
     {
         os << " v" << command.getVersion() << " size " << command.getDataSize()

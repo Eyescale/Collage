@@ -32,24 +32,24 @@ enum ObjectCommands
     // check that not more then CMD_OBJECT_CUSTOM have been defined!
 };
 
-namespace detail { class ObjectCommand; }
+namespace detail { class ObjectICommand; }
 
 /** A command specialization for objects. */
-class ObjectCommand : public ICommand
+class ObjectICommand : public ICommand
 {
 public:
     /** @internal */
-    CO_API ObjectCommand( LocalNodePtr local, NodePtr remote,
+    CO_API ObjectICommand( LocalNodePtr local, NodePtr remote,
                           ConstBufferPtr buffer, const bool swap );
 
     /** @internal */
-    CO_API ObjectCommand( const Command& command );
+    CO_API ObjectICommand( const ICommand& command );
 
     /** Copy-construct an object command. */
-    CO_API ObjectCommand( const ObjectCommand& rhs );
+    CO_API ObjectICommand( const ObjectICommand& rhs );
 
     /** Destruct an object command. */
-    CO_API virtual ~ObjectCommand();
+    CO_API virtual ~ObjectICommand();
 
     /** @internal @return the object adressed by this command. */
     const UUID& getObjectID() const;
@@ -58,14 +58,14 @@ public:
     uint32_t getInstanceID() const;
 
 private:
-    ObjectCommand();
-    ObjectCommand& operator = ( const ObjectCommand& );
-    detail::ObjectCommand* const _impl;
+    ObjectICommand();
+    ObjectICommand& operator = ( const ObjectICommand& );
+    detail::ObjectICommand* const _impl;
 
     void _init();
 };
 
-CO_API std::ostream& operator << ( std::ostream& os, const ObjectCommand& );
+CO_API std::ostream& operator << ( std::ostream& os, const ObjectICommand& );
 
 }
 

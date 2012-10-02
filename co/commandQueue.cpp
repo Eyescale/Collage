@@ -64,32 +64,32 @@ size_t CommandQueue::getSize() const
     return _impl->commands.getSize();
 }
 
-void CommandQueue::push( const Command& command )
+void CommandQueue::push( const ICommand& command )
 {
     _impl->commands.push( command );
 }
 
-void CommandQueue::pushFront( const Command& command )
+void CommandQueue::pushFront( const ICommand& command )
 {
     LBASSERT( command.isValid( ));
     _impl->commands.pushFront( command );
 }
 
-Command CommandQueue::pop( const uint32_t timeout )
+ICommand CommandQueue::pop( const uint32_t timeout )
 {
     LB_TS_THREAD( _thread );
 
-    Command command;
+    ICommand command;
     if( !_impl->commands.timedPop( timeout, command ))
         throw Exception( Exception::TIMEOUT_COMMANDQUEUE );
 
     return command;
 }
 
-Command CommandQueue::tryPop()
+ICommand CommandQueue::tryPop()
 {
     LB_TS_THREAD( _thread );
-    Command command;
+    ICommand command;
     _impl->commands.tryPop( command );
     return command;
 }

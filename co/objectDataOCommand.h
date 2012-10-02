@@ -20,7 +20,7 @@
 #define CO_OBJECTDATAOCOMMAND_H
 
 #include <co/objectOCommand.h>   // base class
-#include <co/objectCommand.h>    // CMD enums
+#include <co/objectICommand.h>    // CMD enums
 
 
 /** @cond IGNORE */
@@ -74,7 +74,7 @@ private:
     ObjectDataOCommand& operator = ( const ObjectDataOCommand& );
     detail::ObjectDataOCommand* const _impl;
 
-    CO_API ObjectDataCommand _getCommand( LocalNodePtr node ); // needed by:
+    CO_API ObjectDataICommand _getCommand( LocalNodePtr node ); // needed by:
     friend int ::testMain( int, char ** );
 
     void _init( const uint128_t& version, const uint32_t sequence,

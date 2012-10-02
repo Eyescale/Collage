@@ -26,7 +26,7 @@ namespace co
 {
 namespace detail { class CommandQueue; }
 
-    /** A thread-safe queue for Command buffers. */
+    /** A thread-safe queue for ICommand buffers. */
     class CommandQueue : public lunchbox::NonCopyable
     {
     public:
@@ -42,10 +42,10 @@ namespace detail { class CommandQueue; }
          * @param command the command.
          * @version 1.0
          */
-        CO_API virtual void push( const Command& command );
+        CO_API virtual void push( const ICommand& command );
 
         /** Push a command to the front of the queue. @version 1.0 */
-        CO_API virtual void pushFront( const Command& command );
+        CO_API virtual void pushFront( const ICommand& command );
 
         /**
          * Pop a command from the queue.
@@ -55,7 +55,7 @@ namespace detail { class CommandQueue; }
          * @throw Exception on timeout.
          * @version 1.0
          */
-        CO_API virtual Command pop( const uint32_t timeout =
+        CO_API virtual ICommand pop( const uint32_t timeout =
                                        LB_TIMEOUT_INDEFINITE );
 
         /**
@@ -64,7 +64,7 @@ namespace detail { class CommandQueue; }
          * @return the next command in the queue, or 0 if no command is queued.
          * @version 1.0
          */
-        CO_API virtual Command tryPop();
+        CO_API virtual ICommand tryPop();
 
         /**
          * @return <code>true</code> if the command queue is empty,
