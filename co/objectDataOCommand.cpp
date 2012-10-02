@@ -19,7 +19,7 @@
 #include "objectDataOCommand.h"
 
 #include "buffer.h"
-#include "objectDataCommand.h"
+#include "objectDataICommand.h"
 #include "plugins/compressorTypes.h"
 
 namespace co
@@ -104,7 +104,7 @@ ObjectDataOCommand::~ObjectDataOCommand()
     delete _impl;
 }
 
-ObjectDataCommand ObjectDataOCommand::_getCommand( LocalNodePtr node )
+ObjectDataICommand ObjectDataOCommand::_getCommand( LocalNodePtr node )
 {
     lunchbox::Bufferb& outBuffer = getBuffer();
     uint8_t* bytes = outBuffer.getData();
@@ -112,7 +112,7 @@ ObjectDataCommand ObjectDataOCommand::_getCommand( LocalNodePtr node )
 
     BufferPtr inBuffer = node->allocBuffer( outBuffer.getSize( ));
     inBuffer->swap( outBuffer );
-    return ObjectDataCommand( node, node, inBuffer, false );
+    return ObjectDataICommand( node, node, inBuffer, false );
 }
 
 }

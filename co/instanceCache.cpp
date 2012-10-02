@@ -18,7 +18,7 @@
 
 #include "instanceCache.h"
 
-#include "objectDataCommand.h"
+#include "objectDataICommand.h"
 #include "objectDataIStream.h"
 #include "objectVersion.h"
 
@@ -84,7 +84,7 @@ InstanceCache::Item::Item()
 {}
 
 bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
-                         Command& command, const uint32_t usage )
+                         ICommand& command, const uint32_t usage )
 {
     LBASSERTINFO( command.isValid(), command );
 

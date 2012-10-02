@@ -101,8 +101,8 @@ namespace detail { class Barrier; }
         void _sendNotify( const uint128_t& version, NodePtr node );
 
         /* The command handlers. */
-        bool _cmdEnter( Command& command );
-        bool _cmdEnterReply( Command& command );
+        bool _cmdEnter( ICommand& command );
+        bool _cmdEnterReply( ICommand& command );
 
         LB_TS_VAR( _thread );
     };

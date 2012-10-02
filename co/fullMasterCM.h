@@ -93,9 +93,9 @@ namespace co
         InstanceDatas _instanceDataCache;
 
         /* The command handlers. */
-        bool _cmdCommit( Command& command );
-        bool _cmdObsolete( Command& command );
-        bool _cmdPush( Command& command );
+        bool _cmdCommit( ICommand& command );
+        bool _cmdObsolete( ICommand& command );
+        bool _cmdPush( ICommand& command );
     };
 }
 

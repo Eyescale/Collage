@@ -47,7 +47,7 @@ set(CO_PUBLIC_HEADERS
   object.h
   objectFactory.h
   objectHandler.h
-  objectCommand.h
+  objectICommand.h
   objectOCommand.h
   objectMap.h
   objectVersion.h
@@ -77,7 +77,7 @@ set(CO_HEADERS
   nodeCommand.h
   nullCM.h
   objectCM.h
-  objectDataCommand.h
+  objectDataICommand.h
   objectDataOCommand.h
   objectDataIStream.h
   objectDataOStream.h
@@ -128,9 +128,9 @@ set(CO_SOURCES
   objectDataIStream.cpp
   objectDataOStream.cpp
   objectDeltaDataOStream.cpp
-  objectDataCommand.cpp
+  objectDataICommand.cpp
   objectDataOCommand.cpp
-  objectCommand.cpp
+  objectICommand.cpp
   objectOCommand.cpp
   objectInstanceDataOStream.cpp
   objectMap.cpp

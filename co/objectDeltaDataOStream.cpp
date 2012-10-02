@@ -20,7 +20,7 @@
 #include "objectDeltaDataOStream.h"
 
 #include "object.h"
-#include "objectCommand.h"
+#include "objectICommand.h"
 #include "objectCM.h"
 #include "objectDataOCommand.h"
 

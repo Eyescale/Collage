@@ -53,8 +53,8 @@ class LocalNode;
 class Node;
 class OCommand;
 class Object;
-class ObjectCommand;
-class ObjectDataCommand;
+class ObjectICommand;
+class ObjectDataICommand;
 class ObjectDataIStream;
 class ObjectDataOCommand;
 class ObjectFactory;
@@ -134,8 +134,6 @@ class MasterCMCommand;
 
 typedef lunchbox::RefPtr< Buffer > BufferPtr;
 typedef lunchbox::RefPtr< const Buffer > ConstBufferPtr;
-typedef std::deque< ICommand > CommandDeque;
-typedef CommandDeque::const_iterator CommandDequeCIter;
 
 typedef std::vector< ObjectVersion > ObjectVersions;
 typedef ObjectVersions::const_iterator ObjectVersionsCIter;
@@ -151,7 +149,6 @@ typedef Plugins::const_iterator PluginsCIter;
 /** @endcond */
 
 #ifndef EQ_2_0_API
-typedef ICommand Command; //TODO 145 rename internally.
 namespace base
 {
 using namespace lunchbox;

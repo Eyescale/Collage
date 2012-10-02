@@ -101,9 +101,9 @@ namespace co
         void _updateMaxVersion();
 
         /* The command handlers. */
-        bool _cmdSlaveDelta( Command& command );
-        bool _cmdMaxVersion( Command& command );
-        bool _cmdDiscard( Command& ) { return true; }
+        bool _cmdSlaveDelta( ICommand& command );
+        bool _cmdMaxVersion( ICommand& command );
+        bool _cmdDiscard( ICommand& ) { return true; }
 
         LB_TS_VAR( _cmdThread );
         LB_TS_VAR( _rcvThread );
