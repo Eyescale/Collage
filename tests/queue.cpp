@@ -22,7 +22,7 @@
 #include <co/connectionDescription.h>
 #include <co/init.h>
 #include <co/node.h>
-#include <co/objectCommand.h>
+#include <co/objectICommand.h>
 #include <co/queueItem.h>
 #include <co/queueMaster.h>
 #include <co/queueSlave.h>
@@ -48,11 +48,11 @@ int main( int argc, char **argv )
     qm->push() << 1.5f << false << co::VERSION_FIRST;
 
     {
-        co::ObjectCommand c1 = qs->pop();
-        co::ObjectCommand c2 = qs->pop();
-        co::ObjectCommand c3 = qs->pop();
-        co::ObjectCommand c4 = qs->pop();
-        co::ObjectCommand c5 = qs->pop();
+        co::ObjectICommand c1 = qs->pop();
+        co::ObjectICommand c2 = qs->pop();
+        co::ObjectICommand c3 = qs->pop();
+        co::ObjectICommand c4 = qs->pop();
+        co::ObjectICommand c5 = qs->pop();
 
         TEST( c1.isValid( ));
         TEST( c2.isValid( ));

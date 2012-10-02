@@ -20,7 +20,7 @@
 
 #include "log.h"
 #include "object.h"
-#include "objectDataCommand.h"
+#include "objectDataICommand.h"
 #include "objectDataIStream.h"
 
 namespace co
@@ -186,9 +186,9 @@ void VersionedMasterCM::_updateMaxVersion()
 //---------------------------------------------------------------------------
 // command handlers
 //---------------------------------------------------------------------------
-bool VersionedMasterCM::_cmdSlaveDelta( Command& cmd )
+bool VersionedMasterCM::_cmdSlaveDelta( ICommand& cmd )
 {
-    ObjectDataCommand command( cmd );
+    ObjectDataICommand command( cmd );
 
     LB_TS_THREAD( _rcvThread );
 
@@ -197,9 +197,9 @@ bool VersionedMasterCM::_cmdSlaveDelta( Command& cmd )
     return true;
 }
 
-bool VersionedMasterCM::_cmdMaxVersion( Command& cmd )
+bool VersionedMasterCM::_cmdMaxVersion( ICommand& cmd )
 {
-    ObjectCommand command( cmd );
+    ObjectICommand command( cmd );
     const uint64_t version = command.get< uint64_t >();
     const uint32_t slaveID = command.get< uint32_t >();
 

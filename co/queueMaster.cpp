@@ -20,7 +20,7 @@
 #include "queueMaster.h"
 
 #include "dataOStream.h"
-#include "objectCommand.h"
+#include "objectICommand.h"
 #include "objectOCommand.h"
 #include "queueCommand.h"
 #include "queueItem.h"
@@ -58,7 +58,7 @@ public:
     /** The command handler functions. */
     bool cmdGetItem( co::ICommand& comd )
     {
-        co::ObjectCommand command( comd );
+        co::ObjectICommand command( comd );
 
         const uint32_t itemsRequested = command.get< uint32_t >();
         const uint32_t slaveInstanceID = command.get< uint32_t >();

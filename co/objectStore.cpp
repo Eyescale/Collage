@@ -30,8 +30,8 @@
 #include "oCommand.h"
 #include "objectCM.h"
 #include "objectDataIStream.h"
-#include "objectDataCommand.h"
-#include "objectCommand.h"
+#include "objectDataICommand.h"
+#include "objectICommand.h"
 
 #include <lunchbox/scopedMutex.h>
 
@@ -582,12 +582,12 @@ void ObjectStore::removeNode( NodePtr node )
 }
 
 //===========================================================================
-// Command handling
+// ICommand handling
 //===========================================================================
-bool ObjectStore::dispatchObjectCommand( Command& cmd )
+bool ObjectStore::dispatchObjectCommand( ICommand& cmd )
 {
     LB_TS_THREAD( _receiverThread );
-    ObjectCommand command( cmd );
+    ObjectICommand command( cmd );
     const UUID& id = command.getObjectID();
     const uint32_t instanceID = command.getInstanceID();
 
@@ -628,7 +628,7 @@ bool ObjectStore::dispatchObjectCommand( Command& cmd )
     return true;
 }
 
-bool ObjectStore::_cmdFindMasterNodeID( Command& command )
+bool ObjectStore::_cmdFindMasterNodeID( ICommand& command )
 {
     LB_TS_THREAD( _commandThread );
 
@@ -670,7 +670,7 @@ bool ObjectStore::_cmdFindMasterNodeID( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdFindMasterNodeIDReply( Command& command )
+bool ObjectStore::_cmdFindMasterNodeIDReply( ICommand& command )
 {
     const NodeID& masterNodeID = command.get< NodeID >();
     const uint32_t requestID = command.get< uint32_t >();
@@ -678,7 +678,7 @@ bool ObjectStore::_cmdFindMasterNodeIDReply( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdAttachObject( Command& command )
+bool ObjectStore::_cmdAttachObject( ICommand& command )
 {
     LB_TS_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS ) << "Cmd attach object " << command << std::endl;
@@ -694,7 +694,7 @@ bool ObjectStore::_cmdAttachObject( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdDetachObject( Command& command )
+bool ObjectStore::_cmdDetachObject( ICommand& command )
 {
     LB_TS_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS ) << "Cmd detach object " << command << std::endl;
@@ -725,7 +725,7 @@ bool ObjectStore::_cmdDetachObject( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdRegisterObject( Command& command )
+bool ObjectStore::_cmdRegisterObject( ICommand& command )
 {
     LB_TS_THREAD( _commandThread );
     if( _sendOnRegister <= 0 )
@@ -751,7 +751,7 @@ bool ObjectStore::_cmdRegisterObject( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdDeregisterObject( Command& command )
+bool ObjectStore::_cmdDeregisterObject( ICommand& command )
 {
     LB_TS_THREAD( _commandThread );
     LBLOG( LOG_OBJECTS ) << "Cmd deregister object " << command << std::endl;
@@ -773,7 +773,7 @@ bool ObjectStore::_cmdDeregisterObject( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdMapObject( Command& cmd )
+bool ObjectStore::_cmdMapObject( ICommand& cmd )
 {
     LB_TS_THREAD( _commandThread );
 
@@ -817,7 +817,7 @@ bool ObjectStore::_cmdMapObject( Command& cmd )
     return true;
 }
 
-bool ObjectStore::_cmdMapObjectSuccess( Command& command )
+bool ObjectStore::_cmdMapObjectSuccess( ICommand& command )
 {
     LB_TS_THREAD( _receiverThread );
 
@@ -849,7 +849,7 @@ bool ObjectStore::_cmdMapObjectSuccess( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdMapObjectReply( Command& command )
+bool ObjectStore::_cmdMapObjectReply( ICommand& command )
 {
     LB_TS_THREAD( _receiverThread );
 
@@ -910,7 +910,7 @@ bool ObjectStore::_cmdMapObjectReply( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdUnsubscribeObject( Command& command )
+bool ObjectStore::_cmdUnsubscribeObject( ICommand& command )
 {
     LB_TS_THREAD( _commandThread );
     LBLOG( LOG_OBJECTS ) << "Cmd unsubscribe object  " << command << std::endl;
@@ -945,7 +945,7 @@ bool ObjectStore::_cmdUnsubscribeObject( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdUnmapObject( Command& command )
+bool ObjectStore::_cmdUnmapObject( ICommand& command )
 {
     LB_TS_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS ) << "Cmd unmap object " << command << std::endl;
@@ -974,12 +974,12 @@ bool ObjectStore::_cmdUnmapObject( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdInstance( Command& inCommand )
+bool ObjectStore::_cmdInstance( ICommand& inCommand )
 {
     LB_TS_THREAD( _receiverThread );
     LBASSERT( _localNode );
 
-    ObjectDataCommand command( inCommand );
+    ObjectDataICommand command( inCommand );
     const NodeID nodeID = command.get< NodeID >();
     const uint32_t masterInstanceID = command.get< uint32_t >();
     const uint32_t cmd = command.getCommand();
@@ -1030,7 +1030,7 @@ bool ObjectStore::_cmdInstance( Command& inCommand )
     }
 }
 
-bool ObjectStore::_cmdDisableSendOnRegister( Command& command )
+bool ObjectStore::_cmdDisableSendOnRegister( ICommand& command )
 {
     LB_TS_THREAD( _commandThread );
     LBASSERTINFO( _sendOnRegister > 0, _sendOnRegister );
@@ -1055,7 +1055,7 @@ bool ObjectStore::_cmdDisableSendOnRegister( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdRemoveNode( Command& command )
+bool ObjectStore::_cmdRemoveNode( ICommand& command )
 {
     LB_TS_THREAD( _commandThread );
     LBLOG( LOG_OBJECTS ) << "Cmd object  " << command << std::endl;
@@ -1079,7 +1079,7 @@ bool ObjectStore::_cmdRemoveNode( Command& command )
     return true;
 }
 
-bool ObjectStore::_cmdObjectPush( Command& command )
+bool ObjectStore::_cmdObjectPush( ICommand& command )
 {
     LB_TS_THREAD( _commandThread );
 

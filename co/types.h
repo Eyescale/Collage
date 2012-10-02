@@ -53,8 +53,8 @@ class LocalNode;
 class Node;
 class OCommand;
 class Object;
-class ObjectCommand;
-class ObjectDataCommand;
+class ObjectICommand;
+class ObjectDataICommand;
 class ObjectDataIStream;
 class ObjectDataOCommand;
 class ObjectFactory;
@@ -149,7 +149,6 @@ typedef Plugins::const_iterator PluginsCIter;
 /** @endcond */
 
 #ifndef EQ_2_0_API
-typedef ICommand Command; //TODO 145 rename internally.
 namespace base
 {
 using namespace lunchbox;

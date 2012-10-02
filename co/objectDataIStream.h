@@ -37,7 +37,7 @@ namespace co
         ObjectDataIStream( const ObjectDataIStream& from );
         virtual ~ObjectDataIStream();
 
-        void addDataCommand( ObjectDataCommand command );
+        void addDataCommand( ObjectDataICommand command );
         size_t getDataSize() const;
 
         virtual uint128_t getVersion() const { return _version.get(); }
@@ -63,7 +63,7 @@ namespace co
         /** All data commands for this istream. */        
         CommandDeque _commands;
 
-        Command _usedCommand; //!< Currently used buffer
+        ICommand _usedCommand; //!< Currently used buffer
 
         /** The object version associated with this input stream. */
         lunchbox::Monitor< uint128_t > _version;

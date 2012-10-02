@@ -381,9 +381,9 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          *
          * @param command the command.
          * @return the result of the operation.
-         * @sa Command::invoke
+         * @sa ICommand::invoke
          */
-        CO_API virtual bool dispatchCommand( Command& command );
+        CO_API virtual bool dispatchCommand( ICommand& command );
 
         /**
          * Acquire a singular send token from the given node.
@@ -468,8 +468,8 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         void   _handleDisconnect();
         bool   _handleData();
         BufferPtr _readHead( ConnectionPtr connection );
-        Command   _setupCommand( ConnectionPtr, ConstBufferPtr );
-        bool      _readTail( Command&, BufferPtr, ConnectionPtr );
+        ICommand   _setupCommand( ConnectionPtr, ConstBufferPtr );
+        bool      _readTail( ICommand&, BufferPtr, ConnectionPtr );
         void   _initService();
         void   _exitService();
 
@@ -481,30 +481,30 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
             registerCommand( command, func, destinationQueue );
         }
 
-        void _dispatchCommand( Command& command );
+        void _dispatchCommand( ICommand& command );
         void   _redispatchCommands();
 
         /** The command functions. */
-        bool _cmdAckRequest( Command& command );
-        bool _cmdStopRcv( Command& command );
-        bool _cmdStopCmd( Command& command );
-        bool _cmdSetAffinity( Command& command );
-        bool _cmdConnect( Command& command );
-        bool _cmdConnectReply( Command& command );
-        bool _cmdConnectAck( Command& command );
-        bool _cmdID( Command& command );
-        bool _cmdDisconnect( Command& command );
-        bool _cmdGetNodeData( Command& command );
-        bool _cmdGetNodeDataReply( Command& command );
-        bool _cmdAcquireSendToken( Command& command );
-        bool _cmdAcquireSendTokenReply( Command& command );
-        bool _cmdReleaseSendToken( Command& command );
-        bool _cmdAddListener( Command& command );
-        bool _cmdRemoveListener( Command& command );
-        bool _cmdPing( Command& command );
-        bool _cmdCommand( Command& command );
-        bool _cmdCommandAsync( Command& command );
-        bool _cmdDiscard( Command& ) { return true; }
+        bool _cmdAckRequest( ICommand& command );
+        bool _cmdStopRcv( ICommand& command );
+        bool _cmdStopCmd( ICommand& command );
+        bool _cmdSetAffinity( ICommand& command );
+        bool _cmdConnect( ICommand& command );
+        bool _cmdConnectReply( ICommand& command );
+        bool _cmdConnectAck( ICommand& command );
+        bool _cmdID( ICommand& command );
+        bool _cmdDisconnect( ICommand& command );
+        bool _cmdGetNodeData( ICommand& command );
+        bool _cmdGetNodeDataReply( ICommand& command );
+        bool _cmdAcquireSendToken( ICommand& command );
+        bool _cmdAcquireSendTokenReply( ICommand& command );
+        bool _cmdReleaseSendToken( ICommand& command );
+        bool _cmdAddListener( ICommand& command );
+        bool _cmdRemoveListener( ICommand& command );
+        bool _cmdPing( ICommand& command );
+        bool _cmdCommand( ICommand& command );
+        bool _cmdCommandAsync( ICommand& command );
+        bool _cmdDiscard( ICommand& ) { return true; }
         //@}
 
         LB_TS_VAR( _cmdThread );

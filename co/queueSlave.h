@@ -70,7 +70,7 @@ public:
      *         queue is empty.
      * @version 1.0
      */
-    CO_API ObjectCommand pop();
+    CO_API ObjectICommand pop();
 
 private:
     detail::QueueSlave* const _impl;

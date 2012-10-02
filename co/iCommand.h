@@ -33,7 +33,7 @@ namespace detail { class ICommand; }
      *
      * This class is used by the LocalNode to pass received buffers to the
      * Dispatcher and ultimately command handler functions. It is not intended
-     * to be instantiated by applications. The derivates of this Command have to
+     * to be instantiated by applications. The derivates of this ICommand have to
      * be instaniated by the application if the command type requires it. The
      * data retrieval is possible with the provided DataIStream methods or with
      * the templated get() function.

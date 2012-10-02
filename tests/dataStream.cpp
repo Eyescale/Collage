@@ -30,7 +30,7 @@
 #include <lunchbox/thread.h>
 
 #include <co/objectDataOCommand.h> // private header
-#include <co/objectDataCommand.h> // private header
+#include <co/objectDataICommand.h> // private header
 #include <co/cpuCompressor.h> // private header
 
 // Tests the functionality of the DataOStream and DataIStream
@@ -61,7 +61,7 @@ public:
 
     void addDataCommand( co::ConstBufferPtr buffer )
         {
-            co::ObjectDataCommand command( 0, 0, buffer, false /*swap*/ );
+            co::ObjectDataICommand command( 0, 0, buffer, false /*swap*/ );
             TESTINFO( command.getCommand() == co::CMD_OBJECT_DELTA, command );
             _commands.push( command );
         }
@@ -74,11 +74,11 @@ protected:
     virtual bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
                                 const void** chunkData, uint64_t& size )
         {
-            co::Command cmd = _commands.tryPop();
+            co::ICommand cmd = _commands.tryPop();
             if( !cmd.isValid( ))
                 return false;
 
-            co::ObjectDataCommand command( cmd );
+            co::ObjectDataICommand command( cmd );
 
             TEST( command.getCommand() == co::CMD_OBJECT_DELTA );
 
@@ -163,13 +163,13 @@ int main( int argc, char **argv )
         TEST( connection->recvSync( buffer ));
         TEST( !buffer->isEmpty( ));
 
-        co::Command command( 0, 0, buffer, false );
+        co::ICommand command( 0, 0, buffer, false );
         if( command.getSize_() > buffer->getMaxSize( ))
         {
             // not enough space for remaining data, alloc and copy to new buffer
             co::BufferPtr newBuffer = bufferCache.alloc( command.getSize_( ));
             newBuffer->replace( *buffer );
-            command = co::Command( 0, 0, newBuffer, false );
+            command = co::ICommand( 0, 0, newBuffer, false );
         }
         if( command.getSize_() > buffer->getSize( ))
         {
@@ -185,7 +185,7 @@ int main( int argc, char **argv )
                 stream.addDataCommand( buffer );
                 TEST( !buffer->isFree( ));
 
-                co::ObjectDataCommand dataCmd( command );
+                co::ObjectDataICommand dataCmd( command );
                 receiving = !dataCmd.isLast();
                 break;
             }

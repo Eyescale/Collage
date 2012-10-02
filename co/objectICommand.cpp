@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "objectCommand.h"
+#include "objectICommand.h"
 
 #include "buffer.h"
 
@@ -27,13 +27,13 @@ namespace co
 namespace detail
 {
 
-class ObjectCommand
+class ObjectICommand
 {
 public:
-    ObjectCommand()
+    ObjectICommand()
     {}
 
-    ObjectCommand( const ObjectCommand& rhs )
+    ObjectICommand( const ObjectICommand& rhs )
         : objectID( rhs.objectID )
         , instanceID( rhs.instanceID )
     {}
@@ -44,52 +44,52 @@ public:
 
 }
 
-ObjectCommand::ObjectCommand( LocalNodePtr local, NodePtr remote,
+ObjectICommand::ObjectICommand( LocalNodePtr local, NodePtr remote,
                         ConstBufferPtr buffer, const bool swap_ )
-        : Command( local, remote, buffer, swap_ )
-    , _impl( new detail::ObjectCommand )
+        : ICommand( local, remote, buffer, swap_ )
+    , _impl( new detail::ObjectICommand )
 {
     _init();
 }
 
-ObjectCommand::ObjectCommand( const Command& command )
-    : Command( command )
-    , _impl( new detail::ObjectCommand )
+ObjectICommand::ObjectICommand( const ICommand& command )
+    : ICommand( command )
+    , _impl( new detail::ObjectICommand )
 {
     _init();
 }
 
-ObjectCommand::ObjectCommand( const ObjectCommand& rhs )
-    : Command( rhs )
-    , _impl( new detail::ObjectCommand( *rhs._impl ))
+ObjectICommand::ObjectICommand( const ObjectICommand& rhs )
+    : ICommand( rhs )
+    , _impl( new detail::ObjectICommand( *rhs._impl ))
 {
     _init();
 }
 
-void ObjectCommand::_init()
+void ObjectICommand::_init()
 {
     if( isValid( ))
         *this >> _impl->objectID >> _impl->instanceID;
 }
 
-ObjectCommand::~ObjectCommand()
+ObjectICommand::~ObjectICommand()
 {
     delete _impl;
 }
 
-const UUID& ObjectCommand::getObjectID() const
+const UUID& ObjectICommand::getObjectID() const
 {
     return _impl->objectID;
 }
 
-uint32_t ObjectCommand::getInstanceID() const
+uint32_t ObjectICommand::getInstanceID() const
 {
     return _impl->instanceID;
 }
 
-std::ostream& operator << ( std::ostream& os, const ObjectCommand& command )
+std::ostream& operator << ( std::ostream& os, const ObjectICommand& command )
 {
-    os << static_cast< const Command& >( command );
+    os << static_cast< const ICommand& >( command );
     if( command.isValid( ))
     {
         os << " object " << command.getObjectID()

@@ -95,7 +95,7 @@ namespace co
         virtual void _unpackOneVersion( ObjectDataIStream* is );
 
         /* The command handlers. */
-        bool _cmdData( Command& command );
+        bool _cmdData( ICommand& command );
 
         LB_TS_VAR( _cmdThread );
         LB_TS_VAR( _rcvThread );

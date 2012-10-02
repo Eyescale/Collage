@@ -22,7 +22,7 @@
 #include "nullCM.h"
 #include "node.h"
 #include "object.h"
-#include "objectDataCommand.h"
+#include "objectDataICommand.h"
 #include "objectInstanceDataOStream.h"
 #include "objectDataOCommand.h"
 

@@ -49,9 +49,9 @@ private:
                          getLocalNode()->getCommandThreadQueue( ));
     }
 
-    bool _cmdCustom( co::Command& command )
+    bool _cmdCustom( co::ICommand& command )
     {
-        return commandHandler< co::ObjectCommand >( command, buffer_,
+        return commandHandler< co::ObjectICommand >( command, buffer_,
                                                     getID().low( ));
     }
 };
@@ -99,7 +99,7 @@ private:
         LBINFO << "Disconnected from " << node << std::endl;
     }
 
-    bool _cmdCustom( co::Command& command )
+    bool _cmdCustom( co::ICommand& command )
     {
         return commandHandler( command, buffer_, getNodeID().low( ));
     }
