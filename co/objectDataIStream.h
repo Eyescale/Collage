@@ -19,7 +19,7 @@
 #ifndef CO_OBJECTDATAISTREAM_H
 #define CO_OBJECTDATAISTREAM_H
 
-#include <co/iCommand.h>         // member
+#include <co/iCommand.h>        // member
 #include <co/dataIStream.h>     // base class
 #include <co/version.h>         // enum
 #include <lunchbox/monitor.h>   // member
@@ -58,7 +58,9 @@ namespace co
                                     const void** chunkData, uint64_t& size );
 
     private:
-        /** All data commands for this istream. */
+        typedef std::deque< ICommand > CommandDeque;
+
+        /** All data commands for this istream. */        
         CommandDeque _commands;
 
         Command _usedCommand; //!< Currently used buffer

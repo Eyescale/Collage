@@ -22,6 +22,7 @@
 #include <lunchbox/buffer.h>        // base class
 #include <lunchbox/referenced.h>    // base class
 
+#include <co/api.h>
 #include <co/types.h>
 #include <co/dispatcher.h>          // for Dispatcher::Func
 
@@ -40,14 +41,14 @@ namespace detail { class Buffer; }
 class Buffer : public lunchbox::Bufferb, public lunchbox::Referenced
 {
 public:
-    Buffer( BufferListener* listener = 0 );
-    virtual ~Buffer();
+    CO_API Buffer( BufferListener* listener = 0 );
+    CO_API virtual ~Buffer();
 
     /** @return true if the buffer is no longer in use. */
     bool isFree() const { return getRefCount() == 0; }
 
-    static size_t getMinSize(); //!< Size of first read on receiver
-    static size_t getCacheSize(); //!< 'small' CommandCache allocation size
+    CO_API static size_t getMinSize(); //!< Size of first read on receiver
+    CO_API static size_t getCacheSize(); //!< 'small' CommandCache allocation size
 
 private:
     detail::Buffer* const _impl;

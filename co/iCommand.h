@@ -61,7 +61,7 @@ namespace detail { class ICommand; }
         CO_API uint32_t getCommand() const;
 
         /** @return the command payload size. @version 1.0 */
-        uint64_t getSize_() const;
+        CO_API uint64_t getSize_() const;
 
         /** @internal @return the buffer */
         CO_API ConstBufferPtr getBuffer() const;
