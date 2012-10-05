@@ -35,7 +35,7 @@ ObjectSlaveDataOStream::ObjectSlaveDataOStream( const ObjectCM* cm )
 ObjectSlaveDataOStream::~ObjectSlaveDataOStream()
 {}
 
-void ObjectSlaveDataOStream::enableCommit( NodePtr node )
+void ObjectSlaveDataOStream::enableSlaveCommit( NodePtr node )
 {
     _version = UUID( true );
     _setupConnection( node, false /* useMulticast */ );
