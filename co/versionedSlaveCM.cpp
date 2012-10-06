@@ -70,7 +70,7 @@ uint128_t VersionedSlaveCM::commit( const uint32_t incarnation )
     if( !_object->isDirty() || !_master || !_master->isReachable( ))
         return VERSION_NONE;
 
-    _ostream.enableCommit( _master );
+    _ostream.enableSlaveCommit( _master );
     _object->pack( _ostream );
     _ostream.disable();
 

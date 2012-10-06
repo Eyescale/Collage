@@ -48,7 +48,10 @@ DataOStreamArchive::save( const T& t )
         signed char size = 0;
         do
         {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshift-count-overflow"
             temp >>= CHAR_BIT;
+#pragma clang diagnostic pop
             ++size;
         }
         while( temp != 0 && temp != (T) -1 );

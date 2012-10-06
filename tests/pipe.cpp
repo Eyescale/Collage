@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2011, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -28,7 +28,7 @@
 class Server : public lunchbox::Thread
 {
 public:
-    void start( co::ConnectionPtr connection )
+    void launch( co::ConnectionPtr connection )
         {
             _connection = connection;
             lunchbox::Thread::start();
@@ -63,7 +63,7 @@ int main( int argc, char **argv )
     TEST( connection->connect( ));
 
     Server server;
-    server.start( connection->acceptSync( ));
+    server.launch( connection->acceptSync( ));
 
     const char message[] = "buh!";
     const size_t nChars  = strlen( message ) + 1;
