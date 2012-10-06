@@ -143,7 +143,7 @@ public:
             incrTail(available() - avail);
         }
 
-    void clear(T newNum = size())
+    void clear(T newNum)
         {
             for (unsigned int I = 0; I != NUM; I++)
                 ptrs[I].clear();
@@ -178,7 +178,7 @@ public:
     inline const buffer_t *bhead(T off = 0) const {return bptr(HEAD,off);}
     inline const buffer_t *btail(T off = 0) const {return bptr(TAIL,off);}
 
-    inline buffer_t *bptr(unsigned int ID,T off = 0) {return buffer + ptr(ID,off);}
+    inline buffer_t *bptr(unsigned int ID,T off = 0) {return buffer + this->ptr(ID,off);}
     inline buffer_t *bhead(T off = 0) {return bptr(HEAD,off);}
     inline buffer_t *btail(T off = 0) {return bptr(TAIL,off);}
 
