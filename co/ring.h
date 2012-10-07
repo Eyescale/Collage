@@ -143,7 +143,7 @@ public:
             incrTail(available() - avail);
         }
 
-    void clear(T newNum)
+    void clear(T newNum )
         {
             for (unsigned int I = 0; I != NUM; I++)
                 ptrs[I].clear();
