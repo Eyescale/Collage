@@ -19,7 +19,7 @@
 #include "objectDataIStream.h"
 
 #include "commands.h"
-#include "objectDataCommand.h"
+#include "objectDataICommand.h"
 
 #include <co/plugins/compressor.h>
 
@@ -56,7 +56,7 @@ void ObjectDataIStream::_reset()
     _version = VERSION_INVALID;
 }
 
-void ObjectDataIStream::addDataCommand( ObjectDataCommand command )
+void ObjectDataIStream::addDataCommand( ObjectDataICommand command )
 {
     LB_TS_THREAD( _thread );
     LBASSERT( !isReady( ));
@@ -71,7 +71,7 @@ void ObjectDataIStream::addDataCommand( ObjectDataCommand command )
     }
     else
     {
-        ObjectDataCommand previous( _commands.back() );
+        ObjectDataICommand previous( _commands.back() );
         const uint128_t& previousVersion = previous.getVersion();
         const uint32_t previousSequence = previous.getSequence();
         LBASSERTINFO( sequence == previousSequence+1,
@@ -93,7 +93,7 @@ bool ObjectDataIStream::hasInstanceData() const
         return false;
     }
 
-    const Command& command = _usedCommand.isValid() ? _usedCommand :
+    const ICommand& command = _usedCommand.isValid() ? _usedCommand :
                                                       _commands.front();
     return( command.getCommand() == CMD_OBJECT_INSTANCE );
 }
@@ -103,7 +103,7 @@ NodePtr ObjectDataIStream::getMaster()
     if( !_usedCommand.isValid() && _commands.empty( ))
         return 0;
 
-    const Command& command = _usedCommand.isValid() ? _usedCommand :
+    const ICommand& command = _usedCommand.isValid() ? _usedCommand :
                                                       _commands.front();
     return command.getNode();
 }
@@ -111,9 +111,10 @@ NodePtr ObjectDataIStream::getMaster()
 size_t ObjectDataIStream::getDataSize() const
 {
     size_t size = 0;
+    typedef CommandDeque::const_iterator CommandDequeCIter;
     for( CommandDequeCIter i = _commands.begin(); i != _commands.end(); ++i )
     {
-        const Command& command = *i;
+        const ICommand& command = *i;
         size += command.getSize_();
     }
     return size;
@@ -124,7 +125,7 @@ uint128_t ObjectDataIStream::getPendingVersion() const
     if( _commands.empty( ))
         return VERSION_INVALID;
 
-    const ObjectDataCommand& cmd( _commands.back( ));
+    const ObjectDataICommand& cmd( _commands.back( ));
     return cmd.getVersion();
 }
 
@@ -146,7 +147,7 @@ bool ObjectDataIStream::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
               _usedCommand.getCommand() == CMD_OBJECT_DELTA ||
               _usedCommand.getCommand() == CMD_OBJECT_SLAVE_DELTA );
 
-    ObjectDataCommand command( _usedCommand );
+    ObjectDataICommand command( _usedCommand );
     const uint64_t dataSize = command.getDataSize();
 
     if( dataSize == 0 ) // empty command

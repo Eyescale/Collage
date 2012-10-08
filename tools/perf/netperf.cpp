@@ -22,8 +22,6 @@
 
 #include <co/co.h>
 
-#include <co/buffer.h> // #145 resolve not use internal header
-
 #ifndef MIN
 #  define MIN LB_MIN
 #endif

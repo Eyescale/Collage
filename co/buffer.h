@@ -22,6 +22,7 @@
 #include <lunchbox/buffer.h>        // base class
 #include <lunchbox/referenced.h>    // base class
 
+#include <co/api.h>
 #include <co/types.h>
 #include <co/dispatcher.h>          // for Dispatcher::Func
 
@@ -31,23 +32,23 @@ namespace co
 namespace detail { class Buffer; }
 
 /**
- * A receive buffer, containing the data for a co::Command.
+ * A receive buffer, containing the data for a co::ICommand.
  *
  * The buffer does not auto-delete, that is, a BufferPtr is not a smart
  * pointer. The BufferCache uses the BufferListener interface to reuse buffers
- * which are unreferenced, i.e., unused by any Command.
+ * which are unreferenced, i.e., unused by any ICommand.
  */
 class Buffer : public lunchbox::Bufferb, public lunchbox::Referenced
 {
 public:
-    Buffer( BufferListener* listener = 0 );
-    virtual ~Buffer();
+    CO_API Buffer( BufferListener* listener = 0 );
+    CO_API virtual ~Buffer();
 
     /** @return true if the buffer is no longer in use. */
     bool isFree() const { return getRefCount() == 0; }
 
-    static size_t getMinSize(); //!< Size of first read on receiver
-    static size_t getCacheSize(); //!< 'small' CommandCache allocation size
+    CO_API static size_t getMinSize(); //!< Size of first read on receiver
+    CO_API static size_t getCacheSize(); //!< 'small' CommandCache allocation size
 
 private:
     detail::Buffer* const _impl;

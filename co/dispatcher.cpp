@@ -81,7 +81,7 @@ void Dispatcher::_registerCommand( const uint32_t command, const Func& func,
 }
 
 
-bool Dispatcher::dispatchCommand( Command& command )
+bool Dispatcher::dispatchCommand( ICommand& command )
 {
     LBASSERT( command.isValid( ));
 
@@ -92,7 +92,7 @@ bool Dispatcher::dispatchCommand( Command& command )
 #ifndef NDEBUG
     if( which >= _impl->qTable.size( ))
     {
-        LBABORT( "Command " << command
+        LBABORT( "ICommand " << command
                  << " higher than number of registered command handlers ("
                  << _impl->qTable.size() << ") for object of type "
                  << lunchbox::className( this ) << std::endl );
@@ -113,7 +113,7 @@ bool Dispatcher::dispatchCommand( Command& command )
     return true;
 }
 
-bool Dispatcher::_cmdUnknown( Command& command )
+bool Dispatcher::_cmdUnknown( ICommand& command )
 {
     LBERROR << "Unknown " << command << " for " << lunchbox::className( this )
             << lunchbox::backtrace << std::endl;

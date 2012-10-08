@@ -46,7 +46,7 @@ namespace co
         /** Remove all objects and clear all caches. */
         void clear();
 
-        /** @name Command Dispatch */
+        /** @name ICommand Dispatch */
         //@{
         /**
          * Dispatches an object command to the registered command queue.
@@ -57,7 +57,7 @@ namespace co
          * @param command the command.
          * @return true if the command was dispatched, false otherwise.
          */
-        bool dispatchObjectCommand( Command& command );
+        bool dispatchObjectCommand( ICommand& command );
         //@}
 
         /** @name Object Registration */
@@ -214,21 +214,21 @@ namespace co
         void _detachObject( Object* object );
 
         /** The command handler functions. */
-        bool _cmdFindMasterNodeID( Command& command );
-        bool _cmdFindMasterNodeIDReply( Command& command );
-        bool _cmdAttachObject( Command& command );
-        bool _cmdDetachObject( Command& command );
-        bool _cmdMapObject( Command& command );
-        bool _cmdMapObjectSuccess( Command& command );
-        bool _cmdMapObjectReply( Command& command );
-        bool _cmdUnmapObject( Command& command );
-        bool _cmdUnsubscribeObject( Command& command );
-        bool _cmdInstance( Command& command );
-        bool _cmdRegisterObject( Command& command );
-        bool _cmdDeregisterObject( Command& command );
-        bool _cmdDisableSendOnRegister( Command& command );
-        bool _cmdRemoveNode( Command& command );
-        bool _cmdObjectPush( Command& command );
+        bool _cmdFindMasterNodeID( ICommand& command );
+        bool _cmdFindMasterNodeIDReply( ICommand& command );
+        bool _cmdAttachObject( ICommand& command );
+        bool _cmdDetachObject( ICommand& command );
+        bool _cmdMapObject( ICommand& command );
+        bool _cmdMapObjectSuccess( ICommand& command );
+        bool _cmdMapObjectReply( ICommand& command );
+        bool _cmdUnmapObject( ICommand& command );
+        bool _cmdUnsubscribeObject( ICommand& command );
+        bool _cmdInstance( ICommand& command );
+        bool _cmdRegisterObject( ICommand& command );
+        bool _cmdDeregisterObject( ICommand& command );
+        bool _cmdDisableSendOnRegister( ICommand& command );
+        bool _cmdRemoveNode( ICommand& command );
+        bool _cmdObjectPush( ICommand& command );
 
         LB_TS_VAR( _receiverThread );
         LB_TS_VAR( _commandThread );

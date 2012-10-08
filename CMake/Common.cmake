@@ -72,7 +72,11 @@ if(BIGENDIAN)
   add_definitions(-D${UPPER_PROJECT_NAME}_BIGENDIAN)
 endif()
 
-if(CMAKE_COMPILER_IS_GNUCXX)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  set(CMAKE_COMPILER_IS_CLANG ON)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
   include(CompilerVersion)
   COMPILER_DUMPVERSION(GCC_COMPILER_VERSION)
   if(GCC_COMPILER_VERSION VERSION_LESS 4.1)
@@ -84,6 +88,9 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   if(NOT WIN32 AND NOT XCODE_VERSION AND NOT RELEASE_VERSION)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
   endif()
+  if(CMAKE_COMPILER_IS_CLANG)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
+  endif()
 elseif(CMAKE_COMPILER_IS_XLCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -q64")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -q64")
@@ -93,6 +100,7 @@ if(MSVC)
   add_definitions(
     /D_CRT_SECURE_NO_WARNINGS
     /D_SCL_SECURE_NO_WARNINGS
+    /wd4068 # disable unknown pragma warnings
     /wd4244 # conversion from X to Y, possible loss of data
     /wd4800 # forcing value to bool 'true' or 'false' (performance warning)
     )

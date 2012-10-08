@@ -26,11 +26,11 @@ namespace co
 namespace detail { class CustomCommand; }
 
 /** A command specialization for custom commands. */
-class CustomCommand : public Command
+class CustomCommand : public ICommand
 {
 public:
     /** @internal */
-    CO_API CustomCommand( const Command& command );
+    CO_API CustomCommand( const ICommand& command );
 
     /** Copy-construct a custom command. */
     CO_API CustomCommand( const CustomCommand& rhs );

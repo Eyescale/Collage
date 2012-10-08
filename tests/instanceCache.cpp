@@ -27,7 +27,7 @@
 #include <co/instanceCache.h>
 #include <co/nodeCommand.h>
 #include <co/localNode.h>
-#include <co/objectDataCommand.h>
+#include <co/objectDataICommand.h>
 #include <co/objectDataOCommand.h>
 #include <co/objectVersion.h>
 
@@ -85,7 +85,7 @@ int main( int argc, char **argv )
                                 co::COMMANDTYPE_NODE, co::UUID(), 0, 1, 0,
                                 COMMAND_SIZE, true, 0 );
     co::LocalNodePtr node = new co::LocalNode;
-    co::ObjectDataCommand in = out._getCommand( node );
+    co::ObjectDataICommand in = out._getCommand( node );
     TESTINFO( in.isValid(), in );
     TEST( in.isLast( ));
 

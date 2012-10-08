@@ -46,15 +46,15 @@ public:
 
 }
 
-MasterCMCommand::MasterCMCommand( const Command& command )
-    : Command( command )
+MasterCMCommand::MasterCMCommand( const ICommand& command )
+    : ICommand( command )
     , _impl( new detail::MasterCMCommand )
 {
     _init();
 }
 
 MasterCMCommand::MasterCMCommand( const MasterCMCommand& rhs )
-    : Command( rhs )
+    : ICommand( rhs )
     , _impl( new detail::MasterCMCommand( *rhs._impl ))
 {
     _init();

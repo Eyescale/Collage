@@ -24,7 +24,7 @@
 #include "dataIStream.h"
 #include "global.h"
 #include "objectOCommand.h"
-#include "objectCommand.h"
+#include "objectICommand.h"
 #include "queueCommand.h"
 
 namespace co
@@ -78,7 +78,7 @@ void QueueSlave::applyInstanceData( co::DataIStream& is )
     _impl->master = localNode->connect( masterNodeID );
 }
 
-ObjectCommand QueueSlave::pop()
+ObjectICommand QueueSlave::pop()
 {
     static lunchbox::a_int32_t _request;
     const int32_t request = ++_request;
@@ -92,17 +92,17 @@ ObjectCommand QueueSlave::pop()
                     << _impl->prefetchAmount << getInstanceID() << request;
         }
 
-        ObjectCommand cmd( _impl->queue.pop( ));
+        ObjectICommand cmd( _impl->queue.pop( ));
         switch( cmd.getCommand( ))
         {
           case CMD_QUEUE_ITEM:
-              return ObjectCommand( cmd );
+              return ObjectICommand( cmd );
 
           default:
               LBUNIMPLEMENTED;
           case CMD_QUEUE_EMPTY:
               if( cmd.get< int32_t >() == request )
-                  return ObjectCommand( 0, 0, 0, false );
+                  return ObjectICommand( 0, 0, 0, false );
               // else left-over or not our empty command, discard and retry
               break;
         }

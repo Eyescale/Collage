@@ -33,15 +33,15 @@ public:
 
 }
 
-CustomCommand::CustomCommand( const Command& command )
-    : Command( command )
+CustomCommand::CustomCommand( const ICommand& command )
+    : ICommand( command )
     , _impl( new detail::CustomCommand )
 {
     _init();
 }
 
 CustomCommand::CustomCommand( const CustomCommand& rhs )
-    : Command( rhs )
+    : ICommand( rhs )
     , _impl( new detail::CustomCommand )
 {
     _init();
@@ -65,7 +65,7 @@ const uint128_t& CustomCommand::getCommandID() const
 
 std::ostream& operator << ( std::ostream& os, const CustomCommand& command )
 {
-    os << static_cast< const Command& >( command );
+    os << static_cast< const ICommand& >( command );
     if( command.isValid( ))
         os << " custom command " << command.getCommandID();
     return os;

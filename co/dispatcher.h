@@ -53,7 +53,7 @@ namespace detail { class Dispatcher; }
          * @return true if the command was dispatched, false if not.
          * @sa registerCommand
          */
-        CO_API virtual bool dispatchCommand( Command& command );
+        CO_API virtual bool dispatchCommand( ICommand& command );
 
     protected:
         /**
@@ -79,7 +79,7 @@ namespace detail { class Dispatcher; }
          * @param command the command
          * @return the result of the operation.
          */
-        CO_API bool _cmdUnknown( Command& command );
+        CO_API bool _cmdUnknown( ICommand& command );
 
     private:
         detail::Dispatcher* const _impl;

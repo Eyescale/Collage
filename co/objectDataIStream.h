@@ -19,7 +19,7 @@
 #ifndef CO_OBJECTDATAISTREAM_H
 #define CO_OBJECTDATAISTREAM_H
 
-#include <co/iCommand.h>         // member
+#include <co/iCommand.h>        // member
 #include <co/dataIStream.h>     // base class
 #include <co/version.h>         // enum
 #include <lunchbox/monitor.h>   // member
@@ -37,7 +37,7 @@ namespace co
         ObjectDataIStream( const ObjectDataIStream& from );
         virtual ~ObjectDataIStream();
 
-        void addDataCommand( ObjectDataCommand command );
+        void addDataCommand( ObjectDataICommand command );
         size_t getDataSize() const;
 
         virtual uint128_t getVersion() const { return _version.get(); }
@@ -58,10 +58,12 @@ namespace co
                                     const void** chunkData, uint64_t& size );
 
     private:
-        /** All data commands for this istream. */
+        typedef std::deque< ICommand > CommandDeque;
+
+        /** All data commands for this istream. */        
         CommandDeque _commands;
 
-        Command _usedCommand; //!< Currently used buffer
+        ICommand _usedCommand; //!< Currently used buffer
 
         /** The object version associated with this input stream. */
         lunchbox::Monitor< uint128_t > _version;

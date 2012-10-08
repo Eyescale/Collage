@@ -20,7 +20,7 @@
 
 #include "log.h"
 #include "object.h"
-#include "objectDataCommand.h"
+#include "objectDataICommand.h"
 #include "objectDataIStream.h"
 #include "objectDataOCommand.h"
 #include <lunchbox/scopedMutex.h>
@@ -70,7 +70,7 @@ uint128_t VersionedSlaveCM::commit( const uint32_t incarnation )
     if( !_object->isDirty() || !_master || !_master->isReachable( ))
         return VERSION_NONE;
 
-    _ostream.enableCommit( _master );
+    _ostream.enableSlaveCommit( _master );
     _object->pack( _ostream );
     _ostream.disable();
 
@@ -315,9 +315,9 @@ void VersionedSlaveCM::addInstanceDatas( const ObjectDataIStreamDeque& cache,
 //---------------------------------------------------------------------------
 // command handlers
 //---------------------------------------------------------------------------
-bool VersionedSlaveCM::_cmdData( Command& cmd )
+bool VersionedSlaveCM::_cmdData( ICommand& cmd )
 {
-    ObjectDataCommand command( cmd );
+    ObjectDataICommand command( cmd );
 
     LB_TS_THREAD( _rcvThread );
     LBASSERT( command.getNode().isValid( ));

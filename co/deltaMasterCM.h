@@ -40,7 +40,7 @@ namespace co
 
     private:
         /* The command handlers. */
-        bool _cmdCommit( Command& pkg );
+        bool _cmdCommit( ICommand& pkg );
 
         typedef ObjectDeltaDataOStream DeltaData;
         DeltaData _deltaData;

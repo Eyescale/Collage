@@ -25,7 +25,7 @@
 #include "dataOStream.h"
 #include "global.h"
 #include "log.h"
-#include "objectCommand.h"
+#include "objectICommand.h"
 #include "objectOCommand.h"
 #include "barrierCommand.h"
 #include "exception.h"
@@ -191,13 +191,13 @@ void Barrier::enter( const uint32_t timeout )
                          << ", height " << _impl->height << std::endl;
 }
 
-bool Barrier::_cmdEnter( Command& cmd )
+bool Barrier::_cmdEnter( ICommand& cmd )
 {
     LB_TS_THREAD( _thread );
     LBASSERTINFO( !_impl->master || _impl->master == getLocalNode(),
                   _impl->master );
 
-    ObjectCommand command( cmd );
+    ObjectICommand command( cmd );
     const uint128_t version = command.get< uint128_t >();
     const uint32_t incarnation = command.get< uint32_t >();
     const uint32_t timeout = command.get< uint32_t >();
@@ -332,9 +332,9 @@ void Barrier::_cleanup( const uint64_t time )
     }
 }
 
-bool Barrier::_cmdEnterReply( Command& cmd )
+bool Barrier::_cmdEnterReply( ICommand& cmd )
 {
-    ObjectCommand command( cmd );
+    ObjectICommand command( cmd );
     LB_TS_THREAD( _thread );
     LBLOG( LOG_BARRIER ) << "Got ok, unlock local user(s)" << std::endl;
     const uint128_t version = command.get< uint128_t >();

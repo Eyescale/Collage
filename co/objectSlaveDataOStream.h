@@ -29,7 +29,7 @@ namespace co
         ObjectSlaveDataOStream( const ObjectCM* cm );
         virtual ~ObjectSlaveDataOStream();
 
-        void enableCommit( NodePtr node );
+        void enableSlaveCommit( NodePtr node );
 
     protected:
         virtual void sendData( const void* buffer, const uint64_t size,
