@@ -22,7 +22,7 @@ set(CO_PUBLIC_HEADERS
   connectionSet.h
   connectionType.h
   cpuCompressor.h
-  customCommand.h
+  customICommand.h
   customOCommand.h
   dataIStream.h
   dataIStream.ipp
@@ -107,7 +107,7 @@ set(CO_SOURCES
   connectionDescription.cpp
   connectionSet.cpp
   cpuCompressor.cpp
-  customCommand.cpp
+  customICommand.cpp
   customOCommand.cpp
   dataIStream.cpp
   dataIStreamQueue.cpp

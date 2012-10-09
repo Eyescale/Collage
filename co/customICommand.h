@@ -15,42 +15,42 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_CUSTOMCOMMAND_H
-#define CO_CUSTOMCOMMAND_H
+#ifndef CO_CUSTOMICOMMAND_H
+#define CO_CUSTOMICOMMAND_H
 
 #include <co/iCommand.h>   // base class
 
 namespace co
 {
 
-namespace detail { class CustomCommand; }
+namespace detail { class CustomICommand; }
 
 /** A command specialization for custom commands. */
-class CustomCommand : public ICommand
+class CustomICommand : public ICommand
 {
 public:
     /** @internal */
-    CO_API CustomCommand( const ICommand& command );
+    CO_API CustomICommand( const ICommand& command );
 
     /** Copy-construct a custom command. */
-    CO_API CustomCommand( const CustomCommand& rhs );
+    CO_API CustomICommand( const CustomICommand& rhs );
 
     /** Destruct a custom command. */
-    CO_API virtual ~CustomCommand();
+    CO_API virtual ~CustomICommand();
 
     /** @internal @return the custom command identifier. */
     CO_API const uint128_t& getCommandID() const;
 
 private:
-    CustomCommand();
-    CustomCommand& operator = ( const CustomCommand& );
-    detail::CustomCommand* const _impl;
+    CustomICommand();
+    CustomICommand& operator = ( const CustomICommand& );
+    detail::CustomICommand* const _impl;
 
     void _init();
 };
 
-CO_API std::ostream& operator << ( std::ostream& os, const CustomCommand& );
+CO_API std::ostream& operator << ( std::ostream& os, const CustomICommand& );
 
 }
 
-#endif //CO_CUSTOMCOMMAND_H
+#endif //CO_CUSTOMICOMMAND_H

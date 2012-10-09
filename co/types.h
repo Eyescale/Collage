@@ -43,7 +43,7 @@ class CommandQueue;
 class Connection;
 class ConnectionDescription;
 class ConnectionListener;
-class CustomCommand;
+class CustomICommand;
 class CustomOCommand;
 class DataIStream;
 class DataOStream;

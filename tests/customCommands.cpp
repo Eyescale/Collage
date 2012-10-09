@@ -30,14 +30,14 @@ lunchbox::Monitor<bool> gotCmd2;
 class MyLocalNode : public co::LocalNode
 {
 public:
-    bool cmdCustom1( co::CustomCommand& command )
+    bool cmdCustom1( co::CustomICommand& command )
     {
         TEST( command.getCommandID() == cmdID1 );
         gotCmd1 = true;
         return true;
     }
 
-    bool cmdCustom2( co::CustomCommand& command )
+    bool cmdCustom2( co::CustomICommand& command )
     {
         TEST( command.getCommandID() == cmdID2 );
         gotCmd2 = true;
