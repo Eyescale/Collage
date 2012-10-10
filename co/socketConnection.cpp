@@ -31,6 +31,7 @@
 #include <sstream>
 #include <string.h>
 #include <sys/types.h>
+#include <time.h>
 
 #ifdef _WIN32
 #  include <mswsock.h>
@@ -143,12 +144,51 @@ bool SocketConnection::connect()
     }
 
 #ifdef _WIN32
-    const bool connected = WSAConnect( _readFD, (sockaddr*)&address, 
+    bool connected = WSAConnect( _readFD, (sockaddr*)&address,
                                        sizeof( address ), 0, 0, 0, 0 ) == 0;
 #else
-    const bool connected = (::connect( _readFD, (sockaddr*)&address, 
+    bool connected = (::connect( _readFD, (sockaddr*)&address,
                                        sizeof( address )) == 0);
+
+    /// Addition by Bidur Oct 10, 2012
+    /// Implementation #1
+    /// Connection is restarted with same arguments if the 'connect'
+    /// error is EINTR. Also checks for EISCONN to aviod race condition
+    /// between two 'connect' call. Should work for Linux system only,
+    /// and doesn't handle error for WIN32 system.
+#if 0
+    bool connected;
+    while( !(connected = (::connect(_readFD, (sockaddr*)&address, sizeof(address)) == 0)) & errno != EISCONN)
+    {
+        if(errno != EINTR)
+            break;
+    }
 #endif
+
+#endif
+
+    /// Addition by Bidur Oct 09, 2012
+    /// Implementation # 2
+    /// This handles socket 'connect' error by waiting 0.05 secs before
+    /// creating a new socket and connecting again. Tries to reconnect
+    /// only once after a wait interval.
+    if(!connected)
+    {
+        // Add a waitTime of 0.05 sec before reconnecting socket
+        clock_t waitTime = CLOCKS_PER_SEC * 0.05 + clock();
+        while (waitTime > clock());
+
+        // Closes existing socket and creates a new socket
+        _close();
+        if( !_createSocket() ) return false;
+
+#ifdef _WIN32
+        connected = WSAConnect( _readFD, (sockaddr*)&address, sizeof( address ), 0, 0, 0, 0 ) == 0;
+#else
+        connected = (::connect(_readFD, (sockaddr*)&address, sizeof(address)) == 0);
+#endif
+    }
+    /// Ends new addition
 
     if( !connected )
     {
