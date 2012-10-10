@@ -20,7 +20,7 @@ template< typename T >
 void DataOStreamArchive::save_array( const boost::serialization::array< T >& a,
                                      unsigned int )
 {
-    save_binary( a.address(), a.count() * sizeof( T ));
+    _stream << Array< const T >( a.address(), a.count( ));
 }
 
 template< class C, class T, class A >
