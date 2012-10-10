@@ -180,7 +180,7 @@ bool SocketConnection::connect()
 
         // Closes existing socket and creates a new socket
         _close();
-        _createSocket();
+        if( !_createSocket() ) return false;
 
 #ifdef _WIN32
         connected = WSAConnect( _readFD, (sockaddr*)&address, sizeof( address ), 0, 0, 0, 0 ) == 0;
