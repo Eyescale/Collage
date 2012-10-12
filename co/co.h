@@ -67,7 +67,7 @@
 #include <co/connectionDescription.h>
 #include <co/connectionSet.h>
 #include <co/connectionType.h>
-#include <co/customCommand.h>
+#include <co/customICommand.h>
 #include <co/customOCommand.h>
 #include <co/dataIStream.h>
 #include <co/dataIStreamArchive.h>

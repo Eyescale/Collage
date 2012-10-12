@@ -143,11 +143,31 @@ bool SocketConnection::connect()
     }
 
 #ifdef _WIN32
-    const bool connected = WSAConnect( _readFD, (sockaddr*)&address, 
+    const bool connected = WSAConnect( _readFD, (sockaddr*)&address,
                                        sizeof( address ), 0, 0, 0, 0 ) == 0;
 #else
-    const bool connected = (::connect( _readFD, (sockaddr*)&address, 
-                                       sizeof( address )) == 0);
+    int nTries = 10;
+    while( nTries-- )
+    {
+        const bool connected = (::connect( _readFD, (sockaddr*)&address,
+                                           sizeof( address )) == 0);
+        if( connected )
+            break;
+
+        switch( errno )
+        {
+          case EINTR: // Happens sometimes, but looks harmless
+              LBINFO << "connect: " << lunchbox::sysError << ", retrying"
+                     << std::endl;
+              lunchbox::sleep( 5 /*ms*/ );
+              break;
+
+          default:
+              nTries = 0;
+              break;
+        }
+    }
+    const bool connected = nTries > 0;
 #endif
 
     if( !connected )
@@ -158,9 +178,6 @@ bool SocketConnection::connect()
         return false;
     }
 
-#ifndef _WIN32
-    //fcntl( _readFD, F_SETFL, O_NONBLOCK );
-#endif
     _initAIORead();
     _setState( STATE_CONNECTED );
     LBINFO << "Connected " << description->toString() << std::endl;

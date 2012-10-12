@@ -24,6 +24,7 @@
 
 #include <co/co.h>
 #include <boost/serialization/string.hpp>
+#include <boost/serialization/vector.hpp>
 
 template< typename T >
 class Object : public co::Object
@@ -107,6 +108,7 @@ int main( int argc, char **argv )
     testObjectSerialization( server, client, false );
     testObjectSerialization( server, client, std::string( "blablub" ));
     testObjectSerialization( server, client, co::uint128_t( 12345, 54321 ));
+    testObjectSerialization( server, client, std::vector< int >( 9 ));
 
     TEST( client->disconnect( serverProxy ));
     TEST( client->close( ));

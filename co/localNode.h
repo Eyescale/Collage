@@ -55,7 +55,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
                                        DataIStream& ) > PushHandler;
 
         /** Function signature for custom command handlers. */
-        typedef boost::function< bool( CustomCommand& ) > CommandHandler;
+        typedef boost::function< bool( CustomICommand& ) > CommandHandler;
 
         /**
          * @name State Changes

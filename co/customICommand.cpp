@@ -15,7 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "customCommand.h"
+#include "customICommand.h"
 
 namespace co
 {
@@ -23,47 +23,47 @@ namespace co
 namespace detail
 {
 
-class CustomCommand
+class CustomICommand
 {
 public:
-    CustomCommand() {}
+    CustomICommand() {}
 
     uint128_t commandID;
 };
 
 }
 
-CustomCommand::CustomCommand( const ICommand& command )
+CustomICommand::CustomICommand( const ICommand& command )
     : ICommand( command )
-    , _impl( new detail::CustomCommand )
+    , _impl( new detail::CustomICommand )
 {
     _init();
 }
 
-CustomCommand::CustomCommand( const CustomCommand& rhs )
+CustomICommand::CustomICommand( const CustomICommand& rhs )
     : ICommand( rhs )
-    , _impl( new detail::CustomCommand )
+    , _impl( new detail::CustomICommand )
 {
     _init();
 }
 
-void CustomCommand::_init()
+void CustomICommand::_init()
 {
     if( isValid( ))
         *this >> _impl->commandID;
 }
 
-CustomCommand::~CustomCommand()
+CustomICommand::~CustomICommand()
 {
     delete _impl;
 }
 
-const uint128_t& CustomCommand::getCommandID() const
+const uint128_t& CustomICommand::getCommandID() const
 {
     return _impl->commandID;
 }
 
-std::ostream& operator << ( std::ostream& os, const CustomCommand& command )
+std::ostream& operator << ( std::ostream& os, const CustomICommand& command )
 {
     os << static_cast< const ICommand& >( command );
     if( command.isValid( ))

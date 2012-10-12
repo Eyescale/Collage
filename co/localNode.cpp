@@ -24,7 +24,7 @@
 #include "commandQueue.h"
 #include "connectionDescription.h"
 #include "connectionSet.h"
-#include "customCommand.h"
+#include "customICommand.h"
 #include "dataIStream.h"
 #include "exception.h"
 #include "global.h"
@@ -1364,7 +1364,7 @@ bool LocalNode::_readTail( ICommand& command, BufferPtr buffer,
 BufferPtr LocalNode::allocBuffer( const uint64_t size )
 {
     LBASSERT( _impl->receiverThread->isStopped() || _impl->inReceiverThread( ));
-    BufferPtr buffer = size > co::Buffer::getCacheSize() ? 
+    BufferPtr buffer = size > co::Buffer::getCacheSize() ?
         _impl->bigBuffers.alloc( size ) :
         _impl->smallBuffers.alloc( Buffer::getCacheSize( ));
     return buffer;
@@ -1978,7 +1978,7 @@ bool LocalNode::_cmdCommand( ICommand& command )
         func = i->second.first;
     }
 
-    CustomCommand customCmd( command );
+    CustomICommand customCmd( command );
     return func( customCmd );
 }
 
@@ -1994,7 +1994,7 @@ bool LocalNode::_cmdCommandAsync( ICommand& command )
             return true; // deregistered between dispatch and now
         func = i->second.first;
     }
-    CustomCommand customCmd( command );
+    CustomICommand customCmd( command );
     return func( customCmd );
 }
 

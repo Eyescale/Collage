@@ -31,9 +31,14 @@
 #include <co/dataOStream.h>
 #include <co/dataStreamArchiveException.h>
 
+#include <boost/version.hpp>
+
 #include <boost/archive/basic_binary_oarchive.hpp>
 #include <boost/archive/detail/register_archive.hpp>
 #include <boost/serialization/is_bitwise_serializable.hpp>
+#if BOOST_VERSION >= 104400
+#  include <boost/serialization/item_version_type.hpp>
+#endif
 
 #include <boost/spirit/home/support/detail/endian.hpp>
 #include <boost/spirit/home/support/detail/math/fpclassify.hpp>
