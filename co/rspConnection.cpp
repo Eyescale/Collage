@@ -1057,7 +1057,7 @@ bool RSPConnection::_handleData( const size_t bytes )
 
     // early nack: request missing packets before current
     --i;
-    Nack nack = { connection->_sequence, sequence - 1 };
+    Nack nack = { connection->_sequence, uint16_t( sequence - 1 ) };
     if( i > 0 )
     {
         if( connection->_recvBuffers[i] ) // got previous packet
@@ -1550,7 +1550,7 @@ void RSPConnection::_sendCountNode()
 void RSPConnection::_sendSimpleDatagram( const DatagramType type,
                                          const uint16_t id )
 {
-    DatagramNode simple = { type, EQ_RSP_PROTOCOL_VERSION, id, 0 };
+    DatagramNode simple = { uint16_t( type ), EQ_RSP_PROTOCOL_VERSION, id, 0 };
     simple.byteswap();
     _write->send( buffer( &simple, sizeof( simple )) );
 }
@@ -1602,7 +1602,7 @@ void RSPConnection::_sendAckRequest()
 #endif
     LBLOG( LOG_RSP ) << "send ack request for " << uint16_t( _sequence -1 )
                      << std::endl;
-    DatagramAckRequest ackRequest = { ACKREQ, _id, _sequence - 1 };
+    DatagramAckRequest ackRequest = { ACKREQ, _id, uint16_t( _sequence - 1 ) };
     ackRequest.byteswap();
     _write->send( buffer( &ackRequest, sizeof( DatagramAckRequest )) );
 }
