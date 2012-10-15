@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -49,7 +49,7 @@ public:
             , _mBytesSec( packetSize / 1024.f / 1024.f * 1000.f )
             , _nSamples( 0 )
             , _lastPacket( 0 )
-        { 
+        {
             connection->recvNB( &_buffer, packetSize );
         }
 
@@ -73,11 +73,6 @@ public:
             const float time = _clock.getTimef();
             ++_nSamples;
 
-            const size_t probe = (_rng.get< size_t >() %
-                                  ( _buffer.getSize() - DATA )) + DATA;
-            LBASSERTINFO( _buffer[probe] == static_cast< uint8_t >( probe ),
-                          (int)_buffer[probe] << " != " << (probe&0xff) );
-
             if( _delay > 0 )
                 lunchbox::sleep( _delay );
 
@@ -85,7 +80,7 @@ public:
                 return true;
 
             _clock.reset();
-            co::ConstConnectionDescriptionPtr desc = 
+            co::ConstConnectionDescriptionPtr desc =
                 _connection->getDescription();
             const lunchbox::ScopedMutex<> mutex( _mutexPrint );
             std::cerr << "Recv perf: " << _mBytesSec / time * _nSamples
@@ -126,7 +121,7 @@ public:
                 _hasConnection.waitEQ( true );
             }
         }
-        
+
 private:
     lunchbox::Clock _clock;
     lunchbox::RNG _rng;
@@ -161,7 +156,7 @@ public:
             co::ConnectionPtr resultConn = _connectionSet.getConnection();
             co::ConnectionPtr newConn    = resultConn->acceptSync();
             resultConn->acceptNB();
-        
+
             LBASSERT( resultConn == _connection );
             LBASSERT( newConn.isValid( ));
 
@@ -188,14 +183,14 @@ public:
                 switch( _connectionSet.select( )) // ...get next request
                 {
                     case co::ConnectionSet::EVENT_CONNECT: // new client
-                    
+
                         resultConn = _connectionSet.getConnection();
                         newConn = resultConn->acceptSync();
                         resultConn->acceptNB();
 
                         LBASSERT( newConn.isValid( ));
 
-                        _receivers.push_back( 
+                        _receivers.push_back(
                             RecvConn( new Receiver( _packetSize, newConn ),
                                       newConn ));
                         if( _useThreads )
@@ -322,20 +317,20 @@ int main( int argc, char **argv )
         TCLAP::ValueArg< std::string > serverArg( "s", "server",
                                                   "run as server", true, "",
                                                   "IP[:port][:protocol]" );
-        TCLAP::SwitchArg threadedArg( "t", "threaded", 
+        TCLAP::SwitchArg threadedArg( "t", "threaded",
                           "Run each receive in a separate thread (server only)",
                                       command, false );
-        TCLAP::ValueArg<size_t> sizeArg( "p", "packetSize", "packet size", 
-                                         false, packetSize, "unsigned", 
+        TCLAP::ValueArg<size_t> sizeArg( "p", "packetSize", "packet size",
+                                         false, packetSize, "unsigned",
                                          command );
-        TCLAP::ValueArg<size_t> packetsArg( "n", "numPackets", 
-                                            "number of packets to send", 
+        TCLAP::ValueArg<size_t> packetsArg( "n", "numPackets",
+                                            "number of packets to send",
                                             false, nPackets, "unsigned",
                                             command );
-        TCLAP::ValueArg<uint32_t> waitArg( "w", "wait", 
+        TCLAP::ValueArg<uint32_t> waitArg( "w", "wait",
                                    "wait time (ms) between sends (client only)",
                                          false, 0, "unsigned", command );
-        TCLAP::ValueArg<uint32_t> delayArg( "d", "delay", 
+        TCLAP::ValueArg<uint32_t> delayArg( "d", "delay",
                                 "wait time (ms) between receives (server only)",
                                             false, 0, "unsigned", command );
 
@@ -363,7 +358,7 @@ int main( int argc, char **argv )
     }
     catch( TCLAP::ArgException& exception )
     {
-        LBERROR << "Command line parse error: " << exception.error() 
+        LBERROR << "Command line parse error: " << exception.error()
                 << " for argument " << exception.argId() << std::endl;
 
         co::exit();
@@ -409,7 +404,7 @@ int main( int argc, char **argv )
             {
                 const lunchbox::ScopedMutex<> mutex( _mutexPrint );
                 const size_t nSamples = lastOutput - nPackets;
-                std::cerr << "Send perf: " << mBytesSec / time * nSamples 
+                std::cerr << "Send perf: " << mBytesSec / time * nSamples
                           << "MB/s (" << nSamples / time * 1000.f  << "pps)"
                           << std::endl;
 
@@ -424,7 +419,7 @@ int main( int argc, char **argv )
         if( nSamples != 0 )
         {
             const lunchbox::ScopedMutex<> mutex( _mutexPrint );
-            std::cerr << "Send perf: " << mBytesSec / time * nSamples 
+            std::cerr << "Send perf: " << mBytesSec / time * nSamples
                       << "MB/s (" << nSamples / time * 1000.f  << "pps)"
                       << std::endl;
         }
@@ -438,14 +433,14 @@ int main( int argc, char **argv )
     {
         selector = new Selector( connection, packetSize, useThreads );
         selector->start();
-        
+
         LBASSERTINFO( connection->getRefCount()>=1, connection->getRefCount( ));
-    
+
         if ( selector )
             selector->join();
     }
 
-    
+
     delete selector;
     LBASSERTINFO( connection->getRefCount() == 1, connection->getRefCount( ));
     connection = 0;
