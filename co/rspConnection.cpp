@@ -475,6 +475,29 @@ void RSPConnection::_handleConnectedTimeout()
     }
 }
 
+RSPConnection::DatagramNode*
+RSPConnection::_getDatagramNode( const size_t bytes )
+{
+    if( bytes < sizeof( DatagramNode ))
+    {
+        LBERROR << "DatagramNode size mismatch, got " << bytes << " instead of "
+                << sizeof( DatagramNode ) << " bytes" << std::endl;
+        //close();
+        return 0;
+    }
+    DatagramNode& node =
+                    *reinterpret_cast< DatagramNode* >( _recvBuffer.getData( ));
+    node.byteswap();
+    if( node.protocolVersion != EQ_RSP_PROTOCOL_VERSION )
+    {
+        LBERROR << "Protocol version mismatch, got " << node.protocolVersion
+                << " instead of " << EQ_RSP_PROTOCOL_VERSION << std::endl;
+        //close();
+        return 0;
+    }
+    return &node;
+}
+
 bool RSPConnection::_initThread()
 {
     LBLOG( LOG_RSP ) << "Started RSP protocol thread" << std::endl;
@@ -820,13 +843,11 @@ void RSPConnection::_handlePacket( const boost::system::error_code& /* error */,
 
 void RSPConnection::_handleAcceptIDData( const size_t bytes )
 {
-    if( bytes < sizeof( DatagramNode ))
+    DatagramNode* pNode = _getDatagramNode( bytes );
+    if( !pNode )
         return;
-    DatagramNode& node =
-                    *reinterpret_cast< DatagramNode* >( _recvBuffer.getData( ));
-    node.byteswap();
-    if( node.protocolVersion != EQ_RSP_PROTOCOL_VERSION )
-        return;
+
+    DatagramNode& node = *pNode;
 
     switch( node.type )
     {
@@ -854,16 +875,13 @@ void RSPConnection::_handleAcceptIDData( const size_t bytes )
     }
 }
 
-void RSPConnection::_handleInitData( const size_t bytes,
-                                     const bool connected )
+void RSPConnection::_handleInitData( const size_t bytes, const bool connected )
 {
-    if( bytes < sizeof( DatagramNode ))
+    DatagramNode* pNode = _getDatagramNode( bytes );
+    if( !pNode )
         return;
-    DatagramNode& node =
-                    *reinterpret_cast< DatagramNode* >( _recvBuffer.getData( ));
-    node.byteswap();
-    if( node.protocolVersion != EQ_RSP_PROTOCOL_VERSION )
-        return;
+
+    DatagramNode& node = *pNode;
 
     switch( node.type )
     {

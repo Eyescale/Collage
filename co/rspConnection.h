@@ -326,6 +326,8 @@ namespace co
         void _handleInitTimeout();
         void _handleAcceptIDTimeout();
 
+        DatagramNode* _getDatagramNode( const size_t bytes );
+
         /** find the connection corresponding to the identifier */
         RSPConnectionPtr _findConnection( const uint16_t id );
 
