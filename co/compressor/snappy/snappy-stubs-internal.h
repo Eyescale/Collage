@@ -128,10 +128,13 @@ class LogMessage {
 class LogMessageCrash : public LogMessage {
  public:
   LogMessageCrash() { }
+#pragma warning( push )
+#pragma warning( disable: 4722 )
   ~LogMessageCrash() {
     cerr << endl;
     abort();
   }
+#pragma warning( pop )
 };
 
 // This class is used to explicitly ignore values in the conditional
