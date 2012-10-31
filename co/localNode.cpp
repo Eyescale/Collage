@@ -1567,7 +1567,7 @@ bool LocalNode::_cmdConnect( ICommand& command )
 
             // refuse connection
             OCommand( Connections( 1, connection ), cmd )
-                << nodeID << requestID << nodeType;
+                << NodeID::ZERO << requestID;
 
             // NOTE: There is no close() here. The reply command above has to be
             // received by the peer first, before closing the connection.
@@ -1608,17 +1608,12 @@ bool LocalNode::_cmdConnectReply( ICommand& command )
     LBASSERT( !command.getNode( ));
     LBASSERT( _impl->inReceiverThread( ));
 
-    const NodeID& nodeID = command.get< NodeID >();
-    const uint32_t requestID = command.get< uint32_t >();
-    const uint32_t nodeType = command.get< uint32_t >();
-    std::string data = command.get< std::string >();
-
-    LBVERB << "handle connect reply " << command << " req " << requestID
-           << " type " << nodeType << " data " << data << std::endl;
-
     ConnectionPtr connection = _impl->incoming.getConnection();
     LBASSERT( _impl->connectionNodes.find( connection ) ==
               _impl->connectionNodes.end( ));
+
+    const NodeID& nodeID = command.get< NodeID >();
+    const uint32_t requestID = command.get< uint32_t >();
 
     // connection refused
     if( nodeID == NodeID::ZERO )
@@ -1630,6 +1625,12 @@ bool LocalNode::_cmdConnectReply( ICommand& command )
         serveRequest( requestID, false );
         return true;
     }
+
+    const uint32_t nodeType = command.get< uint32_t >();
+    std::string data = command.get< std::string >();
+
+    LBVERB << "handle connect reply " << command << " req " << requestID
+           << " type " << nodeType << " data " << data << std::endl;
 
     // No locking needed, only recv thread modifies
     NodeHash::const_iterator i = _impl->nodes->find( nodeID );
