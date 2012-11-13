@@ -66,7 +66,7 @@ namespace co
         CMD_NODE_COMMAND,
         CMD_NODE_PING,
         CMD_NODE_PING_REPLY
-        // check that not more then CMD_NODE_CUSTOM have been defined!
+        // check that not more than CMD_NODE_CUSTOM have been defined!
     };
 }
 
