@@ -95,6 +95,15 @@ public:
             , save( false )
         {}
 
+    DataOStream( DataOStream& rhs )
+        : state( rhs.state )
+        , bufferStart( rhs.bufferStart )
+        , dataSize( rhs.dataSize )
+        , enabled( rhs.enabled )
+        , dataSent( rhs.dataSent )
+        , save( rhs.save )
+    {}
+
     uint32_t getCompressor() const
     {
         if( state == STATE_UNCOMPRESSED || state == STATE_UNCOMPRESSIBLE )
@@ -182,6 +191,17 @@ public:
 DataOStream::DataOStream()
         : _impl( new detail::DataOStream )
 {}
+
+DataOStream::DataOStream( DataOStream& rhs )
+    : _impl( new detail::DataOStream( *rhs._impl ))
+{
+    _setupConnections( rhs.getConnections( ));
+    getBuffer().swap( rhs.getBuffer( ));
+
+    // disable send of rhs
+    rhs._setupConnections( Connections( ));
+    rhs.disable();
+}
 
 DataOStream::~DataOStream()
 {

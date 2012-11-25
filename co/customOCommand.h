@@ -52,7 +52,7 @@ public:
      */
     CO_API CustomOCommand( LocalNodePtr localNode, const uint128_t& commandID );
 
-    CO_API CustomOCommand( const CustomOCommand& rhs ); //!< @internal
+    CO_API CustomOCommand( CustomOCommand& rhs ); //!< @internal
 
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~CustomOCommand();

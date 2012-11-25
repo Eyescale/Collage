@@ -117,6 +117,7 @@ namespace DataStreamTest { class Sender; }
 
     protected:
         CO_API DataOStream(); //!< @internal
+        DataOStream( DataOStream& rhs );  //!< @internal
         virtual CO_API ~DataOStream(); //!< @internal
 
         /** @internal */

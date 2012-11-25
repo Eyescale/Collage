@@ -59,7 +59,7 @@ public:
                      const uint32_t cmd, const uint32_t type=COMMANDTYPE_NODE );
 
     /** @internal */
-    CO_API OCommand( const OCommand& rhs );
+    CO_API OCommand( OCommand& rhs );
 
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~OCommand();

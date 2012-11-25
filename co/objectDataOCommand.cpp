@@ -69,7 +69,7 @@ ObjectDataOCommand::ObjectDataOCommand( const Connections& receivers,
     _init( version, sequence, dataSize, isLast );
 }
 
-ObjectDataOCommand::ObjectDataOCommand( const ObjectDataOCommand& rhs )
+ObjectDataOCommand::ObjectDataOCommand( ObjectDataOCommand& rhs )
     : ObjectOCommand( rhs )
     , _impl( new detail::ObjectDataOCommand( *rhs._impl ))
 {

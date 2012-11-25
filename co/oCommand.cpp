@@ -60,16 +60,10 @@ OCommand::OCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
     _init( cmd, type );
 }
 
-OCommand::OCommand( const OCommand& rhs )
-    : DataOStream()
+OCommand::OCommand( OCommand& rhs )
+    : DataOStream( rhs )
     , _impl( new detail::OCommand( *rhs._impl ))
 {
-    _setupConnections( rhs.getConnections( ));
-    getBuffer().swap( const_cast< OCommand& >( rhs ).getBuffer( ));
-
-    // disable send of rhs
-    const_cast< OCommand& >( rhs )._setupConnections( Connections( ));
-    const_cast< OCommand& >( rhs ).disable();
 }
 
 OCommand::~OCommand()
