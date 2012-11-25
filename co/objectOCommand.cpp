@@ -51,7 +51,7 @@ ObjectOCommand::ObjectOCommand( Dispatcher* const dispatcher,
     _init( id, instanceID );
 }
 
-ObjectOCommand::ObjectOCommand( ObjectOCommand& rhs )
+ObjectOCommand::ObjectOCommand( const ObjectOCommand& rhs )
     : OCommand( rhs )
     , _impl( new detail::ObjectOCommand( *rhs._impl ))
 {

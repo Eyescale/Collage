@@ -60,8 +60,8 @@ OCommand::OCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
     _init( cmd, type );
 }
 
-OCommand::OCommand( OCommand& rhs )
-    : DataOStream( rhs )
+OCommand::OCommand( const OCommand& rhs )
+    : DataOStream( const_cast< OCommand& >( rhs ))
     , _impl( new detail::OCommand( *rhs._impl ))
 {
 }

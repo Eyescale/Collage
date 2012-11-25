@@ -64,7 +64,7 @@ public:
                                DataOStream* stream );
 
     /** @internal */
-    CO_API ObjectDataOCommand( ObjectDataOCommand& rhs );
+    CO_API ObjectDataOCommand( const ObjectDataOCommand& rhs );
 
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~ObjectDataOCommand();

@@ -56,7 +56,7 @@ CustomOCommand::CustomOCommand( LocalNodePtr localNode,
     _init();
 }
 
-CustomOCommand::CustomOCommand( CustomOCommand& rhs )
+CustomOCommand::CustomOCommand( const CustomOCommand& rhs )
     : OCommand( rhs )
     , _impl( new detail::CustomOCommand( *rhs._impl ))
 {

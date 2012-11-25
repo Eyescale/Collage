@@ -62,7 +62,7 @@ public:
                            const UUID& id, const uint32_t instanceID );
 
     /** @internal */
-    CO_API ObjectOCommand( ObjectOCommand& rhs );
+    CO_API ObjectOCommand( const ObjectOCommand& rhs );
 
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~ObjectOCommand();

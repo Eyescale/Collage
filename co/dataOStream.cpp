@@ -193,7 +193,8 @@ DataOStream::DataOStream()
 {}
 
 DataOStream::DataOStream( DataOStream& rhs )
-    : _impl( new detail::DataOStream( *rhs._impl ))
+    : lunchbox::NonCopyable()
+    , _impl( new detail::DataOStream( *rhs._impl ))
 {
     _setupConnections( rhs.getConnections( ));
     getBuffer().swap( rhs.getBuffer( ));
