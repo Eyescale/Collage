@@ -95,7 +95,7 @@ public:
             , save( false )
         {}
 
-    DataOStream( DataOStream& rhs )
+    DataOStream( const DataOStream& rhs )
         : state( rhs.state )
         , bufferStart( rhs.bufferStart )
         , dataSize( rhs.dataSize )
