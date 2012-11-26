@@ -443,17 +443,16 @@ ConnectionDescriptionPtr Connection::_getDescription()
 
 std::ostream& operator << ( std::ostream& os, const Connection& connection )
 {
-    Connection::State        state = connection.getState();
-    ConstConnectionDescriptionPtr desc  = connection.getDescription();
+    const Connection::State state = connection.getState();
+    ConstConnectionDescriptionPtr desc = connection.getDescription();
 
-    os << "Connection " << (void*)&connection << " type "
-       << typeid( connection ).name() << " state "
-       << ( state == Connection::STATE_CLOSED     ? "closed" :
-            state == Connection::STATE_CONNECTING ? "connecting" :
-            state == Connection::STATE_CONNECTED  ? "connected" :
-            state == Connection::STATE_LISTENING  ? "listening" :
-            state == Connection::STATE_CLOSING    ? "closing" :
-            "UNKNOWN" );
+    os << lunchbox::className( connection ) << " " << (void*)&connection
+       << " state " << ( state == Connection::STATE_CLOSED     ? "closed" :
+                         state == Connection::STATE_CONNECTING ? "connecting" :
+                         state == Connection::STATE_CONNECTED  ? "connected" :
+                         state == Connection::STATE_LISTENING  ? "listening" :
+                         state == Connection::STATE_CLOSING    ? "closing" :
+                         "UNKNOWN" );
     if( desc.isValid( ))
         os << " description " << desc->toString();
 
