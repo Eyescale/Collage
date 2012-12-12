@@ -65,7 +65,7 @@ public:
     uint32_t cmd;
     bool consumed;
 };
-}
+} // detail namespace
 
 ICommand::ICommand()
     : DataIStream( false )

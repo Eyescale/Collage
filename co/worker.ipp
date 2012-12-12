@@ -26,12 +26,20 @@ template< class Q > void WorkerThread< Q >::run()
 {
     while( !stopRunning( ))
     {
-        ICommand command = _commands.pop();
-        LBASSERT( command.isValid( ));
+        ICommands commands = _commands.popAll();
+        LBASSERT( !commands.empty( ));
 
-        if( !command( ))
+        for( ICommandsIter i = commands.begin(); i != commands.end(); ++i )
         {
-            LBABORT( "Error handling " << command );
+            ICommand& command = *i;
+            if( !command( ))
+            {
+                LBABORT( "Error handling " << command );
+            }
+            if( stopRunning( ))
+                return;
+
+            _commands.pump();
         }
 
         while( _commands.isEmpty( ))
@@ -40,7 +48,8 @@ template< class Q > void WorkerThread< Q >::run()
     }
 
     _commands.flush();
-    LBINFO << "Leaving worker thread " << lunchbox::className( this ) << std::endl;
+    LBINFO << "Leaving worker thread " << lunchbox::className( this )
+           << std::endl;
 }
 
 }

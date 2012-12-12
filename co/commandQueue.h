@@ -56,7 +56,18 @@ namespace detail { class CommandQueue; }
          * @version 1.0
          */
         CO_API virtual ICommand pop( const uint32_t timeout =
-                                       LB_TIMEOUT_INDEFINITE );
+                                         LB_TIMEOUT_INDEFINITE );
+
+        /**
+         * Pop all, but at least one command from the queue.
+         *
+         * @param timeout the time in ms to wait for the operation.
+         * @return one or more commands in the queue.
+         * @throw Exception on timeout.
+         * @version 1.0
+         */
+        CO_API virtual ICommands popAll( const uint32_t timeout =
+                                             LB_TIMEOUT_INDEFINITE );
 
         /**
          * Try to pop a command from the queue.
@@ -78,6 +89,9 @@ namespace detail { class CommandQueue; }
 
         /** @return the size of the queue. @version 1.0 */
         CO_API size_t getSize() const;
+
+        /** @internal trigger internal processing (message pump) */
+        virtual void pump() {};
 
         LB_TS_VAR( _thread );
 

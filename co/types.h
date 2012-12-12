@@ -128,6 +128,13 @@ typedef ConnectionDescriptions::iterator         ConnectionDescriptionsIter;
 /** A const iterator for a vector of ConnectionDescriptionPtr's. */
 typedef ConnectionDescriptions::const_iterator   ConnectionDescriptionsCIter;
 
+/** A vector of input commands. */
+typedef std::vector< ICommand >                    ICommands;
+/** A iterator for a vector of input commands. */
+typedef ICommands::iterator                        ICommandsIter;
+/** A const iterator for a vector of input commands. */
+typedef ICommands::const_iterator                  ICommandsCIter;
+
 /** @cond IGNORE */
 class BufferListener;
 class MasterCMCommand;
