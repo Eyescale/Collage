@@ -30,12 +30,12 @@ template< class Q > void WorkerThread< Q >::run()
             if( !notifyIdle( )) // nothing to do
                 break;
 
-        ICommands commands = _commands.popAll();
+        const ICommands& commands = _commands.popAll();
         LBASSERT( !commands.empty( ));
 
-        for( ICommandsIter i = commands.begin(); i != commands.end(); ++i )
+        for( ICommandsCIter i = commands.begin(); i != commands.end(); ++i )
         {
-            ICommand& command = *i;
+            ICommand& command = const_cast< ICommand& >( *i );
             if( !command( ))
             {
                 LBABORT( "Error handling " << command );
