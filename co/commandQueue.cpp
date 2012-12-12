@@ -88,8 +88,7 @@ ICommand CommandQueue::pop( const uint32_t timeout )
 
 ICommands CommandQueue::popAll( const uint32_t timeout )
 {
-    const ICommands& result = _impl->commands.timedPop( timeout, 1,
-                                         std::numeric_limits< size_t >::max( ));
+    const ICommands& result = _impl->commands.timedPop( timeout );
 
     if( result.empty( ))
         throw Exception( Exception::TIMEOUT_COMMANDQUEUE );
