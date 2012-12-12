@@ -52,7 +52,7 @@ template< class T > inline std::string to_string( const T &t )
     std::stringstream ss; ss << t; return ss.str( );
 }
 
-static bool _parseAddress( ConnectionDescriptionPtr description,
+static bool _parseAddress( ConstConnectionDescriptionPtr description,
     struct sockaddr &address, const bool passive )
 {
     bool ok = false;
