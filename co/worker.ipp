@@ -26,6 +26,10 @@ template< class Q > void WorkerThread< Q >::run()
 {
     while( !stopRunning( ))
     {
+        while( _commands.isEmpty( ))
+            if( !notifyIdle( )) // nothing to do
+                break;
+
         ICommands commands = _commands.popAll();
         LBASSERT( !commands.empty( ));
 
@@ -37,14 +41,10 @@ template< class Q > void WorkerThread< Q >::run()
                 LBABORT( "Error handling " << command );
             }
             if( stopRunning( ))
-                return;
+                break;
 
             _commands.pump();
         }
-
-        while( _commands.isEmpty( ))
-            if( !notifyIdle( )) // nothing to do
-                break;
     }
 
     _commands.flush();
