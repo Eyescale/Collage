@@ -1,6 +1,11 @@
 # Copyright (c) 2012 Stefan.Eilemann@epfl.ch
 # See doc/GitTargets.md for documentation
 
+# Options:
+#  GITTARGETS_RELEASE_BRANCH current | even_minor | minor
+#      create tags on the current, the next even minor version (e.g. 1.6) or for
+#      each minor version
+
 if(GITTARGETS_FOUND)
   return()
 endif()
@@ -9,11 +14,15 @@ if(NOT GIT_EXECUTABLE)
   return()
 endif()
 
+if(NOT GITTARGETS_RELEASE_BRANCH)
+  set(GITTARGETS_RELEASE_BRANCH "even_minor")
+endif()
+
 find_program(GZIP_EXECUTABLE gzip)
 
 # branch
 math(EXPR _gittargets_ODD_MINOR "${VERSION_MINOR} % 2")
-if(_gittargets_ODD_MINOR)
+if(_gittargets_ODD_MINOR AND ${GITTARGETS_RELEASE_BRANCH} STREQUAL even_minor)
   math(EXPR BRANCH_VERSION "${VERSION_MINOR} + 1")
   set(BRANCH_VERSION ${VERSION_MAJOR}.${BRANCH_VERSION})
 else()
@@ -37,22 +46,28 @@ add_custom_target(cut
 
 # tag on branch
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gitbranchandtag.cmake
-  "# Create branch:
-   execute_process(COMMAND ${GIT_EXECUTABLE} branch ${BRANCH_VERSION}
-     RESULT_VARIABLE hadbranch ERROR_VARIABLE error
-     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-   if(NOT hadbranch)
-     execute_process(COMMAND ${GIT_EXECUTABLE} push origin ${BRANCH_VERSION}
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  "# Branch:
+   if(\"${GITTARGETS_RELEASE_BRANCH}\" STREQUAL current)
+     set(TAG_BRANCH)
+   else()
+     execute_process(COMMAND ${GIT_EXECUTABLE} branch ${BRANCH_VERSION}
+       RESULT_VARIABLE hadbranch ERROR_VARIABLE error
+       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+     if(NOT hadbranch)
+       execute_process(COMMAND ${GIT_EXECUTABLE} push origin ${BRANCH_VERSION}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+     endif()
+     set(TAG_BRANCH ${BRANCH_VERSION})
    endif()
+
    # Create or move tag
    execute_process(
-     COMMAND ${GIT_EXECUTABLE} tag -f release-${VERSION} ${BRANCH_VERSION}
+     COMMAND ${GIT_EXECUTABLE} tag -f release-${VERSION} ${TAG_BRANCH}
      COMMAND ${GIT_EXECUTABLE} push --tags
      RESULT_VARIABLE notdone WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
    if(notdone)
      message(FATAL_ERROR
-        \"Error creating tag release-${VERSION} on branch ${BRANCH_VERSION}\")
+        \"Error creating tag release-${VERSION} on branch ${TAG_BRANCH}\")
    endif()")
 
 add_custom_target(tag
@@ -70,28 +85,25 @@ add_custom_target(erase
   )
 
 # tarball
-set(TARBALL_RELATIVE "${CMAKE_PROJECT_NAME}-${VERSION}.tar")
-set(TARBALL_ABSOLUTE "${CMAKE_BINARY_DIR}/${TARBALL_RELATIVE}")
+set(TARBALL "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${VERSION}.tar")
 
 add_custom_target(tarball-create
   COMMAND ${GIT_EXECUTABLE} archive --worktree-attributes
-    --prefix ${CMAKE_PROJECT_NAME}-${VERSION}/ -o ${TARBALL_ABSOLUTE}
+    --prefix ${CMAKE_PROJECT_NAME}-${VERSION}/ -o ${TARBALL}
     release-${VERSION}
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-  COMMENT "Creating ${TARBALL_ABSOLUTE}"
+  COMMENT "Creating ${TARBALL}"
   )
 
 if(GZIP_EXECUTABLE)
   add_custom_target(tarball
-    COMMAND ${CMAKE_COMMAND} -E remove ${TARBALL_RELATIVE}.gz
-    COMMAND ${GZIP_EXECUTABLE} ${TARBALL_RELATIVE}
+    COMMAND ${CMAKE_COMMAND} -E remove ${TARBALL}.gz
+    COMMAND ${GZIP_EXECUTABLE} ${TARBALL}
     DEPENDS tarball-create
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-    COMMENT
-      "Compressing ${TARBALL_ABSOLUTE}.gz"
+    COMMENT "Compressing ${TARBALL}.gz"
   )
-  set(TARBALL_RELATIVE "${TARBALL_RELATIVE}.gz")
-  set(TARBALL_ABSOLUTE "${TARBALL_ABSOLUTE}.gz")
+  set(TARBALL_GZ "${TARBALL}.gz")
 else()
   add_custom_target(tarball DEPENDS tarball-create)
 endif()
