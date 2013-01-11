@@ -16,8 +16,10 @@ set(VERSION_PATCH "0")
 
 include(Common)
 include(GitTargets)
-include(FindPackages)
 include(UpdateFile)
+
+include(FindPackages)
+set(COLLAGE_TRANSIENT_LIBRARIES Lunchbox)
 
 set(FEATURES)
 include_directories(BEFORE ${CMAKE_SOURCE_DIR})
@@ -75,11 +77,6 @@ if(PYTHON_EXECUTABLE)
   add_custom_target(README.rst ALL DEPENDS ${CMAKE_SOURCE_DIR}/README.rst)
 endif()
 
-install(FILES CMake/FindCollage.cmake
-  DESTINATION ${CMAKE_MODULE_INSTALL_PATH} COMPONENT dev)
-install(FILES CMake/FindLibraryPackage.cmake
-  DESTINATION ${CMAKE_MODULE_INSTALL_PATH}/FindCollage COMPONENT dev)
-
 if(MSVC)
   message(STATUS "Configured with${FEATURES}")
 else()
@@ -93,3 +90,5 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION ${CTEST_CUSTOM_WARNING_EXCEPTION}
   # http://public.kitware.com/Bug/view.php?id=10179
   "ld: warning: duplicate dylib")
 include(CTest)
+
+include(PackageConfig)
