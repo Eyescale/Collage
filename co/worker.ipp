@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -35,6 +35,7 @@ template< class Q > void WorkerThread< Q >::run()
 
         for( ICommandsCIter i = commands.begin(); i != commands.end(); ++i )
         {
+            // We want to avoid a non-const copy of commands, hence the cast...
             ICommand& command = const_cast< ICommand& >( *i );
             if( !command( ))
             {

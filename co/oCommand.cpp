@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2013, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -72,7 +73,7 @@ OCommand::~OCommand()
     {
         LBASSERT( _impl->size > 0 );
         const uint64_t size = _impl->size + getBuffer().getSize();
-        const size_t minSize = Buffer::getMinSize();
+        const size_t minSize = COMMAND_MINSIZE;
         const Connections& connections = getConnections();
         if( size < minSize ) // Fill send to minimal size
         {
@@ -157,13 +158,13 @@ void OCommand::sendData( const void* buffer, const uint64_t size,
     LBASSERTINFO( size >= 16, size );
     LBASSERT( getBuffer().getData() == buffer );
     LBASSERT( getBuffer().getSize() == size );
-    LBASSERT( getBuffer().getMaxSize() >= Buffer::getMinSize( ));
+    LBASSERT( getBuffer().getMaxSize() >= COMMAND_MINSIZE );
 
     // Update size field
     uint8_t* bytes = getBuffer().getData();
     reinterpret_cast< uint64_t* >( bytes )[ 0 ] = _impl->size + size;
-    const uint64_t sendSize = _impl->isLocked ?
-        size : LB_MAX( size, Buffer::getMinSize( ));
+    const uint64_t sendSize = _impl->isLocked ? size : LB_MAX( size,
+                                                               COMMAND_MINSIZE);
 
     const Connections& connections = getConnections();
     for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )

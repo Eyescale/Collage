@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -212,7 +212,7 @@ void BufferCache::flush()
 BufferPtr BufferCache::alloc( const uint64_t size )
 {
     LB_TS_SCOPED( _thread );
-    LBASSERTINFO( size >= Buffer::getCacheSize(), size );
+    LBASSERTINFO( size >= COMMAND_ALLOCSIZE, size );
     LBASSERTINFO( size < LB_BIT48,
                   "Out-of-sync network stream: buffer size " << size << "?" );
 

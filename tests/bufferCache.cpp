@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -87,7 +87,7 @@ int main( int argc, char **argv )
 
         co::BufferCache cache( 100 );
         const uint64_t size = co::OCommand::getSize();
-        const uint64_t allocSize = co::Buffer::getCacheSize();
+        const uint64_t allocSize = co::COMMAND_ALLOCSIZE;
         size_t nOps = 0;
 
         lunchbox::Clock clock;

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -38,6 +38,12 @@ namespace co
         CMD_OBJECT_CUSTOM = 10, //!< Commands for Object subclasses start here
         CMD_INVALID = 0xFFFFFFFFu //!< @internal
     };
+
+    /** Minimal packet size sent by DataOStream and read by LocalNode */
+    static const size_t COMMAND_MINSIZE = 256;
+
+    /** Minimal allocation size of a packet. */
+    static const size_t COMMAND_ALLOCSIZE = 4096; // Bigger than minSize!
 }
 
 namespace lunchbox

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2012-2013, Stefan Eilemann <eile@eyescale.ch>
  *               2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -118,7 +118,7 @@ int main( int argc, char **argv )
     co::LocalNodePtr node = new co::LocalNode;
 
     const uint64_t size = co::OCommand::getSize();
-    co::BufferPtr buffer = cache.alloc( co::Buffer::getCacheSize( ));
+    co::BufferPtr buffer = cache.alloc( co::COMMAND_ALLOCSIZE );
     buffer->resize( size );
     reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
 
