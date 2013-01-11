@@ -1,5 +1,5 @@
 
-/* Copyright (c)  2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c)  2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                     2010, Cedric Stalder <cedric.stalder@gmail.com>
  *                     2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -433,18 +433,18 @@ void LocalNode::removeListeners( const Connections& connections )
     std::vector< uint32_t > requests;
     for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )
     {
-        co::ConnectionPtr connection = *i;
+        ConnectionPtr connection = *i;
         requests.push_back( _removeListenerNB( connection ));
     }
 
     for( size_t i = 0; i < connections.size(); ++i )
     {
-        co::ConnectionPtr connection = connections[i];
+        ConnectionPtr connection = connections[i];
         waitRequest( requests[ i ] );
         connection->close();
         // connection and connections hold a reference
         LBASSERTINFO( connection->getRefCount()==2 ||
-             connection->getDescription()->type >= co::CONNECTIONTYPE_MULTICAST,
+             connection->getDescription()->type >= CONNECTIONTYPE_MULTICAST,
                       connection->getRefCount() << ": " << *connection );
     }
 }
@@ -469,8 +469,8 @@ uint32_t LocalNode::_removeListenerNB( ConnectionPtr connection )
 void LocalNode::_addConnection( ConnectionPtr connection )
 {
     _impl->incoming.addConnection( connection );
-    BufferPtr buffer = _impl->smallBuffers.alloc( Buffer::getCacheSize( ));
-    connection->recvNB( buffer, Buffer::getMinSize( ));
+    BufferPtr buffer = _impl->smallBuffers.alloc( COMMAND_ALLOCSIZE );
+    connection->recvNB( buffer, COMMAND_MINSIZE );
 }
 
 void LocalNode::_removeConnection( ConnectionPtr connection )
@@ -613,7 +613,7 @@ void LocalNode::ping( NodePtr peer )
 bool LocalNode::pingIdleNodes()
 {
     LBASSERT( !_impl->inReceiverThread( ) );
-    const int64_t timeout = co::Global::getKeepaliveTimeout();
+    const int64_t timeout = Global::getKeepaliveTimeout();
     Nodes nodes;
     getNodes( nodes, false );
 
@@ -1248,8 +1248,8 @@ bool LocalNode::_handleData()
     LBASSERT( gotCommand );
 
     // start next receive
-    BufferPtr nextBuffer = _impl->smallBuffers.alloc( Buffer::getCacheSize( ));
-    connection->recvNB( nextBuffer, Buffer::getMinSize( ));
+    BufferPtr nextBuffer = _impl->smallBuffers.alloc( COMMAND_ALLOCSIZE );
+    connection->recvNB( nextBuffer, COMMAND_MINSIZE );
 
     if( gotCommand )
     {
@@ -1265,7 +1265,7 @@ BufferPtr LocalNode::_readHead( ConnectionPtr connection )
 {
     BufferPtr buffer;
     const bool gotSize = connection->recvSync( buffer, false );
-    const size_t minSize = Buffer::getMinSize();
+    const size_t minSize = COMMAND_MINSIZE;
 
     if( !buffer ) // fluke signal
     {
@@ -1346,7 +1346,7 @@ bool LocalNode::_readTail( ICommand& command, BufferPtr buffer,
 
     if( needed > buffer->getMaxSize( ))
     {
-        LBASSERT( needed > co::Buffer::getCacheSize( ));
+        LBASSERT( needed > COMMAND_ALLOCSIZE );
         // not enough space for remaining data, alloc and copy to new buffer
         BufferPtr newBuffer = _impl->bigBuffers.alloc( needed );
         newBuffer->replace( *buffer );
@@ -1364,9 +1364,9 @@ bool LocalNode::_readTail( ICommand& command, BufferPtr buffer,
 BufferPtr LocalNode::allocBuffer( const uint64_t size )
 {
     LBASSERT( _impl->receiverThread->isStopped() || _impl->inReceiverThread( ));
-    BufferPtr buffer = size > co::Buffer::getCacheSize() ?
+    BufferPtr buffer = size > COMMAND_ALLOCSIZE ?
         _impl->bigBuffers.alloc( size ) :
-        _impl->smallBuffers.alloc( Buffer::getCacheSize( ));
+        _impl->smallBuffers.alloc( COMMAND_ALLOCSIZE );
     return buffer;
 }
 

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -153,8 +153,8 @@ int main( int argc, char **argv )
     ::DataIStream stream;
     co::BufferCache bufferCache( 200 );
     bool receiving = true;
-    const size_t minSize = co::Buffer::getMinSize();
-    const size_t cacheSize = co::Buffer::getCacheSize();
+    const size_t minSize = co::COMMAND_MINSIZE;
+    const size_t cacheSize = co::COMMAND_ALLOCSIZE;
 
     while( receiving )
     {

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -21,13 +21,13 @@
 
 #include "buffer.h"
 #include "connectionDescription.h"
+#include "commands.h"
 #include "connections.h"
 #include "cpuCompressor.h"
 #include "global.h"
 #include "log.h"
 #include "node.h"
 #include "types.h"
-
 
 namespace co
 {
@@ -228,9 +228,9 @@ void DataOStream::_enable()
     _impl->enabled     = true;
     _impl->buffer.setSize( 0 );
 #ifdef CO_AGGRESSIVE_CACHING
-    _impl->buffer.reserve( Buffer::getCacheSize( ));
+    _impl->buffer.reserve( COMMAND_ALLOCSIZE );
 #else
-    _impl->buffer.reserve( Buffer::getMinSize( ));
+    _impl->buffer.reserve( COMMAND_MINSIZE );
 #endif
 }
 

@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2013, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -68,7 +69,7 @@ public:
      * Allow external send of data along with this command.
      *
      * Locks all connections, which will be unlocked in the dtor after
-     * potentially send padding to fill up the send to Buffer::getMinSize().
+     * potentially send padding to fill up the send to COMMAND_MINSIZE.
      *
      * @param additionalSize size in bytes of additional data after header.
      */
