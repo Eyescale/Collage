@@ -1,16 +1,16 @@
 
-/* Copyright (c) 2009-2010, Cedric Stalder <cedric.stalder@gmail.com> 
+/* Copyright (c) 2009-2010, Cedric Stalder <cedric.stalder@gmail.com>
  *               2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -79,9 +79,11 @@ void Compressor::registerEngine( const Compressor::Functions& functions )
 
 size_t EqCompressorGetNumCompressors()
 {
+    if( !co::plugin::_functions )
+        co::plugin::_functions = new co::plugin::Compressors;
     return co::plugin::_functions->size();
 }
-           
+
 void EqCompressorGetInfo( const size_t n, EqCompressorInfo* const info )
 {
     assert( co::plugin::_functions->size() > n );
@@ -90,9 +92,9 @@ void EqCompressorGetInfo( const size_t n, EqCompressorInfo* const info )
 
 void* EqCompressorNewCompressor( const unsigned name )
 {
-    const co::plugin::Compressor::Functions& functions = 
+    const co::plugin::Compressor::Functions& functions =
         co::plugin::_findFunctions( name );
-    
+
     return functions.newCompressor( name );
 }
 
@@ -101,15 +103,15 @@ void EqCompressorDeleteCompressor( void* const compressor )
     delete reinterpret_cast< co::plugin::Compressor* >( compressor );
 }
 
-void* EqCompressorNewDecompressor( const unsigned name ) 
+void* EqCompressorNewDecompressor( const unsigned name )
 {
-    const co::plugin::Compressor::Functions& functions = 
+    const co::plugin::Compressor::Functions& functions =
         co::plugin::_findFunctions( name );
-    
+
     return functions.newDecompressor( name );
 }
 
-void EqCompressorDeleteDecompressor( void* const decompressor ) 
+void EqCompressorDeleteDecompressor( void* const decompressor )
 {
     delete reinterpret_cast< co::plugin::Compressor* >( decompressor );
 }
@@ -123,7 +125,7 @@ void EqCompressorCompress( void* const ptr, const unsigned name,
     const eq_uint64_t nPixels = (flags & EQ_COMPRESSOR_DATA_1D) ?
                                   inDims[1]: inDims[1] * inDims[3];
 
-    co::plugin::Compressor* compressor = 
+    co::plugin::Compressor* compressor =
         reinterpret_cast< co::plugin::Compressor* >( ptr );
     compressor->compress( in, nPixels, useAlpha );
 }
@@ -132,20 +134,20 @@ unsigned EqCompressorGetNumResults( void* const ptr,
                                     const unsigned name )
 {
     assert( ptr );
-    co::plugin::Compressor* compressor = 
+    co::plugin::Compressor* compressor =
         reinterpret_cast< co::plugin::Compressor* >( ptr );
     return compressor->getNResults();
 }
 
 void EqCompressorGetResult( void* const ptr, const unsigned name,
-                            const unsigned i, void** const out, 
+                            const unsigned i, void** const out,
                             eq_uint64_t* const outSize )
 {
     assert( ptr );
-    co::plugin::Compressor* compressor = 
+    co::plugin::Compressor* compressor =
         reinterpret_cast< co::plugin::Compressor* >( ptr );
     co::plugin::Compressor::Result* result = compressor->getResults()[ i ];
-    
+
     *out = result->getData();
     *outSize = result->getSize();
     assert( result->getMaxSize() >= result->getSize( ));
@@ -165,7 +167,7 @@ void EqCompressorDecompress( void* const decompressor, const unsigned name,
     const eq_uint64_t nPixels = ( flags & EQ_COMPRESSOR_DATA_1D) ?
                            outDims[1] : outDims[1] * outDims[3];
 
-    const co::plugin::Compressor::Functions& functions = 
+    const co::plugin::Compressor::Functions& functions =
         co::plugin::_findFunctions( name );
     functions.decompress( in, inSizes, nInputs, out, nPixels, useAlpha );
 }
@@ -173,9 +175,9 @@ void EqCompressorDecompress( void* const decompressor, const unsigned name,
 bool EqCompressorIsCompatible( const unsigned     name,
                                const GLEWContext* glewContext )
 {
-    const co::plugin::Compressor::Functions& functions = 
+    const co::plugin::Compressor::Functions& functions =
         co::plugin::_findFunctions( name );
-    
+
     if ( functions.isCompatible == 0 )
     {
         assert( false );
@@ -195,7 +197,7 @@ void EqCompressorDownload( void* const        ptr,
                            void**             out )
 {
     assert( ptr );
-    co::plugin::Compressor* compressor = 
+    co::plugin::Compressor* compressor =
         reinterpret_cast< co::plugin::Compressor* >( ptr );
     compressor->download( glewContext, inDims, source, flags, outDims, out );
 }
@@ -203,15 +205,15 @@ void EqCompressorDownload( void* const        ptr,
 
 void EqCompressorUpload( void* const        ptr,
                          const unsigned     name,
-                         const GLEWContext* glewContext, 
+                         const GLEWContext* glewContext,
                          const void*        buffer,
                          const eq_uint64_t  inDims[4],
                          const eq_uint64_t  flags,
-                         const eq_uint64_t  outDims[4],  
+                         const eq_uint64_t  outDims[4],
                          const unsigned     destination )
 {
     assert( ptr );
-    co::plugin::Compressor* compressor = 
+    co::plugin::Compressor* compressor =
         reinterpret_cast< co::plugin::Compressor* >( ptr );
     compressor->upload( glewContext, buffer, inDims, flags, outDims,
                         destination );
