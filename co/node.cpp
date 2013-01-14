@@ -164,6 +164,7 @@ ConnectionPtr Node::useMulticast()
 
 void Node::addConnectionDescription( ConnectionDescriptionPtr cd )
 {
+    LBASSERTINFO( isClosed(), *this );
     if( cd->type >= CONNECTIONTYPE_MULTICAST && cd->port == 0 )
         cd->port = EQ_DEFAULT_PORT;
 
@@ -173,6 +174,8 @@ void Node::addConnectionDescription( ConnectionDescriptionPtr cd )
 
 bool Node::removeConnectionDescription( ConnectionDescriptionPtr cd )
 {
+    LBASSERTINFO( isClosed(), *this );
+
     lunchbox::ScopedFastWrite mutex( _impl->connectionDescriptions );
 
     // Don't use std::find, RefPtr::operator== compares pointers, not values.
