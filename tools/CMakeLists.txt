@@ -1,11 +1,11 @@
 # Copyright (c) 2010 Daniel Pfeifer <daniel@pfeifer-mail.de>
 
-include(ParseArguments)
+include(CMakeParseArguments)
 include(PurpleInstallPDB)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tclap/include)
 
 macro(CO_ADD_TOOL NAME)
-  parse_arguments(THIS "SOURCES" "" ${ARGN})
+  cmake_parse_arguments(THIS "" "" "SOURCES" ${ARGN})
   set(THIS_TARGET ${NAME})
   source_group(\\ FILES ${THIS_SOURCES})
   add_executable(${THIS_TARGET} ${THIS_SOURCES})

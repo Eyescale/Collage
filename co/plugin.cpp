@@ -85,7 +85,7 @@ bool Plugin::init( const std::string& libraryName )
     if( !foundBase || ( !foundCPU && !foundGPU ))
     {
         LBWARN << "Initializing compression DSO " << libraryName
-           << " failed, at least one entry point missing" << std::endl;
+               << " failed, at least one entry point missing" << std::endl;
         return false;
     }
 
@@ -93,7 +93,7 @@ bool Plugin::init( const std::string& libraryName )
     if( nCompressors == 0 )
     {
         LBWARN << "Initializing compression DSO " << libraryName
-           << " failed, 0 compression engines reported" << std::endl;
+               << " failed, 0 compression engines reported" << std::endl;
         return false;
     }
 
@@ -161,6 +161,8 @@ bool Plugin::init( const std::string& libraryName )
 
     }
 
+    LBINFO << "Loaded " << nCompressors << " plugins from " << libraryName
+           << std::endl;
     return true;
 }
 
