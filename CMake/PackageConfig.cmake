@@ -43,16 +43,6 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake.in
   "  set_and_check(${UPPER_PROJECT_NAME}_INCLUDE_DIRS "@PACKAGE_INCLUDE_INSTALL_DIR@")\n"
   "  set(${UPPER_PROJECT_NAME}_DEB_DEPENDENCIES \"${LOWER_PROJECT_NAME}${VERSION_ABI} (>= ${VERSION_MAJOR}.${VERSION_MINOR})\")\n"
   "\n"
-# find the core library
-  "  find_library(${UPPER_PROJECT_NAME}_LIBRARY ${CMAKE_PROJECT_NAME} NO_DEFAULT_PATH\n"
-  "        PATHS \${PACKAGE_PREFIX_DIR} PATH_SUFFIXES lib ${PYTHON_LIBRARY_PREFIX})\n"
-  "  if(${UPPER_PROJECT_NAME}_LIBRARY MATCHES "${UPPER_PROJECT_NAME}_LIBRARY-NOTFOUND")\n"
-  "    set(_fail TRUE)\n"
-  "    if(_out)\n"
-  "      message(\${_output_type} \"   Missing the ${CMAKE_PROJECT_NAME} \"\n"
-  "        \"library in \${PACKAGE_PREFIX_DIR}/lib.\")\n"
-  "    endif()\n"
-  "  endif()\n"
 # find components if specified
   "  if(${CMAKE_PROJECT_NAME}_FIND_COMPONENTS)\n"
   "    list(APPEND ${UPPER_PROJECT_NAME}_LIBRARIES \${${UPPER_PROJECT_NAME}_LIBRARY})\n"
@@ -79,9 +69,18 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake.in
 # if no component was specified, find all produced libraries
   "    set(${UPPER_PROJECT_NAME}_LIBRARY_NAMES "@LIBRARY_NAMES@")\n"
   "    foreach(_libraryname \${${UPPER_PROJECT_NAME}_LIBRARY_NAMES})\n"
-  "      find_library(\${_libraryname}_LIBRARY \${_libraryname} NO_DEFAULT_PATH\n"
+  "      string(TOUPPER \${_libraryname} _librarynameUC)\n"
+  "      find_library(\${_librarynameUC}_LIBRARY \${_libraryname} NO_DEFAULT_PATH\n"
   "                   PATHS \${PACKAGE_PREFIX_DIR} PATH_SUFFIXES lib ${PYTHON_LIBRARY_PREFIX})\n"
-  "      list(APPEND ${UPPER_PROJECT_NAME}_LIBRARIES \${\${_libraryname}_LIBRARY})\n"
+  "      if(${UPPER_PROJECT_NAME}_LIBRARY MATCHES "${UPPER_PROJECT_NAME}_LIBRARY-NOTFOUND")\n"
+  "        set(_fail TRUE)\n"
+  "        if(_out)\n"
+  "          message(\${_output_type} \"   Missing the ${CMAKE_PROJECT_NAME} \"\n"
+  "            \"library in \${PACKAGE_PREFIX_DIR}/lib.\")\n"
+  "        endif()\n"
+  "      else()\n"
+  "        list(APPEND ${UPPER_PROJECT_NAME}_LIBRARIES \${\${_librarynameUC}_LIBRARY})\n"
+  "      endif()\n"
   "    endforeach()\n"
   "  endif()\n"
   "\n"
@@ -155,11 +154,15 @@ endforeach()
 string(REGEX REPLACE ";" " " TRANSIENTS ${TRANSIENTS})
 
 # create ProjectConfig.cmake
+if(LIBRARY_NAMES)
+  set(HAS_LIBRARY_NAMES LIBRARY_NAMES)
+endif()
+
 configure_package_config_file(
   ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake
   INSTALL_DESTINATION ${CMAKE_MODULE_INSTALL_PATH}
-  PATH_VARS INCLUDE_INSTALL_DIR LIBRARY_NAMES TRANSIENTS
+  PATH_VARS INCLUDE_INSTALL_DIR ${HAS_LIBRARY_NAMES} TRANSIENTS
   NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
 # create ProjectConfigVersion.cmake
