@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2009-2013, Stefan Eilemann <eile@equalizergraphics.com> 
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -39,7 +39,7 @@ namespace co
      * A helper struct bundling an object identifier and version.
      *
      * The struct either contains the object's identifier and version (if it is
-     * registered or mapped), UUID::ZERO and VERSION_NONE if it is
+     * registered or mapped), 0 and VERSION_NONE if it is
      * unmapped or if no object was given.
      */
     struct ObjectVersion

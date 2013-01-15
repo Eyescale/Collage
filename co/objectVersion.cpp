@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2009-2011, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2009-2013, Stefan Eilemann <eile@equalizergraphics.com> 
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -32,7 +32,7 @@ const uint128_t VERSION_HEAD( 0, 0xffffffffffffffffull );
 ObjectVersion ObjectVersion::NONE;
 
 ObjectVersion::ObjectVersion()
-        : identifier( UUID::ZERO ), version( VERSION_NONE )
+        : version( VERSION_NONE )
 {}
 
 ObjectVersion::ObjectVersion( const UUID& id_, const uint128_t& version_ )
@@ -40,7 +40,7 @@ ObjectVersion::ObjectVersion( const UUID& id_, const uint128_t& version_ )
 {}
 
 ObjectVersion::ObjectVersion( const Object* object )
-        : identifier( UUID::ZERO ), version( VERSION_NONE )
+        : version( VERSION_NONE )
 {
     if( object && object->isAttached( ))
     {
@@ -58,7 +58,7 @@ ObjectVersion& ObjectVersion::operator = ( const Object* object )
     }
     else
     {
-        identifier = UUID::ZERO;
+        identifier = 0;
         version = VERSION_NONE;
     }
 

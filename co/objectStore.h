@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -202,7 +202,7 @@ namespace co
          * Returns the master node id for an identifier.
          *
          * @param id the identifier.
-         * @return the master node, or UUID::ZERO if no master node is
+         * @return the master node, or 0 if no master node is
          *         found for the identifier.
          */
         NodeID _findMasterNodeID( const UUID& id );

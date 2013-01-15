@@ -1,16 +1,16 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@googlemail.com>
- *               2012, Stefan Eilemann <eile@eyescale.ch>
+ *               2012-2013, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -180,7 +180,7 @@ void ObjectMap::deserialize( DataIStream& is, const uint64_t dirtyBits )
     if( dirtyBits == DIRTY_ALL )
     {
         LBASSERT( _impl->map.empty( ));
-        
+
         ObjectVersion ov;
         is >> ov;
         while( ov != ObjectVersion::NONE )
@@ -250,7 +250,7 @@ bool ObjectMap::register_( Object* object, const uint32_t type )
 
 Object* ObjectMap::get( const uint128_t& identifier, Object* instance )
 {
-    if( identifier == uint128_t::ZERO )
+    if( identifier == 0 )
         return 0;
 
     lunchbox::ScopedFastWrite mutex( _impl->mutex );

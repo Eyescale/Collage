@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -193,10 +193,10 @@ NodeID ObjectStore::_findMasterNodeID( const UUID& identifier )
                              << " req " << requestID << std::endl;
         node->send( CMD_NODE_FIND_MASTER_NODE_ID ) << identifier << requestID;
 
-        NodeID masterNodeID = UUID::ZERO;
+        NodeID masterNodeID;
         _localNode->waitRequest( requestID, masterNodeID );
 
-        if( masterNodeID != UUID::ZERO )
+        if( masterNodeID != 0 )
         {
             LBLOG( LOG_OBJECTS ) << "Found " << identifier << " on "
                                  << masterNodeID << std::endl;
@@ -204,7 +204,7 @@ NodeID ObjectStore::_findMasterNodeID( const UUID& identifier )
         }
     }
 
-    return UUID::ZERO;
+    return NodeID();
 }
 
 //---------------------------------------------------------------------------
@@ -534,7 +534,7 @@ void ObjectStore::deregisterObject( Object* object )
 NodePtr ObjectStore::_connectMaster( const UUID& id )
 {
     const NodeID masterNodeID = _findMasterNodeID( id );
-    if( masterNodeID == UUID::ZERO )
+    if( masterNodeID == 0 )
     {
         LBWARN << "Can't find master node for object id " << id <<std::endl;
         return 0;
@@ -657,7 +657,7 @@ bool ObjectStore::_cmdFindMasterNodeID( ICommand& command )
                     if( master.isValid( ))
                         masterNodeID = master->getNodeID();
                 }
-                if( masterNodeID != UUID::ZERO )
+                if( masterNodeID != 0 )
                     break;
             }
         }
@@ -1002,7 +1002,7 @@ bool ObjectStore::_cmdInstance( ICommand& inCommand )
     switch( cmd )
     {
       case CMD_NODE_OBJECT_INSTANCE:
-        LBASSERT( nodeID == NodeID::ZERO );
+        LBASSERT( nodeID == 0 );
         LBASSERT( command.getInstanceID() == EQ_INSTANCE_NONE );
         return true;
 
@@ -1014,12 +1014,12 @@ bool ObjectStore::_cmdInstance( ICommand& inCommand )
         return dispatchObjectCommand( command );
 
       case CMD_NODE_OBJECT_INSTANCE_COMMIT:
-        LBASSERT( nodeID == NodeID::ZERO );
+        LBASSERT( nodeID == 0 );
         LBASSERT( command.getInstanceID() == EQ_INSTANCE_NONE );
         return dispatchObjectCommand( command );
 
       case CMD_NODE_OBJECT_INSTANCE_PUSH:
-        LBASSERT( nodeID == NodeID::ZERO );
+        LBASSERT( nodeID == 0 );
         LBASSERT( command.getInstanceID() == EQ_INSTANCE_NONE );
         _pushData.addDataCommand( command.getObjectID(), command );
         return true;

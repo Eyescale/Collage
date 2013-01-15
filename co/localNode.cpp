@@ -795,7 +795,7 @@ enum ConnectResult
 
 NodePtr LocalNode::connect( const NodeID& nodeID )
 {
-    LBASSERT( nodeID != NodeID::ZERO );
+    LBASSERT( nodeID != 0 );
     LBASSERT( isListening( ));
 
     // Make sure that only one connection request based on the node identifier
@@ -846,7 +846,7 @@ NodePtr LocalNode::connect( const NodeID& nodeID )
 
 NodePtr LocalNode::_connect( const NodeID& nodeID, NodePtr peer )
 {
-    LBASSERT( nodeID != NodeID::ZERO );
+    LBASSERT( nodeID != 0 );
 
     NodePtr node;
     {
@@ -1040,7 +1040,7 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
     if( !connected )
         return CONNECT_TRY_AGAIN;
 
-    LBASSERT( node->getNodeID() != NodeID::ZERO );
+    LBASSERT( node->getNodeID() != 0 );
     LBASSERTINFO( node->getNodeID() != getNodeID(), getNodeID() );
     LBINFO << node << " connected to " << *(Node*)this << std::endl;
     return CONNECT_OK;
@@ -1569,7 +1569,7 @@ bool LocalNode::_cmdConnect( ICommand& command )
 
             // refuse connection
             OCommand( Connections( 1, connection ), cmd )
-                << NodeID::ZERO << requestID;
+                << 0 << requestID;
 
             // NOTE: There is no close() here. The reply command above has to be
             // received by the peer first, before closing the connection.
@@ -1618,7 +1618,7 @@ bool LocalNode::_cmdConnectReply( ICommand& command )
     const uint32_t requestID = command.get< uint32_t >();
 
     // connection refused
-    if( nodeID == NodeID::ZERO )
+    if( nodeID == 0 )
     {
         LBINFO << "Connection refused, node already connected by peer"
                << std::endl;

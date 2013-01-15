@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder  <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -41,7 +41,7 @@ ObjectInstanceDataOStream::~ObjectInstanceDataOStream()
 void ObjectInstanceDataOStream::reset()
 {
     ObjectDataOStream::reset();
-    _nodeID = NodeID::ZERO;
+    _nodeID = 0;
     _instanceID = EQ_INSTANCE_NONE;
     _command = 0;
 }
@@ -50,7 +50,7 @@ void ObjectInstanceDataOStream::enableCommit( const uint128_t& version,
                                               const Nodes& receivers )
 {
     _command = CMD_NODE_OBJECT_INSTANCE_COMMIT;
-    _nodeID = NodeID::ZERO;
+    _nodeID = 0;
     _instanceID = EQ_INSTANCE_NONE;
     ObjectDataOStream::enableCommit( version, receivers );
 }
@@ -59,7 +59,7 @@ void ObjectInstanceDataOStream::enablePush( const uint128_t& version,
                                             const Nodes& receivers )
 {
     _command = CMD_NODE_OBJECT_INSTANCE_PUSH;
-    _nodeID = NodeID::ZERO;
+    _nodeID = 0;
     _instanceID = EQ_INSTANCE_NONE;
     ObjectDataOStream::enableCommit( version, receivers );
 }
@@ -70,7 +70,7 @@ void ObjectInstanceDataOStream::push( const Nodes& receivers,
                                       const uint128_t& typeID )
 {
     _command = CMD_NODE_OBJECT_INSTANCE_PUSH;
-    _nodeID = NodeID::ZERO;
+    _nodeID = 0;
     _instanceID = EQ_INSTANCE_NONE;
     _setupConnections( receivers );
 
@@ -84,7 +84,7 @@ void ObjectInstanceDataOStream::push( const Nodes& receivers,
 void ObjectInstanceDataOStream::sendInstanceData( const Nodes& receivers )
 {
     _command = CMD_NODE_OBJECT_INSTANCE;
-    _nodeID = NodeID::ZERO;
+    _nodeID = 0;
     _instanceID = EQ_INSTANCE_NONE;
     _setupConnections( receivers );
     _resend();

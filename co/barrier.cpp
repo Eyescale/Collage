@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2011, Cedric Stalder <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -58,10 +58,10 @@ class Barrier
 public:
     Barrier() : height( 0 ) {}
     Barrier( NodePtr m, const uint32_t h )
-            : masterID( m ? m->getNodeID() : NodeID::ZERO )
-            , height( h )
-            , master( m )
-        {}
+        : masterID( m ? m->getNodeID() : NodeID( ))
+        , height( h )
+        , master( m )
+    {}
 
     /** The master barrier node. */
     NodeID   masterID;
@@ -96,7 +96,7 @@ Barrier::~Barrier()
 //---------------------------------------------------------------------------
 void Barrier::getInstanceData( DataOStream& os )
 {
-    LBASSERT( _impl->masterID != NodeID::ZERO );
+    LBASSERT( _impl->masterID != NodeID( ));
     os << _impl->height << _impl->masterID;
     _impl->leaveNotify = 0;
 }
@@ -147,14 +147,14 @@ void Barrier::attach( const UUID& id, const uint32_t instanceID )
     registerCommand( CMD_BARRIER_ENTER_REPLY,
                      CmdFunc( this, &Barrier::_cmdEnterReply ), queue );
 
-    if( _impl->masterID == NodeID::ZERO )
+    if( _impl->masterID == NodeID( ))
         _impl->masterID = node->getNodeID();
 }
 
 void Barrier::enter( const uint32_t timeout )
 {
     LBASSERT( _impl->height > 0 );
-    LBASSERT( _impl->masterID != NodeID::ZERO );
+    LBASSERT( _impl->masterID != NodeID( ));
 
     if( _impl->height == 1 ) // trivial ;)
         return;

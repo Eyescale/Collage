@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
  *                    2011, Carsten Rohn <carsten.rohn@rtt.ag>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -72,7 +72,7 @@ void QueueSlave::applyInstanceData( co::DataIStream& is )
     uint128_t masterNodeID;
     is >> _impl->masterInstanceID >> masterNodeID;
 
-    LBASSERT( masterNodeID != NodeID::ZERO );
+    LBASSERT( masterNodeID != 0 );
     LBASSERT( !_impl->master );
     LocalNodePtr localNode = getLocalNode();
     _impl->master = localNode->connect( masterNodeID );

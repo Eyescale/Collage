@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -159,7 +159,7 @@ void ObjectCM::_sendEmptyVersion( const MasterCMCommand& command,
     ObjectDataOCommand( Connections( 1, connection ), CMD_OBJECT_INSTANCE,
                         COMMANDTYPE_OBJECT, _object->getID(),
                         command.getInstanceID(), version, 0, 0, true, 0 )
-            << NodeID::ZERO << _object->getInstanceID();
+            << NodeID() << _object->getInstanceID();
 }
 
 }

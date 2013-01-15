@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2013, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -165,7 +166,7 @@ namespace co
         {
             const ObjectVersion& version = *i;
 
-            if( version.identifier == UUID::ZERO )
+            if( version.identifier == UUID( ))
             {
                 result.push_back( 0 );
                 continue;
