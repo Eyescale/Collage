@@ -66,4 +66,4 @@ install(TARGETS Collage
 update_file(Collage.pc ${CMAKE_CURRENT_BINARY_DIR}/Collage.pc @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Collage.pc
         DESTINATION ${LIBRARY_DIR}/pkgconfig COMPONENT lib)
-install(FILES ${OPTIONS_CMAKE} DESTINATION share/Collage/CMake COMPONENT dev)
+install(FILES ${OPTIONS_CMAKE} DESTINATION ${CMAKE_MODULE_INSTALL_PATH} COMPONENT dev)
