@@ -414,7 +414,7 @@ void LocalNode::addListener( ConnectionPtr connection )
 {
     LBASSERT( isListening( ));
     LBASSERT( connection->isListening( ));
-    if( !isListening() || connection->isListening( ))
+    if( !isListening() || !connection->isListening( ))
         return;
 
     connection->ref( this ); // unref in self handler
