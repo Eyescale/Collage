@@ -281,7 +281,7 @@ bool Connection::recvSync( BufferPtr& outBuffer, const bool block )
     // callee (Node::handleData) will flag the first read, the underlying
     // SocketConnection will not block and we will restore the AIO operation if
     // no data was present.
-    if( got == READ_TIMEOUT ) 
+    if( got == READ_TIMEOUT )
     {
         _impl->buffer = outBuffer;
         _impl->bytes = bytes;

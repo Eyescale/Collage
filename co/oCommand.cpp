@@ -165,7 +165,6 @@ void OCommand::sendData( const void* buffer, const uint64_t size,
     reinterpret_cast< uint64_t* >( bytes )[ 0 ] = _impl->size + size;
     const uint64_t sendSize = _impl->isLocked ? size : LB_MAX( size,
                                                                COMMAND_MINSIZE);
-
     const Connections& connections = getConnections();
     for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )
     {

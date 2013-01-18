@@ -157,7 +157,6 @@ namespace DataStreamTest { class Sender; }
         /** @internal Send a data buffer (command) to the receivers. */
         virtual void sendData( const void* buffer, const uint64_t size,
                                const bool last ) = 0;
-
         //@}
 
         /** @internal Reset the whole stream. */

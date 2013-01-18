@@ -32,7 +32,7 @@ namespace co
 namespace detail { class Buffer; }
 
 /**
- * A receive buffer from a Connection.
+ * A receive buffer for a Connection.
  *
  * The buffer does not auto-delete, that is, a BufferPtr is not a smart
  * pointer. Instead, the BufferListener interface notifies when a buffer is
