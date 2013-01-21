@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -106,11 +106,10 @@ bool Global::fromString(const std::string& data )
     std::vector< uint32_t > newGlobals;
     newGlobals.reserve(IATTR_ALL);
 
-    size_t startMarker( 1u );
     size_t endMarker( 1u );
     while( true )
     {
-        startMarker = data.find( SEPARATOR, endMarker );
+        const size_t startMarker = data.find( SEPARATOR, endMarker );
         if( startMarker == std::string::npos )
             break;
 
@@ -120,7 +119,7 @@ bool Global::fromString(const std::string& data )
 
         const std::string sub = data.substr( startMarker + 1,
                                              endMarker - startMarker - 1 );
-        if( !sub.empty() && isdigit( sub[0] ))
+        if( !sub.empty() && (isdigit( sub[0] ) || sub[0] == '-') )
             newGlobals.push_back( atoi( sub.c_str( )) );
         else
             break;
@@ -128,7 +127,11 @@ bool Global::fromString(const std::string& data )
 
     // only apply a 'complete' global list
     if( newGlobals.size() != IATTR_ALL )
+    {
+        LBWARN << "Expected " << unsigned( IATTR_ALL ) << " globals, got "
+               << newGlobals.size() << std::endl;
         return false;
+    }
 
     std::copy( newGlobals.begin(), newGlobals.end(), _iAttributes );
     return true;
