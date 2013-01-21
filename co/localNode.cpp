@@ -1903,7 +1903,7 @@ bool LocalNode::_cmdAddListener( ICommand& command )
     std::string data = command.get< std::string >();
 
     ConnectionDescriptionPtr description = new ConnectionDescription( data );
-    command.getNode()->addConnectionDescription( description );
+    command.getNode()->_addConnectionDescription( description );
 
     if( command.getNode() != this )
         return true;
@@ -1929,7 +1929,7 @@ bool LocalNode::_cmdRemoveListener( ICommand& command )
     std::string data = command.get< std::string >();
 
     ConnectionDescriptionPtr description = new ConnectionDescription( data );
-    LBCHECK( command.getNode()->removeConnectionDescription( description ));
+    LBCHECK( command.getNode()->_removeConnectionDescription( description ));
 
     if( command.getNode() != this )
         return true;

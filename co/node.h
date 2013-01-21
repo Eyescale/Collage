@@ -144,6 +144,11 @@ namespace detail { class Node; }
         /** Destructs this node. */
         CO_API virtual ~Node();
 
+        /** @internal */
+        void _addConnectionDescription( ConnectionDescriptionPtr cd );
+        /** @internal */
+        bool _removeConnectionDescription( ConnectionDescriptionPtr cd );
+
     private:
         detail::Node* const _impl;
         CO_API friend std::ostream& operator << ( std::ostream&, const Node& );
