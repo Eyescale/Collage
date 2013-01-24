@@ -36,6 +36,9 @@ if(OFED_FOUND)
   list(APPEND CO_HEADERS rdmaConnection.h)
   list(APPEND CO_SOURCES rdmaConnection.cpp)
   list(APPEND CO_ADD_LINKLIB ${OFED_LIBRARIES})
+  if(WIN32)
+    list(APPEND CO_ADD_LINKLIB DelayImp.lib)
+  endif(WIN32)
 endif()
 
 if(UDT_FOUND)
@@ -62,6 +65,10 @@ install(TARGETS Collage
         ARCHIVE DESTINATION lib COMPONENT dev
         RUNTIME DESTINATION bin COMPONENT lib
         LIBRARY DESTINATION lib COMPONENT lib)
+
+if(OFED_FOUND AND WIN32)
+  set_target_properties(Collage PROPERTIES LINK_FLAGS "/DELAYLOAD:librdmacm.dll /DELAYLOAD:libibverbs.dll")
+endif()
 
 update_file(Collage.pc ${CMAKE_CURRENT_BINARY_DIR}/Collage.pc @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Collage.pc

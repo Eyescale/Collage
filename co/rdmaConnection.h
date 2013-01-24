@@ -23,12 +23,15 @@
 #include <lunchbox/thread.h>
 #include <lunchbox/monitor.h>
 #include <lunchbox/scopedMutex.h>
+#include <lunchbox/spinLock.h>
 
 #include <bitset>
 
 #include <rdma/rdma_cma.h>
 
-#include <netdb.h>
+#ifndef _WIN32
+#  include <netdb.h>
+#endif
 
 namespace co
 {
@@ -91,8 +94,13 @@ public:
 private:
     const int _access;
     size_t _size;
-    void *_map;
+    void* _map;
     struct ibv_mr *_mr;
+#ifdef _WIN32
+    HANDLE _mapping;
+    void* determineViableAddr( size_t size );
+    void  allocAt( size_t size, void* desiredAddr );
+#endif
 }; // RingBuffer
 
 /**
@@ -109,6 +117,8 @@ struct RDMAConnParamData
 struct RDMASetupPayload;
 struct RDMAFCPayload;
 struct RDMAMessage;
+
+class EventConnection;
 
 /**
  * An RDMA connection implementation.
@@ -165,7 +175,7 @@ protected:
     virtual int64_t write   ( const void* buffer, const uint64_t bytes );
 
 public:
-    virtual Notifier getNotifier( ) const { return _notifier; };
+    virtual Notifier getNotifier() const;
 
 protected:
     virtual ~RDMAConnection( );
@@ -213,7 +223,7 @@ private:
     bool _postMessage( const RDMAMessage &message );
     void _recvMessage( const RDMAMessage &message );
     inline void _recvFC( const RDMAFCPayload &fc );
-    bool _postFC( const uint32_t bytes_taken );
+    bool _postFC();
     void _recvSetup( const RDMASetupPayload &setup );
     bool _postSetup( );
 
@@ -229,6 +239,7 @@ private:
     typedef std::bitset<3> eventset;
 
     bool _createNotifier( );
+    void _updateNotifier();
     bool _checkEvents( eventset &events );
 
     /* Connection manager events */
@@ -244,6 +255,12 @@ private:
     bool _createBytesAvailableFD( );
     bool _incrAvailableBytes( const uint64_t b );
     uint64_t _getAvailableBytes( );
+
+#ifdef _WIN32
+    static void _triggerNotifierCQ( RDMAConnection* conn );
+    static void _triggerNotifierCM( RDMAConnection* conn );
+    void _triggerNotifierWorker( Events event );
+#endif
 
 private:
     Notifier _notifier;
@@ -266,8 +283,17 @@ private:
     struct ibv_comp_channel *_cc;
     struct ibv_cq *_cq;
     struct ibv_pd *_pd;
+    struct ibv_wc* _wcs;
 
-    int _event_fd;
+#ifndef _WIN32
+    int _pipe_fd[2];
+#else
+    uint64_t _availBytes;
+    uint32_t _eventFlag;
+    lunchbox::SpinLock _eventLock;
+#endif
+
+    uint64_t _readBytes;
 
     struct RDMAConnParamData _cpd;
     bool _established;
@@ -318,6 +344,11 @@ private:
     inline uint32_t _drain( void *buffer, const uint32_t bytes );
     /* copy bytes in to the source buffer */
     inline uint32_t _fill( const void *buffer, const uint32_t bytes );
+
+#ifdef WIN32
+    HANDLE _ccWaitObj;
+    HANDLE _cmWaitObj;
+#endif
 
 private:
     struct stats
