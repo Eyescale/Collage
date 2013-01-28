@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2005-2009, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -29,11 +29,11 @@ namespace co
 
     /**
      * Initialize the Collage network library.
-     * 
+     *
      * @param argc the command line argument count.
      * @param argv the command line argument values.
-     * @return <code>true</code> if the library was successfully initialised,
-     *         <code>false</code> otherwise.
+     * @return true if the library was successfully initialised, false otherwise
+     * @version 1.0
      */
     inline bool init( const int argc, char** argv )
     {
@@ -48,11 +48,11 @@ namespace co
     /**
      * De-initialize the Collage network library.
      *
-     * @return <code>true</code> if the library was successfully de-initialised,
-     *         <code>false</code> otherwise.
+     * @return true if the library was successfully de-initialised,
+     *         false otherwise.
+     * @version 1.0
      */
     CO_API bool exit();
 }
 
 #endif // CO_INIT_H
-

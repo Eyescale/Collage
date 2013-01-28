@@ -28,14 +28,10 @@ namespace co
     class Global
     {
     public:
-        /**
-         * Sets the default listening port.
-         *
-         * @param port the default port.
-         */
+        /** Set the default listening port. @version 1.0 */
         CO_API static void setDefaultPort( const uint16_t port );
 
-        /** @return the default listening port. */
+        /** @return the default listening port. @version 1.0 */
         CO_API static uint16_t getDefaultPort();
 
         /**
@@ -46,13 +42,17 @@ namespace co
          * nodes. The default is 60.000 bytes.
          *
          * @param size the treshold before the DataOStream sends a buffer.
+         * @version 1.0
          */
         CO_API static void setObjectBufferSize( const uint32_t size );
 
-        /** @return the minimum buffer size for Object serialization. */
+        /**
+         * @return the minimum buffer size for Object serialization.
+         * @version 1.0
+         */
         CO_API static uint32_t getObjectBufferSize();
 
-        /**
+        /** @internal
          * Set the global variables.
          *
          * The data is expected to be a list of unsigned ints in the format
@@ -66,7 +66,7 @@ namespace co
          */
         CO_API static bool fromString( const std::string& data );
 
-        /** Write global variables to data in the format for fromString(). */
+        /** @internal Write global variables in the format for fromString(). */
         CO_API static void toString( std::string& data );
 
         /** @return the plugin registry. @version 1.0 */
@@ -102,18 +102,18 @@ namespace co
             IATTR_ALL
         };
 
-        /** Set an integer attribute. */
+        /** @internal Set an integer attribute. */
         CO_API static void setIAttribute( const IAttribute attr,
                                           const int32_t value );
 
-        /** @return the value of an integer attribute. */
+        /** @internal @return the value of an integer attribute. */
         CO_API static int32_t getIAttribute( const IAttribute attr );
 
-        /** @return the timeout, a concrete time or LB_TIMEOUT_INDEFINITE. */
+        /** @internal @return the timeout, a time or LB_TIMEOUT_INDEFINITE. */
         CO_API static uint32_t getTimeout();
         //@}
 
-        /** @return the keepalive timeout. */
+        /** @internal @return the keepalive timeout. */
         CO_API static uint32_t getKeepaliveTimeout();
         //@}
     };

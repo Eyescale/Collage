@@ -1,6 +1,6 @@
 
 # Copyright (c) 2010 Cedric Stalder <cedric.stalder@gmail.ch>
-#               2011-2012 Stefan Eilemann <eile@eyescale.ch>
+#               2011-2013 Stefan Eilemann <eile@eyescale.ch>
 #               2012 Daniel Nachbaur <danielnachbaur@gmail.com>
 
 set(CO_PUBLIC_HEADERS
@@ -35,10 +35,9 @@ set(CO_PUBLIC_HEADERS
   dataStreamArchiveException.h
   defines.h
   dispatcher.h
-  exception.h # reviewed for 1.0 API
+  exception.h
   global.h
-  init.h
-  instanceCache.h
+  init.h # reviewed for 1.0 API
   localNode.h
   log.h
   node.h
@@ -73,6 +72,7 @@ set(CO_HEADERS
   deltaMasterCM.h
   eventConnection.h
   fullMasterCM.h
+  instanceCache.h
   masterCMCommand.h
   nodeCommand.h
   nullCM.h
