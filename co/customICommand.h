@@ -25,7 +25,10 @@ namespace co
 
 namespace detail { class CustomICommand; }
 
-/** A command specialization for custom commands. */
+/**
+ * A command specialization for custom commands.
+ * @sa LocalNode::registerCommandHandler()
+ */
 class CustomICommand : public ICommand
 {
 public:

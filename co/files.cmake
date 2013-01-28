@@ -35,7 +35,7 @@ set(CO_PUBLIC_HEADERS
   dataStreamArchiveException.h
   defines.h
   dispatcher.h
-  exception.h
+  exception.h # reviewed for 1.0 API
   global.h
   init.h
   instanceCache.h

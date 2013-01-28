@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -43,17 +43,17 @@ namespace detail { class Connection; }
      *
      * Connections are stream-oriented communication lines. The parameters of a
      * Connection are described in a ConnectionDescription, which is used in
-     * listen() and connect(). A Connection has a Connection::State, which
-     * changes when calling listen(), connect() or close(), or whenever the
-     * underlying connection is closed by the operating system.
+     * create(), listen() and connect(). A Connection has a Connection::State,
+     * which changes when calling listen(), connect() or close(), or whenever
+     * the underlying connection is closed by the operating system.
      *
      * The Connection class defines the interface for connections, various
      * derived classes implement it for the low-level communication protocols,
-     * e.g., SocketConnection for TCP/IP. An implementation may not implement
-     * all the functionality defined in this interface.
+     * e.g., SocketConnection for TCP/IP or RSPConnection for UDP-based reliable
+     * multicast. An implementation may not implement all the functionality
+     * defined in this interface.
      *
-     * The Connection is used reference-counted in co, since it has multiple
-     * owners, such as the ConnectionSet and Node.
+     * The Connection is used reference-counted throughout the Collage API.
      */
     class Connection : public lunchbox::Referenced, public lunchbox::NonCopyable
     {
@@ -133,7 +133,7 @@ namespace detail { class Connection; }
         virtual void close() {}
         //@}
 
-        /** @name Listener Interface */
+        /** @internal @name Listener Interface */
         //@{
         /** @internal Add a listener for connection state changes. */
         void addListener( ConnectionListener* listener );
@@ -172,7 +172,7 @@ namespace detail { class Connection; }
          *
          * This function returns immediately. The Notifier will signal data
          * availability, upon which recvSync() should be used to finish the
-         * operation. The data will be appended to the buffer.
+         * operation. The data will be appended to the given buffer.
          *
          * @param buffer the buffer receiving the data.
          * @param bytes the number of bytes to read.
@@ -191,8 +191,8 @@ namespace detail { class Connection; }
          * buffer, potentially by using multiple reads.
          *
          * @param buffer return value, the buffer passed to recvNB().
-         * @param block internal WAR parameter, do not use unless you know
-         *              exactly why.
+         * @param block internal workaround parameter, do not use unless you
+         *              know exactly why.
          * @return true if all requested data has been read, false otherwise.
          * @version 1.0
          */
@@ -240,7 +240,7 @@ namespace detail { class Connection; }
 #else
         typedef int Notifier;
 #endif
-        /** @return the notifier signaling events on the connection. */
+        /** @return the notifier signaling events. @version 1.0 */
         virtual Notifier getNotifier() const = 0;
 
     protected:

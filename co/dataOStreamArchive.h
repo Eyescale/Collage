@@ -51,7 +51,7 @@
 namespace co
 {
 
-/** A boost.serialization archive writing to a co::DataOStream. */
+/** A boost.serialization output archive writing to a co::DataOStream. */
 class DataOStreamArchive
     : public boost::archive::basic_binary_oarchive< DataOStreamArchive >
 {

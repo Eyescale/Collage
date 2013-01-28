@@ -51,6 +51,14 @@ namespace co
 
 /** @cond IGNORE */
     template< class T > inline DataIStream&
+    DataIStream::operator >> ( Array< T > array )
+    {
+        _read( array.data, array.getNumBytes( ));
+        _swap( array );
+        return *this;
+    }
+
+    template< class T > inline DataIStream&
     DataIStream::operator >> ( lunchbox::Buffer< T >& buffer )
     {
         uint64_t nElems = 0;

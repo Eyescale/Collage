@@ -46,11 +46,11 @@ namespace detail { class ICommand; }
                         ConstBufferPtr buffer, const bool swap ); //!< @internal
         CO_API ICommand( const ICommand& rhs ); //!< @internal
 
+        CO_API virtual ~ICommand(); //!< @internal
+
         CO_API ICommand& operator = ( const ICommand& rhs ); //!< @internal
 
         CO_API void clear(); //!< @internal
-
-        CO_API virtual ~ICommand(); //!< @internal
 
         /** @name Data Access */
         //@{
@@ -62,9 +62,6 @@ namespace detail { class ICommand; }
 
         /** @return the command payload size. @version 1.0 */
         CO_API uint64_t getSize() const;
-
-        /** @internal @return the buffer */
-        CO_API ConstBufferPtr getBuffer() const;
 
         /** @return a value from the command. @version 1.0 */
         template< typename T > T get()
@@ -82,20 +79,23 @@ namespace detail { class ICommand; }
 
         /** @return true if the command has valid data. @version 1.0 */
         CO_API bool isValid() const;
+
+        /** @internal @return the buffer */
+        CO_API ConstBufferPtr getBuffer() const;
         //@}
 
-        /** @internal @name Dispatch command functions.. */
+        /** @internal @name Command dispatch. */
         //@{
-        /** Change the command type for subsequent dispatching. */
+        /** @internal Change the command type for subsequent dispatching. */
         CO_API void setType( const CommandType type );
 
-        /** Change the command for subsequent dispatching. */
+        /** @internal Change the command for subsequent dispatching. */
         CO_API void setCommand( const uint32_t cmd );
 
-        /** Set the function to which the command is dispatched. */
+        /** @internal Set the function to which the command is dispatched. */
         void setDispatchFunction( const Dispatcher::Func& func );
 
-        /** Invoke and clear the command function of a dispatched command. */
+        /** @internal Invoke and clear the command function. */
         CO_API bool operator()();
         //@}
 
@@ -109,10 +109,8 @@ namespace detail { class ICommand; }
         CO_API virtual size_t nRemainingBuffers() const;
         CO_API virtual uint128_t getVersion() const;
         CO_API virtual NodePtr getMaster();
-        CO_API virtual bool getNextBuffer( uint32_t& compressor,
-                                           uint32_t& nChunks,
-                                           const void** chunkData,
-                                           uint64_t& size );
+        CO_API virtual bool getNextBuffer( uint32_t&, uint32_t&, const void**,
+                                           uint64_t& );
         //@}
 
         void _skipHeader(); //!< @internal

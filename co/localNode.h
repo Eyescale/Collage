@@ -379,6 +379,9 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         /**
          * Dispatches a command to the registered command queue.
          *
+         * Applications using custom command types have to override this method
+         * to dispatch the custom commands.
+         *
          * @param command the command.
          * @return the result of the operation.
          * @sa ICommand::invoke

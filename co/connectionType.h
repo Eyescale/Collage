@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -31,7 +31,7 @@ namespace co
         CONNECTIONTYPE_SDP,       //!< SDP sockets (InfiniBand)
         CONNECTIONTYPE_PIPE,      //!< pipe() based uni-directional connection
         CONNECTIONTYPE_NAMEDPIPE, //!< Named pipe based bidirectional connection
-        CONNECTIONTYPE_IB,        //!< Infiniband RDMA (defunct)
+        CONNECTIONTYPE_IB,        //!< Infiniband RDMA (old, Windows XP only)
         CONNECTIONTYPE_RDMA,      //!< Infiniband RDMA CM
         CONNECTIONTYPE_UDT,       //!< UDT connection
         CONNECTIONTYPE_MULTICAST = 0x100, //!< @internal MC types after this:
@@ -53,7 +53,7 @@ namespace co
             case CONNECTIONTYPE_NONE: return os << "NONE";
             case CONNECTIONTYPE_RDMA: return os << "RDMA";
             case CONNECTIONTYPE_UDT: return os << "UDT";
-                
+
             default:
                 LBASSERTINFO( false, "Not implemented" );
                 return os << "ERROR";

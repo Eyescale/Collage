@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -39,17 +39,17 @@ namespace co
         /** The listening port (TCPIP, SDP, IB, MCIP, RDMA). @version 1.0 */
         uint16_t port;
 
-        /** The host name. */
+        /** The hostname to bind or connect to. @version 1.0 */
         std::string hostname;
 
-        /** The host name of the interface (multicast). */
+        /** The host name of the interface (multicast). @version 1.0 */
         std::string interfacename;
 
-        /** The name file using for a pipe. */
+        /** The filename used for named pipes. @version 1.0 */
         std::string filename;
 
         /** Construct a new, default description. @version 1.0 */
-        ConnectionDescription() 
+        ConnectionDescription()
                 : type( CONNECTIONTYPE_TCPIP )
                 , bandwidth( 0 )
                 , port( 0 )
@@ -60,9 +60,9 @@ namespace co
          * Construct a description from a string representation.
          *
          * The given data is consumed, that is, the data string should be empty
-         * on return.
+         * on return when a single description was given.
          *
-         * @sa toString()
+         * @sa fromString()
          * @version 1.0
          */
         ConnectionDescription( std::string& data );
@@ -73,16 +73,17 @@ namespace co
         /** @return this description as a string. @version 1.0 */
         CO_API std::string toString() const;
 
-        /** 
+        /**
          * Read the connection description from a string.
-         * 
+         *
          * The string is consumed as the description is parsed. Two different
          * formats are recognized, a human-readable and a machine-readable. The
          * human-readable version has the format
          * <code>hostname[:port][:type]</code> or
          * <code>filename:PIPE</code>. The <code>type</code> parameter can be
          * TCPIP, SDP, IB, MCIP, UDT or RSP. The machine-readable format
-         * contains all connection description parameters and is not documented.
+         * contains all connection description parameters, is not documented and
+         * subject to change.
          *
          * @param data the string containing the connection description.
          * @return true if the information was read correctly, false if not.
@@ -128,10 +129,11 @@ namespace co
     /** Serialize a vector of connection descriptions to a string. */
     CO_API std::string serialize( const ConnectionDescriptions& );
 
-    /** 
+    /**
      * Deserialize a vector or connection descriptions from a string.
      *
      * Consumes the data.
+     *
      * @param data The serialized connection descriptions.
      * @param descriptions return value, deserialized connection descriptions.
      * @return true on successful parsing, false otherwise.

@@ -1,6 +1,6 @@
 
 /* Copyright (c) 2011, Cedric Stalder <cedric.stalder@gmail.com>
- *               2012, Stefan.Eilemann@epfl.ch
+ *               2012-2013, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -29,29 +29,41 @@ namespace co
     class Exception : public std::exception
     {
     public:
+        /** The exception type. @version 1.0 */
         enum Type
         {
             TIMEOUT_WRITE,   //!< A write timeout operation
             TIMEOUT_READ,    //!< A read timeout operation
             TIMEOUT_BARRIER, //!< A barrier timeout operation
             TIMEOUT_COMMANDQUEUE, //!< A timeout on a cmd queue operation
-            CUSTOM      = 20 // leave some room
+            CUSTOM      = 20 //!< Application-specific exceptions
         };
 
-        /** Construct a new Exception. */
+        /** Construct a new Exception. @version 1.0 */
         Exception( const uint32_t type ) : _type( type ) {}
 
-        /** Destruct this exception. */
+        /** Destruct this exception. @version 1.0 */
         virtual ~Exception() throw() {}
 
-        /** @return the type of this exception */
+        /** @return the type of this exception @version 1.0 */
         virtual uint32_t getType() const { return _type; }
 
+        /** Output the exception in human-readable form. @version 1.0 */
         virtual const char* what() const throw()
         {
-            std::stringstream os;
-            os << *this;
-            return os.str().c_str();
+            switch( _type )
+            {
+              case Exception::TIMEOUT_WRITE:
+                  return " Timeout on write operation";
+              case Exception::TIMEOUT_READ:
+                  return " Timeout on read operation";
+              case Exception::TIMEOUT_BARRIER:
+                  return " Timeout on barrier";
+              case Exception::TIMEOUT_COMMANDQUEUE:
+                  return " Timeout on command queue";
+              default:
+                  return  " Unknown Exception";
+            }
         }
 
     private:
@@ -59,22 +71,9 @@ namespace co
         const uint32_t _type;
     };
 
+    /** Output the exception in human-readable form. @version 1.0 */
     inline std::ostream& operator << ( std::ostream& os, const Exception& e )
-    {
-        switch( e.getType() )
-        {
-          case Exception::TIMEOUT_WRITE:
-              return os << " Timeout on write operation";
-          case Exception::TIMEOUT_READ:
-              return os << " Timeout on read operation";
-          case Exception::TIMEOUT_BARRIER:
-              return os << " Timeout on barrier";
-          case Exception::TIMEOUT_COMMANDQUEUE:
-              return os << " Timeout on command queue";
-          default:
-              return os << " Unknown Exception";
-        }
-    }
+        { return os << e.what(); }
 }
 
 #endif // CO_EXCEPTION_H

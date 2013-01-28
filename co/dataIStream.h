@@ -57,12 +57,7 @@ namespace detail { class DataIStream; }
             { _read( &value, sizeof( value )); _swap( value ); return *this; }
 
         /** Read a C array. @version 1.0 */
-        template< class T > DataIStream& operator >> ( Array< T > array )
-            {
-                _read( array.data, array.getNumBytes( ));
-                _swap( array );
-                return *this;
-            }
+        template< class T > DataIStream& operator >> ( Array< T > array );
 
         /** Read a lunchbox::Buffer. @version 1.0 */
         template< class T > DataIStream& operator >> ( lunchbox::Buffer< T >& );
@@ -85,15 +80,14 @@ namespace detail { class DataIStream; }
         template< class T > DataIStream& operator >> ( stde::hash_set< T >& );
 
         /** Byte-swap a plain data item. @version 1.0 */
-        template< class T > static void swap( T& value )
-            { lunchbox::byteswap( value ); }
+        template< class T > static void swap( T& v ) { lunchbox::byteswap(v); }
 
         /** @internal
          * Deserialize child objects.
          *
          * Existing children are synced to the new version. New children are
          * created by calling the <code>void create( C** child )</code> method
-         * on the object, and registered or mapped to the object's
+         * on the object, and are registered or mapped to the object's
          * session. Removed children are released by calling the <code>void
          * release( C* )</code> method on the object. The resulting child vector
          * is created in result. The old and result vector can be the same
@@ -103,7 +97,7 @@ namespace detail { class DataIStream; }
         void deserializeChildren( O* object, const std::vector< C* >& old,
                                   std::vector< C* >& result );
 
-        /**
+        /** @deprecated
          * Get the pointer to the remaining data in the current buffer.
          *
          * The usage of this method is discouraged, no endian conversion or
@@ -145,10 +139,11 @@ namespace detail { class DataIStream; }
         CO_API DataIStream( const bool swap );
         DataIStream( const DataIStream& );
         CO_API virtual ~DataIStream();
-        //@}
 
         virtual bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
                                     const void** chunkData, uint64_t& size )=0;
+        //@}
+
     private:
         detail::DataIStream* const _impl;
 

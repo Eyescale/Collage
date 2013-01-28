@@ -25,9 +25,9 @@ namespace co
 {
     enum CommandType
     {
-        COMMANDTYPE_NODE,
-        COMMANDTYPE_OBJECT,
-        COMMANDTYPE_CUSTOM = 1<<7,
+        COMMANDTYPE_NODE, //!< A Node/LocalNode command
+        COMMANDTYPE_OBJECT, //!< An Object command
+        COMMANDTYPE_CUSTOM = 1<<7, // !< Application-specific command
         COMMANDTYPE_INVALID = 0xFFFFFFFFu //!< @internal
     };
 
@@ -39,10 +39,10 @@ namespace co
         CMD_INVALID = 0xFFFFFFFFu //!< @internal
     };
 
-    /** Minimal packet size sent by DataOStream and read by LocalNode */
+    /** @internal Minimal packet size sent by DataOStream / read by LocalNode */
     static const size_t COMMAND_MINSIZE = 256;
 
-    /** Minimal allocation size of a packet. */
+    /** @internal Minimal allocation size of a packet. */
     static const size_t COMMAND_ALLOCSIZE = 4096; // Bigger than minSize!
 }
 

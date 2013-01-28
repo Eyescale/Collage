@@ -20,21 +20,18 @@
 
 #include <co/oCommand.h>    // base class
 
-
 namespace co
 {
-
 namespace detail { class CustomOCommand; }
 
 /**
- * A class for sending custom commands and data to local & external nodes.
- *
- * @sa co::OCommand
+ * A class for sending custom commands and data to nodes.
+ * @sa Node::send()
  */
 class CustomOCommand : public OCommand
 {
 public:
-    /**
+    /** @internal
      * Construct a command dispatched to a remote LocalNode custom command
      * handler.
      *
@@ -44,7 +41,7 @@ public:
     CO_API CustomOCommand( const Connections& receivers,
                            const uint128_t& commandID );
 
-    /**
+    /** @internal
      * Construct a command dispatched to a local custom command handler.
      *
      * @param localNode the local node that holds the command cache.

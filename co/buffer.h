@@ -19,12 +19,11 @@
 #ifndef CO_BUFFER_H
 #define CO_BUFFER_H
 
-#include <lunchbox/buffer.h>        // base class
-#include <lunchbox/referenced.h>    // base class
-
 #include <co/api.h>
 #include <co/types.h>
-#include <co/dispatcher.h>          // for Dispatcher::Func
+
+#include <lunchbox/buffer.h>        // base class
+#include <lunchbox/referenced.h>    // base class
 
 
 namespace co
