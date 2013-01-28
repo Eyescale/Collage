@@ -65,10 +65,10 @@ namespace co
         CMD_NODE_OBJECT_PUSH,
         CMD_NODE_COMMAND,
         CMD_NODE_PING,
-        CMD_NODE_PING_REPLY
+        CMD_NODE_PING_REPLY,
+        CMD_NODE_ADD_CONNECTION
         // check that not more than CMD_NODE_CUSTOM have been defined!
     };
 }
 
 #endif // CO_NODECOMMAND_H
-

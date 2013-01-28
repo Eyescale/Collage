@@ -241,6 +241,8 @@ LocalNode::LocalNode( const uint32_t type )
                      CmdFunc( this, &LocalNode::_cmdDiscard ), 0 );
     registerCommand( CMD_NODE_COMMAND,
                      CmdFunc( this, &LocalNode::_cmdCommand ), 0 );
+    registerCommand( CMD_NODE_ADD_CONNECTION,
+                     CmdFunc( this, &LocalNode::_cmdAddConnection ), 0 );
 }
 
 LocalNode::~LocalNode( )
@@ -355,14 +357,6 @@ bool LocalNode::listen()
     return true;
 }
 
-bool LocalNode::listen( ConnectionPtr connection )
-{
-    if( !listen( ))
-        return false;
-    _addConnection( connection );
-    return true;
-}
-
 bool LocalNode::close()
 {
     if( !isListening() )
@@ -471,6 +465,12 @@ uint32_t LocalNode::_removeListenerNB( ConnectionPtr connection )
 
 void LocalNode::_addConnection( ConnectionPtr connection )
 {
+    if( _impl->receiverThread->isRunning() && !_impl->inReceiverThread( ))
+    {
+        connection->ref(); // unref in _cmdAddConnection
+        send( CMD_NODE_ADD_CONNECTION ) << (uint64_t)(connection.get( ));
+    }
+
     _impl->incoming.addConnection( connection );
     BufferPtr buffer = _impl->smallBuffers.alloc( COMMAND_ALLOCSIZE );
     connection->recvNB( buffer, COMMAND_MINSIZE );
@@ -2003,6 +2003,18 @@ bool LocalNode::_cmdCommandAsync( ICommand& command )
     }
     CustomICommand customCmd( command );
     return func( customCmd );
+}
+
+bool LocalNode::_cmdAddConnection( ICommand& command )
+{
+    LBASSERT( _impl->inReceiverThread( ));
+
+    Connection* rawConnection = (Connection*)(command.get< uint64_t >( ));
+    ConnectionPtr connection = rawConnection;
+    connection->unref();
+
+    _addConnection( connection );
+    return true;
 }
 
 }

@@ -503,6 +503,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         bool _cmdPing( ICommand& command );
         bool _cmdCommand( ICommand& command );
         bool _cmdCommandAsync( ICommand& command );
+        bool _cmdAddConnection( ICommand& command );
         bool _cmdDiscard( ICommand& ) { return true; }
         //@}
 
