@@ -477,6 +477,7 @@ void LocalNode::_addConnection( ConnectionPtr connection )
     {
         connection->ref(); // unref in _cmdAddConnection
         send( CMD_NODE_ADD_CONNECTION ) << (uint64_t)(connection.get( ));
+        return;
     }
 
     _impl->incoming.addConnection( connection );
