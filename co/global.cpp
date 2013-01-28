@@ -63,8 +63,6 @@ static int32_t _getTimeout()
     return size;
 }
 
-std::string _programName;
-std::string _workDir;
 uint16_t    _defaultPort = 0;
 uint32_t    _objectBufferSize = _getObjectBufferSize();
 int32_t     _iAttributes[Global::IATTR_ALL] =
@@ -147,26 +145,6 @@ void Global::toString( std::string& data )
 
     stream << SEPARATOR;
     data = stream.str();
-}
-
-void Global::setProgramName( const std::string& programName )
-{
-    _programName = programName;
-}
-
-const std::string& Global::getProgramName()
-{
-    return _programName;
-}
-
-void Global::setWorkDir( const std::string& workDir )
-{
-    _workDir = workDir;
-}
-
-const std::string& Global::getWorkDir()
-{
-    return _workDir;
 }
 
 void Global::setDefaultPort( const uint16_t port )

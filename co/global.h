@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -28,29 +28,9 @@ namespace co
     class Global
     {
     public:
-        /** 
-         * Sets the name of the program.
-         * 
-         * @param programName the program name.
-         */
-        CO_API static void setProgramName( const std::string& programName );
-
-        /** @return the program name. */
-        CO_API static const std::string& getProgramName();
-
-        /** 
-         * Sets the working directory of the program.
-         * 
-         * @param workDir the working directory.
-         */
-        CO_API static void setWorkDir( const std::string& workDir );
-
-        /** @return the working directory of the program. */
-        CO_API static const std::string& getWorkDir();
-
-        /** 
+        /**
          * Sets the default listening port.
-         * 
+         *
          * @param port the default port.
          */
         CO_API static void setDefaultPort( const uint16_t port );
@@ -58,7 +38,7 @@ namespace co
         /** @return the default listening port. */
         CO_API static uint16_t getDefaultPort();
 
-        /** 
+        /**
          * Set the minimum buffer size for Object serialization.
          *
          * The buffer size is used during serialization. When a DataOStream has
@@ -72,7 +52,7 @@ namespace co
         /** @return the minimum buffer size for Object serialization. */
         CO_API static uint32_t getObjectBufferSize();
 
-        /** 
+        /**
          * Set the global variables.
          *
          * The data is expected to be a list of unsigned ints in the format
