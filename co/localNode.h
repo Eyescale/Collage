@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -102,7 +102,6 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * @sa connect
          */
         CO_API virtual bool listen();
-        CO_API virtual bool listen( ConnectionPtr connection ); //!< @internal
 
         /**
          * Close a listening node.

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -61,7 +61,7 @@ namespace detail { class ICommand; }
         CO_API uint32_t getCommand() const;
 
         /** @return the command payload size. @version 1.0 */
-        CO_API uint64_t getSize_() const;
+        CO_API uint64_t getSize() const;
 
         /** @internal @return the buffer */
         CO_API ConstBufferPtr getBuffer() const;

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -130,7 +130,7 @@ uint32_t ICommand::getCommand() const
     return _impl->cmd;
 }
 
-uint64_t ICommand::getSize_() const
+uint64_t ICommand::getSize() const
 {
     return _impl->size;
 }
@@ -220,7 +220,7 @@ std::ostream& operator << ( std::ostream& os, const ICommand& command )
     if( buffer )
         os << lunchbox::disableFlush << "command< type "
            << uint32_t( command.getType( )) << " cmd " << command.getCommand()
-           << " size " << command.getSize_() << '/' << buffer->getSize() << '/'
+           << " size " << command.getSize() << '/' << buffer->getSize() << '/'
            << buffer->getMaxSize() << " from " << command.getNode() << " to "
            << command.getLocalNode() << " >" << lunchbox::enableFlush;
     else

@@ -164,17 +164,17 @@ int main( int argc, char **argv )
         TEST( !buffer->isEmpty( ));
 
         co::ICommand command( 0, 0, buffer, false );
-        if( command.getSize_() > buffer->getMaxSize( ))
+        if( command.getSize() > buffer->getMaxSize( ))
         {
             // not enough space for remaining data, alloc and copy to new buffer
-            co::BufferPtr newBuffer = bufferCache.alloc( command.getSize_( ));
+            co::BufferPtr newBuffer = bufferCache.alloc( command.getSize( ));
             newBuffer->replace( *buffer );
             command = co::ICommand( 0, 0, newBuffer, false );
         }
-        if( command.getSize_() > buffer->getSize( ))
+        if( command.getSize() > buffer->getSize( ))
         {
             // read remaining data
-            connection->recvNB( buffer, command.getSize_() - buffer->getSize( ));
+            connection->recvNB( buffer, command.getSize() - buffer->getSize( ));
             TEST( connection->recvSync( buffer ));
         }
 

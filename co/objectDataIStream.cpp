@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -115,7 +115,7 @@ size_t ObjectDataIStream::getDataSize() const
     for( CommandDequeCIter i = _commands.begin(); i != _commands.end(); ++i )
     {
         const ICommand& command = *i;
-        size += command.getSize_();
+        size += command.getSize();
     }
     return size;
 }

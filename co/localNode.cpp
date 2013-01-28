@@ -265,7 +265,8 @@ bool LocalNode::initLocal( const int argc, char** argv )
     // - incomplete man pages
     for( int i=1; i<argc; ++i )
     {
-        if( std::string( "--eq-listen" ) == argv[i] )
+        if( std::string( "--eq-listen" ) == argv[i] ||
+            std::string( "--co-listen" ) == argv[i] )
         {
             if( (i+1)<argc && argv[i+1][0] != '-' )
             {
@@ -1267,7 +1268,6 @@ BufferPtr LocalNode::_readHead( ConnectionPtr connection )
 {
     BufferPtr buffer;
     const bool gotSize = connection->recvSync( buffer, false );
-    const size_t minSize = COMMAND_MINSIZE;
 
     if( !buffer ) // fluke signal
     {
@@ -1280,7 +1280,7 @@ BufferPtr LocalNode::_readHead( ConnectionPtr connection )
     if( !gotSize ) // Some systems signal data on dead connections.
     {
         buffer->setSize( 0 );
-        connection->recvNB( buffer, minSize );
+        connection->recvNB( buffer, COMMAND_MINSIZE );
         return 0;
     }
 
@@ -1288,7 +1288,7 @@ BufferPtr LocalNode::_readHead( ConnectionPtr connection )
 }
 
 ICommand LocalNode::_setupCommand( ConnectionPtr connection,
-                                  ConstBufferPtr buffer )
+                                   ConstBufferPtr buffer )
 {
     NodePtr node;
     ConnectionNodeHashCIter i = _impl->connectionNodes.find( connection );
@@ -1300,7 +1300,11 @@ ICommand LocalNode::_setupCommand( ConnectionPtr connection,
                   lunchbox::className( node ));
     LBVERB << "Handle data from " << node << std::endl;
 
-    const bool swapping = node ? node->isBigEndian() != isBigEndian() : false;
+#ifdef COLLAGE_BIGENDIAN
+    const bool swapping = node ? !node->isBigEndian() : false;
+#else
+    const bool swapping = node ? node->isBigEndian() : false;
+#endif
     ICommand command( this, node, buffer, swapping );
 
     if( node )
@@ -1342,7 +1346,7 @@ ICommand LocalNode::_setupCommand( ConnectionPtr connection,
 bool LocalNode::_readTail( ICommand& command, BufferPtr buffer,
                            ConnectionPtr connection )
 {
-    const uint64_t needed = command.getSize_();
+    const uint64_t needed = command.getSize();
     if( needed <= buffer->getSize( ))
         return true;
 
@@ -1355,11 +1359,11 @@ bool LocalNode::_readTail( ICommand& command, BufferPtr buffer,
         buffer = newBuffer;
 
         command = ICommand( this, command.getNode(), buffer,
-                           command.isSwapping( ));
+                            command.isSwapping( ));
     }
 
     // read remaining data
-    connection->recvNB( buffer, command.getSize_() - buffer->getSize( ));
+    connection->recvNB( buffer, command.getSize() - buffer->getSize( ));
     return connection->recvSync( buffer );
 }
 
