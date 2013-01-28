@@ -357,6 +357,14 @@ bool LocalNode::listen()
     return true;
 }
 
+bool LocalNode::listen( ConnectionPtr connection )
+{
+    if( !listen( ))
+        return false;
+    _addConnection( connection );
+    return true;
+}
+
 bool LocalNode::close()
 {
     if( !isListening() )

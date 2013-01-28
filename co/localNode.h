@@ -102,6 +102,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * @sa connect
          */
         CO_API virtual bool listen();
+        CO_API virtual bool listen( ConnectionPtr connection ); //!< @internal
 
         /**
          * Close a listening node.
