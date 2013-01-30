@@ -25,15 +25,6 @@
 #include <lunchbox/init.h>
 #include <lunchbox/os.h>
 
-#ifdef _MSC_VER
-#  include <direct.h>
-#  define getcwd _getcwd
-#endif
-
-#ifndef MAXPATHLEN
-#  define MAXPATHLEN 1024
-#endif
-
 namespace co
 {
 namespace
