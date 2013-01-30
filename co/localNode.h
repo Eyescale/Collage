@@ -20,7 +20,6 @@
 #ifndef CO_LOCALNODE_H
 #define CO_LOCALNODE_H
 
-#include <co/defines.h>
 #include <co/node.h>            // base class
 #include <co/objectHandler.h>   // base class
 #include <co/objectVersion.h>   // VERSION_FOO used inline
@@ -34,28 +33,22 @@ namespace co
 namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
 
     /**
-     * Specialization of a local node.
+     * Node specialization for a local node.
      *
      * Local nodes listen on network connections, manage connections to other
-     * nodes and provide session registration, mapping and command dispatch.
+     * nodes and provide Object registration, mapping and command
+     * dispatch. Typically each process uses one local node to communicate with
+     * other processes.
      */
     class LocalNode : public lunchbox::RequestHandler, public Node,
                       public ObjectHandler
     {
     public:
+        /** Construct a new local node of the given type. @version 1.0 */
         CO_API LocalNode( const uint32_t type = co::NODETYPE_NODE );
+
+        /** Destruct this local node. @version 1.0 */
         CO_API virtual ~LocalNode();
-
-        typedef NodePtr SendToken; //!< An acquired send token
-
-        /** Function signature for push handlers. */
-        typedef boost::function< void( const uint128_t&, //!< groupID
-                                       const uint128_t&, //!< objectType
-                                       const uint128_t&, //!< objectID
-                                       DataIStream& ) > PushHandler;
-
-        /** Function signature for custom command handlers. */
-        typedef boost::function< bool( CustomICommand& ) > CommandHandler;
 
         /**
          * @name State Changes
@@ -70,7 +63,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * Parses the following command line options and calls listen()
          * afterwards:
          *
-         * The '--eq-listen &lt;connection description&gt;' command line option
+         * The '--co-listen &lt;connection description&gt;' command line option
          * is parsed by this method to add listening connections to this
          * node. This parameter might be used multiple times.
          * ConnectionDescription::fromString() is used to parse the provided
@@ -84,8 +77,9 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          *
          * @param argc the command line argument count.
          * @param argv the command line argument values.
-         * @return <code>true</code> if the client was successfully initialized,
-         *         <code>false</code> otherwise.
+         * @return true if the client was successfully initialized,
+         *         false otherwise.
+         * @version 1.0
          */
         CO_API virtual bool initLocal( const int argc, char** argv );
 
@@ -97,9 +91,9 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * state if the method completed successfully. A listening node can
          * connect other nodes.
          *
-         * @return <code>true</code> if the node could be initialized,
-         *         <code>false</code> if not.
-         * @sa connect
+         * @return true if the node could be initialized, false otherwise.
+         * @sa connect()
+         * @version 1.0
          */
         CO_API virtual bool listen();
         CO_API virtual bool listen( ConnectionPtr connection ); //!< @internal
@@ -110,20 +104,20 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * Disconnects all connected node proxies, closes the listening
          * connections and terminates all threads created in listen().
          *
-         * @return <code>true</code> if the node was stopped, <code>false</code>
-         *         if it was not stopped.
+         * @return true if the node was stopped, false otherwise.
+         * @version 1.0
          */
         CO_API virtual bool close();
 
-        /** Close a listening node. */
+        /** Close a listening node. @version 1.0 */
         virtual bool exitLocal() { return close(); }
 
         /**
-         * Connect a proxy node to this listening node.
+         * Connect a remote node (proxy) to this listening node.
          *
          * The connection descriptions of the node are used to connect the
-         * node. On success, the node is in the connected state, otherwise its
-         * state is unchanged.
+         * remote local node. On success, the node is in the connected state,
+         * otherwise its state is unchanged.
          *
          * This method is one-sided, that is, the node to be connected should
          * not initiate a connection to this node at the same time. For
@@ -132,6 +126,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          *
          * @param node the remote node.
          * @return true if this node was connected, false otherwise.
+         * @version 1.0
          */
         CO_API bool connect( NodePtr node );
 
@@ -145,47 +140,22 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * @param nodeID the identifier of the node to connect.
          * @return the connected node, or an invalid RefPtr if the node could
          *         not be connected.
+         * @version 1.0
          */
         CO_API NodePtr connect( const NodeID& nodeID );
 
         /**
-         * Disconnects a connected node.
+         * Disconnect a connected node.
          *
          * @param node the remote node.
-         * @return <code>true</code> if the node was disconnected correctly,
-         *         <code>false</code> otherwise.
+         * @return true if the node was disconnected correctly, false otherwise.
+         * @version 1.0
          */
         CO_API virtual bool disconnect( NodePtr node );
         //@}
 
         /** @name Object Registry */
         //@{
-        /** Disable the instance cache of a stopped local node. */
-        CO_API void disableInstanceCache();
-
-        /** @internal */
-        CO_API void expireInstanceData( const int64_t age );
-
-        /**
-         * Enable sending instance data after registration.
-         *
-         * Send-on-register starts transmitting instance data of registered
-         * objects directly after they have been registered. The data is cached
-         * on remote nodes and accelerates object mapping. Send-on-register
-         * should not be active when remote nodes are joining a multicast group
-         * of this node, since they will potentially read out-of-order data
-         * streams on the multicast connection.
-         *
-         * Enable and disable are counted, that is, the last enable on a
-         * matched series of disable/enable will be effective. The disable is
-         * completely synchronous, that is, no more instance data will be sent
-         * after the first disable.
-         */
-        CO_API void enableSendOnRegister();
-
-        /** Disable sending data of newly registered objects when idle. */
-        CO_API void disableSendOnRegister();
-
         /**
          * Register a distributed object.
          *
@@ -196,13 +166,18 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          *
          * @param object the object instance.
          * @return true if the object was registered, false otherwise.
+         * @version 1.0
          */
         CO_API virtual bool registerObject( Object* object );
 
         /**
          * Deregister a distributed object.
          *
+         * All slave instances should be unmapped before this call, and will be
+         * forcefully unmapped by this method.
+         *
          * @param object the object instance.
+         * @version 1.0
          */
         CO_API virtual void deregisterObject( Object* object );
 
@@ -271,6 +246,33 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         /** Convenience method to deregister or unmap an object. */
         CO_API void releaseObject( Object* object );
 
+        /** Disable the instance cache of a stopped local node. @version 1.0 */
+        CO_API void disableInstanceCache();
+
+        /** @internal */
+        CO_API void expireInstanceData( const int64_t age );
+
+        /**
+         * Enable sending instance data after registration.
+         *
+         * Send-on-register starts transmitting instance data of registered
+         * objects directly after they have been registered. The data is cached
+         * on remote nodes and accelerates object mapping. Send-on-register
+         * should not be active when remote nodes are joining a multicast group
+         * of this node, since they will potentially read out-of-order data
+         * streams on the multicast connection.
+         *
+         * Enable and disable are counted, that is, the last enable on a
+         * matched series of disable/enable will be effective. The disable is
+         * completely synchronous, that is, no more instance data will be sent
+         * after the first disable.
+         * @version 1.0
+         */
+        CO_API void enableSendOnRegister();
+
+        /** Disable sending data of newly registered objects. @version 1.0 */
+        CO_API void disableSendOnRegister();
+
         /**
          * Handler for an Object::push operation.
          *
@@ -294,6 +296,11 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
                                         const uint128_t& objectID,
                                         DataIStream& istream );
 
+        /** Function signature for push handlers. */
+        typedef boost::function< void( const uint128_t&, //!< groupID
+                                       const uint128_t&, //!< objectType
+                                       const uint128_t&, //!< objectID
+                                       DataIStream& ) > PushHandler;
         /**
          * Register a custom handler for Object::push operations
          *
@@ -305,6 +312,10 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          */
         CO_API void registerPushHandler( const uint128_t& groupID,
                                          const PushHandler& handler );
+
+
+        /** Function signature for custom command handlers. */
+        typedef boost::function< bool( CustomICommand& ) > CommandHandler;
 
         /**
          * Register a custom command handler handled by this node.
@@ -388,6 +399,8 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          */
         CO_API virtual bool dispatchCommand( ICommand& command );
 
+        typedef NodePtr SendToken; //!< An acquired send token
+
         /**
          * Acquire a singular send token from the given node.
          * @return The send token to release.
@@ -425,8 +438,8 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          *
          * @param node the remote node.
          * @param connection the connection to the remote node.
-         * @return <code>true</code> if the node was connected correctly,
-         *         <code>false</code> otherwise.
+         * @return true if the node was connected correctly,
+         *         false otherwise.
          */
         CO_API bool connect( NodePtr node, ConnectionPtr connection );
 
