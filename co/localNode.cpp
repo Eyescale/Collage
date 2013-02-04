@@ -1570,7 +1570,7 @@ bool LocalNode::_cmdConnect( ICommand& command )
 
             // refuse connection
             OCommand( Connections( 1, connection ), cmd )
-                << 0 << requestID;
+                << NodeID() << requestID;
 
             // NOTE: There is no close() here. The reply command above has to be
             // received by the peer first, before closing the connection.
