@@ -711,18 +711,6 @@ void LocalNode::swapObject( Object* oldObject, Object* newObject )
     _impl->objectStore->swapObject( oldObject, newObject );
 }
 
-void LocalNode::releaseObject( Object* object )
-{
-    LBASSERT( object );
-    if( !object || !object->isAttached( ))
-        return;
-
-    if( object->isMaster( ))
-        _impl->objectStore->deregisterObject( object );
-    else
-        _impl->objectStore->unmapObject( object );
-}
-
 void LocalNode::objectPush( const uint128_t& groupID,
                             const uint128_t& objectType,
                             const uint128_t& objectID, DataIStream& istream )

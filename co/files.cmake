@@ -37,9 +37,9 @@ set(CO_PUBLIC_HEADERS
   dispatcher.h
   exception.h
   global.h
-  init.h # reviewed for 1.0 API
+  init.h
   localNode.h
-  log.h
+  log.h # reviewed for 1.0 API
   node.h
   oCommand.h
   nodeType.h
@@ -130,6 +130,7 @@ set(CO_SOURCES
   objectDeltaDataOStream.cpp
   objectDataICommand.cpp
   objectDataOCommand.cpp
+  objectHandler.cpp
   objectICommand.cpp
   objectOCommand.cpp
   objectInstanceDataOStream.cpp

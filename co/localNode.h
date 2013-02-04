@@ -213,38 +213,38 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          *         object is not found or the requested version is no longer
          *         available.
          * @sa registerObject
+         * @version 1.0
          */
         CO_API bool mapObject( Object* object, const UUID& id,
                                const uint128_t& version = VERSION_OLDEST );
 
-        /** Convenience wrapper for mapObject(). */
+        /** Convenience wrapper for mapObject(). @version 1.0 */
         bool mapObject( Object* object, const ObjectVersion& v )
             { return mapObject( object, v.identifier, v.version ); }
 
-        /** Start mapping a distributed object. @sa mapObject() */
+        /** Start mapping a distributed object. @sa mapObject() @version 1.0 */
         CO_API uint32_t mapObjectNB( Object* object, const UUID& id,
                                      const uint128_t& version = VERSION_OLDEST);
 
         /**
-         * Start mapping a distributed object from a known master.
+         * Start mapping a distributed object from a known master node.
          * @sa mapObject()
+         * @version 1.0
          */
         CO_API virtual uint32_t mapObjectNB( Object* object, const UUID& id,
                                              const uint128_t& version,
                                              NodePtr master );
 
-        /** Finalize the mapping of a distributed object. */
+        /** Finalize the mapping of a distributed object. @version 1.0 */
         CO_API virtual bool mapObjectSync( const uint32_t requestID );
 
         /**
          * Unmap a mapped object.
          *
          * @param object the mapped object.
+         * @version 1.0
          */
         CO_API virtual void unmapObject( Object* object );
-
-        /** Convenience method to deregister or unmap an object. */
-        CO_API void releaseObject( Object* object );
 
         /** Disable the instance cache of a stopped local node. @version 1.0 */
         CO_API void disableInstanceCache();
@@ -266,6 +266,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * matched series of disable/enable will be effective. The disable is
          * completely synchronous, that is, no more instance data will be sent
          * after the first disable.
+         *
          * @version 1.0
          */
         CO_API void enableSendOnRegister();
@@ -274,15 +275,16 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         CO_API void disableSendOnRegister();
 
         /**
-         * Handler for an Object::push operation.
+         * Handler for an Object::push() operation.
          *
-         * Called at least on each node listed in an Object::push upon reception
-         * of the pushed data from the command thread. Called on all nodes of a
-         * multicast group, even on nodes not listed in the Object::push.
+         * Called at least on each node listed in an Object::push() operation
+         * upon reception of the pushed data from the command thread. Called on
+         * all nodes of a multicast group, even for nodes not listed in the
+         * Object::push().
          *
          * The default implementation calls registered push handlers. Typically
          * used to create an object on a remote node, using the objectType for
-         * instantiation, the istream to initialize it and the objectID to map
+         * instantiation, the istream to initialize it, and the objectID to map
          * it using VERSION_NONE. The groupID may be used to differentiate
          * multiple concurrent push operations.
          *
@@ -290,13 +292,14 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * @param objectType The type identifier given to Object::push()
          * @param objectID The identifier of the pushed object
          * @param istream the input data stream containing the instance data.
+         * @version 1.0
          */
         CO_API virtual void objectPush( const uint128_t& groupID,
                                         const uint128_t& objectType,
                                         const uint128_t& objectID,
                                         DataIStream& istream );
 
-        /** Function signature for push handlers. */
+        /** Function signature for push handlers. @version 1.0 */
         typedef boost::function< void( const uint128_t&, //!< groupID
                                        const uint128_t&, //!< objectType
                                        const uint128_t&, //!< objectID
@@ -309,21 +312,26 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          *
          * @param groupID The group identifier given to Object::push()
          * @param handler The handler function called for a registered groupID
+         * @version 1.0
          */
         CO_API void registerPushHandler( const uint128_t& groupID,
                                          const PushHandler& handler );
 
 
-        /** Function signature for custom command handlers. */
+        /** Function signature for custom command handlers. @version 1.0 */
         typedef boost::function< bool( CustomICommand& ) > CommandHandler;
 
         /**
          * Register a custom command handler handled by this node.
          *
+         * Custom command handlers are invoked on reception of a CustomICommand
+         * send by Node::send( uint128_t, ... ).
+         *
          * @param command the unique identifier of the custom command
          * @param func the handler function for the custom command
          * @param queue the queue where the command should be inserted to
          * @return true on successful registering, false otherwise
+         * @version 1.0
          */
         CO_API bool registerCommandHandler( const uint128_t& command,
                                             const CommandHandler& func,
@@ -339,22 +347,24 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         /**
          * Get a node by identifier.
          *
-         * The node might not be connected.
+         * The node might not be connected. Thread safe.
          *
          * @param id the node identifier.
          * @return the node.
+         * @version 1.0
          */
         CO_API NodePtr getNode( const NodeID& id ) const;
 
-        /** Assemble a vector of the currently connected nodes. */
+        /** Assemble a vector of the currently connected nodes. @version 1.0 */
         CO_API void getNodes( Nodes& nodes, const bool addSelf = true ) const;
 
-        /** Return the command queue to the command thread. */
+        /** Return the command queue to the command thread. @version 1.0 */
         CO_API CommandQueue* getCommandThreadQueue();
 
         /**
          * @return true if executed from the command handler thread, false if
          *         not.
+         * @version 1.0
          */
         CO_API bool inCommandThread() const;
 
@@ -373,10 +383,10 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         /** Add a listening connection to this listening node. */
         CO_API void addListener( ConnectionPtr connection );
 
-        /** Remove listening connections from this listening node. */
+        /** Remove listening connections from this listening node.*/
         CO_API void removeListeners( const Connections& connections );
 
-        /**
+        /** @internal
          * Flush all pending commands on this listening node.
          *
          * This causes the receiver thread to redispatch all pending commands,
@@ -396,6 +406,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * @param command the command.
          * @return the result of the operation.
          * @sa ICommand::invoke
+         * @version 1.0
          */
         CO_API virtual bool dispatchCommand( ICommand& command );
 
@@ -406,9 +417,11 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * @return The send token to release.
          */
         CO_API SendToken acquireSendToken( NodePtr toNode );
+
+        /** Release the given send token. */
         CO_API void releaseSendToken( SendToken& token );
 
-        /** @return a Zeroconf communicator handle for this node. */
+        /** @return a Zeroconf communicator handle for this node. @version 1.0 */
         CO_API Zeroconf getZeroconf();
         //@}
 
@@ -425,11 +438,14 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          */
         CO_API bool pingIdleNodes();
 
-        /** Set the affinity for this, the receiver and the command thread. */
+        /**
+         * Bind this, the receiver and the command thread to the given
+         * lunchbox::Thread affinity.
+         */
         CO_API void setAffinity( const int32_t affinity );
 
     protected:
-        /**  @internal
+        /** @internal
          * Connect a node proxy to this node.
          *
          * This node has to be in the listening state. The node proxy will be
@@ -455,6 +471,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * @param type the type the node type
          * @return the node.
          * @sa ctor type parameter
+         * @version 1.0
          */
         CO_API virtual NodePtr createNode( const uint32_t type );
 

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2013, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -15,22 +15,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_LOG_H
-#define CO_LOG_H
+#include "objectHandler.h"
 
-#include <lunchbox/log.h>
+#include "object.h"
 
 namespace co
 {
-    /** lunchbox::Log topic emitted by Collage. */
-    enum LogTopics
-    {
-        LOG_OBJECTS = lunchbox::LOG_CUSTOM << 0,  // 16
-        LOG_BARRIER = lunchbox::LOG_CUSTOM << 1,  // 32
-        LOG_RSP     = lunchbox::LOG_CUSTOM << 2,  // 64
-        LOG_PACKETS = lunchbox::LOG_CUSTOM << 3,  // 128
-        LOG_PLUGIN  = lunchbox::LOG_CUSTOM << 4,  // 256
-        LOG_CUSTOM  = lunchbox::LOG_CUSTOM << 5   // 512
-    };
+void ObjectHandler::releaseObject( Object* object )
+{
+    LBASSERT( object );
+    if( !object || !object->isAttached( ))
+        return;
+
+    if( object->isMaster( ))
+        deregisterObject( object );
+    else
+        unmapObject( object );
 }
-#endif // CO_LOG_H
+}

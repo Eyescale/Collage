@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2012-2013, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -18,18 +18,15 @@
 #ifndef CO_OBJECTHANDLER_H
 #define CO_OBJECTHANDLER_H
 
+#include <co/api.h>
+#include <co/types.h>
+
 namespace co
 {
     /** Interface for entities which map and register objects. @version 0.5.1 */
     class ObjectHandler
     {
     public:
-        /** Construct a new object handler. @version 0.5.1 */
-        ObjectHandler() {}
-
-        /** Destroy this object handler. */
-        virtual ~ObjectHandler() {}
-
         /**
          * Register a distributed object.
          *
@@ -40,6 +37,7 @@ namespace co
          *
          * @param object the object instance.
          * @return true if the object was registered, false otherwise.
+         * @version 1.0
          */
         virtual bool registerObject( Object* object ) = 0;
 
@@ -47,6 +45,7 @@ namespace co
          * Deregister a distributed object.
          *
          * @param object the object instance.
+         * @version 1.0
          */
         virtual void deregisterObject( Object* object ) = 0;
 
@@ -58,16 +57,27 @@ namespace co
          * @param version the version to map.
          * @param master the master node, may be invalid/0.
          * @return the request identifier for mapObjectSync().
+         * @version 1.0
          */
         virtual uint32_t mapObjectNB( Object* object, const UUID& id,
                                       const uint128_t& version,
                                       NodePtr master ) = 0;
 
-        /** Finalize the mapping of a distributed object. */
+        /** Finalize the mapping of a distributed object. @version 1.0 */
         virtual bool mapObjectSync( const uint32_t requestID ) = 0;
 
-        /** Unmap a mapped object. */
+        /** Unmap a mapped object. @version 1.0 */
         virtual void unmapObject( Object* object ) = 0;
+
+        /** Convenience method to deregister or unmap an object. @version 1.0 */
+        CO_API void releaseObject( Object* object );
+
+    protected:
+        /** Construct a new object handler. @version 0.5.1 */
+        ObjectHandler() {}
+
+        /** Destroy this object handler. @version 1.0 */
+        virtual ~ObjectHandler() {}
     };
 }
 #endif // CO_OBJECTHANDLER_H

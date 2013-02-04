@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -22,7 +22,7 @@
 
 #include <co/dispatcher.h>        // base class
 #include <co/connection.h>        // used in inline template method
-#include <co/nodeType.h>          // for NODETYPE_CO_NODE enum
+#include <co/nodeType.h>          // for NODETYPE_NODE enum
 #include <co/types.h>
 
 namespace co
@@ -30,7 +30,7 @@ namespace co
 namespace detail { class Node; }
 
     /**
-     * Manages a node.
+     * Proxy node representing a remote LocalNode.
      *
      * A node represents a separate entity in a peer-to-peer network, typically
      * a process on a cluster node or on a shared-memory system. It should have
@@ -44,12 +44,13 @@ namespace detail { class Node; }
          * Construct a new node proxy.
          *
          * @param type the type of the node, used during connect().
+         * @version 1.0
          */
         CO_API Node( const uint32_t type = co::NODETYPE_NODE );
 
         /** @name Data Access. */
         //@{
-        /** @return the type of the node. */
+        /** @return the type of the node. @version 1.0 */
         CO_API uint32_t getType() const;
 
         bool operator == ( const Node* n ) const;
