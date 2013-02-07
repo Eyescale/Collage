@@ -176,7 +176,9 @@ void FullMasterCM::_initSlave( MasterCMCommand command,
 #ifndef NDEBUG
     if( version != VERSION_OLDEST && version < start )
         LBINFO << "Mapping version " << start << " instead of requested "
-               << version << std::endl;
+               << version << " for " << lunchbox::className( _object )
+               << " " << ObjectVersion( _object->getID(), _version ) << " of "
+               << _instanceDatas.size() << "/" << _nVersions << std::endl;
 #endif
 
     const uint128_t& minCachedVersion = command.getMinCachedVersion();
