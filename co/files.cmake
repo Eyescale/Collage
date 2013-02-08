@@ -39,10 +39,10 @@ set(CO_PUBLIC_HEADERS
   global.h
   init.h
   localNode.h
-  log.h # reviewed for 1.0 API
+  log.h
   node.h
   oCommand.h
-  nodeType.h
+  nodeType.h # reviewed for 1.0 API
   object.h
   objectFactory.h
   objectHandler.h
