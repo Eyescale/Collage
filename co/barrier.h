@@ -2,6 +2,8 @@
 /* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2011, Cedric Stalder <cedric.stalder@gmail.com>
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
@@ -109,4 +111,3 @@ namespace detail { class Barrier; }
 }
 
 #endif // CO_BARRIER_H
-

@@ -1,16 +1,18 @@
 
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com> 
+/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -38,8 +40,8 @@ class IBAdapter
         , _protectionDomain( 0 ){}
     virtual ~IBAdapter(){ close(); }
 
-    // open the channel adapter  and read specific attribute for build 
-    // a protection domain 
+    // open the channel adapter  and read specific attribute for build
+    // a protection domain
     bool open();
 
     // close the channel adapter
@@ -50,7 +52,7 @@ class IBAdapter
     ib_pd_handle_t getProtectionDomain() const { return _protectionDomain; }
 
     uint16_t getLid( const int ib_port ) const
-            { return _adapterAttr->p_port_attr[ib_port-1].lid; } 
+            { return _adapterAttr->p_port_attr[ib_port-1].lid; }
 
   private:
 
@@ -61,5 +63,5 @@ class IBAdapter
 
 };
 }
-#endif //CO_IBADAPTER_H 
+#endif //CO_IBADAPTER_H
 #endif //EQ_INFINIBAND

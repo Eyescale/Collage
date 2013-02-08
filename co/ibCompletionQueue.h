@@ -1,16 +1,18 @@
 
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com> 
+/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -46,7 +48,7 @@ public:
 
     /** Create and intialize Infinband completion queues*/
     bool create( IBConnection* myConnection,
-                 const IBAdapter *adapter, 
+                 const IBAdapter *adapter,
                  const uint32_t size );
 
     /** reset read events */
@@ -59,7 +61,7 @@ public:
     ib_cq_handle_t getReadHandle()  const { return _cqR; }
     // get a reference handle to the newly created completion queue write
     ib_cq_handle_t getWriteHandle() const { return _cqW; }
-    
+
     void removeEventRead();
 
     ib_api_status_t pollCQRead( IN   OUT    ib_wc_t** const     pp_free_wclist,
@@ -70,7 +72,7 @@ public:
 
     void resetEventRead();
     eq::lunchbox::Lock   _mutex;
-    
+
 private:
 
     ib_cq_handle_t      _cqR;

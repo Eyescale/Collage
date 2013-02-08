@@ -1,16 +1,18 @@
 
-/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -41,7 +43,7 @@ namespace co
 
         /**
          * @return a new object instance of the given type.
-         * @version 0.5.1
+         * @version 1.0
          * @sa ObjectType, Config::getObject(), Renderer::getObject() */
         virtual co::Object* createObject( const uint32_t type )
             { LBUNIMPLEMENTED; return 0; }

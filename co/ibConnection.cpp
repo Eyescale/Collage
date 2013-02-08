@@ -1,16 +1,18 @@
 
-/* Copyright (c) 2005-2010, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2010, Stefan Eilemann <eile@equalizergraphics.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -31,7 +33,7 @@
 namespace co
 
 IBConnection::IBConnection( )
-{ 
+{
     _description->type = CONNECTIONTYPE_IB;
     _description->bandwidth = 819200;
 
@@ -57,14 +59,14 @@ IBConnection::~IBConnection()
         if ( _interfaces[i] )
             delete _interfaces[i];
         _interfaces[i] = 0;
-        
+
         if ( _completionQueues[i] )
            delete _completionQueues[i];
         _completionQueues[i] = 0;
     }
 }
 
-eq::net::Connection::Notifier IBConnection::getNotifier() const 
+eq::net::Connection::Notifier IBConnection::getNotifier() const
 {
     if( isListening( ) )
         return _socketConnection->getNotifier();
@@ -78,13 +80,13 @@ bool IBConnection::connect()
 
     if( _state != STATE_CLOSED )
         return false;
-    
+
     _state = STATE_CONNECTING;
     _fireStateChanged();
 
     _socketConnection = new SocketConnection();
 
-    ConnectionDescriptionPtr description = 
+    ConnectionDescriptionPtr description =
                                      new ConnectionDescription( *_description );
     description->type = CONNECTIONTYPE_TCPIP;
 
@@ -119,7 +121,7 @@ void IBConnection::_close()
         _completionQueues[i]->close();
     }
     _adapter.close();
- 
+
     _state = STATE_CLOSED;
     _fireStateChanged();
 }
@@ -128,9 +130,9 @@ bool IBConnection::listen()
 {
     LBASSERT( _description->type == CONNECTIONTYPE_IB );
 
-    _socketConnection = new SocketConnection();  
+    _socketConnection = new SocketConnection();
 
-    ConnectionDescription* description = 
+    ConnectionDescription* description =
             new ConnectionDescription( *_description );
     description->type = CONNECTIONTYPE_TCPIP;
     _socketConnection->setDescription( description );
@@ -160,7 +162,7 @@ ConnectionPtr IBConnection::acceptSync()
     ConnectionPtr newConnection = ibConnection;
 
     ibConnection->setDescription( _description );
-    ibConnection->_preRegister( );  
+    ibConnection->_preRegister( );
     ibConnection->_setConnection( connection );
     if( !ibConnection->_establish( true ) )
     {
@@ -183,15 +185,15 @@ bool IBConnection::_preRegister( )
 
     for ( int i = 0; i < EQ_NUMCONN_IB; i++ )
     {
-        if( !_completionQueues[i]->create( this, &_adapter, 
+        if( !_completionQueues[i]->create( this, &_adapter,
              _interfaces[i]->getNumberBlockMemory() ))
         {
             LBWARN << "Can't create completion queue" << std::endl;
             close();
             return false;
         }
-        
-        if( !_interfaces[i]->create( &_adapter, 
+
+        if( !_interfaces[i]->create( &_adapter,
                                      _completionQueues[i],
                                      this ))
         {
@@ -199,7 +201,7 @@ bool IBConnection::_preRegister( )
             return false;
         }
     }
-    
+
     return true;
 }
 bool IBConnection::_establish( bool isServer )
@@ -221,7 +223,7 @@ bool IBConnection::_establish( bool isServer )
 bool IBConnection::_establish( bool isServer, uint32_t index )
 {
 
-    uint32_t numberBlockMemory = 
+    uint32_t numberBlockMemory =
             _interfaces[index]->getNumberBlockMemory();
     int psn;
     for (int i = 0 ; i < numberBlockMemory ; i++)
@@ -231,11 +233,11 @@ bool IBConnection::_establish( bool isServer, uint32_t index )
         // Create connection between client and server.
         // We do it by exchanging data over a TCP socket connection.
        /*
-        LBINFO << "local address:  LID " << myDest.lid 
-               << " QPN "                << myDest.qpn 
-               << " PSN "                << myDest.psn 
+        LBINFO << "local address:  LID " << myDest.lid
+               << " QPN "                << myDest.qpn
+               << " PSN "                << myDest.psn
                << " RKey "               << myDest.rkey
-               << " VAddr "              << myDest.vaddr 
+               << " VAddr "              << myDest.vaddr
                << std::endl;
         */
         struct IBDest remDest;
@@ -248,15 +250,15 @@ bool IBConnection::_establish( bool isServer, uint32_t index )
             close();
             return false;
         }
-    /*    LBINFO << "dest address:  LID " << remDest.lid 
-               << " QPN "               << remDest.qpn 
-               << " PSN "               << remDest.psn 
+    /*    LBINFO << "dest address:  LID " << remDest.lid
+               << " QPN "               << remDest.qpn
+               << " PSN "               << remDest.psn
                << " RKey "              << remDest.rkey
-               << " VAddr "             << remDest.vaddr 
+               << " VAddr "             << remDest.vaddr
                << std::endl;
      */
         _interfaces[index]->setDestInfo( &remDest, i );
-        
+
         // An additional handshake is required *after* moving qp to RTR.
         // Arbitrarily reuse exch_dest for this purpose.
         rc = !isServer ? _clientExchDest( &myDest, &remDest):
@@ -269,13 +271,13 @@ bool IBConnection::_establish( bool isServer, uint32_t index )
 bool IBConnection::_writeKeys( const struct IBDest *myDest )
 {
     char msg[KEY_MSG_SIZE];
-    
-    sprintf( msg, 
-             KEY_PRINT_FMT, 
-             cl_hton16(myDest->lid), 
-             cl_hton32(myDest->qpn), 
-             cl_hton32(myDest->psn), 
-             cl_hton32(myDest->rkey), 
+
+    sprintf( msg,
+             KEY_PRINT_FMT,
+             cl_hton16(myDest->lid),
+             cl_hton32(myDest->qpn),
+             cl_hton32(myDest->psn),
+             cl_hton32(myDest->rkey),
              myDest->vaddr);
 
     _socketConnection->send( msg, KEY_MSG_SIZE );
@@ -298,12 +300,12 @@ bool IBConnection::_readKeys( struct IBDest *remDest)
 
     char* data = reinterpret_cast<char*>(buf.getData());
 
-    parsed = sscanf( data, 
-                     KEY_PRINT_FMT, 
-                     &remDest->lid, 
+    parsed = sscanf( data,
+                     KEY_PRINT_FMT,
+                     &remDest->lid,
                      &remDest->qpn,
                      &remDest->psn,
-                     &remDest->rkey, 
+                     &remDest->rkey,
                      &remDest->vaddr );
 
     remDest->lid  = cl_ntoh16(remDest->lid);
@@ -311,7 +313,7 @@ bool IBConnection::_readKeys( struct IBDest *remDest)
     remDest->psn  = cl_ntoh32(remDest->psn);
     remDest->rkey = cl_ntoh32(remDest->rkey);
 
-    if ( parsed != 5 ) 
+    if ( parsed != 5 )
         return false;
 
     remDest->vaddr = ( uintptr_t ) remDest->vaddr;
@@ -338,21 +340,21 @@ bool IBConnection::_clientExchDest( const struct IBDest *myDest,
 void IBConnection::addEvent()
 {
     eq::lunchbox::ScopedMutex mutex( _mutex );
-    
+
     _comptEvent++;
 
-    if( _comptEvent  > 0 ) 
+    if( _comptEvent  > 0 )
         SetEvent( _readEvent );
 }
 void IBConnection::removeEvent()
 {
     eq::lunchbox::ScopedMutex mutex( _mutex );
     _comptEvent--;
-    if( _comptEvent  < 1 ) 
+    if( _comptEvent  < 1 )
     {
         ResetEvent( _readEvent );
     }
-        
+
 }
 
 void IBConnection::incReadInterface()
@@ -375,7 +377,7 @@ int64_t IBConnection::readSync( void* buffer, const uint64_t bytes,
 {
     LB_TS_THREAD( _recvThread );
     int64_t result = _interfaces[ numRead ]->readSync( buffer, bytes );
-    if ( result < 0 ) 
+    if ( result < 0 )
         close();
 
     return result;
@@ -385,10 +387,10 @@ int64_t IBConnection::write( const void* buffer, const uint64_t bytes)
 {
     if( _state != STATE_CONNECTED )
         return -1;
-    
+
     int64_t result = _interfaces[ numWrite ]->postRdmaWrite( buffer, bytes );
 
-    if ( result < 0 ) 
+    if ( result < 0 )
         close();
 
     return result;

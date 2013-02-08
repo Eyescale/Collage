@@ -2,6 +2,8 @@
 /* Copyright (c) 2012, Computer Integration & Programming Solutions, Corp. and
  *                     United States Naval Research Laboratory
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.

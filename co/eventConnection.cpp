@@ -1,15 +1,17 @@
 
-/* Copyright (c) 2010-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2010-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -53,7 +55,7 @@ bool EventConnection::connect()
 #endif
 
     _setState( STATE_CONNECTED );
-    return true;    
+    return true;
 }
 
 void EventConnection::_close()
@@ -80,7 +82,7 @@ void EventConnection::set()
     lunchbox::ScopedMutex<> mutex( _lock );
     if( _set )
         return;
-    
+
     const char c = 42;
     _connection->acceptSync()->send( &c, 1, true );
     _set = true;
@@ -94,7 +96,7 @@ void EventConnection::reset()
     lunchbox::ScopedMutex<> mutex( _lock );
     if( !_set )
         return;
-    
+
     _buffer.setSize( 0 );
     _connection->recvNB( &_buffer, 1 );
 

@@ -2,15 +2,17 @@
 /* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -51,17 +53,17 @@ namespace detail { class Serializable; }
     protected:
         /** Construct a new Serializable. @version 1.0 */
         CO_API Serializable();
-        
+
         /**
          * Construct an unmapped, unregistered copy of an serializable.
          * @version 1.0
          */
         CO_API Serializable( const Serializable& );
-        
+
         /** Destruct the serializable. @version 1.0 */
         CO_API virtual ~Serializable();
 
-        /** 
+        /**
          * Worker for pack() and getInstanceData().
          *
          * Override this and deserialize() if you want to distribute subclassed
@@ -75,13 +77,13 @@ namespace detail { class Serializable; }
          */
         virtual void serialize( co::DataOStream&, const uint64_t ){}
 
-        /** 
+        /**
          * Worker for unpack() and applyInstanceData().
-         * 
+         *
          * This function is called with the dirty bits send by the master
          * instance. The dirty bits are received beforehand, and do not need to
          * be deserialized by the overriding method.
-         * 
+         *
          * @sa serialize()
          * @version 1.0
          */
@@ -89,7 +91,7 @@ namespace detail { class Serializable; }
 
         virtual ChangeType getChangeType() const { return DELTA; }
 
-        /** 
+        /**
          * The changed parts of the serializable since the last pack().
          *
          * Subclasses should define their own bits, starting at DIRTY_CUSTOM.

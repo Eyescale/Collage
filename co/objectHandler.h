@@ -1,6 +1,8 @@
 
 /* Copyright (c) 2012-2013, Stefan Eilemann <eile@eyescale.ch>
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.

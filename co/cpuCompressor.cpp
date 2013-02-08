@@ -2,15 +2,17 @@
 /* Copyright (c) 2010, Cedric Stalder <cedric.stalder@gmail.com>
  *               2010-2012, Stefan Eilemann <eile@eyescale.ch>
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -41,32 +43,32 @@ void CPUCompressor::compress( void* const in, const uint64_t inDims[2] )
     _plugin->compress( _instance, _name, in, inDims, EQ_COMPRESSOR_DATA_1D );
 }
 
-unsigned CPUCompressor::getNumResults( ) const 
+unsigned CPUCompressor::getNumResults( ) const
 {
     LBASSERT( _plugin );
     LBASSERT( _instance );
     return _plugin->getNumResults( _instance, _name );
 }
 
-void CPUCompressor::getResult( const unsigned i, 
-                                   void** const out, 
+void CPUCompressor::getResult( const unsigned i,
+                                   void** const out,
                                    uint64_t* const outSize ) const
 {
     LBASSERT( _plugin );
     LBASSERT( _instance );
-    return _plugin->getResult( _instance, _name, i, out, outSize ); 
+    return _plugin->getResult( _instance, _name, i, out, outSize );
 }
 
 void CPUCompressor::decompress( const void* const* in,
                                 const uint64_t* const inSizes,
                                 const unsigned numInputs, void* const out,
                                 uint64_t pvpOut[4], const uint64_t flags )
-{ 
+{
     _plugin->decompress( _instance, _name, in, inSizes, numInputs, out, pvpOut,
                          flags );
 }
 
-void CPUCompressor::decompress( const void* const* in, 
+void CPUCompressor::decompress( const void* const* in,
                                 const uint64_t* const inSizes,
                                 const unsigned numInputs, void* const out,
                                 uint64_t outDim[2])
@@ -82,7 +84,7 @@ bool CPUCompressor::initCompressor( const uint32_t dataType,
                                                          noAlpha ));
 }
 
-uint32_t CPUCompressor::chooseCompressor( const uint32_t tokenType, 
+uint32_t CPUCompressor::chooseCompressor( const uint32_t tokenType,
                                           const float minQuality,
                                           const bool ignoreAlpha )
 {
@@ -98,7 +100,7 @@ uint32_t CPUCompressor::chooseCompressor( const uint32_t tokenType,
     {
         const Plugin* plugin = *i;
         const CompressorInfos& infos = plugin->getInfos();
-        
+
         for( CompressorInfos::const_iterator j = infos.begin();
              j != infos.end(); ++j )
         {

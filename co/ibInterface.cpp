@@ -1,16 +1,18 @@
 
-/* Copyright (c) 2005-2009, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2009, Stefan Eilemann <eile@equalizergraphics.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -50,15 +52,15 @@ IBInterface::IBInterface( )
         _writeBlocks[i] = new IBMemBlock();
         _readBlocks[i] = new IBMemBlock();
     }
-    
 
-     memset( _readPoll.getData(), 0, sizeof ( uint32_t ) 
+
+     memset( _readPoll.getData(), 0, sizeof ( uint32_t )
                             * EQ_NUMBLOCKMEMORY );
      memset( _writePoll.getData(), true, sizeof ( bool ) * EQ_NUMBLOCKMEMORY );
 
     _floatTimeReadNB = 0.0f;
     _floatTimeReadSync  = 0.0f;
-    
+
     _timeTotalWaitPoll = 0.0f;
     _timeTotalWaitobj  = 0.0f;
 
@@ -86,7 +88,7 @@ struct IBDest IBInterface::getMyDest( uint32_t index )
     myDest.rkey  = _writeBlocks[index]->getRemoteKey();
     myDest.vaddr = _writeBlocks[index]->getVaddr();
     myDest.psn   = _psn;
-    
+
     return myDest;
 }
 
@@ -95,12 +97,12 @@ bool IBInterface::_createQueuePair( IBAdapter* adapter )
     // Attributes used to initialize a queue pair at creation time.
     ib_qp_create_t    queuePairCreate;
     memset( &queuePairCreate, 0, sizeof( ib_qp_create_t ));
-    
+
     queuePairCreate.h_sq_cq     = _completionQueue->getWriteHandle();
     queuePairCreate.h_rq_cq     = _completionQueue->getReadHandle();
     // Indicates the requested maximum number of work requests that may be
-    // outstanding on the queue pair's send and receive queue.  
-    // This value must be less than or equal to the maximum reported 
+    // outstanding on the queue pair's send and receive queue.
+    // This value must be less than or equal to the maximum reported
     // by the channel adapter associated with the queue pair.
     queuePairCreate.sq_depth     = EQ_NUMBLOCKMEMORY;
     queuePairCreate.rq_depth     = EQ_NUMBLOCKMEMORY;
@@ -112,39 +114,39 @@ bool IBInterface::_createQueuePair( IBAdapter* adapter )
     queuePairCreate.rq_sge         = 1;
     // Send immediate data with the given request.
     queuePairCreate.sq_signaled  = IB_SEND_OPT_SIGNALED;
-    
+
     // connection type RC
     queuePairCreate.qp_type       = IB_QPT_RELIABLE_CONN;
     queuePairCreate.sq_signaled   = true;
     queuePairCreate.sq_max_inline = EQ_IB_MAXINLINE;
-    
+
     // Creates a queue pair
-    ib_api_status_t ibStatus = ib_create_qp( adapter->getProtectionDomain(), 
-                                             &queuePairCreate, 
+    ib_api_status_t ibStatus = ib_create_qp( adapter->getProtectionDomain(),
+                                             &queuePairCreate,
                                              0, 0, &_queuePair );
     if ( ibStatus != IB_SUCCESS )
     {
-        LBERROR << "cannot create a queue pair" << std::endl; 
+        LBERROR << "cannot create a queue pair" << std::endl;
         return false;
     }
     return true;
 }
-bool IBInterface::create( IBAdapter* adapter, 
+bool IBInterface::create( IBAdapter* adapter,
                           IBCompletionQueue* completionQueue,
                           IBConnection* ibConnection )
 {
-    
+
     _completionQueue = completionQueue;
     _ibConnection = ibConnection;
-    // memory block Write 
+    // memory block Write
     for ( int i = 0; i < EQ_NUMBLOCKMEMORY ; i++ )
     {
-        if ( !_writeBlocks[i]->create( adapter->getProtectionDomain(), 
+        if ( !_writeBlocks[i]->create( adapter->getProtectionDomain(),
             EQ_MAXBLOCKBUFFER ))
             return false;
-        
+
         // memory block Read
-        if ( !_readBlocks[i]->create( adapter->getProtectionDomain(), 
+        if ( !_readBlocks[i]->create( adapter->getProtectionDomain(),
             EQ_MAXBLOCKBUFFER ))
             return false;
     }
@@ -158,25 +160,25 @@ bool IBInterface::create( IBAdapter* adapter,
     queuePairModify.state.init.primary_port = 1;
     //    Indicates the type of access is permitted on resources such as QPs,
     //    memory regions and memory windows.
-    queuePairModify.state.init.access_ctrl  = IB_AC_RDMA_WRITE | 
+    queuePairModify.state.init.access_ctrl  = IB_AC_RDMA_WRITE |
                                               IB_AC_LOCAL_WRITE ;
-    
+
     ib_api_status_t ibStatus;
     ibStatus = ib_modify_qp( _queuePair, &queuePairModify );
     if ( ibStatus != IB_SUCCESS )
     {
-        LBERROR << "cannot modify a queue pair" << std::endl; 
+        LBERROR << "cannot modify a queue pair" << std::endl;
         return false;
     }
 
     ibStatus = ib_query_qp( _queuePair, &_queuePairAttr );
     if ( ibStatus != IB_SUCCESS )
     {
-        LBERROR << "cannot query a queue pair" << std::endl; 
+        LBERROR << "cannot query a queue pair" << std::endl;
         return false;
     }
 
-    _dlid = adapter->getLid( 1 ); 
+    _dlid = adapter->getLid( 1 );
 
     return true;
 }
@@ -195,7 +197,7 @@ bool IBInterface::_setAttributeReadyToReceive()
     attr.state.rtr.rq_psn            = _dests.getData()[0].psn;
     attr.state.rtr.resp_res        = 1;
     attr.state.rtr.rnr_nak_timeout = 12;
-    
+
     attr.state.rtr.primary_av.grh_valid = 0;
     attr.state.rtr.primary_av.dlid      = _dests.getData()[0].lid;
     attr.state.rtr.primary_av.sl        = 0;
@@ -208,7 +210,7 @@ bool IBInterface::_setAttributeReadyToReceive()
 
     if( ib_modify_qp( _queuePair, &attr ) != IB_SUCCESS )
     {
-        LBERROR << "Error during modification Queue pair  RTR" << std::endl; 
+        LBERROR << "Error during modification Queue pair  RTR" << std::endl;
         return false;
     }
 
@@ -234,7 +236,7 @@ bool IBInterface::_setAttributeReadyToSend( )
 
     if( ib_modify_qp( _queuePair, &attr ) != IB_SUCCESS )
     {
-        LBERROR << "Error during modification Queue pair RTS" << std::endl; 
+        LBERROR << "Error during modification Queue pair RTS" << std::endl;
         return false;
     }
 
@@ -243,11 +245,11 @@ bool IBInterface::_setAttributeReadyToSend( )
 }
 void IBInterface::modiyQueuePairAttribute( )
 {
-    
-    if ( !_setAttributeReadyToReceive() ) 
+
+    if ( !_setAttributeReadyToReceive() )
         return;
 
-    
+
     if ( !_setAttributeReadyToSend( ))
         return;
 
@@ -264,7 +266,7 @@ void IBInterface::modiyQueuePairAttribute( )
         _rwr.ds_array   = &_recvList;
         _rwr.num_ds     = 1;
         _rwr.p_next     = 0;
-    
+
 
         ib_api_status_t ibStatus = ib_post_recv( _queuePair, &_rwr, 0);
         _readPoll.getData()[ i ];
@@ -274,27 +276,27 @@ void IBInterface::modiyQueuePairAttribute( )
 void IBInterface::close()
 {
 #ifdef EQ_MEASURE_TIME
-    LBINFO << " Time total to ReadNB     : " 
+    LBINFO << " Time total to ReadNB     : "
            << _floatTimeReadNB << std::endl;
-    LBINFO << " Time total to ReadSync   : " 
+    LBINFO << " Time total to ReadSync   : "
            << _floatTimeReadSync << std::endl;
-    LBINFO << " Time total to WaitPoll   : " 
+    LBINFO << " Time total to WaitPoll   : "
            << _timeTotalWaitPoll << std::endl;
     LBINFO << " Time total to copyBuffer : "
            << _timeCopyBufferRead << std::endl;
-    LBINFO << " Time total to WaitObj    : " 
+    LBINFO << " Time total to WaitObj    : "
            <<  _timeTotalWaitobj << std::endl;
 
-    LBINFO << " Time total to Write   : " 
+    LBINFO << " Time total to Write   : "
            << _timeTotalWrite << std::endl;
-    LBINFO << " Time total to WaitWrite   : " 
+    LBINFO << " Time total to WaitWrite   : "
            << _timeTotalWriteWait << std::endl;
-    LBINFO << " Time total to copyBuffer : " 
+    LBINFO << " Time total to copyBuffer : "
            << _timeCopyBufferWrite << std::endl;
 #endif
     ib_api_status_t    status;
 
-    if( _queuePair ) 
+    if( _queuePair )
     {
         status = ib_destroy_qp( _queuePair, 0 );
         _queuePair = 0;
@@ -317,16 +319,16 @@ bool IBInterface::_ibPostRecv( uint32_t numBuffer )
     //receive
     _rwr.wr_id      = numBuffer;
     _rwr.ds_array   = &_recvList;
-    
+
     _completionQueue->resetEventRead();
     eq::lunchbox::ScopedMutex mutex( _completionQueue->_mutex );
     ib_api_status_t ibStatus = ib_post_recv( _queuePair, &_rwr, 0);
     if ( ibStatus != IB_SUCCESS )
     {
-        LBERROR << "Error during ib_post_recv" << std::endl; 
+        LBERROR << "Error during ib_post_recv" << std::endl;
         return false;
     }
-    
+
     return true;
 }
 
@@ -360,13 +362,13 @@ int64_t IBInterface::readSync( void* buffer, uint32_t bytes )
         eq::lunchbox::Clock       clockWait;
         clockWait.reset();
 #endif
-        
+
         sizebuf = _waitPollCQ( _numBufRead );
 
 #ifdef EQ_MEASURE_TIME
             _timeTotalWaitPoll += clockWait.getTimef();
 #endif
-        
+
     if ( sizebuf > _posReadInBuffer )
     {
 #ifdef EQ_MEASURE_TIME
@@ -376,14 +378,14 @@ int64_t IBInterface::readSync( void* buffer, uint32_t bytes )
         // find a better memcpy or a system that we don't need to use memcpy
         // copy buffer
         uint32_t nbRead = LB_MIN( bytes, sizebuf - _posReadInBuffer);
-     /*   memcpy(reinterpret_cast<char*>( buffer ) + comptRead, 
+     /*   memcpy(reinterpret_cast<char*>( buffer ) + comptRead,
                                  reinterpret_cast<char*>
-                                 ( _readBlocks[_numBufRead]->buf.getData()) + 
+                                 ( _readBlocks[_numBufRead]->buf.getData()) +
                                    _posReadInBuffer, nbRead );*/
-        
-        eq::lunchbox::fastCopy( reinterpret_cast<char*>( buffer ) + comptRead, 
+
+        eq::lunchbox::fastCopy( reinterpret_cast<char*>( buffer ) + comptRead,
                                  reinterpret_cast<char*>
-                                 ( _readBlocks[_numBufRead]->buf.getData() ) + 
+                                 ( _readBlocks[_numBufRead]->buf.getData() ) +
                                    _posReadInBuffer, nbRead );
         _posReadInBuffer += nbRead;
 #ifdef EQ_MEASURE_TIME
@@ -400,9 +402,9 @@ int64_t IBInterface::readSync( void* buffer, uint32_t bytes )
            if (_numBufRead == EQ_NUMBLOCKMEMORY-1 )
               _ibConnection->incReadInterface();
 
-           // notify that read is finnish 
+           // notify that read is finnish
            _ibPostRecv( _numBufRead );
-           // To do work with more buffer in a CQ 
+           // To do work with more buffer in a CQ
            _numBufRead = ( _numBufRead + 1 ) % EQ_NUMBLOCKMEMORY;
         }
         return nbRead;
@@ -410,7 +412,7 @@ int64_t IBInterface::readSync( void* buffer, uint32_t bytes )
 
     LBWARN << "ERROR IN READ SYNC"<< std::endl;
     return -1;
-    
+
 #ifdef EQ_MEASURE_TIME
     _floatTimeReadSync += clock.getTimef();
 #endif
@@ -419,15 +421,15 @@ int64_t IBInterface::readSync( void* buffer, uint32_t bytes )
 
 int64_t IBInterface::_waitPollCQ( uint32_t numBuffer )
 {
-    
-    // if we have ever been accepted data 
+
+    // if we have ever been accepted data
     if ( _readPoll.getData()[ numBuffer ] > 0 )
         return _readPoll.getData()[ numBuffer ];
 
     uint32_t size;
     ib_wc_t    wc;
 
-    ib_wc_t* wcDone; // A list of work completions retrieved from 
+    ib_wc_t* wcDone; // A list of work completions retrieved from
                      // the completion queue.
     ib_wc_t* wcFree; // a list of work completion structures provided by
                      // the client.
@@ -483,8 +485,8 @@ int64_t IBInterface::postRdmaWrite( const void* buffer, uint32_t numBytes )
 #endif
     // validation of the send job
     do {
-        ibStatus = ib_poll_cq( _completionQueue->getWriteHandle(), 
-                               &wcFree, 
+        ibStatus = ib_poll_cq( _completionQueue->getWriteHandle(),
+                               &wcFree,
                                &wcDone );
         if ( ibStatus == IB_SUCCESS )
         {
@@ -515,10 +517,10 @@ int64_t IBInterface::postRdmaWrite( const void* buffer, uint32_t numBytes )
     eq::lunchbox::Clock       clockCopy;
     clockCopy.reset();
 #endif
-    
-    //memcpy( _writeBlocks[ _numBufWrite ]->buf.getData(), 
+
+    //memcpy( _writeBlocks[ _numBufWrite ]->buf.getData(),
     //                      buffer , size );
-    eq::lunchbox::fastCopy( _writeBlocks[ _numBufWrite ]->buf.getData(), 
+    eq::lunchbox::fastCopy( _writeBlocks[ _numBufWrite ]->buf.getData(),
                              buffer , size );
     list.vaddr   = _writeBlocks[ _numBufWrite ]->getVaddr();
 #ifdef EQ_MEASURE_TIME
@@ -526,7 +528,7 @@ int64_t IBInterface::postRdmaWrite( const void* buffer, uint32_t numBytes )
 #endif
     list.lkey    = _writeBlocks[_numBufWrite ]->getLocalKey();
     list.length  = size;
-    
+
     // A 64-bit work request identifier that is returned to the consumer
     // as part of the work completion.
     _wr.wr_id    = _numBufWrite;
@@ -550,10 +552,10 @@ int64_t IBInterface::postRdmaWrite( const void* buffer, uint32_t numBytes )
         return -1;
     }
     _writePoll.getData()[ _numBufWrite ] = false;
-    
+
     if ( _numBufWrite == EQ_NUMBLOCKMEMORY -1 )
         _ibConnection->incWriteInterface();
-    
+
     _numBufWrite = ( _numBufWrite + 1 ) % EQ_NUMBLOCKMEMORY;
 #ifdef EQ_MEASURE_TIME
     _timeTotalWrite += clock.getTimef();

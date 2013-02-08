@@ -1,15 +1,17 @@
 
-/* Copyright (c) 2009-2013, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2009-2013, Stefan Eilemann <eile@equalizergraphics.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -51,28 +53,28 @@ namespace co
             { *this = object.get(); }
 
         CO_API ObjectVersion& operator = ( const Object* object );
-     
+
         bool operator == ( const ObjectVersion& value ) const
             {
                 return ( identifier == value.identifier &&
                          version == value.version );
             }
-        
+
         bool operator != ( const ObjectVersion& value ) const
             {
                 return ( identifier != value.identifier ||
                          version != value.version );
             }
-        
+
         bool operator < ( const ObjectVersion& rhs ) const
-            { 
+            {
                 return identifier < rhs.identifier ||
                     ( identifier == rhs.identifier && version < rhs.version );
             }
 
         bool operator > ( const ObjectVersion& rhs ) const
             {
-                return identifier > rhs.identifier || 
+                return identifier > rhs.identifier ||
                     ( identifier == rhs.identifier && version > rhs.version );
             }
 
@@ -115,7 +117,7 @@ LB_STDEXT_NAMESPACE_OPEN
     {
         template< typename P > size_t operator()( const P& key ) const
         {
-            return hash< uint64_t >()( hash_value( key.version ) ^ 
+            return hash< uint64_t >()( hash_value( key.version ) ^
                                        hash_value( key.identifier ));
         }
     };
