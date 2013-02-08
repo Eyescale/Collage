@@ -32,8 +32,7 @@ namespace co
 
     inline std::ostream& operator << ( std::ostream& os, const NodeType& type )
     {
-        os << static_cast< unsigned >( type );
-        return os;
+        return os << static_cast< unsigned >( type );
     }
 }
 

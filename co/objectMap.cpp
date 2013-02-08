@@ -59,7 +59,7 @@ public:
         {
             for( ObjectsCIter i = masters.begin(); i != masters.end(); ++i )
             {
-                Object* object = *i;
+                co::Object* object = *i;
                 map.erase( object->getID( ));
                 handler.deregisterObject( object );
             }
