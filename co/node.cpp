@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -134,7 +134,7 @@ ConnectionPtr Node::useMulticast()
         return 0;
 
     ConnectionPtr connection = _impl->outMulticast.data;
-    if( connection.isValid() && !connection->isClosed( ))
+    if( connection && !connection->isClosed( ))
         return connection;
 
     lunchbox::ScopedMutex<> mutex( _impl->outMulticast );
@@ -165,6 +165,8 @@ ConnectionPtr Node::useMulticast()
 void Node::addConnectionDescription( ConnectionDescriptionPtr cd )
 {
     LBASSERTINFO( isClosed(), *this );
+    if( !isClosed( ))
+        return;
     _addConnectionDescription( cd );
 }
 
@@ -180,6 +182,8 @@ void Node::_addConnectionDescription( ConnectionDescriptionPtr cd )
 bool Node::removeConnectionDescription( ConnectionDescriptionPtr cd )
 {
     LBASSERTINFO( isClosed(), *this );
+    if( !isClosed( ))
+        return false;
     return _removeConnectionDescription( cd );
 }
 
