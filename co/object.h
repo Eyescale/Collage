@@ -33,11 +33,11 @@ class ObjectCM;
 #  define CO_COMMIT_NEXT LB_UNDEFINED_UINT32 //!< the next commit incarnation
 
 /**
- * A generic, distributed object.
+ * A distributed object.
  *
- * Please refer to the Programming Guide and examples on how to develop and
- * use distributed objects.
- * @sa eq::Object
+ * Please refer to the Equalizer Programming Guide and examples on how to
+ * develop and use distributed objects. The Serializable implements a typical
+ * common use case based on the basic Object.
  */
 class Object : public Dispatcher
 {
@@ -46,27 +46,24 @@ public:
     enum ChangeType
     {
         NONE,              //!< @internal
-        STATIC,            //!< non-versioned, static object.
+        STATIC,            //!< non-versioned, unbuffered, static object.
         INSTANCE,          //!< use only instance data
         DELTA,             //!< use pack/unpack delta
         UNBUFFERED         //!< versioned, but don't retain versions
     };
 
-    /** Construct a new distributed object. */
-    CO_API Object();
-
-    /** Destruct the distributed object. */
+    /** Destruct the distributed object. @version 1.0 */
     CO_API virtual ~Object();
 
     /** @name Data Access */
     //@{
-    /** @return true if the object is attached, mapped or registered. */
+    /**
+     * @return true if the object is attached (mapped or registered).
+     * @version 1.0
+     */
     CO_API bool isAttached() const;
 
-    /**
-     * @return the local node to which this object is mapped, or 0 if the
-     *         object is not mapped.
-     */
+    /** @return the local node to which this object is attached. @version 1.0 */
     CO_API LocalNodePtr getLocalNode();
 
     /**
@@ -77,32 +74,33 @@ public:
      * network. By default, each object has an identifier guaranteed to be
      * unique. During mapping, the identifier of the object will be
      * overwritten with the identifier of the master object.
-     * @version 1.1.5
+     * @version 1.0
      */
     CO_API void setID( const UUID& identifier );
 
-    /** @return the object's unique identifier. */
+    /** @return the object's unique identifier. @version 1.0 */
     CO_API const UUID& getID() const;
 
-    /** @return the node-wide unique object instance identifier. */
+    /** @return the node-wide unique object instance identifier. @version 1.0 */
     CO_API uint32_t getInstanceID() const;
 
     /** @internal @return if this object keeps instance data buffers. */
     CO_API bool isBuffered() const;
 
     /**
-     * @return true if this instance is the master version, false otherwise.
+     * @return true if this instance is a registered master version.
+     * @version 1.0
      */
     CO_API bool isMaster() const;
     //@}
 
     /** @name Versioning */
     //@{
-    /** @return how the changes are to be handled. */
+    /** @return how the changes are to be handled. @version 1.0 */
     virtual ChangeType getChangeType() const { return STATIC; }
 
     /**
-     * Limit the number of queued versions of slave instances.
+     * Limit the number of queued versions on slave instances.
      *
      * Changing the return value of this method causes the master instance
      * to block during commit() if any slave instance has reached the
@@ -117,7 +115,7 @@ public:
      * issue if you need this.
      *
      * @return the number of queued versions a slave instance may have.
-     * @version 1.3.2
+     * @version 1.0
      */
     virtual uint64_t getMaxVersions() const
         { return std::numeric_limits< uint64_t >::max(); }
@@ -126,10 +124,10 @@ public:
      * Return the compressor to be used for data transmission.
      *
      * This default implementation chooses the compressor with the highest
-     * compression ratio with lossless compression for
-     * EQ_COMPRESSOR_DATATYPE_BYTE tokens. The application may override this
-     * method to deactivate compression by returning EQ_COMPRESSOR_NONE or
-     * to select object-specific compressors.
+     * lossless compression ratio for EQ_COMPRESSOR_DATATYPE_BYTE tokens. The
+     * application may override this method to deactivate compression by
+     * returning EQ_COMPRESSOR_NONE or to select object-specific compressors.
+     * @version 1.0
      */
     CO_API virtual uint32_t chooseCompressor() const;
 
@@ -143,6 +141,7 @@ public:
      * returns false, commit() will exit early.
      *
      * @return true if a commit is needed.
+     * @version 1.0
      */
     virtual bool isDirty() const { return true; }
 
@@ -152,16 +151,17 @@ public:
      * Used to push object data from a Node, instead of pulling it during
      * mapping. Does not establish any mapping, that is, the receiving side
      * will typically use LocalNode::mapObject with VERSION_NONE to
-     * establish a slave mapping. On each receiving node,
-     * LocalNode::objectPush() is called once per node.
+     * establish a slave mapping. LocalNode::objectPush() is called once for
+     * each node in the nodes list.
      *
-     * Buffered objects do not re-serialize their instance data. Multicast
+     * Buffered objects do not reserialize their instance data. Multicast
      * connections are preferred, that is, for a set of nodes sharing one
      * multicast connection the data is only send once.
      *
      * @param groupID An identifier to group a set of push operations.
      * @param objectType A per-push identifier.
      * @param nodes The vector of nodes to push to.
+     * @version 1.0
      */
     CO_API void push( const uint128_t& groupID, const uint128_t& objectType,
                       const Nodes& nodes );
@@ -171,32 +171,33 @@ public:
      *
      * Objects using the change type STATIC can not be committed.
      *
-     * Master instances will increment new versions continously, starting at
+     * Master instances will increment new versions continuously, starting at
      * VERSION_FIRST. If the object has not changed, no new version will
      * be generated, that is, the current version is returned. The high
      * value of the returned version will always be 0.
      *
      * Slave objects can be commited, but have certain caveats for
-     * serialization. Please refer to the Programming Guide for more
+     * serialization. Please refer to the Equalizer Programming Guide for
      * details. Slave object commits will return a random version on a
-     * successful commit, or VERSION_NONE if the object has not changed
-     * since the last commit. The high value of a successful commit will
-     * never be 0.
+     * successful commit, or VERSION_NONE if the object has not changed since
+     * the last commit. The high value of a successful slave commit will never
+     * be 0.
      *
      * The incarnation count is meaningful for buffered master objects. The
      * commit implementation will keep all instance data committed with an
      * incarnation count newer than <code>current_incarnation -
-     * getAutoObsolete()</code>. By default, each call to commit creates a
-     * new incarnation, retaining the data from last getAutoObsolete()
-     * commit calls. When the application wishes to auto obsolete by another
-     * metric than commit calls, it has to consistently provide an
+     * getAutoObsolete()</code>. By default, each call to commit creates a new
+     * incarnation, retaining the data from last getAutoObsolete() commit
+     * calls. When the application wishes to auto obsolete by another metric
+     * than commit calls, it has to consistently provide a corresponding
      * incarnation counter. Buffers with a higher incarnation count than the
-     * current are discarded. A typical use case is to tie the auto
-     * obsoletion to an application-specific frame loop. Decreasing the
-     * incarnation counter will lead to undefined results.
+     * current are discarded. A typical use case is to tie the auto obsoletion
+     * to an application-specific frame loop. Decreasing the incarnation counter
+     * will lead to undefined results.
      *
      * @param incarnation the commit incarnation for auto obsoletion.
-     * @return the new head version.
+     * @return the new head version (master) or commit id (slave).
+     * @version 1.0
      */
     CO_API virtual uint128_t commit( const uint32_t incarnation =
                                      CO_COMMIT_NEXT );
@@ -204,16 +205,15 @@ public:
     /**
      * Automatically obsolete old versions.
      *
-     * The versions for the last count commits are retained. The actual
-     * number of versions retained may be less since a commit does not
-     * always generate a new version.
+     * The versions for the last count incarnations are retained for the
+     * buffered object types INSTANCE and DELTA.
      *
-     * @param count the number of versions to retain, excluding the head
-     *              version.
+     * @param count the number of incarnations to retain.
+     * @version 1.0
      */
     CO_API void setAutoObsolete( const uint32_t count );
 
-    /** @return get the number of versions this object retains. */
+    /** @return get the number of retained incarnations. @version 1.0 */
     CO_API uint32_t getAutoObsolete() const;
 
     /**
@@ -221,15 +221,14 @@ public:
      *
      * Objects using the change type STATIC can not be synced.
      *
-     * Syncing to VERSION_HEAD syncs up to the last received version, does
-     * not block and always returns true. Syncing to VERSION_NEXT applies
-     * one new version, potentially blocking. Syncing to VERSION_NONE does
-     * nothing.
+     * Syncing to VERSION_HEAD syncs all received versions, does not block and
+     * always returns true. Syncing to VERSION_NEXT applies one new version,
+     * potentially blocking. Syncing to VERSION_NONE does nothing.
      *
-     * Slave objects can be synced to VERSION_HEAD, VERSION_NEXT or to any
-     * version generated by a commit on the master instance. Syncing to a
-     * concrete version applies all pending deltas up to this version and
-     * potentially blocks.
+     * Slave objects can be synced to VERSION_HEAD, VERSION_NEXT or to any past
+     * or future version generated by a commit on the master instance. Syncing
+     * to a concrete version applies all pending versions up to this version and
+     * potentially blocks if given a future version.
      *
      * Master objects can only be synced to VERSION_HEAD, VERSION_NEXT or to
      * any version generated by a commit on a slave instance. Syncing to a
@@ -245,33 +244,35 @@ public:
      *
      * @param version the version to synchronize (see above).
      * @return the last version applied.
+     * @version 1.0
      */
-    CO_API virtual uint128_t sync( const uint128_t& version = VERSION_HEAD);
+    CO_API virtual uint128_t sync( const uint128_t& version = VERSION_HEAD );
 
-    /** @return the latest available (head) version. */
+    /** @return the latest available (head) version. @version 1.0 */
     CO_API uint128_t getHeadVersion() const;
 
-    /** @return the currently synchronized version. */
+    /** @return the currently synchronized version. @version 1.0 */
     CO_API uint128_t getVersion() const;
 
     /**
      * Notification that a new head version was received by a slave object.
      *
-     * The notification is send from the receiver thread, which is different
-     * from the node main thread. The object should not be sync()'ed from
-     * this notification, as this might lead to deadlocks and
-     * synchronization issues with the application thread changing the
-     * object. Its purpose is to send a message to the application, which
-     * then takes the appropriate action. In particular do not perform any
+     * The notification is called from the receiver thread, which is different
+     * from the node main thread. The object cannot be sync()'ed from this
+     * notification, as this might lead to deadlocks and synchronization issues
+     * with the application thread changing the object. It should signal the
+     * application, which then takes the appropriate action. Do not perform any
      * potentially blocking operations from this method.
      *
      * @param version The new head version.
+     * @version 1.0
      */
     CO_API virtual void notifyNewHeadVersion( const uint128_t& version );
 
     /**
      * Notification that a new version was received by a master object.
-     * @sa comment in notifyNewHeadVersion().
+     * The same constraints as for notifyNewHeadVersion() apply.
+     * @version 1.0
      */
     virtual void notifyNewVersion() {}
     //@}
@@ -282,6 +283,7 @@ public:
      * Serialize all instance information of this distributed object.
      *
      * @param os The output stream.
+     * @version 1.0
      */
     virtual void getInstanceData( DataOStream& os ) = 0;
 
@@ -292,16 +294,18 @@ public:
      * instances with the master object's data.
      *
      * @param is the input stream.
+     * @version 1.0
      */
     virtual void applyInstanceData( DataIStream& is ) = 0;
 
     /**
      * Serialize the modifications since the last call to commit().
      *
-     * No new version will be created if no data is written to the
-     * output stream.
+     * No new version will be created if no data is written to the output
+     * stream.
      *
      * @param os the output stream.
+     * @version 1.0
      */
     virtual void pack( DataOStream& os ) { getInstanceData( os ); }
 
@@ -309,6 +313,7 @@ public:
      * Deserialize a change.
      *
      * @param is the input data stream.
+     * @version 1.0
      */
     virtual void unpack( DataIStream& is ) { applyInstanceData( is ); }
     //@}
@@ -323,10 +328,11 @@ public:
      * will be send after the command object is destroyed, aka when it is
      * running out of scope.
      *
-     * @param node the node where to send the command to
-     * @param cmd the object command to execute
-     * @param instanceID the object instance which should handle the command
-     * @return the command object to pass additional data to
+     * @param node the node where to send the command to.
+     * @param cmd the object command to execute.
+     * @param instanceID the object instance(s) which should handle the command.
+     * @return the command object to pass additional data to.
+     * @version 1.0
      */
     CO_API ObjectOCommand send( NodePtr node, const uint32_t cmd,
                                 const uint32_t instanceID = EQ_INSTANCE_ALL );
@@ -338,6 +344,7 @@ public:
      *
      * The method is called from the thread initiating the registration or
      * mapping, before the operation is executed.
+     * @version 1.0
      */
     virtual void notifyAttach() {}
 
@@ -347,6 +354,7 @@ public:
      * The method is called from the thread initiating the registration or
      * mapping, after the operation has been completed successfully.
      * @sa isMaster()
+     * @version 1.0
      */
     virtual void notifyAttached() {}
 
@@ -356,6 +364,7 @@ public:
      * The method is called from the thread initiating the deregistration or
      * unmapping, before the operation is executed.
      * @sa isMaster()
+     * @version 1.0
      */
     CO_API virtual void notifyDetach();
 
@@ -364,6 +373,7 @@ public:
      *
      * The method is called from the thread initiating the deregistration or
      * unmapping, after the operation has been executed.
+     * @version 1.0
      */
     virtual void notifyDetached() {}
     //@}
@@ -376,8 +386,8 @@ public:
     /** @internal @return the master object instance identifier. */
     NodePtr getMasterNode();
 
+    void addSlave( MasterCMCommand& command ); //!< @internal
     /** @internal */
-    void addSlave( MasterCMCommand& command );
     CO_API void removeSlave( NodePtr node, const uint32_t instanceID );
     CO_API void removeSlaves( NodePtr node ); //!< @internal
     void setMasterNode( NodePtr node ); //!< @internal
@@ -397,15 +407,12 @@ public:
     void setupChangeManager( const Object::ChangeType type,
                              const bool master, LocalNodePtr localNode,
                              const uint32_t masterInstanceID );
-    /**
-     * @internal
-     * Called when object is attached from the receiver thread.
-     */
+
+    /** @internal Called when object is attached from the receiver thread. */
     CO_API virtual void attach( const UUID& id,
                                 const uint32_t instanceID );
     /**
-     * @internal
-     * Called when the object is detached from the local node from the
+     * @internal Called when the object is detached from the local node from the
      * receiver thread.
      */
     CO_API virtual void detach();
@@ -418,20 +425,25 @@ public:
     //@}
 
 protected:
-    /** Copy constructor. */
+    /** Construct a new distributed object. @version 1.0 */
+    CO_API Object();
+
+    /** Copy construct a new, unattached object. @version 1.0 */
     CO_API Object( const Object& );
 
-    /** NOP assignment operator. */
+    /** NOP assignment operator. @version 1.0 */
     const Object& operator = ( const Object& ) { return *this; }
 
 private:
     detail::Object* const impl_;
-
     void _setChangeManager( ObjectCM* cm );
 
     LB_TS_VAR( _thread );
 };
+
+/** Output information about this object to the given stream. @version 1.0 */
 CO_API std::ostream& operator << ( std::ostream&, const Object& );
+/** Output object change type in human-readably form. @version 1.0 */
 CO_API std::ostream& operator << ( std::ostream&,const Object::ChangeType&);
 }
 

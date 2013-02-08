@@ -42,8 +42,8 @@ set(CO_PUBLIC_HEADERS
   log.h
   node.h
   oCommand.h
-  nodeType.h # reviewed for 1.0 API
-  object.h
+  nodeType.h
+  object.h # reviewed for 1.0 API
   objectFactory.h
   objectHandler.h
   objectICommand.h
