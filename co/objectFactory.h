@@ -27,11 +27,11 @@ namespace co
 {
     enum ObjectType
     {
-        OBJECTTYPE_NONE,
-        OBJECTTYPE_CUSTOM = 16
+        OBJECTTYPE_NONE, //!< @internal
+        OBJECTTYPE_CUSTOM = 16 //!< Application-defined objects
     };
 
-    /** The interface to create objects, used by objectMap. */
+    /** The interface to create objects, used by ObjectMap. */
     class ObjectFactory
     {
     public:
@@ -44,11 +44,12 @@ namespace co
         /**
          * @return a new object instance of the given type.
          * @version 1.0
-         * @sa ObjectType, Config::getObject(), Renderer::getObject() */
+         * @sa ObjectType, Config::getObject(), Renderer::getObject()
+         */
         virtual co::Object* createObject( const uint32_t type )
             { LBUNIMPLEMENTED; return 0; }
 
-        /** Delete the given object of the given type. @version 0.5.1 */
+        /** Delete the given object of the given type. @version 1.0 */
         virtual void destroyObject( co::Object* object, const uint32_t type )
             { delete object; }
     };

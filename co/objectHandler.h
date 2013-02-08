@@ -25,7 +25,7 @@
 
 namespace co
 {
-    /** Interface for entities which map and register objects. @version 0.5.1 */
+    /** Interface for entities which map and register objects. */
     class ObjectHandler
     {
     public:
@@ -75,7 +75,7 @@ namespace co
         CO_API void releaseObject( Object* object );
 
     protected:
-        /** Construct a new object handler. @version 0.5.1 */
+        /** Construct a new object handler. @version 1.0 */
         ObjectHandler() {}
 
         /** Destroy this object handler. @version 1.0 */

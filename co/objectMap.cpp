@@ -250,7 +250,7 @@ bool ObjectMap::register_( Object* object, const uint32_t type )
     return true;
 }
 
-Object* ObjectMap::get( const uint128_t& identifier, Object* instance )
+Object* ObjectMap::map( const uint128_t& identifier, Object* instance )
 {
     if( identifier == 0 )
         return 0;

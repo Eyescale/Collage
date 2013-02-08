@@ -443,8 +443,9 @@ private:
     LB_TS_VAR( _thread );
 };
 
-/** Output information about this object to the given stream. @version 1.0 */
+/** Output information about the object to the given stream. @version 1.0 */
 CO_API std::ostream& operator << ( std::ostream&, const Object& );
+
 /** Output object change type in human-readably form. @version 1.0 */
 CO_API std::ostream& operator << ( std::ostream&,const Object::ChangeType&);
 }

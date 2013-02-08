@@ -43,12 +43,12 @@ set(CO_PUBLIC_HEADERS
   node.h
   oCommand.h
   nodeType.h
-  object.h # reviewed for 1.0 API
+  object.h
   objectFactory.h
   objectHandler.h
   objectICommand.h
   objectOCommand.h
-  objectMap.h
+  objectMap.h # reviewed for 1.0 API
   objectVersion.h
   plugin.h
   pluginRegistry.h

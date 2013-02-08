@@ -1,6 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2012, Stefan.Eilemann@epfl.ch
+ *               2012-2013, Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -25,7 +25,6 @@
 
 namespace co
 {
-
 namespace detail
 {
 
@@ -35,20 +34,14 @@ public:
     ObjectICommand()
     {}
 
-    ObjectICommand( const ObjectICommand& rhs )
-        : objectID( rhs.objectID )
-        , instanceID( rhs.instanceID )
-    {}
-
     UUID objectID;
     uint32_t instanceID;
 };
-
 }
 
 ObjectICommand::ObjectICommand( LocalNodePtr local, NodePtr remote,
-                        ConstBufferPtr buffer, const bool swap_ )
-        : ICommand( local, remote, buffer, swap_ )
+                                ConstBufferPtr buffer, const bool swap_ )
+    : ICommand( local, remote, buffer, swap_ )
     , _impl( new detail::ObjectICommand )
 {
     _init();
@@ -57,13 +50,6 @@ ObjectICommand::ObjectICommand( LocalNodePtr local, NodePtr remote,
 ObjectICommand::ObjectICommand( const ICommand& command )
     : ICommand( command )
     , _impl( new detail::ObjectICommand )
-{
-    _init();
-}
-
-ObjectICommand::ObjectICommand( const ObjectICommand& rhs )
-    : ICommand( rhs )
-    , _impl( new detail::ObjectICommand( *rhs._impl ))
 {
     _init();
 }
