@@ -340,7 +340,7 @@ bool LocalNode::listen()
 
         _impl->connectionNodes[ connection ] = this;
         _impl->incoming.addConnection( connection );
-        if( description->type >= CONNECTIONTYPE_MULTICAST )
+        if( connection->isMulticast( ))
             _addMulticast( this, connection );
 
         connection->acceptNB();
@@ -450,8 +450,7 @@ void LocalNode::removeListeners( const Connections& connections )
         waitRequest( requests[ i ] );
         connection->close();
         // connection and connections hold a reference
-        LBASSERTINFO( connection->getRefCount()==2 ||
-             connection->getDescription()->type >= CONNECTIONTYPE_MULTICAST,
+        LBASSERTINFO( connection->getRefCount()==2 || connection->isMulticast(),
                       connection->getRefCount() << ": " << *connection );
     }
 }
@@ -534,7 +533,7 @@ void LocalNode::_cleanup()
 void LocalNode::_closeNode( NodePtr node )
 {
     ConnectionPtr connection = node->getConnection();
-    ConnectionPtr mcConnection = node->getMulticast();
+    ConnectionPtr mcConnection = node->_getMulticast();
 
     node->_disconnect();
 
@@ -1295,8 +1294,7 @@ ICommand LocalNode::_setupCommand( ConnectionPtr connection,
         node = i->second;
     LBASSERTINFO( !node || // unconnected node
                   *(node->getConnection()) == *connection || // correct UC conn
-                  connection->getDescription()->type>=CONNECTIONTYPE_MULTICAST,
-                  lunchbox::className( node ));
+                  connection->isMulticast(), lunchbox::className( node ));
     LBVERB << "Handle data from " << node << std::endl;
 
 #ifdef COLLAGE_BIGENDIAN
@@ -1714,14 +1712,14 @@ bool LocalNode::_cmdID( ICommand& command )
     if( command.getNode().isValid( ))
     {
         LBASSERT( nodeID == command.getNode()->getNodeID( ));
-        LBASSERT( command.getNode()->getMulticast( ));
+        LBASSERT( command.getNode()->_getMulticast( ));
         return true;
     }
 
     LBINFO << "handle ID " << command << " node " << nodeID << std::endl;
 
     ConnectionPtr connection = _impl->incoming.getConnection();
-    LBASSERT( connection->getDescription()->type >= CONNECTIONTYPE_MULTICAST );
+    LBASSERT( connection->isMulticast( ));
     LBASSERT( _impl->connectionNodes.find( connection ) ==
               _impl->connectionNodes.end( ));
 
@@ -1917,7 +1915,7 @@ bool LocalNode::_cmdAddListener( ICommand& command )
 
     _impl->connectionNodes[ connection ] = this;
     _impl->incoming.addConnection( connection );
-    if( connection->getDescription()->type >= CONNECTIONTYPE_MULTICAST )
+    if( connection->isMulticast( ))
         _addMulticast( this, connection );
 
     connection->acceptNB();
@@ -1943,7 +1941,7 @@ bool LocalNode::_cmdRemoveListener( ICommand& command )
     connection->unref( this );
     LBASSERT( connection );
 
-    if( connection->getDescription()->type >= CONNECTIONTYPE_MULTICAST )
+    if( connection->isMulticast( ))
         _removeMulticast( connection );
 
     _impl->incoming.removeConnection( connection );

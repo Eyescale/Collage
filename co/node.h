@@ -104,23 +104,14 @@ namespace detail { class Node; }
         /** @return the connection descriptions. @version 1.0 */
         CO_API ConnectionDescriptions getConnectionDescriptions() const;
 
-        /** @return the active unicast connection to this node. @version 1.0 */
-        CO_API ConnectionPtr getConnection() const;
-
-        /** @return the active multicast connection to this node. @version 1.0*/
-        ConnectionPtr getMulticast() const;
-
         /**
-         * Activate and return a multicast connection.
+         * Get an active connection to this node.
          *
-         * Multicast connections are activated lazily on first use, since they
-         * trigger the creation of the remote local node proxies on all members
-         * of the multicast group.
-         *
-         * @return the first usable multicast connection to this node, or 0.
+         * @param multicast if true, prefer a multicast connection.
+         * @return an active connection to this node.
          * @version 1.0
          */
-        ConnectionPtr useMulticast();
+        CO_API ConnectionPtr getConnection( const bool multicast = false );
         //@}
 
         /** @name Messaging API */
@@ -178,12 +169,27 @@ namespace detail { class Node; }
         /** @internal */
         bool _removeConnectionDescription( ConnectionDescriptionPtr cd );
 
+        /** @internal @return the active multicast connection to this node. */
+        ConnectionPtr _getMulticast() const;
+
+        /**
+         * Activate and return a multicast connection.
+         *
+         * Multicast connections are activated lazily on first use, since they
+         * trigger the creation of the remote local node proxies on all members
+         * of the multicast group.
+         *
+         * @return the first usable multicast connection to this node, or 0.
+         * @version 1.0
+         */
+        ConnectionPtr getMulticast();
+
     private:
         detail::Node* const _impl;
         CO_API friend std::ostream& operator << ( std::ostream&, const Node& );
 
         /** Ensures the connectivity of this node. */
-        CO_API ConnectionPtr _getConnection();
+        ConnectionPtr _getConnection( const bool preferMulticast );
 
         /** @internal @name Methods for LocalNode */
         //@{

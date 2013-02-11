@@ -98,6 +98,9 @@ namespace detail { class Connection; }
         /** @return true if the connection is listening. @version 1.0 */
         bool isListening() const { return getState() == STATE_LISTENING; }
 
+        /** @return true if this is a multicast connection. @version 1.0 */
+        CO_API bool isMulticast() const;
+
         /** @return the description for this connection. @version 1.0 */
         CO_API ConstConnectionDescriptionPtr getDescription() const;
 
@@ -230,7 +233,7 @@ namespace detail { class Connection; }
         CO_API void unlockSend() const;
 
         /** @internal Finish all pending send operations. */
-        virtual void finish() { LBUNIMPLEMENTED; }
+        virtual void finish() {}
         //@}
 
         /**

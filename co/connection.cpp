@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -431,6 +431,11 @@ bool Connection::send( const void* buffer, const uint64_t bytes,
 
     }
     return true;
+}
+
+bool Connection::isMulticast() const
+{
+    return getDescription()->type >= CONNECTIONTYPE_MULTICAST;
 }
 
 ConstConnectionDescriptionPtr Connection::getDescription() const

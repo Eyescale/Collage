@@ -130,7 +130,7 @@ ConnectionDescriptions Node::getConnectionDescriptions() const
     return _impl->connectionDescriptions.data;
 }
 
-ConnectionPtr Node::useMulticast()
+ConnectionPtr Node::getMulticast()
 {
     if( !isReachable( ))
         return 0;
@@ -316,30 +316,37 @@ bool Node::isListening() const
     return _impl->state == STATE_LISTENING;
 }
 
-ConnectionPtr Node::getConnection() const
+ConnectionPtr Node::getConnection( const bool preferMulticast )
 {
-    return _impl->outgoing;
+    ConnectionPtr multicast = preferMulticast ? getMulticast() : 0;
+    return multicast ? multicast : _impl->outgoing;
 }
 
-ConnectionPtr Node::getMulticast() const
+ConnectionPtr Node::_getConnection( const bool preferMulticast )
+{
+    ConnectionPtr multicast = preferMulticast ? getMulticast() : 0;
+    ConnectionPtr connection = _impl->outgoing;
+    if( _impl->state != STATE_CLOSED )
+        return multicast ? multicast : _impl->outgoing;
+    LBUNREACHABLE;
+    return 0;
+}
+
+ConnectionPtr Node::_getMulticast() const
 {
     return _impl->outMulticast.data;
 }
 
 OCommand Node::send( const uint32_t cmd, const bool multicast )
 {
-    ConnectionPtr connection = multicast ? useMulticast() : 0;
-    if( !connection )
-        connection = getConnection();
+    ConnectionPtr connection = _getConnection( multicast );
     LBASSERT( connection );
     return OCommand( Connections( 1, connection ), cmd, COMMANDTYPE_NODE );
 }
 
 CustomOCommand Node::send( const uint128_t& commandID, const bool multicast )
 {
-    ConnectionPtr connection = multicast ? useMulticast() : 0;
-    if( !connection )
-        connection = getConnection();
+    ConnectionPtr connection = _getConnection( multicast );
     LBASSERT( connection );
     return CustomOCommand( Connections( 1, connection ), commandID );
 }
@@ -357,15 +364,6 @@ int64_t Node::getLastReceiveTime() const
 uint32_t Node::getType() const
 {
     return _impl->type;
-}
-
-ConnectionPtr Node::_getConnection()
-{
-    ConnectionPtr connection = _impl->outgoing;
-    if( _impl->state != STATE_CLOSED )
-        return connection;
-    LBUNREACHABLE;
-    return 0;
 }
 
 void Node::_addMulticast( NodePtr node, ConnectionPtr connection )

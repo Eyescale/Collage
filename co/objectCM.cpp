@@ -154,9 +154,7 @@ void ObjectCM::_sendEmptyVersion( const MasterCMCommand& command,
                                   const bool multicast )
 {
     NodePtr node = command.getNode();
-    ConnectionPtr connection = multicast ? node->useMulticast() : 0;
-    if( !connection )
-        connection = node->getConnection();
+    ConnectionPtr connection = node->getConnection( multicast );
 
     ObjectDataOCommand( Connections( 1, connection ), CMD_OBJECT_INSTANCE,
                         COMMANDTYPE_OBJECT, _object->getID(),

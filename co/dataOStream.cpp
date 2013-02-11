@@ -249,11 +249,7 @@ void DataOStream::_setupConnections( const Connections& connections )
 void DataOStream::_setupConnection( NodePtr node, const bool useMulticast )
 {
     LBASSERT( _impl->connections.empty( ));
-    ConnectionPtr connection = useMulticast ? node->useMulticast() : 0;
-    if( !connection )
-        connection = node->getConnection();
-
-    _impl->connections.push_back( connection );
+    _impl->connections.push_back( node->getConnection( useMulticast ));
 }
 
 void DataOStream::_setupConnection( ConnectionPtr connection )
