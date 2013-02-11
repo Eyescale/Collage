@@ -34,6 +34,11 @@ public:
     ObjectICommand()
     {}
 
+    ObjectICommand( const ObjectICommand& rhs )
+        : objectID( rhs.objectID )
+        , instanceID( rhs.instanceID )
+    {}
+
     UUID objectID;
     uint32_t instanceID;
 };
@@ -50,6 +55,13 @@ ObjectICommand::ObjectICommand( LocalNodePtr local, NodePtr remote,
 ObjectICommand::ObjectICommand( const ICommand& command )
     : ICommand( command )
     , _impl( new detail::ObjectICommand )
+{
+    _init();
+}
+
+ObjectICommand::ObjectICommand( const ObjectICommand& rhs )
+    : ICommand( rhs )
+    , _impl( new detail::ObjectICommand( *rhs._impl ))
 {
     _init();
 }
