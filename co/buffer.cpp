@@ -48,11 +48,10 @@ Buffer::~Buffer()
     delete _impl;
 }
 
-void Buffer::deleteReferenced( const Referenced* object ) const
+void Buffer::notifyFree()
 {
-    Buffer* buffer = const_cast< Buffer* >( this );
-    if( buffer->_impl->listener )
-        buffer->_impl->listener->notifyFree( buffer );
+    if( _impl->listener )
+        _impl->listener->notifyFree( this );
 }
 
 std::ostream& operator << ( std::ostream& os, const Buffer& buffer )

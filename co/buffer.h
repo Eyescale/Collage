@@ -56,7 +56,7 @@ private:
     detail::Buffer* const _impl;
     LB_TS_VAR( _writeThread );
 
-    virtual void deleteReferenced( const Referenced* object ) const;
+    virtual void notifyFree();
 };
 
 std::ostream& operator << ( std::ostream&, const Buffer& );
