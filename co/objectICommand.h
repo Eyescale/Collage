@@ -47,6 +47,9 @@ public:
     /** Copy-construct an object command from a generic ICommand. @version 1.0*/
     CO_API ObjectICommand( const ICommand& command );
 
+    /** Copy-construct an object command. */
+    CO_API ObjectICommand( const ObjectICommand& rhs );
+
     /** Destruct an object command. @version 1.0 */
     CO_API virtual ~ObjectICommand();
 
