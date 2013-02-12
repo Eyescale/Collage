@@ -155,7 +155,7 @@ void ObjectMap::serialize( DataOStream& os, const uint64_t dirtyBits )
     {
         for( MapCIter i = _impl->map.begin(); i != _impl->map.end(); ++i )
             os << i->first << i->second.version << i->second.type;
-        os << ObjectVersion::NONE;
+        os << ObjectVersion();
         return;
     }
 
@@ -185,7 +185,7 @@ void ObjectMap::deserialize( DataIStream& is, const uint64_t dirtyBits )
 
         ObjectVersion ov;
         is >> ov;
-        while( ov != ObjectVersion::NONE )
+        while( ov != ObjectVersion( ))
         {
             LBASSERT( _impl->map.find( ov.identifier ) == _impl->map.end( ));
             Entry& entry = _impl->map[ ov.identifier ];

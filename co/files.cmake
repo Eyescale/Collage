@@ -48,8 +48,8 @@ set(CO_PUBLIC_HEADERS
   objectHandler.h
   objectICommand.h
   objectOCommand.h
-  objectMap.h # reviewed for 1.0 API
-  objectVersion.h
+  objectMap.h
+  objectVersion.h # reviewed for 1.0 API
   plugin.h
   pluginRegistry.h
   queueCommand.h
