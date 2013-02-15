@@ -32,20 +32,9 @@ This file lists all changes in the public Collage API, latest on top:
   Removed co::Object::commitNB and commitSync since request is no longer
   dispatched to command thread. Use commit instead.
 
-17/Jul/2011
-  Moved installed client headers to eq/client. Applications should
-  always use <eq/eq.h> instead of individual headers.
-
 03/Jun/2011
   Added a return value and timeout to co::LocalNode::acquireSendToken(),
   see method documentation.
-
-29/Mar/2011
-  Changed
-    uint32_t eq::Version::getRevision();
-  to:
-    std::string eq::Version::getRevision();
-
 
 -------------------------------Equalizer 1.0---------------------------------
 
@@ -59,11 +48,6 @@ This file lists all changes in the public Collage API, latest on top:
   Moved include/GL to include/eq/GL. Use '#include <eq/gl.h>' to include
   OpenGL headers only.
 
-10/Mar/2011
-  Do not include window system headers by default to avoid global
-  namespace pollution. Define EQ_SYSTEM_INCLUDES before including
-  eq/eq.h to get previous definitions.
-
 01/Mar/2011
   Added new 'incarnation' parameter to co::Object::commit, with a
   default parameter selecting the previous behavior for commit wrt auto
@@ -72,32 +56,11 @@ This file lists all changes in the public Collage API, latest on top:
 
 ----------------------------Equalizer 1.0 beta-------------------------------
 
-10/Feb/2011
-  Changed GLXWindow implementation to use GLXFBConfigs. Use GLXFBConfigs
-  in place of XVisualInfo for the appropriate GLXWindow methods.
-
 14/Jan/2011
   libEqualizer links libCollage dynamically, not statically.
   All libraries use correct versioning as mandated by the operating system.
 
 ---------------------------Equalizer 1.0 alpha-------------------------------
-
-7/Jan/2011
-  Rename EVENT_POINTER_* to differantiate channel and window pointer events.
-  Old values can be used when EQ_USE_DEPRECATED is defined.
-
-     CHANNEL_POINTER_MOTION         // = POINTER_MOTION
-     CHANNEL_POINTER_BUTTON_PRESS   // = POINTER_BUTTON_PRESS
-     CHANNEL_POINTER_BUTTON_RELEASE // = POINTER_BUTTON_RELEASE
-     WINDOW_POINTER_WHEEL           // = POINTER_WHEEL
-     WINDOW_POINTER_MOTION
-     WINDOW_POINTER_BUTTON_PRESS
-     WINDOW_POINTER_BUTTON_RELEASE
-  replaces
-     POINTER_MOTION
-     POINTER_BUTTON_PRESS
-     POINTER_BUTTON_RELEASE
-     POINTER_WHEEL
 
 20/Dec/2010
   Renamed the eq::net namespace to co(llage). Change all prefixes from
@@ -116,19 +79,6 @@ This file lists all changes in the public Collage API, latest on top:
   the configuration filem by using the --eq-listen command line option
   or programmatically by adding connection descriptions before
   Client::initLocal().
-
-  Image::setAlphaUsage
-  Image::getAlphaUsage
-  Image::upload( buffer, texture, position, objectManager )
-    replaces
-  Image::enableAlphaUsage
-  Image::disableAlphaUsage
-  Image::ignoreAlpha
-  Image::upload( buffer, position, objectManager )
-  Image::upload( buffer, texture, objectManager )
-
-  Image::hasData is removed
-
 
 22/Nov/2010
   Replace object identifiers with UUIDs
@@ -177,38 +127,6 @@ This file lists all changes in the public Collage API, latest on top:
   uint32_t Object::commitSync( const uint32_t commitID );
   uint32_t Object::getID() const
 
-19/Nov/2010
-  The GLXEventHandler is new per-window. Event handler init/exit has
-  been moved from GLXPipe to GLXWindow and the GLXEventHandler API has
-  changed accordingly.
-
-15/Nov/2010
-  Statistic::CHANNEL_FRAME_WAIT_READY replaces Statistic::CHANNEL_WAIT_FRAME
-
-02/Nov/2010
-  void fabric::Object::setError( const int32_t error )
-  base::Error fabric::Object::getError() const
-    replace
-  void fabric::Object::setErrorMessage( const std::string& error )
-  const std::string& fabric::Object::getErrorMessage() const
-
-29/Oct/2010
-  void FrameData::setZoom( const Zoom& zoom );
-  const Zoom& FrameData::getZoom() const;
-    replaces
-  void Frame::setInputZoom( const Zoom& zoom );
-  const Zoom& Frame::getInputZoom() const;
-
-
-25/Oct/2010
-  Error util::FrameBufferObject::getError() const;
-  Error ComputeContext::getError() const;
-  void ComputeContext::setError( const uint32_t error );
-    replaces
-  const std::string& util::FrameBufferObject::getErrorMessage() const;
-  const std::string& ComputeContext::getErrorMessage() const;
-  void ComputeContext::setErrorMessage( const std::string& errorMessage );
-
 20/Oct/2010
   void PluginRegistry::addDirectory( const std::string& path );
   void PluginRegistry::removeDirectory( const std::string& path );
@@ -218,22 +136,10 @@ This file lists all changes in the public Collage API, latest on top:
   static void Global::addPluginDirectory( const std::string&
   static void Global::removePluginDirectory( const std::string& path );
 
-
 19/Oct/2010
   eq::net::Node::disconnect( NodePtr ) replaces ::close( NodePtr )
-
-18/Oct/2010
-  eq::PixelData replaces eq::Image::PixelData
-    eq::Image method signatures change accordingly
 
 07/Oct/2010
   removed eq::net::Object::makeThreadSafe and isThreadSafe
     application has to lock sync(), if needed
   eq::net::Object::getAutoObsolete replaces getAutoObsoleteCount
-
-06/Oct/2010
-  void eq::Client::clientLoop
-  void eq::Client::exitClient
-    replaces
-  bool eq::net::Node::clientLoop
-  bool eq::net::Node::exitClient
