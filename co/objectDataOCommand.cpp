@@ -1,6 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2012, Stefan.Eilemann@epfl.ch
+ *               2012-2013, Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -22,7 +22,7 @@
 
 #include "buffer.h"
 #include "objectDataICommand.h"
-#include "plugins/compressorTypes.h"
+#include <lunchbox/plugins/compressorTypes.h>
 
 namespace co
 {

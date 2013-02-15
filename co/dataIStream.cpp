@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *               2009-2010, Cedric Stalder <cedric.stalder@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -20,13 +20,14 @@
 
 #include "dataIStream.h"
 
-#include "cpuCompressor.h"
+#include "global.h"
 #include "log.h"
 #include "node.h"
 
 #include <lunchbox/buffer.h>
 #include <lunchbox/debug.h>
-#include <co/plugins/compressor.h>
+#include <lunchbox/decompressor.h>
+#include <lunchbox/plugins/compressor.h>
 
 #include <string.h>
 
@@ -53,7 +54,7 @@ public:
     /** The current read position in the buffer */
     uint64_t position;
 
-    CPUCompressor decompressor; //!< current decompressor
+    lunchbox::Decompressor decompressor; //!< current decompressor
     lunchbox::Bufferb data; //!< decompressed buffer
     bool swap; //!< Invoke endian conversion
 };
@@ -177,8 +178,12 @@ const uint8_t* DataIStream::_decompress( const void* data, const uint32_t name,
 #endif
     _impl->data.reset( dataSize );
 
-    if ( !_impl->decompressor.isValid( name ) )
-        _impl->decompressor.initDecompressor( name );
+    if ( !_impl->decompressor.uses( name ))
+    {
+        lunchbox::Decompressor decomp( Global::getPluginRegistry(), name );
+        _impl->decompressor.swap( decomp );
+    }
+    LBASSERT( _impl->decompressor.uses( name ));
 
     uint64_t outDim[2] = { 0, dataSize };
     uint64_t* chunkSizes = static_cast< uint64_t* >(

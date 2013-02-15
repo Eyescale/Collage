@@ -25,11 +25,13 @@
 #include "connectionDescription.h"
 #include "commands.h"
 #include "connections.h"
-#include "cpuCompressor.h"
 #include "global.h"
 #include "log.h"
 #include "node.h"
 #include "types.h"
+
+#include <lunchbox/compressor.h>
+#include <lunchbox/plugins/compressor.h>
 
 namespace co
 {
@@ -77,7 +79,7 @@ public:
     Connections connections;
 
     /** The compressor instance. */
-    CPUCompressor compressor;
+    lunchbox::Compressor compressor;
 
     /** The output stream is enabled for writing */
     bool enabled;
@@ -110,7 +112,7 @@ public:
     {
         if( state == STATE_UNCOMPRESSED || state == STATE_UNCOMPRESSIBLE )
             return EQ_COMPRESSOR_NONE;
-        return compressor.getName();
+        return compressor.getInfo().name;
     }
 
     uint32_t getNumChunks() const
@@ -132,7 +134,7 @@ public:
         const uint64_t threshold =
            uint64_t( Global::getIAttribute( Global::IATTR_OBJECT_COMPRESSION ));
 
-        if( !compressor.isValid( compressor.getName( )) || size <= threshold )
+        if( !compressor.isGood() || size <= threshold )
         {
             state = STATE_UNCOMPRESSED;
             return;
@@ -168,9 +170,7 @@ public:
         {
             state = STATE_UNCOMPRESSIBLE;
 #ifndef CO_AGGRESSIVE_CACHING
-            const uint32_t name = compressor.getName();
-            compressor.reset();
-            LBCHECK( compressor.Compressor::initCompressor( name ));
+            compressor.realloc();
 
             if( result == STATE_COMPLETE )
                 buffer.pack();
@@ -213,9 +213,15 @@ DataOStream::~DataOStream()
     delete _impl;
 }
 
-void DataOStream::_initCompressor( const uint32_t compressor )
+void DataOStream::_initCompressor( const uint32_t name )
 {
-    LBCHECK( _impl->compressor.Compressor::initCompressor( compressor ));
+    if( _impl->compressor.uses( name ))
+        return;
+
+    lunchbox::Compressor compressor( Global::getPluginRegistry(), name );
+    LBCHECK( compressor.uses( name ));
+
+    _impl->compressor.swap( compressor );
     LB_TS_RESET( _impl->compressor._thread );
 }
 

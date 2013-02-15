@@ -9,8 +9,6 @@ include(files.cmake)
 option(COLLAGE_AGGRESSIVE_CACHING "Disable to reduce memory consumption" ON)
 mark_as_advanced(COLLAGE_AGGRESSIVE_CACHING)
 
-add_definitions(-DEQ_PLUGIN_BUILD)
-
 set(CO_ADD_LINKLIB ${PTHREAD_LIBRARIES} ${LUNCHBOX_LIBRARIES})
 
 if(WIN32)
@@ -49,18 +47,14 @@ if(UDT_FOUND)
 endif()
 
 source_group(\\ FILES CMakeLists.txt)
-source_group(plugin FILES ${PLUGIN_HEADERS} )
 source_group(collage FILES ${CO_PUBLIC_HEADERS} ${CO_HEADERS} ${CO_SOURCES} )
-source_group(compressor FILES ${CO_COMPRESSORS})
 
-add_library(Collage SHARED ${CO_PUBLIC_HEADERS} ${PLUGIN_HEADERS}
-  ${CO_HEADERS} ${CO_SOURCES} ${CO_COMPRESSORS})
+add_library(Collage SHARED ${CO_PUBLIC_HEADERS} ${CO_HEADERS} ${CO_SOURCES})
 target_link_libraries(Collage ${CO_ADD_LINKLIB})
 set_target_properties(Collage
   PROPERTIES VERSION ${VERSION} SOVERSION ${VERSION_ABI})
 
 install(FILES ${CO_PUBLIC_HEADERS} DESTINATION include/co COMPONENT dev)
-install(FILES ${PLUGIN_HEADERS} DESTINATION include/co/plugins COMPONENT dev)
 install(TARGETS Collage
         ARCHIVE DESTINATION lib COMPONENT dev
         RUNTIME DESTINATION bin COMPONENT lib
