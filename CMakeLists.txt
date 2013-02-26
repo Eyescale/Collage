@@ -33,7 +33,9 @@ if(LUNCHBOX_USE_DNSSD)
   set(FEATURES "${FEATURES} zeroconf")
 endif()
 
-set(PTHREAD_LIBRARIES pthread)
+if(NOT MSVC)
+  set(PTHREAD_LIBRARIES pthread)
+endif()
 
 if(OFED_FOUND)
   set(FEATURES "${FEATURES} RDMA")
