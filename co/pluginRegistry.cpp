@@ -1,16 +1,18 @@
 
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com> 
+/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
  *               2010-2012, Stefan Eilemann <eile@eyescale.ch>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -76,7 +78,7 @@ Strings _initPluginDirectories()
 #else
     const char separator = ':';
 #endif
-        
+
     while( !envString.empty( ))
     {
         size_t nextPos = envString.find( separator );
@@ -101,7 +103,7 @@ Strings _initPluginDirectories()
 PluginRegistry::PluginRegistry()
         : _directories( _initPluginDirectories( ))
 {}
- 
+
 const Strings& PluginRegistry::getDirectories() const
 {
     return _directories;
@@ -144,7 +146,7 @@ void PluginRegistry::init()
         files.insert( files.end(), oldFiles.begin(), oldFiles.end( ));
         const char DIRSEP = '/';
 #endif
-        
+
         // for each file found in the directory
         for( Strings::const_iterator j = files.begin(); j != files.end(); ++j )
         {
@@ -169,7 +171,7 @@ Plugin* _loadPlugin( const std::string& filename, const Strings& directories )
     if( filename.size() < 3 )
         return 0;
 
-    Plugin* plugin = new Plugin(); 
+    Plugin* plugin = new Plugin();
     if( plugin->init( filename ))
         return plugin;
 

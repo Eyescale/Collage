@@ -2,6 +2,8 @@
 /* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
@@ -152,9 +154,7 @@ void ObjectCM::_sendEmptyVersion( const MasterCMCommand& command,
                                   const bool multicast )
 {
     NodePtr node = command.getNode();
-    ConnectionPtr connection = multicast ? node->useMulticast() : 0;
-    if( !connection )
-        connection = node->getConnection();
+    ConnectionPtr connection = node->getConnection( multicast );
 
     ObjectDataOCommand( Connections( 1, connection ), CMD_OBJECT_INSTANCE,
                         COMMANDTYPE_OBJECT, _object->getID(),

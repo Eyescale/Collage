@@ -1,16 +1,18 @@
 
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com> 
+/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -42,7 +44,7 @@ void IBCompletionQueue::close()
         ib_destroy_cq( _cqR, 0 );
         _cqR = 0;
     }
-    
+
     if( _cqW )
     {
         ib_destroy_cq( _cqW, 0 );
@@ -62,7 +64,7 @@ void IBCompletionQueue::close()
     }
 }
 bool IBCompletionQueue::create( IBConnection* myConnection,
-                                const IBAdapter* adapter, 
+                                const IBAdapter* adapter,
                                 const uint32_t size )
 {
     _myConnection = myConnection;
@@ -72,7 +74,7 @@ bool IBCompletionQueue::create( IBConnection* myConnection,
     _cqR = _createReadBack( adapter, size );
     if ( !_cqR )
         return false;
-    
+
     // build a completion queue for send part
     _cqWaitobjW = CreateEvent( 0, false, false, 0 );
     _cqW = _createNotifier( adapter, _cqWaitobjW, size );
@@ -82,7 +84,7 @@ bool IBCompletionQueue::create( IBConnection* myConnection,
 }
 
 
-ib_cq_handle_t IBCompletionQueue::_createNotifier( 
+ib_cq_handle_t IBCompletionQueue::_createNotifier(
                                     const IBAdapter*     adapter,
                                           HANDLE         cqWaitobj,
                                           const uint32_t size)
@@ -95,7 +97,7 @@ ib_cq_handle_t IBCompletionQueue::_createNotifier(
 
     ib_cq_handle_t _cq;
     // Creates a completion queue
-    ib_api_status_t ibStatus = ib_create_cq( adapter->getHandle(), 
+    ib_api_status_t ibStatus = ib_create_cq( adapter->getHandle(),
                                              &cqCreate, 0, 0, &_cq );
     if( ibStatus )
     {
@@ -107,8 +109,8 @@ ib_cq_handle_t IBCompletionQueue::_createNotifier(
     return _cq;
 }
 
-ib_cq_handle_t IBCompletionQueue::_createReadBack( 
-                                    const IBAdapter*     adapter, 
+ib_cq_handle_t IBCompletionQueue::_createReadBack(
+                                    const IBAdapter*     adapter,
                                     const uint32_t size)
 {
     // build a completion queue for send part
@@ -119,7 +121,7 @@ ib_cq_handle_t IBCompletionQueue::_createReadBack(
 
     ib_cq_handle_t _cq;
     // Creates a completion queue
-    ib_api_status_t ibStatus = ib_create_cq( adapter->getHandle(), 
+    ib_api_status_t ibStatus = ib_create_cq( adapter->getHandle(),
                                              &cqCreate, this, 0, &_cq);
     if( ibStatus )
     {
@@ -130,7 +132,7 @@ ib_cq_handle_t IBCompletionQueue::_createReadBack(
     return _cq;
 }
 
-ib_api_status_t IBCompletionQueue::pollCQRead( 
+ib_api_status_t IBCompletionQueue::pollCQRead(
                             IN   OUT    ib_wc_t** const freeWclist,
                             OUT         ib_wc_t** const doneWclist)
 {
@@ -144,22 +146,22 @@ bool IBCompletionQueue::triggerRead() const
     const ib_api_status_t ibStatus  = ib_rearm_cq( _cqR, false );
     if( ibStatus )
     {
-        LBERROR << "Could not rearm handle read Event" << std::endl; 
+        LBERROR << "Could not rearm handle read Event" << std::endl;
         return false;
     }
     return true;
 }
 
 
-void AL_API IBCompletionQueue::pp_cq_comp_cb( 
+void AL_API IBCompletionQueue::pp_cq_comp_cb(
                            IN const ib_cq_handle_t h_cq,
                            IN       void  *cq_context )
 {
-    
+
     IBCompletionQueue* cq = reinterpret_cast<IBCompletionQueue*>
                             ( cq_context );
     eq::lunchbox::ScopedMutex mutex( cq->_mutex );
-    
+
     cq->_myConnection->addEvent();
 
     return ;

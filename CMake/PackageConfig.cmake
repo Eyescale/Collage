@@ -35,6 +35,13 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake.in
 # add helper stuff from CMakePackageConfigHelpers
   "@PACKAGE_INIT@\n"
   "\n"
+# reset before using them
+  "set(_output_type)\n"
+  "set(_out)\n"
+  "set(_req)\n"
+  "set(_quiet)\n"
+  "set(_fail)\n"
+  "\n"
 # add transient library finding
   "@TRANSIENTS@"
   "if(NOT _fail)\n"
@@ -45,6 +52,8 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake.in
   "\n"
 # find components if specified
   "  if(${CMAKE_PROJECT_NAME}_FIND_COMPONENTS)\n"
+  "    find_library(\${UPPER_PROJECT_NAME}_LIBRARY ${CMAKE_PROJECT_NAME} NO_DEFAULT_PATH\n"
+  "                 PATHS \${PACKAGE_PREFIX_DIR} PATH_SUFFIXES lib ${PYTHON_LIBRARY_PREFIX})\n"
   "    list(APPEND ${UPPER_PROJECT_NAME}_LIBRARIES \${${UPPER_PROJECT_NAME}_LIBRARY})\n"
   "    foreach(_component \${${CMAKE_PROJECT_NAME}_FIND_COMPONENTS})\n"
   "      find_library(\${_component}_libraryname ${CMAKE_PROJECT_NAME}_\${_component} NO_DEFAULT_PATH\n"
@@ -52,15 +61,17 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake.in
   "\n"
   "      if(\${_component}_libraryname MATCHES "\${_component}_libraryname-NOTFOUND")\n"
   "        if(${CMAKE_PROJECT_NAME}_FIND_REQUIRED_\${_component})\n"
-  "          set(_fail TRUE)\n"
-  "        endif()\n"
-  "        if(_out)\n"
-  "          message(\${_output_type} \"   ${CMAKE_PROJECT_NAME}_\${_component} \"\n"
+  "          set(_fail \"Component library \${_component} not found\")\n"
+  "          message(FATAL_ERROR \"   ${CMAKE_PROJECT_NAME}_\${_component} \"\n"
+  "            \"not found in \${PACKAGE_PREFIX_DIR}/lib\")\n"
+  "        elseif(NOT _quiet)\n"
+  "          message(STATUS \"   ${CMAKE_PROJECT_NAME}_\${_component} \"\n"
   "            \"not found in \${PACKAGE_PREFIX_DIR}/lib\")\n"
   "        endif()\n"
   "      else()\n"
-  "        set(${UPPER_PROJECT_NAME}_\${_component}_FOUND TRUE)\n"
-  "        set(${UPPER_PROJECT_NAME}_\${_component}_LIBRARY \${\${_component}_libraryname})\n"
+  "        string(TOUPPER \${_component} _COMPONENT)\n"
+  "        set(${UPPER_PROJECT_NAME}_\${_COMPONENT}_FOUND TRUE)\n"
+  "        set(${UPPER_PROJECT_NAME}_\${_COMPONENT}_LIBRARY \${\${_component}_libraryname})\n"
   "        list(APPEND ${UPPER_PROJECT_NAME}_LIBRARIES \${\${_component}_libraryname})\n"
   "        list(APPEND ${UPPER_PROJECT_NAME}_COMPONENTS \${_component})\n"
   "      endif()\n"
@@ -69,17 +80,21 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake.in
 # if no component was specified, find all produced libraries
   "    set(${UPPER_PROJECT_NAME}_LIBRARY_NAMES "@LIBRARY_NAMES@")\n"
   "    foreach(_libraryname \${${UPPER_PROJECT_NAME}_LIBRARY_NAMES})\n"
-  "      string(TOUPPER \${_libraryname} _librarynameUC)\n"
-  "      find_library(\${_librarynameUC}_LIBRARY \${_libraryname} NO_DEFAULT_PATH\n"
+  "      string(TOUPPER \${_libraryname} _LIBRARYNAME)\n"
+  "      find_library(\${_LIBRARYNAME}_LIBRARY \${_libraryname} NO_DEFAULT_PATH\n"
   "                   PATHS \${PACKAGE_PREFIX_DIR} PATH_SUFFIXES lib ${PYTHON_LIBRARY_PREFIX})\n"
-  "      if(${UPPER_PROJECT_NAME}_LIBRARY MATCHES "${UPPER_PROJECT_NAME}_LIBRARY-NOTFOUND")\n"
-  "        set(_fail TRUE)\n"
+  "      if(\${_LIBRARYNAME}_LIBRARY MATCHES "\${_LIBRARYNAME}_LIBRARY-NOTFOUND")\n"
+  "        set(_fail \"\${_libraryname} not found\")\n"
   "        if(_out)\n"
   "          message(\${_output_type} \"   Missing the ${CMAKE_PROJECT_NAME} \"\n"
   "            \"library in \${PACKAGE_PREFIX_DIR}/lib.\")\n"
   "        endif()\n"
   "      else()\n"
-  "        list(APPEND ${UPPER_PROJECT_NAME}_LIBRARIES \${\${_librarynameUC}_LIBRARY})\n"
+  "        list(APPEND ${UPPER_PROJECT_NAME}_LIBRARIES \${\${_LIBRARYNAME}_LIBRARY})\n"
+  "        string(REPLACE \"${CMAKE_PROJECT_NAME}_\" \"\" _component \${_libraryname})\n"
+  "        string(TOUPPER \${_component} _COMPONENT)\n"
+  "        set(${UPPER_PROJECT_NAME}_\${_COMPONENT}_FOUND TRUE)\n"
+  "        list(APPEND ${UPPER_PROJECT_NAME}_COMPONENTS \${_component})\n"
   "      endif()\n"
   "    endforeach()\n"
   "  endif()\n"
@@ -99,10 +114,13 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake.in
   "  set(${UPPER_PROJECT_NAME}_DEB_DEPENDENCIES)\n"
   "  set(${UPPER_PROJECT_NAME}_LIBRARY)\n"
   "  set(${UPPER_PROJECT_NAME}_COMPONENTS)\n"
+  "  if(_out)\n"
+  "    message(STATUS \"Could not find ${CMAKE_PROJECT_NAME}: \${_fail}\")\n"
+  "  endif()\n"
   "else()\n"
   "  set(${UPPER_PROJECT_NAME}_FOUND TRUE)\n"
   "  if(_out)\n"
-  "    message(STATUS \"Found ${CMAKE_PROJECT_NAME} ${VERSION} in \"\n"
+  "    message(STATUS \"Found ${CMAKE_PROJECT_NAME} ${VERSION} \${${UPPER_PROJECT_NAME}_COMPONENTS} in \"\n"
   "      \"\${${UPPER_PROJECT_NAME}_INCLUDE_DIRS}:\${${UPPER_PROJECT_NAME}_LIBRARY}\")\n"
   "  endif()\n"
   "endif()\n"
@@ -143,11 +161,26 @@ set(TRANSIENTS
   "endif()\n\n"
 )
 foreach(_transient ${${UPPER_PROJECT_NAME}_TRANSIENT_LIBRARIES})
+  if(${_transient}_FOUND)
+    set(${_transient}_name ${_transient})
+  endif()
+  string(TOUPPER ${_transient} _TRANSIENT)
+  if(${_TRANSIENT}_FOUND)
+    set(${_transient}_name ${_TRANSIENT})
+  endif()
+  if(NOT ${_transient}_name)
+    message(FATAL_ERROR "Transient library ${_transient} was not properly resolved")
+  endif()
+  if(${${_transient}_name}_VERSION)
+    set(${${_transient}_name}_findmode EXACT)
+  else()
+    set(${${_transient}_name}_findmode REQUIRED)
+  endif()
   list(APPEND TRANSIENTS
-    "find_package(${_transient} ${${${_transient}_name}_VERSION} EXACT \${_req} \${_quiet})\n"
-    "list(APPEND ${UPPER_PROJECT_NAME}_LIBRARIES \${${${_transient}_name}_LIBRARIES})\n"
-    "string(TOUPPER ${_transient} _TRANSIENT)\n"
-    "if(NOT \${_TRANSIENT}_FOUND)\n"
+    "find_package(${_transient} ${${${_transient}_name}_VERSION} ${${${_transient}_name}_findmode} \${_req} \${_quiet})\n"
+    "if(${${_transient}_name}_FOUND)\n"
+    "  list(APPEND ${UPPER_PROJECT_NAME}_LIBRARIES \${${${_transient}_name}_LIBRARIES})\n"
+    "else()\n"
     "  set(_fail TRUE)\n"
     "endif()\n\n")
 endforeach()

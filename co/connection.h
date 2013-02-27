@@ -2,6 +2,8 @@
 /* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
@@ -95,6 +97,9 @@ namespace detail { class Connection; }
 
         /** @return true if the connection is listening. @version 1.0 */
         bool isListening() const { return getState() == STATE_LISTENING; }
+
+        /** @return true if this is a multicast connection. @version 1.0 */
+        CO_API bool isMulticast() const;
 
         /** @return the description for this connection. @version 1.0 */
         CO_API ConstConnectionDescriptionPtr getDescription() const;
@@ -228,7 +233,7 @@ namespace detail { class Connection; }
         CO_API void unlockSend() const;
 
         /** @internal Finish all pending send operations. */
-        virtual void finish() { LBUNIMPLEMENTED; }
+        virtual void finish() {}
         //@}
 
         /**

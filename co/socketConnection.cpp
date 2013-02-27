@@ -2,15 +2,17 @@
 /* Copyright (c) 2005-2011, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -100,7 +102,7 @@ static bool _parseAddress( ConstConnectionDescriptionPtr description,
         }
     }
 
-    LBVERB << "Address " << inet_ntoa( address.sin_addr ) << ":" 
+    LBVERB << "Address " << inet_ntoa( address.sin_addr ) << ":"
            << ntohs( address.sin_port ) << std::endl;
     return true;
 }
@@ -194,7 +196,7 @@ void SocketConnection::_close()
     else if( isConnected( ))
         _exitAIORead();
 
-    LBASSERT( _readFD > 0 ); 
+    LBASSERT( _readFD > 0 );
 
 #ifdef _WIN32
     const bool closed = ( ::closesocket(_readFD) == 0 );
@@ -203,7 +205,7 @@ void SocketConnection::_close()
 #endif
 
     if( !closed )
-        LBWARN << "Could not close socket: " << lunchbox::sysError 
+        LBWARN << "Could not close socket: " << lunchbox::sysError
                << std::endl;
 
     _readFD  = INVALID_SOCKET;
@@ -223,7 +225,7 @@ void SocketConnection::_initAIORead()
     _overlappedWrite.hEvent = CreateEvent( 0, FALSE, FALSE, 0 );
     LBASSERT( _overlappedWrite.hEvent );
     if( !_overlappedRead.hEvent )
-        LBERROR << "Can't create event for AIO notification: " 
+        LBERROR << "Can't create event for AIO notification: "
                 << lunchbox::sysError << std::endl;
 }
 
@@ -240,7 +242,7 @@ void SocketConnection::_exitAIOAccept()
         free( _overlappedAcceptData );
         _overlappedAcceptData = 0;
     }
-    
+
     _exitAIORead();
 }
 void SocketConnection::_exitAIORead()
@@ -302,12 +304,12 @@ void SocketConnection::acceptNB()
                    &got, &_overlappedRead ) &&
         GetLastError() != WSA_IO_PENDING )
     {
-        LBERROR << "Could not start accept operation: " 
+        LBERROR << "Could not start accept operation: "
                 << lunchbox::sysError << ", closing connection" << std::endl;
         close();
     }
 }
-    
+
 ConnectionPtr SocketConnection::acceptSync()
 {
     LB_TS_THREAD( _recvThread );
@@ -326,7 +328,7 @@ ConnectionPtr SocketConnection::acceptSync()
     if( !WSAGetOverlappedResult( _readFD, &_overlappedRead, &got, TRUE,
                                  &flags ))
     {
-        LBWARN << "Accept completion failed: " << lunchbox::sysError 
+        LBWARN << "Accept completion failed: " << lunchbox::sysError
                << ", closing socket" << std::endl;
         close();
         return 0;
@@ -337,7 +339,7 @@ ConnectionPtr SocketConnection::acceptSync()
     int          localLen  = 0;
     int          remoteLen = 0;
     GetAcceptExSockaddrs( _overlappedAcceptData, 0, sizeof( sockaddr_in ) + 16,
-                          sizeof( sockaddr_in ) + 16, (sockaddr**)&local, 
+                          sizeof( sockaddr_in ) + 16, (sockaddr**)&local,
                           &localLen, (sockaddr**)&remote, &remoteLen );
     _tuneSocket( _overlappedSocket );
 
@@ -361,7 +363,7 @@ ConnectionPtr SocketConnection::acceptSync()
     newDescription->port = ntohs( remote->sin_port );
     newDescription->setHostname( inet_ntoa( remote->sin_addr ));
 
-    LBINFO << "accepted connection from " << inet_ntoa( remote->sin_addr ) 
+    LBINFO << "accepted connection from " << inet_ntoa( remote->sin_addr )
            << ":" << ntohs( remote->sin_port ) << std::endl;
     return connection;
 }
@@ -369,7 +371,7 @@ ConnectionPtr SocketConnection::acceptSync()
 #else // !_WIN32
 
 void SocketConnection::acceptNB(){ /* NOP */ }
- 
+
 ConnectionPtr SocketConnection::acceptSync()
 {
     if( !isListening() )
@@ -403,7 +405,7 @@ ConnectionPtr SocketConnection::acceptSync()
     newDescription->port = ntohs( newAddress.sin_port );
     newDescription->setHostname( inet_ntoa( newAddress.sin_addr ));
 
-    LBVERB << "accepted connection from " << inet_ntoa(newAddress.sin_addr) 
+    LBVERB << "accepted connection from " << inet_ntoa(newAddress.sin_addr)
            << ":" << ntohs( newAddress.sin_port ) << std::endl;
 
     return newConnection;
@@ -467,7 +469,7 @@ int64_t SocketConnection::readSync( void* buffer, const uint64_t bytes,
 
     while( true )
     {
-        if( WSAGetOverlappedResult( _readFD, &_overlappedRead, &got, block, 
+        if( WSAGetOverlappedResult( _readFD, &_overlappedRead, &got, block,
                                     &flags ))
             return got;
 
@@ -489,7 +491,7 @@ int64_t SocketConnection::readSync( void* buffer, const uint64_t bytes,
 
             case WSASYSCALLFAILURE:  // happens sometimes!?
             case WSA_IO_PENDING:
-                if( GetTickCount() - startTime > EQ_RECV_TIMEOUT ) // timeout   
+                if( GetTickCount() - startTime > EQ_RECV_TIMEOUT ) // timeout
                 {
                     LBWARN << "Error timeout " << std::endl;
                     return READ_ERROR;
@@ -501,7 +503,7 @@ int64_t SocketConnection::readSync( void* buffer, const uint64_t bytes,
                 break;
 
             default:
-                LBWARN << "Got " << lunchbox::sysError 
+                LBWARN << "Got " << lunchbox::sysError
                        << ", closing connection" << std::endl;
                 close();
                 return READ_ERROR;
@@ -518,7 +520,7 @@ int64_t SocketConnection::write( const void* buffer, const uint64_t bytes )
     WSABUF wsaBuffer =
         {
             LB_MIN( bytes, 65535 ),
-            const_cast<char*>( static_cast< const char* >( buffer )) 
+            const_cast<char*>( static_cast< const char* >( buffer ))
         };
 
     ResetEvent( _overlappedWrite.hEvent );
@@ -550,7 +552,7 @@ int64_t SocketConnection::write( const void* buffer, const uint64_t bytes )
 
     DWORD got = 0;
     DWORD flags = 0;
-    if( WSAGetOverlappedResult( _writeFD, &_overlappedWrite, &got, false, 
+    if( WSAGetOverlappedResult( _writeFD, &_overlappedWrite, &got, false,
                                 &flags ))
     {
         return got;
@@ -595,7 +597,7 @@ bool SocketConnection::_createSocket()
 
     if( fd == INVALID_SOCKET )
     {
-        LBERROR << "Could not create socket: " 
+        LBERROR << "Could not create socket: "
                 << lunchbox::sysError << std::endl;
         return false;
     }
@@ -612,14 +614,14 @@ bool SocketConnection::_createSocket()
 void SocketConnection::_tuneSocket( const Socket fd )
 {
     const int on         = 1;
-    setsockopt( fd, IPPROTO_TCP, TCP_NODELAY, 
+    setsockopt( fd, IPPROTO_TCP, TCP_NODELAY,
                 reinterpret_cast<const char*>( &on ), sizeof( on ));
-    setsockopt( fd, SOL_SOCKET, SO_REUSEADDR, 
+    setsockopt( fd, SOL_SOCKET, SO_REUSEADDR,
                 reinterpret_cast<const char*>( &on ), sizeof( on ));
 
 #ifdef _WIN32
     const int size = 128768;
-    setsockopt( fd, SOL_SOCKET, SO_RCVBUF, 
+    setsockopt( fd, SOL_SOCKET, SO_RCVBUF,
                 reinterpret_cast<const char*>( &size ), sizeof( size ));
     setsockopt( fd, SOL_SOCKET, SO_SNDBUF,
                 reinterpret_cast<const char*>( &size ), sizeof( size ));
@@ -635,7 +637,7 @@ void SocketConnection::_tuneSocket( const Socket fd )
 bool SocketConnection::listen()
 {
     ConnectionDescriptionPtr description = _getDescription();
-    LBASSERT( description->type == CONNECTIONTYPE_TCPIP || 
+    LBASSERT( description->type == CONNECTIONTYPE_TCPIP ||
               description->type == CONNECTIONTYPE_SDP );
 
     if( !isClosed( ))
@@ -644,7 +646,7 @@ bool SocketConnection::listen()
     _setState( STATE_CONNECTING );
 
     sockaddr_in address;
-    const size_t size = sizeof( sockaddr_in ); 
+    const size_t size = sizeof( sockaddr_in );
 
     if( !_parseAddress( description, address ))
     {
@@ -659,7 +661,7 @@ bool SocketConnection::listen()
 
     if( !bound )
     {
-        LBWARN << "Could not bind socket " << _readFD << ": " 
+        LBWARN << "Could not bind socket " << _readFD << ": "
                << lunchbox::sysError << " to " << inet_ntoa( address.sin_addr )
                << ":" << ntohs( address.sin_port ) << " AF "
                << (int)address.sin_family << std::endl;
@@ -681,7 +683,7 @@ bool SocketConnection::listen()
 
     // get socket parameters
     socklen_t used = size;
-    getsockname( _readFD, (struct sockaddr *)&address, &used ); 
+    getsockname( _readFD, (struct sockaddr *)&address, &used );
 
     description->port = ntohs( address.sin_port );
 
@@ -716,7 +718,7 @@ uint16_t SocketConnection::_getPort() const
 {
     sockaddr_in address;
     socklen_t used = sizeof( address );
-    getsockname( _readFD, (struct sockaddr *) &address, &used ); 
+    getsockname( _readFD, (struct sockaddr *) &address, &used );
     return ntohs(address.sin_port);
 }
 

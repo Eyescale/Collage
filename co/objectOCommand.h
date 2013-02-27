@@ -1,5 +1,8 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2013, Stefan.Eilemann@epfl.ch
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -20,10 +23,8 @@
 
 #include <co/oCommand.h>   // base class
 
-
 namespace co
 {
-
 namespace detail { class ObjectOCommand; }
 
 /**
@@ -34,7 +35,7 @@ namespace detail { class ObjectOCommand; }
 class ObjectOCommand : public OCommand
 {
 public:
-    /**
+    /** @internal
      * Construct a command which is send & dispatched to a co::Object.
      *
      * @param receivers list of connections where to send the command to.
@@ -47,7 +48,7 @@ public:
                            const uint32_t type, const UUID& id,
                            const uint32_t instanceID );
 
-    /**
+    /** @internal
      * Construct a command which is dispatched locally to a co::Object.
      *
      * @param dispatcher the dispatcher to dispatch this command.
@@ -64,7 +65,7 @@ public:
     /** @internal */
     CO_API ObjectOCommand( const ObjectOCommand& rhs );
 
-    /** Send or dispatch this command during destruction. */
+    /** Send or dispatch this command during destruction. @version 1.0 */
     CO_API virtual ~ObjectOCommand();
 
 private:

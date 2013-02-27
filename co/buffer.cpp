@@ -2,6 +2,8 @@
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *               2012-2013, Stefan.Eilemann@epfl.ch
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
@@ -46,11 +48,10 @@ Buffer::~Buffer()
     delete _impl;
 }
 
-void Buffer::deleteReferenced( const Referenced* object ) const
+void Buffer::notifyFree()
 {
-    Buffer* buffer = const_cast< Buffer* >( this );
-    if( buffer->_impl->listener )
-        buffer->_impl->listener->notifyFree( buffer );
+    if( _impl->listener )
+        _impl->listener->notifyFree( this );
 }
 
 std::ostream& operator << ( std::ostream& os, const Buffer& buffer )

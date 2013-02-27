@@ -1,15 +1,17 @@
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com> 
+/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -29,7 +31,7 @@
 namespace co
 {
 
-struct IBDest 
+struct IBDest
 {
     uint16_t    lid;
     uint32_t    qpn;
@@ -43,7 +45,7 @@ class IBCompletionQueue;
 class IBMemBlock;
 //
 // A class that defines a point-to-point reliable connection between 2 HCAs
-class IBInterface  
+class IBInterface
 {
 public:
     IBInterface( );
@@ -51,7 +53,7 @@ public:
     virtual ~IBInterface();
 
     // 1st stage of creating a connection
-    bool create( IBAdapter* hca, 
+    bool create( IBAdapter* hca,
                  IBCompletionQueue* cq,
                  IBConnection* ibConnection );
     struct IBDest getMyDest( uint32_t index );
@@ -83,7 +85,7 @@ private:
     IBConnection*            _ibConnection;
     std::vector< IBMemBlock *>  _readBlocks;
     std::vector< IBMemBlock *>  _writeBlocks;
-    uint32_t                _psn; 
+    uint32_t                _psn;
     uint16_t                _dlid;
     ib_qp_handle_t          _queuePair;
     ib_qp_attr_t            _queuePairAttr;
@@ -109,7 +111,7 @@ private:
 
     float _floatTimeReadNB;
     float _floatTimeReadSync;
-    
+
     float _timeTotalWaitPoll;
     float _timeTotalWaitobj;
 

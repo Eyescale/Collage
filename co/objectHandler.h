@@ -1,6 +1,8 @@
 
 /* Copyright (c) 2012-2013, Stefan Eilemann <eile@eyescale.ch>
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
@@ -23,7 +25,7 @@
 
 namespace co
 {
-    /** Interface for entities which map and register objects. @version 0.5.1 */
+    /** Interface for entities which map and register objects. */
     class ObjectHandler
     {
     public:
@@ -73,7 +75,7 @@ namespace co
         CO_API void releaseObject( Object* object );
 
     protected:
-        /** Construct a new object handler. @version 0.5.1 */
+        /** Construct a new object handler. @version 1.0 */
         ObjectHandler() {}
 
         /** Destroy this object handler. @version 1.0 */

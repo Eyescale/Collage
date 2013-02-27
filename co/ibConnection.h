@@ -1,16 +1,18 @@
 
-/* Copyright (c) 2005-2011, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2011, Stefan Eilemann <eile@equalizergraphics.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -57,14 +59,14 @@ private:
     eq::lunchbox::Lock   _mutex;
     eq::lunchbox::a_int32_t  numRead;
     eq::lunchbox::a_int32_t _comptEvent;
-    
+
     IBAdapter          _adapter;
 
     std::vector< IBCompletionQueue* >  _completionQueues;
     std::vector< IBInterface* >        _interfaces;
 
     HANDLE             _readEvent;
-    ConnectionPtr _socketConnection; 
+    ConnectionPtr _socketConnection;
     uint32_t numWrite;
 
 
@@ -82,7 +84,7 @@ private:
     bool _serverExchDest( const struct IBDest *myDest,
                                 struct IBDest* remDest );
 
-    // communication exchange protocol for client 
+    // communication exchange protocol for client
     bool _clientExchDest( const struct IBDest *myDest,
                                 struct IBDest *remDest );
 
@@ -99,4 +101,4 @@ private:
 }
 #endif //EQ_INFINIBAND
 
-#endif //CO_IBCONNECTION_H 
+#endif //CO_IBCONNECTION_H

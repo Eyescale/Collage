@@ -1,16 +1,18 @@
 
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com> 
+/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -33,10 +35,10 @@ public:
     void close();
 
     /* create an memory region associate with the given protection domain */
-    bool create( ib_pd_handle_t  protectionDomain, 
+    bool create( ib_pd_handle_t  protectionDomain,
                  const uint32_t  bufferBlockSize   );
-    
-    // get the local access key associated with this registered 
+
+    // get the local access key associated with this registered
     // memory region
     uint32_t getLocalKey( )  const { return _localKey; };
 
@@ -45,8 +47,8 @@ public:
     uint32_t getRemoteKey( ) const { return _remoteKey; }
 
     ib_mr_handle_t getMemoryRegion( )  const { return _memoryRegion; }
-            
-    uintptr_t getVaddr( ) const 
+
+    uintptr_t getVaddr( ) const
            { return ( uintptr_t ) buf.getData(); }
 
     eq::lunchbox::Buffer<void *> buf;
@@ -61,5 +63,5 @@ private:
 
 };
 }
-#endif //CO_IBCONNECTION_H 
+#endif //CO_IBCONNECTION_H
 #endif //EQ_INFINIBAND

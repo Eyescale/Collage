@@ -1,15 +1,17 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -46,7 +48,7 @@ static ConnectionType _getConnectionType( const std::string& string )
         return CONNECTIONTYPE_RDMA;
     if( string == "UDT" )
         return CONNECTIONTYPE_UDT;
-    
+
     LBASSERTINFO( false, "Unknown type: " << string );
     return CONNECTIONTYPE_NONE;
 }
@@ -100,7 +102,7 @@ bool ConnectionDescription::fromString( std::string& data )
                 nextPos            = data.find( ':' );
                 const std::string token = data.substr( 0, nextPos );
                 data               = data.substr( nextPos + 1 );
-                
+
                 if( !token.empty() && isdigit( token[0] )) // port
                     port = atoi( token.c_str( ));
                 else
@@ -135,7 +137,7 @@ bool ConnectionDescription::fromString( std::string& data )
         const std::string bandwidthStr = data.substr( 0, nextPos );
         data                      = data.substr( nextPos + 1 );
         bandwidth = atoi( bandwidthStr.c_str( ));
-    
+
         nextPos = data.find( SEPARATOR );
         if( nextPos == std::string::npos )
             goto error;
@@ -153,7 +155,7 @@ bool ConnectionDescription::fromString( std::string& data )
         nextPos = data.find( SEPARATOR );
         if( nextPos == std::string::npos )
             goto error;
-        
+
         const std::string portStr = data.substr( 0, nextPos );
         data                 = data.substr( nextPos + 1 );
         port                 = atoi( portStr.c_str( ));
@@ -228,7 +230,7 @@ std::string serialize( const ConnectionDescriptions& descriptions )
         ConnectionDescriptionPtr desc = *i;
         desc->serialize( data );
     }
-    
+
     return data.str();
 }
 
@@ -274,7 +276,7 @@ bool deserialize( std::string& data, ConnectionDescriptions& descriptions )
     return true;
 }
 
-std::ostream& operator << ( std::ostream& os, 
+std::ostream& operator << ( std::ostream& os,
                             const ConnectionDescription& desc)
 {
     os << lunchbox::disableFlush << lunchbox::disableHeader << "connection"

@@ -2,6 +2,8 @@
 /* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
@@ -150,4 +152,3 @@ namespace co
     CO_API std::ostream& operator << ( std::ostream&, const InstanceCache& );
 }
 #endif //CO_INSTANCECACHE_H
-

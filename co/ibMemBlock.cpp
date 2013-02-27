@@ -1,16 +1,18 @@
 
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com> 
+/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -39,7 +41,7 @@ void IBMemBlock::close()
     _remoteKey = 0;
 }
 
-bool IBMemBlock::create( ib_pd_handle_t  protectionDomain, 
+bool IBMemBlock::create( ib_pd_handle_t  protectionDomain,
                          const uint32_t  bufferBlockSize )
 {
     _memoryRegion     = 0 ;
@@ -56,13 +58,13 @@ bool IBMemBlock::create( ib_pd_handle_t  protectionDomain,
     ib_mr_create_t  memoryRegionCreate;
     memoryRegionCreate.length      = _maxBufferSize;
     memoryRegionCreate.vaddr       = buf.getData();
-    memoryRegionCreate.access_ctrl = IB_AC_RDMA_WRITE | 
+    memoryRegionCreate.access_ctrl = IB_AC_RDMA_WRITE |
                                      IB_AC_LOCAL_WRITE;
-        
-    ib_api_status_t     ibStatus ;   
+
+    ib_api_status_t     ibStatus ;
 
     // Registers a virtual memory region with a channel adapter.
-    ibStatus = ib_reg_mem( _protectionDomain, &memoryRegionCreate, 
+    ibStatus = ib_reg_mem( _protectionDomain, &memoryRegionCreate,
                            &_localKey, &_remoteKey, &_memoryRegion );
 
     if ( ibStatus != IB_SUCCESS )

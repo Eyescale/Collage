@@ -3,6 +3,8 @@
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
@@ -1044,8 +1046,11 @@ bool ObjectStore::_cmdDisableSendOnRegister( ICommand& command )
         for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
         {
             NodePtr node = *i;
-            ConnectionPtr connection = node->useMulticast();
-            if( connection )
+            ConnectionPtr multicast = node->getConnection( true );
+            ConnectionPtr connection = node->getConnection( false );
+            if( multicast )
+                multicast->finish();
+            if( connection && connection != multicast )
                 connection->finish();
         }
     }

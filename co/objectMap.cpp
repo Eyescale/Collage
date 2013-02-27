@@ -2,6 +2,8 @@
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@googlemail.com>
  *               2012-2013, Stefan Eilemann <eile@eyescale.ch>
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
@@ -59,7 +61,7 @@ public:
         {
             for( ObjectsCIter i = masters.begin(); i != masters.end(); ++i )
             {
-                Object* object = *i;
+                co::Object* object = *i;
                 map.erase( object->getID( ));
                 handler.deregisterObject( object );
             }
@@ -153,7 +155,7 @@ void ObjectMap::serialize( DataOStream& os, const uint64_t dirtyBits )
     {
         for( MapCIter i = _impl->map.begin(); i != _impl->map.end(); ++i )
             os << i->first << i->second.version << i->second.type;
-        os << ObjectVersion::NONE;
+        os << ObjectVersion();
         return;
     }
 
@@ -183,7 +185,7 @@ void ObjectMap::deserialize( DataIStream& is, const uint64_t dirtyBits )
 
         ObjectVersion ov;
         is >> ov;
-        while( ov != ObjectVersion::NONE )
+        while( ov != ObjectVersion( ))
         {
             LBASSERT( _impl->map.find( ov.identifier ) == _impl->map.end( ));
             Entry& entry = _impl->map[ ov.identifier ];
@@ -248,7 +250,7 @@ bool ObjectMap::register_( Object* object, const uint32_t type )
     return true;
 }
 
-Object* ObjectMap::get( const uint128_t& identifier, Object* instance )
+Object* ObjectMap::map( const uint128_t& identifier, Object* instance )
 {
     if( identifier == 0 )
         return 0;

@@ -3,6 +3,8 @@
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
@@ -247,11 +249,7 @@ void DataOStream::_setupConnections( const Connections& connections )
 void DataOStream::_setupConnection( NodePtr node, const bool useMulticast )
 {
     LBASSERT( _impl->connections.empty( ));
-    ConnectionPtr connection = useMulticast ? node->useMulticast() : 0;
-    if( !connection )
-        connection = node->getConnection();
-
-    _impl->connections.push_back( connection );
+    _impl->connections.push_back( node->getConnection( useMulticast ));
 }
 
 void DataOStream::_setupConnection( ConnectionPtr connection )

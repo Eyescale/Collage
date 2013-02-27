@@ -1,6 +1,8 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2012, Stefan.Eilemann@epfl.ch
+ *               2012-2013, Stefan.Eilemann@epfl.ch
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -34,7 +36,7 @@ enum ObjectCommands
 
 namespace detail { class ObjectICommand; }
 
-/** A command specialization for objects. */
+/** An input command specialization for objects. */
 class ObjectICommand : public ICommand
 {
 public:
@@ -42,13 +44,13 @@ public:
     CO_API ObjectICommand( LocalNodePtr local, NodePtr remote,
                           ConstBufferPtr buffer, const bool swap );
 
-    /** @internal */
+    /** Copy-construct an object command from a generic ICommand. @version 1.0*/
     CO_API ObjectICommand( const ICommand& command );
 
     /** Copy-construct an object command. */
     CO_API ObjectICommand( const ObjectICommand& rhs );
 
-    /** Destruct an object command. */
+    /** Destruct an object command. @version 1.0 */
     CO_API virtual ~ObjectICommand();
 
     /** @internal @return the object adressed by this command. */
@@ -65,8 +67,8 @@ private:
     void _init();
 };
 
+/** Output information about the object input command. @version 1.0 */
 CO_API std::ostream& operator << ( std::ostream& os, const ObjectICommand& );
-
 }
 
 #endif //CO_OBJECTICOMMAND_H

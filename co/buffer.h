@@ -2,6 +2,8 @@
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *               2012-2013, Stefan.Eilemann@epfl.ch
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
@@ -54,7 +56,7 @@ private:
     detail::Buffer* const _impl;
     LB_TS_VAR( _writeThread );
 
-    virtual void deleteReferenced( const Referenced* object ) const;
+    virtual void notifyFree();
 };
 
 std::ostream& operator << ( std::ostream&, const Buffer& );

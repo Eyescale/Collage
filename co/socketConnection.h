@@ -1,15 +1,17 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -44,17 +46,17 @@ namespace co
 #endif
     {
     public:
-        /** 
+        /**
          * Create a new socket-based connection
-         * 
+         *
          * @param type the connection type, can be CONNECTIONTYPE_TCPIP or
          *             CONNECTIONTYPE_SDP.
          */
         SocketConnection( const ConnectionType type = CONNECTIONTYPE_TCPIP );
 
-        virtual bool connect();            
-        virtual bool listen();             
-        virtual void acceptNB();           
+        virtual bool connect();
+        virtual bool listen();
+        virtual void acceptNB();
         virtual ConnectionPtr acceptSync();
         virtual void close() { _close(); }
 

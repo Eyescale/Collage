@@ -1,6 +1,11 @@
 
 This file lists all changes in the public Collage API, latest on top:
 
+11/Feb/2013
+  Node::useMulticast has been renamed to getMulticast. This method, and
+  the previous getMulticast have been made protected.
+  Node::getConnection has a flag to prefer a multicast connection.
+
 28/Jan/2013
   The program name and working directory have been moved from co::Global
   to eq::Global.

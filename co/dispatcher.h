@@ -2,6 +2,8 @@
 /* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
@@ -43,6 +45,22 @@ namespace detail { class Dispatcher; }
         const Dispatcher& operator = ( const Dispatcher& ) { return *this; }
 
         /**
+         * Register a command member function for a command.
+         *
+         * If the destination queue is 0, the command function is invoked
+         * directly upon dispatch, otherwise it is pushed to the given queue and
+         * invoked during the processing of the command queue.
+         *
+         * @param command the command.
+         * @param func the functor to handle the command.
+         * @param queue the queue to which the the command is dispatched
+         * @version 1.0
+         */
+        template< typename T > void
+        registerCommand( const uint32_t command, const CommandFunc< T >& func,
+                         CommandQueue* queue );
+
+        /**
          * Dispatch a command from the receiver thread to the registered queue.
          *
          * @param command the command.
@@ -57,21 +75,6 @@ namespace detail { class Dispatcher; }
         CO_API Dispatcher( const Dispatcher& from );
         CO_API virtual ~Dispatcher();
 
-        /**
-         * Registers a command member function for a command.
-         *
-         * If the destination queue is 0, the command function is invoked
-         * directly upon dispatch, otherwise it is pushed to the given queue and
-         * invoked during the processing of the command queue.
-         *
-         * @param command the command.
-         * @param func the functor to handle the command.
-         * @param queue the queue to which the the command is dispatched
-         * @version 1.0
-         */
-        template< typename T > void
-        registerCommand( const uint32_t command, const CommandFunc< T >& func,
-                         CommandQueue* queue );
         /**
          * The default handler for handling commands.
          *

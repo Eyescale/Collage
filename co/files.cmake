@@ -39,7 +39,7 @@ set(CO_PUBLIC_HEADERS
   global.h
   init.h
   localNode.h
-  log.h # reviewed for 1.0 API
+  log.h
   node.h
   oCommand.h
   nodeType.h
@@ -49,7 +49,7 @@ set(CO_PUBLIC_HEADERS
   objectICommand.h
   objectOCommand.h
   objectMap.h
-  objectVersion.h
+  objectVersion.h # reviewed for 1.0 API
   plugin.h
   pluginRegistry.h
   queueCommand.h

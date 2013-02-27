@@ -1,17 +1,19 @@
 
-/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch> 
- *                    2011, Carsten Rohn <carsten.rohn@rtt.ag> 
+/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
+ *                    2011, Carsten Rohn <carsten.rohn@rtt.ag>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -52,9 +54,9 @@ public:
      * @param prefetchAmount the refill quantity when prefetching.
      * @version 1.0
      */
-    CO_API QueueSlave( const uint32_t prefetchMark = 
+    CO_API QueueSlave( const uint32_t prefetchMark =
                        Global::getIAttribute( Global::IATTR_QUEUE_MIN_SIZE ),
-                       const uint32_t prefetchAmount = 
+                       const uint32_t prefetchAmount =
                        Global::getIAttribute( Global::IATTR_QUEUE_REFILL ));
 
     /** Destruct this new queue consumer. @version 1.0 */

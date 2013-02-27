@@ -2,6 +2,8 @@
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *               2013, Stefan.Eilemann@epfl.ch
  *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
@@ -38,7 +40,7 @@ namespace detail { class OCommand; }
 class OCommand : public DataOStream
 {
 public:
-    /**
+    /** @internal
      * Construct a command which is send & dispatched typically to a co::Node.
      *
      * @param receivers list of connections where to send the command to.
@@ -48,7 +50,7 @@ public:
     CO_API OCommand( const Connections& receivers, const uint32_t cmd,
                      const uint32_t type = COMMANDTYPE_NODE );
 
-    /**
+    /** @internal
      * Construct a command which is dispatched locally typically to a co::Node.
      *
      * @param dispatcher the dispatcher to dispatch this command.
@@ -65,7 +67,7 @@ public:
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~OCommand();
 
-    /**
+    /** @internal
      * Allow external send of data along with this command.
      *
      * Locks all connections, which will be unlocked in the dtor after
@@ -75,10 +77,11 @@ public:
      */
     CO_API void sendHeader( const uint64_t additionalSize );
 
-    /** @return the static size of this command. */
+    /** @internal @return the static base header size of this command. */
     CO_API static size_t getSize();
 
 protected:
+    /** @internal */
     CO_API virtual void sendData( const void* buffer, const uint64_t size,
                                   const bool last );
 

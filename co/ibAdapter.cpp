@@ -1,15 +1,17 @@
-/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com> 
+/* Copyright (c) 2009, Cedric Stalder <cedric.stalder@gmail.com>
+ *
+ * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -24,7 +26,7 @@ namespace co
 
 void IBAdapter::close()
 {
-    if ( _protectionDomain ) 
+    if ( _protectionDomain )
     {
         ib_api_status_t ibStatus = ib_dealloc_pd( _protectionDomain, 0 );
         _protectionDomain = 0;
@@ -45,7 +47,7 @@ void IBAdapter::close()
 
 bool IBAdapter::open( )
 {
-    
+
     ib_api_status_t ibStatus;
 
     // opens an instance of the access layer
@@ -55,7 +57,7 @@ bool IBAdapter::open( )
         LBERROR << "Can't open AL instance !!!" << std::endl;
         return false;
     }
-    
+
     // get a list of GUIDS for all channel adapter currently available in
     // the system
     // need to know the size
@@ -117,11 +119,11 @@ bool IBAdapter::open( )
     // Allocates a protection domain on the specified channel adapter
     // IB_PDT_NORMAL : Protection domain for all non-aliased QPs.
     ibStatus = ib_alloc_pd( _adapter ,
-                            IB_PDT_NORMAL, 
+                            IB_PDT_NORMAL,
                             0,
                             &_protectionDomain  );
 
-    if ( ibStatus != IB_SUCCESS ) 
+    if ( ibStatus != IB_SUCCESS )
     {
         LBERROR << "Can't Allocate Protection Domain !!!" << std::endl;
         return false;
