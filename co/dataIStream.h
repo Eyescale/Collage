@@ -81,8 +81,19 @@ namespace detail { class DataIStream; }
         /** Read a stde::hash_set of serializable items. @version 1.0 */
         template< class T > DataIStream& operator >> ( stde::hash_set< T >& );
 
+        /**
+         * @define CO_IGNORE_BYTESWAP: If set, no byteswapping of transmitted
+         * data is performed. Enable when you get unresolved symbols for
+         * lunchbox::byteswap and you don't care about mixed-endian
+         * environments.
+         */
+#  ifdef CO_IGNORE_BYTESWAP
+        /** Byte-swap a plain data item. @version 1.0 */
+        template< class T > static void swap( T& ) { /* nop */ }
+#  else
         /** Byte-swap a plain data item. @version 1.0 */
         template< class T > static void swap( T& v ) { lunchbox::byteswap(v); }
+#  endif
 
         /** @internal
          * Deserialize child objects.
