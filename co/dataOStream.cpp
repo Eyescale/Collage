@@ -215,13 +215,7 @@ DataOStream::~DataOStream()
 
 void DataOStream::_initCompressor( const uint32_t name )
 {
-    if( _impl->compressor.uses( name ))
-        return;
-
-    lunchbox::Compressor compressor( Global::getPluginRegistry(), name );
-    LBCHECK( compressor.uses( name ));
-
-    _impl->compressor.swap( compressor );
+    LBCHECK( _impl->compressor.setup( Global::getPluginRegistry(), name ));
     LB_TS_RESET( _impl->compressor._thread );
 }
 

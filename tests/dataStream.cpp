@@ -218,5 +218,7 @@ int main( int argc, char **argv )
 
     TEST( sender.join( ));
     connection->close();
+
+    co::exit();
     return EXIT_SUCCESS;
 }

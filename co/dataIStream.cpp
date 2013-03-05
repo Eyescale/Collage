@@ -178,11 +178,7 @@ const uint8_t* DataIStream::_decompress( const void* data, const uint32_t name,
 #endif
     _impl->data.reset( dataSize );
 
-    if ( !_impl->decompressor.uses( name ))
-    {
-        lunchbox::Decompressor decomp( Global::getPluginRegistry(), name );
-        _impl->decompressor.swap( decomp );
-    }
+    _impl->decompressor.setup( Global::getPluginRegistry(), name );
     LBASSERT( _impl->decompressor.uses( name ));
 
     uint64_t outDim[2] = { 0, dataSize };

@@ -91,6 +91,8 @@ int main( int argc, char **argv )
     serverProxy = 0;
     client      = 0;
     server      = 0;
+
+    co::exit();
 #endif
     return EXIT_SUCCESS;
 }

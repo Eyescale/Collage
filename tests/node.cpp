@@ -132,5 +132,6 @@ int main( int argc, char **argv )
     client      = 0;
     server      = 0;
 
+    co::exit();
     return EXIT_SUCCESS;
 }
