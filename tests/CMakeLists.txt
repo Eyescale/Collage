@@ -1,7 +1,7 @@
 # Copyright (c) 2010 Daniel Pfeifer
 #               2010-2012, Stefan Eilemann <eile@eyescale.ch>
 #
-# Change this number when adding tests to force a CMake run: 1
+# Change this number when adding tests to force a CMake run: 2
 
 if(NOT WIN32) # tests want to be with DLLs on Windows - no rpath
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)

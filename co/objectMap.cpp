@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@googlemail.com>
+/* Copyright (c) 2012-2013, Daniel Nachbaur <danielnachbaur@googlemail.com>
  *               2012-2013, Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -32,13 +32,14 @@ namespace
 {
 struct Entry //!< One object map item
 {
-    Entry() : instance( 0 ), type( OBJECTTYPE_NONE ) {}
+    Entry() : instance( 0 ), type( OBJECTTYPE_NONE ), own( true ) {}
     Entry( const uint128_t& v, Object* i, const uint32_t t )
-            : version( v ), instance( i ), type( t ) {}
+            : version( v ), instance( i ), type( t ), own( true ) {}
 
-    uint128_t version;    //!< The current version of the object
-    Object* instance; //!< The object instance, if attached
-    uint32_t type;        //!< The object class id
+    uint128_t version;  //!< The current version of the object
+    Object* instance;   //!< The object instance, if attached
+    uint32_t type;      //!< The object class id
+    bool own;           //!< The object is created by us, we delete it
 };
 
 typedef stde::hash_map< uint128_t, Entry > Map;
@@ -67,16 +68,21 @@ public:
             }
             masters.clear();
 
-            for( MapCIter i = map.begin(); i != map.end(); ++i )
-            {
-                const Entry& entry = i->second;
-                if( !entry.instance )
-                    continue;
+            for( MapIter i = map.begin(); i != map.end(); ++i )
+                _removeObject( i->second );
 
-                handler.unmapObject( entry.instance );
-                factory.destroyObject( entry.instance, entry.type );
-            }
             map.clear();
+        }
+
+    void _removeObject( Entry& entry )
+        {
+            if( !entry.instance )
+                return;
+
+            handler.unmapObject( entry.instance );
+            if( entry.own )
+                factory.destroyObject( entry.instance, entry.type );
+            entry.instance = 0;
         }
 
     ObjectHandler& handler;
@@ -89,6 +95,9 @@ public:
 
     /** Added master objects since the last commit. */
     IDVector added;
+
+    /** Removed master objects since the last commit. */
+    IDVector removed;
 
     /** Changed master objects since the last commit. */
     ObjectVersions changed;
@@ -109,6 +118,7 @@ uint128_t ObjectMap::commit( const uint32_t incarnation )
     _commitMasters( incarnation );
     const uint128_t& version = Serializable::commit( incarnation );
     _impl->added.clear();
+    _impl->removed.clear();
     _impl->changed.clear();
     return version;
 }
@@ -169,10 +179,10 @@ void ObjectMap::serialize( DataOStream& os, const uint64_t dirtyBits )
             os << entry.version << entry.type;
         }
     }
+    if( dirtyBits & DIRTY_REMOVED )
+        os << _impl->removed;
     if( dirtyBits & DIRTY_CHANGED )
-    {
         os << _impl->changed;
-    }
 }
 
 void ObjectMap::deserialize( DataIStream& is, const uint64_t dirtyBits )
@@ -207,6 +217,19 @@ void ObjectMap::deserialize( DataIStream& is, const uint64_t dirtyBits )
             is >> entry.version >> entry.type;
         }
     }
+    if( dirtyBits & DIRTY_REMOVED )
+    {
+        IDVector removed;
+        is >> removed;
+
+        for( IDVectorCIter i = removed.begin(); i != removed.end(); ++i )
+        {
+            MapIter it = _impl->map.find( *i );
+            LBASSERT( it != _impl->map.end( ));
+            _impl->_removeObject( it->second );
+            _impl->map.erase( it );
+        }
+    }
     if( dirtyBits & DIRTY_CHANGED )
     {
         ObjectVersions changed;
@@ -230,23 +253,64 @@ void ObjectMap::deserialize( DataIStream& is, const uint64_t dirtyBits )
 void ObjectMap::notifyAttached()
 {
     _impl->added.clear();
+    _impl->removed.clear();
     _impl->changed.clear();
+}
+
+void ObjectMap::notifyDetached()
+{
+    _impl->added.clear();
+    _impl->removed.clear();
+    _impl->changed.clear();
+
+    for( MapCIter i = _impl->map.begin(); i != _impl->map.end(); ++i )
+    {
+        const Entry& entry = i->second;
+        if( !entry.instance )
+            continue;
+
+        _impl->handler.releaseObject( entry.instance );
+    }
 }
 
 bool ObjectMap::register_( Object* object, const uint32_t type )
 {
+    lunchbox::ScopedFastWrite mutex( _impl->mutex );
     LBASSERT( object );
-    if( !object || !_impl->handler.registerObject( object ))
+    if( !object )
         return false;
 
-    const Entry entry( object->getVersion(), object, type );
-    lunchbox::ScopedFastWrite mutex( _impl->mutex );
-    LBASSERT( _impl->map.find( object->getID( )) == _impl->map.end( ));
+    MapIter it = _impl->map.find( object->getID( ));
+    if( it != _impl->map.end( ))
+        return false;
 
+    _impl->handler.registerObject( object );
+    const Entry entry( object->getVersion(), object, type );
     _impl->map[ object->getID() ] = entry;
     _impl->masters.push_back( object );
     _impl->added.push_back( object->getID( ));
     setDirty( DIRTY_ADDED );
+    return true;
+}
+
+bool ObjectMap::deregister( Object* object )
+{
+    lunchbox::ScopedFastWrite mutex( _impl->mutex );
+    LBASSERT( object );
+    if( !object )
+        return false;
+
+    MapIter mapIt = _impl->map.find( object->getID( ));
+    ObjectsIter masterIt = std::find( _impl->masters.begin(),
+                                      _impl->masters.end(), object );
+    if( mapIt == _impl->map.end() || masterIt == _impl->masters.end( ))
+        return false;
+
+    _impl->handler.deregisterObject( object );
+    _impl->map.erase( mapIt );
+    _impl->masters.erase( masterIt );
+    _impl->removed.push_back( object->getID( ));
+    setDirty( DIRTY_REMOVED );
     return true;
 }
 
@@ -295,7 +359,22 @@ Object* ObjectMap::map( const uint128_t& identifier, Object* instance )
 
     LBASSERT( object->getVersion() == entry.version );
     entry.instance = object;
+    entry.own = !instance;
     return object;
+}
+
+bool ObjectMap::unmap( Object* object )
+{
+    LBASSERT( object );
+    if( !object )
+        return false;
+
+    MapIter it = _impl->map.find( object->getID( ));
+    if( it == _impl->map.end( ))
+        return false;
+
+    _impl->_removeObject( it->second );
+    return true;
 }
 
 }

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@googlemail.com>
+/* Copyright (c) 2012-2013, Daniel Nachbaur <danielnachbaur@googlemail.com>
  *               2012-2013, Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -28,9 +28,13 @@ namespace co
 namespace detail { class ObjectMap; }
 
 /**
- * Central distributed object registry.
+ * A distributed object registry.
  *
- * Please refer to the Equalizer Programming Guide for usage.
+ * The object map takes care of distribution and synchronization of registered
+ * objects across all slave instances. Objects are registered with an
+ * additional type to resolve the creation of new objects while mapping them.
+ * This creation is handled by an ObjectFactory which has to be provided and
+ * implemented for the desired object types..
  */
 class ObjectMap : public Serializable
 {
@@ -48,7 +52,7 @@ public:
      * Destroy this object map.
      *
      * All registered and mapped objects will be deregistered and unmapped.
-     * All mapped objects will be destroyed using the object factory.
+     * All mapped and owned objects will be destroyed using the object factory.
      * @version 1.0
      */
     CO_API virtual ~ObjectMap();
@@ -67,10 +71,26 @@ public:
     CO_API bool register_( Object* object, const uint32_t type );
 
     /**
+     * Remove and deregister an object from this object map.
+     *
+     * Upon deregistering using the map's object handler, this object will be
+     * remembered for unmap and possible deletion on the next commit of this
+     * object map.
+     *
+     * @param object the object to remove and deregister
+     * @return false on if object was not registered, true otherwise
+     * @version 1.0
+     */
+    CO_API bool deregister( Object* object );
+
+    /**
      * Map and return an object.
      *
      * The object is either created via its type specified upon registering
      * or an already created instance is used if passed to this function.
+     * Passed instances will not be considered for deletion during deregister(),
+     * unmap() or destruction of this object map.
+     *
      * The object will be mapped to the version that was current on
      * registration time.
      *
@@ -80,6 +100,19 @@ public:
      * @version 1.0
      */
     CO_API Object* map( const uint128_t& identifier, Object* instance = 0 );
+
+    /**
+     * Unmap an object from the object map.
+     *
+     * The object is unmapped using the map's object handler and will not be
+     * considered for further synchronization. The object will be destructed if
+     * if was created by the object map.
+     *
+     * @param object the object to unmap
+     * @return false on if object was not mapped, true otherwise
+     * @version 1.0
+     */
+    CO_API bool unmap( Object* object );
 
     /** Commit all registered objects. @version 1.0 */
     CO_API virtual uint128_t commit( const uint32_t incarnation =
@@ -96,13 +129,15 @@ protected:
 
     virtual ChangeType getChangeType() const { return DELTA; } //!< @internal
     CO_API virtual void notifyAttached(); //!< @internal
+    CO_API virtual void notifyDetached(); //!< @internal
 
     /** @internal The changed parts of the object since the last serialize(). */
     enum DirtyBits
     {
         DIRTY_ADDED       = Serializable::DIRTY_CUSTOM << 0, // 1
-        DIRTY_CHANGED     = Serializable::DIRTY_CUSTOM << 1, // 2
-        DIRTY_CUSTOM      = Serializable::DIRTY_CUSTOM << 2  // 4
+        DIRTY_REMOVED     = Serializable::DIRTY_CUSTOM << 1, // 2
+        DIRTY_CHANGED     = Serializable::DIRTY_CUSTOM << 2, // 4
+        DIRTY_CUSTOM      = Serializable::DIRTY_CUSTOM << 3  // 8
     };
 
 private:
