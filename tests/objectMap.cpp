@@ -162,6 +162,7 @@ int main( int argc, char **argv )
         TEST( !server->objectMap.deregister( &masterFoo ));
 
         // exit
+        client->objectMap.clear();
         client->unmapObject( &client->objectMap );
         server->deregisterObject( &server->objectMap );
 
