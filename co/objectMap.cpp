@@ -94,7 +94,7 @@ public:
     ObjectHandler& handler;
     ObjectFactory& factory; //!< The 'parent' user
 
-    mutable lunchbox::SpinLock mutex;
+    mutable lunchbox::SpinLock lock;
 
     Map map; //!< the actual map
     Objects masters; //!< Master objects registered with this instance
@@ -134,7 +134,7 @@ bool ObjectMap::isDirty() const
     if( Serializable::isDirty( ))
         return true;
 
-    lunchbox::ScopedFastRead mutex( _impl->mutex );
+    lunchbox::ScopedFastRead mutex( _impl->lock );
     for( ObjectsCIter i =_impl->masters.begin(); i !=_impl->masters.end(); ++i )
         if( (*i)->isDirty( ))
             return true;
@@ -143,7 +143,7 @@ bool ObjectMap::isDirty() const
 
 void ObjectMap::_commitMasters( const uint32_t incarnation )
 {
-    lunchbox::ScopedFastWrite mutex( _impl->mutex );
+    lunchbox::ScopedFastWrite mutex( _impl->lock );
 
     for( ObjectsCIter i =_impl->masters.begin(); i !=_impl->masters.end(); ++i )
     {
@@ -166,7 +166,7 @@ void ObjectMap::_commitMasters( const uint32_t incarnation )
 void ObjectMap::serialize( DataOStream& os, const uint64_t dirtyBits )
 {
     Serializable::serialize( os, dirtyBits );
-    lunchbox::ScopedFastWrite mutex( _impl->mutex );
+    lunchbox::ScopedFastWrite mutex( _impl->lock );
     if( dirtyBits == DIRTY_ALL )
     {
         for( MapCIter i = _impl->map.begin(); i != _impl->map.end(); ++i )
@@ -194,7 +194,7 @@ void ObjectMap::serialize( DataOStream& os, const uint64_t dirtyBits )
 void ObjectMap::deserialize( DataIStream& is, const uint64_t dirtyBits )
 {
     Serializable::deserialize( is, dirtyBits );
-    lunchbox::ScopedFastWrite mutex( _impl->mutex );
+    lunchbox::ScopedFastWrite mutex( _impl->lock );
     if( dirtyBits == DIRTY_ALL )
     {
         LBASSERT( _impl->map.empty( ));
@@ -269,7 +269,7 @@ bool ObjectMap::register_( Object* object, const uint32_t type )
     if( !object )
         return false;
 
-    lunchbox::ScopedFastWrite mutex( _impl->mutex );
+    lunchbox::ScopedFastWrite mutex( _impl->lock );
     MapIter it = _impl->map.find( object->getID( ));
     if( it != _impl->map.end( ))
         return false;
@@ -289,7 +289,7 @@ bool ObjectMap::deregister( Object* object )
     if( !object )
         return false;
 
-    lunchbox::ScopedFastWrite mutex( _impl->mutex );
+    lunchbox::ScopedFastWrite mutex( _impl->lock );
     MapIter mapIt = _impl->map.find( object->getID( ));
     ObjectsIter masterIt = std::find( _impl->masters.begin(),
                                       _impl->masters.end(), object );
@@ -309,7 +309,7 @@ Object* ObjectMap::map( const uint128_t& identifier, Object* instance )
     if( identifier == 0 )
         return 0;
 
-    lunchbox::ScopedFastWrite mutex( _impl->mutex );
+    lunchbox::ScopedFastWrite mutex( _impl->lock );
     MapIter i = _impl->map.find( identifier );
     LBASSERT( i != _impl->map.end( ));
     if( i == _impl->map.end( ))
@@ -359,7 +359,7 @@ bool ObjectMap::unmap( Object* object )
     if( !object )
         return false;
 
-    lunchbox::ScopedFastWrite mutex( _impl->mutex );
+    lunchbox::ScopedFastWrite mutex( _impl->lock );
     MapIter it = _impl->map.find( object->getID( ));
     if( it == _impl->map.end( ))
         return false;

@@ -32,9 +32,9 @@ namespace detail { class ObjectMap; }
  *
  * The object map takes care of distribution and synchronization of registered
  * objects across all slave instances. Objects are registered with an
- * additional type to resolve the creation of new objects while mapping them.
+ * additional type to resolve the creation of new objects during mapping.
  * This creation is handled by an ObjectFactory which has to be provided and
- * implemented for the desired object types..
+ * implemented for the desired object types.
  */
 class ObjectMap : public Serializable
 {
@@ -86,10 +86,10 @@ public:
     /**
      * Map and return an object.
      *
-     * The object is either created via its type specified upon registering
-     * or an already created instance is used if passed to this function.
-     * Passed instances will not be considered for deletion during deregister(),
-     * unmap() or destruction of this object map.
+     * The object is either created via its type specified upon registering or
+     * an already created instance is used if passed to this function.  Passed
+     * instances will not be considered for deletion during explicit unmap(),
+     * implicit unmap caused by deregister(), or destruction of this object map.
      *
      * The object will be mapped to the version that was current on
      * registration time.
@@ -132,7 +132,6 @@ protected:
 
     virtual ChangeType getChangeType() const { return DELTA; } //!< @internal
     CO_API virtual void notifyAttached(); //!< @internal
-    CO_API virtual void notifyDetached(); //!< @internal
 
     /** @internal The changed parts of the object since the last serialize(). */
     enum DirtyBits
