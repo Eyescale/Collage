@@ -23,8 +23,6 @@
 #include "commands.h"
 #include "objectDataICommand.h"
 
-#include <co/plugins/compressor.h>
-
 namespace co
 {
 ObjectDataIStream::ObjectDataIStream()

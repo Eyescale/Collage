@@ -15,13 +15,10 @@ set(CO_PUBLIC_HEADERS
   commandFunc.h
   commandQueue.h
   commands.h
-  compressor.h
-  compressorInfo.h
   connection.h
   connectionDescription.h
   connectionSet.h
   connectionType.h
-  cpuCompressor.h
   customICommand.h
   customOCommand.h
   dataIStream.h
@@ -50,8 +47,6 @@ set(CO_PUBLIC_HEADERS
   objectOCommand.h
   objectMap.h
   objectVersion.h # reviewed for 1.0 API
-  plugin.h
-  pluginRegistry.h
   queueCommand.h
   queueMaster.h
   queueItem.h
@@ -100,13 +95,10 @@ set(CO_SOURCES
   buffer.cpp
   bufferCache.cpp
   bufferConnection.cpp
-  iCommand.cpp
   commandQueue.cpp
-  compressor.cpp
   connection.cpp
   connectionDescription.cpp
   connectionSet.cpp
-  cpuCompressor.cpp
   customICommand.cpp
   customOCommand.cpp
   dataIStream.cpp
@@ -117,6 +109,7 @@ set(CO_SOURCES
   eventConnection.cpp
   fullMasterCM.cpp
   global.cpp
+  iCommand.cpp
   init.cpp
   instanceCache.cpp
   localNode.cpp
@@ -125,22 +118,20 @@ set(CO_SOURCES
   oCommand.cpp
   object.cpp
   objectCM.cpp
+  objectDataICommand.cpp
   objectDataIStream.cpp
+  objectDataOCommand.cpp
   objectDataOStream.cpp
   objectDeltaDataOStream.cpp
-  objectDataICommand.cpp
-  objectDataOCommand.cpp
   objectHandler.cpp
   objectICommand.cpp
-  objectOCommand.cpp
   objectInstanceDataOStream.cpp
   objectMap.cpp
+  objectOCommand.cpp
   objectSlaveDataOStream.cpp
   objectStore.cpp
   objectVersion.cpp
   pipeConnection.cpp
-  plugin.cpp
-  pluginRegistry.cpp
   queueItem.cpp
   queueMaster.cpp
   queueSlave.cpp
@@ -153,46 +144,6 @@ set(CO_SOURCES
   versionedSlaveCM.cpp
   worker.cpp
   zeroconf.cpp
-  )
-
-set(CO_COMPRESSORS
-  compressor/compressor.cpp
-  compressor/compressor.h
-  compressor/compressorFastLZ.cpp
-  compressor/compressorFastLZ.h
-  compressor/compressorLZF.cpp
-  compressor/compressorLZF.h
-  compressor/compressorRLE.ipp
-  compressor/compressorRLE10A2.cpp
-  compressor/compressorRLE10A2.h
-  compressor/compressorRLE4B.cpp
-  compressor/compressorRLE4B.h
-  compressor/compressorRLE4BU.cpp
-  compressor/compressorRLE4BU.h
-  compressor/compressorRLE4HF.cpp
-  compressor/compressorRLE4HF.h
-  compressor/compressorRLE565.cpp
-  compressor/compressorRLE565.h
-  compressor/compressorRLEB.cpp
-  compressor/compressorRLEB.h
-  compressor/compressorRLEYUV.cpp
-  compressor/compressorRLEYUV.h
-  compressor/compressorSnappy.cpp
-  compressor/compressorSnappy.h
-  compressor/fastlz/fastlz.c
-  compressor/fastlz/fastlz.h
-  compressor/liblzf/lzf.h
-  compressor/liblzf/lzf_c.c
-  compressor/liblzf/lzf_d.c
-  compressor/snappy/snappy.h
-  compressor/snappy/snappy.cc
-  compressor/snappy/snappy-sinksource.cc
-  )
-
-set(PLUGIN_HEADERS
-  plugins/compressor.h
-  plugins/compressorTokens.h
-  plugins/compressorTypes.h
   )
 
 if(WIN32)

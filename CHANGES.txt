@@ -1,6 +1,10 @@
 
 This file lists all changes in the public Collage API, latest on top:
 
+07/Mar/2013
+  PluginRegistry, Plugin and compressors are moved to Lunchbox.
+  co::Global still maintains the global Collage plugin registry.
+
 11/Feb/2013
   Node::useMulticast has been renamed to getMulticast. This method, and
   the previous getMulticast have been made protected.

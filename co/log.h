@@ -31,7 +31,6 @@ namespace co
         LOG_BARRIER = lunchbox::LOG_CUSTOM << 1,  // 32
         LOG_RSP     = lunchbox::LOG_CUSTOM << 2,  // 64
         LOG_PACKETS = lunchbox::LOG_CUSTOM << 3,  // 128
-        LOG_PLUGIN  = lunchbox::LOG_CUSTOM << 4,  // 256
         LOG_CUSTOM  = lunchbox::LOG_CUSTOM << 5   // 512
     };
 }

@@ -31,7 +31,6 @@
 
 #include <co/objectDataOCommand.h> // private header
 #include <co/objectDataICommand.h> // private header
-#include <co/cpuCompressor.h> // private header
 
 // Tests the functionality of the DataOStream and DataIStream
 
@@ -219,5 +218,7 @@ int main( int argc, char **argv )
 
     TEST( sender.join( ));
     connection->close();
+
+    co::exit();
     return EXIT_SUCCESS;
 }

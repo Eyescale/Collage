@@ -21,11 +21,11 @@
 
 #include "global.h"
 #include "node.h"
-#include "pluginRegistry.h"
 #include "socketConnection.h"
 
 #include <lunchbox/init.h>
 #include <lunchbox/os.h>
+#include <lunchbox/pluginRegistry.h>
 
 namespace co
 {
@@ -43,35 +43,9 @@ bool _init( const int argc, char** argv )
         return false;
 
     // init all available plugins
-    PluginRegistry& plugins = Global::getPluginRegistry();
+    lunchbox::PluginRegistry& plugins = Global::getPluginRegistry();
+    plugins.addLunchboxPlugins();
     plugins.addDirectory( "/opt/local/lib" ); // MacPorts
-
-#ifdef COLLAGE_DSO_NAME
-    if( !plugins.addPlugin( COLLAGE_DSO_NAME ) && // Found by LDD
-        // Hard-coded compile locations as backup:
-        !plugins.addPlugin( std::string( CO_BUILD_DIR ) + "lib/" +
-                            COLLAGE_DSO_NAME ) &&
-#  ifdef NDEBUG
-        !plugins.addPlugin( std::string( CO_BUILD_DIR ) + "lib/Release/" +
-                            COLLAGE_DSO_NAME )
-#  else
-        !plugins.addPlugin( std::string( CO_BUILD_DIR ) + "lib/Debug/"
-                            + COLLAGE_DSO_NAME )
-#  endif
-        )
-    {
-        LBWARN << "Built-in Collage plugins not loaded: " << COLLAGE_DSO_NAME
-               << " not in library search path and hardcoded locations not "
-               << "found" << std::endl;
-    }
-
-#else
-#  ifndef NDEBUG
-#    error "COLLAGE_DSO_NAME not defined"
-#  endif
-    LBWARN << "Built-in Collage plugins not loaded: COLLAGE_DSO_NAME not defined"
-           << std::endl;
-#endif
     plugins.init();
 
 #ifdef _WIN32
@@ -104,7 +78,7 @@ bool exit()
 #endif
 
     // de-initialize registered plugins
-    PluginRegistry& plugins = Global::getPluginRegistry();
+    lunchbox::PluginRegistry& plugins = Global::getPluginRegistry();
     plugins.exit();
 
     return lunchbox::exit();

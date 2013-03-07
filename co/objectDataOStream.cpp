@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2010-2013, Stefan Eilemann <eile@eyescale.ch>
  *                    2010, Cedric Stalder  <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -24,8 +24,6 @@
 #include "log.h"
 #include "objectCM.h"
 #include "objectDataOCommand.h"
-
-#include <co/plugins/compressorTypes.h>
 
 namespace co
 {
