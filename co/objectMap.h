@@ -114,6 +114,9 @@ public:
      */
     CO_API bool unmap( Object* object );
 
+    /** Deregister or unmap all registered and mapped objects. @version 1.0 */
+    void clear();
+
     /** Commit all registered objects. @version 1.0 */
     CO_API virtual uint128_t commit( const uint32_t incarnation =
                                      CO_COMMIT_NEXT );

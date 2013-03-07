@@ -32,14 +32,14 @@ namespace
 {
 struct Entry //!< One object map item
 {
-    Entry() : instance( 0 ), type( OBJECTTYPE_NONE ), own( true ) {}
+    Entry() : instance( 0 ), type( OBJECTTYPE_NONE ), own( false ) {}
     Entry( const uint128_t& v, Object* i, const uint32_t t )
-            : version( v ), instance( i ), type( t ), own( true ) {}
+        : version( v ), instance( i ), type( t ), own( false ) {}
 
     uint128_t version;  //!< The current version of the object
     Object* instance;   //!< The object instance, if attached
     uint32_t type;      //!< The object class id
-    bool own;           //!< The object is created by us, we delete it
+    bool own;           //!< The object is created by us, delete it
 };
 
 typedef stde::hash_map< uint128_t, Entry > Map;
@@ -56,34 +56,40 @@ class ObjectMap
 {
 public:
     ObjectMap( ObjectHandler& h, ObjectFactory& f )
-            : handler( h ) , factory( f ) {}
+        : handler( h ) , factory( f ) {}
 
     ~ObjectMap()
+    {
+        LBASSERTINFO( masters.empty(), "Object map not cleared" );
+        LBASSERTINFO( map.empty(), "Object map not cleared" );
+    }
+
+    void clear()
+    {
+        lunchbox::ScopedFastWrite mutex( mutex );
+        for( ObjectsCIter i = masters.begin(); i != masters.end(); ++i )
         {
-            for( ObjectsCIter i = masters.begin(); i != masters.end(); ++i )
-            {
-                co::Object* object = *i;
-                map.erase( object->getID( ));
-                handler.deregisterObject( object );
-            }
-            masters.clear();
-
-            for( MapIter i = map.begin(); i != map.end(); ++i )
-                _removeObject( i->second );
-
-            map.clear();
+            co::Object* object = *i;
+            map.erase( object->getID( ));
+            handler.deregisterObject( object );
         }
+        masters.clear();
+
+        for( MapIter i = map.begin(); i != map.end(); ++i )
+            _removeObject( i->second );
+        map.clear();
+    }
 
     void _removeObject( Entry& entry )
-        {
-            if( !entry.instance )
-                return;
+    {
+        if( !entry.instance )
+            return;
 
-            handler.unmapObject( entry.instance );
-            if( entry.own )
-                factory.destroyObject( entry.instance, entry.type );
-            entry.instance = 0;
-        }
+        handler.unmapObject( entry.instance );
+        if( entry.own )
+            factory.destroyObject( entry.instance, entry.type );
+        entry.instance = 0;
+    }
 
     ObjectHandler& handler;
     ObjectFactory& factory; //!< The 'parent' user
@@ -257,29 +263,13 @@ void ObjectMap::notifyAttached()
     _impl->changed.clear();
 }
 
-void ObjectMap::notifyDetached()
-{
-    _impl->added.clear();
-    _impl->removed.clear();
-    _impl->changed.clear();
-
-    for( MapCIter i = _impl->map.begin(); i != _impl->map.end(); ++i )
-    {
-        const Entry& entry = i->second;
-        if( !entry.instance )
-            continue;
-
-        _impl->handler.releaseObject( entry.instance );
-    }
-}
-
 bool ObjectMap::register_( Object* object, const uint32_t type )
 {
-    lunchbox::ScopedFastWrite mutex( _impl->mutex );
     LBASSERT( object );
     if( !object )
         return false;
 
+    lunchbox::ScopedFastWrite mutex( _impl->mutex );
     MapIter it = _impl->map.find( object->getID( ));
     if( it != _impl->map.end( ))
         return false;
@@ -295,11 +285,11 @@ bool ObjectMap::register_( Object* object, const uint32_t type )
 
 bool ObjectMap::deregister( Object* object )
 {
-    lunchbox::ScopedFastWrite mutex( _impl->mutex );
     LBASSERT( object );
     if( !object )
         return false;
 
+    lunchbox::ScopedFastWrite mutex( _impl->mutex );
     MapIter mapIt = _impl->map.find( object->getID( ));
     ObjectsIter masterIt = std::find( _impl->masters.begin(),
                                       _impl->masters.end(), object );
@@ -369,12 +359,18 @@ bool ObjectMap::unmap( Object* object )
     if( !object )
         return false;
 
+    lunchbox::ScopedFastWrite mutex( _impl->mutex );
     MapIter it = _impl->map.find( object->getID( ));
     if( it == _impl->map.end( ))
         return false;
 
     _impl->_removeObject( it->second );
     return true;
+}
+
+void ObjectMap::clear()
+{
+    _impl->clear();
 }
 
 }
