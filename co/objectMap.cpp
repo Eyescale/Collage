@@ -66,7 +66,7 @@ public:
 
     void clear()
     {
-        lunchbox::ScopedFastWrite mutex( mutex );
+        lunchbox::ScopedFastWrite mutex( lock );
         for( ObjectsCIter i = masters.begin(); i != masters.end(); ++i )
         {
             co::Object* object = *i;
