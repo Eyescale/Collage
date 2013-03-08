@@ -37,18 +37,21 @@ class QueueSlave
 {
 public:
     QueueSlave( const uint32_t mark, const uint32_t amount)
-            : prefetchMark( mark )
-            , prefetchAmount( amount )
-            , masterInstanceID( EQ_INSTANCE_ALL )
-        {}
+        : masterInstanceID( EQ_INSTANCE_ALL )
+        , prefetchMark( mark == LB_UNDEFINED_UINT32 ?
+                        Global::getIAttribute( Global::IATTR_QUEUE_MIN_SIZE ) :
+                        mark )
+        , prefetchAmount( amount == LB_UNDEFINED_UINT32 ?
+                          Global::getIAttribute( Global::IATTR_QUEUE_REFILL ) :
+                          amount )
+    {}
 
     co::CommandQueue queue;
+    NodePtr master;
+    uint32_t masterInstanceID;
 
     const uint32_t prefetchMark;
     const uint32_t prefetchAmount;
-    uint32_t masterInstanceID;
-
-    NodePtr master;
 };
 }
 

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
  *                    2011, Carsten Rohn <carsten.rohn@rtt.ag>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -49,8 +49,8 @@ public:
      * Enqueue a new queue item.
      *
      * The returned queue item can stream additional data using the DataOStream
-     * operators. Note that the item is enqueued once it is is destroyed,
-     * i.e. if it runs out of scope.
+     * operators. Note that the item is enqueued once it is destroyed, i.e. when
+     * it runs out of scope.
      *
      * @return the item to enqueue.
      * @version 1.0

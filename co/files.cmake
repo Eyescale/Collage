@@ -8,10 +8,9 @@ set(CO_PUBLIC_HEADERS
   array.h
   barrier.h
   buffer.h
-  bufferListener.h
   bufferConnection.h
+  bufferListener.h
   co.h
-  iCommand.h
   commandFunc.h
   commandQueue.h
   commands.h
@@ -34,23 +33,23 @@ set(CO_PUBLIC_HEADERS
   dispatcher.h
   exception.h
   global.h
+  iCommand.h
   init.h
   localNode.h
   log.h
   node.h
-  oCommand.h
   nodeType.h
+  oCommand.h
   object.h
   objectFactory.h
   objectHandler.h
   objectICommand.h
-  objectOCommand.h
   objectMap.h
-  objectVersion.h # reviewed for 1.0 API
-  queueCommand.h
-  queueMaster.h
+  objectOCommand.h
+  objectVersion.h
   queueItem.h
-  queueSlave.h
+  queueMaster.h
+  queueSlave.h # reviewed for 1.0 API
   serializable.h
   types.h
   worker.h
@@ -81,6 +80,7 @@ set(CO_HEADERS
   objectSlaveDataOStream.h
   objectStore.h
   pipeConnection.h
+  queueCommand.h
   rspConnection.h
   socketConnection.h
   staticMasterCM.h
