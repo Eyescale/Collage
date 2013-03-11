@@ -19,7 +19,7 @@ include(GitTargets)
 include(UpdateFile)
 
 include(FindPackages)
-set(COLLAGE_TRANSIENT_LIBRARIES Lunchbox)
+set(COLLAGE_DEPENDENT_LIBRARIES Lunchbox)
 
 set(FEATURES)
 include_directories(BEFORE ${CMAKE_SOURCE_DIR})
