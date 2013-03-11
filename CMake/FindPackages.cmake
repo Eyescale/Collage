@@ -56,6 +56,8 @@ if(Lunchbox_name)
 endif()
 
 
+set(COLLAGE_DEPENDS OFED;UDT;Boost;Lunchbox)
+
 # Write defines.h and options.cmake
 if(NOT FIND_PACKAGES_INCLUDE)
   set(FIND_PACKAGES_INCLUDE
