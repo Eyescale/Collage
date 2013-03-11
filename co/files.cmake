@@ -49,7 +49,7 @@ set(CO_PUBLIC_HEADERS
   objectVersion.h
   queueItem.h
   queueMaster.h
-  queueSlave.h # reviewed for 1.0 API
+  queueSlave.h
   serializable.h
   types.h
   worker.h

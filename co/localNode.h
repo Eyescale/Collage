@@ -423,7 +423,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         /** Release the given send token. */
         CO_API void releaseSendToken( SendToken& token );
 
-        /** @return a Zeroconf communicator handle for this node. @version 1.0 */
+        /** @return a Zeroconf communicator handle for this node. @version 1.0*/
         CO_API Zeroconf getZeroconf();
         //@}
 

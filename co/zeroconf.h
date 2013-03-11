@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2012-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -26,65 +26,65 @@
 namespace co
 {
 namespace detail { class Zeroconf; }
+
+/**
+ * A zeroconf communicator.
+ *
+ * When Collage is compiled with Servus support (CO_USE_SERVUS), it uses the
+ * ZeroConf service "_collage._tcp" to announce the presence of a listening
+ * LocalNode using the zeroconf protocol, unless the LocalNode has no listening
+ * connections. This class may be used to add additional key/value pairs to this
+ * service to announce application-specific data, and to retrieve a snapshot of
+ * all key/value pairs of all discovered nodes on the network. Internal keys
+ * start with 'co_', this prefix should not be used by applications. Please
+ * refer to the documentation of lunchbox::Servus::set() for details.
+ *
+ * When Collage is compiled without Servus support, this class implements
+ * dummy functionality.
+ * @sa LocalNode::getZeroconf()
+ */
+class Zeroconf
+{
+public:
+    /** Create a copy of a zeroconf communicator. @version 1.0 */
+    CO_API Zeroconf( const Zeroconf& from );
+
+    /** Destruct this zeroconf communicator. @version 1.0 */
+    CO_API ~Zeroconf();
+
+    /** Assign the data from another zeroconf communicator. @version 1.0 */
+    CO_API Zeroconf& operator = ( const Zeroconf& rhs );
+
     /**
-     * A zeroconf communicator.
+     * Set a key/value pair to be announced.
      *
-     * When Collage is compiled with Servus support (CO_USE_SERVUS), it uses the
-     * ZeroConf service "_collage._tcp" to announce the presence of a listening
-     * LocalNode using the zeroconf protocol, unless the LocalNode has no
-     * listening connections. This class may be used to add additional key/value
-     * pairs to this service to announce application-specific data, and to
-     * retrieve a snapshot of all key/value pairs of all discovered nodes on the
-     * network. Internal keys start with 'co_', this prefix should not be used
-     * by applications. Please refer to the documentation of
-     * lunchbox::Servus::set() for details.
-     *
-     * When Collage is compiled without Servus support, this class implements
-     * dummy functionality.
+     * Keys should be at most eight characters, and values are truncated to 255
+     * characters. The total length of all keys and values cannot exceed 65535
+     * characters. Setting a value on an announced service causes an update
+     * which needs some time to propagate after this function returns.
+     * @version 1.0
      */
-    class Zeroconf
-    {
-    public:
-        /** Create a copy of a zeroconf communicator. */
-        CO_API Zeroconf( const Zeroconf& from );
+    CO_API void set( const std::string& key, const std::string& value );
 
-        /** Destruct this zeroconf communicator. */
-        CO_API ~Zeroconf();
+    /** @return all instances found at the time of creation. @version 1.0 */
+    CO_API Strings getInstances() const;
 
-        /** Assign the data from another zeroconf communicator. */
-        CO_API Zeroconf& operator = ( const Zeroconf& rhs );
+    /** @return all keys discovered on the given instance. @version 1.0 */
+    CO_API Strings getKeys( const std::string& instance ) const;
 
-        /**
-         * Set a key/value pair to be announced.
-         *
-         * Keys should be at most eight characters, and values are truncated to
-         * 255 characters. The total length of all keys and values cannot exceed
-         * 65535 characters. Setting a value on an announced service causes an
-         * update which needs some time to propagate after this function
-         * returns.
-         *
-         */
-        CO_API void set( const std::string& key, const std::string& value );
+    /** @return true if the given key was discovered. @version 1.0 */
+    CO_API bool containsKey( const std::string& instance,
+                             const std::string& key ) const;
 
-        /** @return all instances found at the time of creation. */
-        CO_API Strings getInstances() const;
+    /** @return the value of the given key on the given instance. @version 1.0*/
+    CO_API const std::string& get( const std::string& instance,
+                                   const std::string& key ) const;
+private:
+    Zeroconf();
+    Zeroconf( lunchbox::Servus& service );
+    friend class LocalNode;
 
-        /** @return all keys discovered on the given instance. */
-        CO_API Strings getKeys( const std::string& instance ) const;
-
-        /** @return true if the given key was discovered. */
-        CO_API bool containsKey( const std::string& instance,
-                                 const std::string& key ) const;
-
-        /** @return the value of the given key on the given instance. */
-        CO_API const std::string& get( const std::string& instance,
-                                       const std::string& key ) const;
-    private:
-        Zeroconf();
-        Zeroconf( lunchbox::Servus& service );
-        friend class LocalNode;
-
-        detail::Zeroconf* _impl;
-    };
+    detail::Zeroconf* _impl;
+};
 }
 #endif // CO_ZEROCONF_H

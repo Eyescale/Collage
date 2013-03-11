@@ -128,6 +128,11 @@ protected:
             stream << doubles;
             stream << _message;
 
+            char blob[128];
+            for( size_t i=0; i < 128; ++i )
+                blob[ i ] = char( i );
+            stream << co::Array< void >( blob, 128 );
+
             stream.disable();
         }
 
@@ -215,6 +220,11 @@ int main( int argc, char **argv )
     TEST( message.length() == _message.length() );
     TESTINFO( message == _message,
               '\'' <<  message << "' != '" << _message << '\'' );
+
+    char blob[128] = { 0 };
+    stream >> co::Array< void >( blob, 128 );
+    for( size_t i=0; i < 128; ++i )
+        TEST( blob[ i ] == char( i ));
 
     TEST( sender.join( ));
     connection->close();
