@@ -42,7 +42,7 @@ if(Boost_name)
   include_directories(SYSTEM ${${Boost_name}_INCLUDE_DIRS})
 endif()
 
-find_package(Lunchbox 1.7.0 REQUIRED)
+find_package(Lunchbox 1.7.1 REQUIRED)
 if(Lunchbox_FOUND)
   set(Lunchbox_name Lunchbox)
 endif()
