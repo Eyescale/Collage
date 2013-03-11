@@ -10,7 +10,7 @@ include(revision)
 
 set(RELEASE_VERSION OFF) # OFF or 'Mm0' ABI version
 set(VERSION_MAJOR "0")
-set(VERSION_MINOR "8")
+set(VERSION_MINOR "9")
 set(VERSION_PATCH "0")
 #set(LAST_RELEASE )
 
