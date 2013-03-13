@@ -255,7 +255,7 @@ namespace detail { class Connection; }
         /** Destruct this connection. */
         virtual ~Connection();
 
-        /** @name Low-level IO methods. */
+        /** @name Low-level IO methods */
         //@{
         enum ReadStatus //!< error codes for readSync()
         {

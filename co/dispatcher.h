@@ -30,7 +30,7 @@ namespace co
 namespace detail { class Dispatcher; }
 
     /**
-     * Provided command dispatch functionality to networked objects.
+     * A class providing command dispatch functionality to networked objects.
      *
      * Command dispatch in performed through a command queue and command handler
      * table.
