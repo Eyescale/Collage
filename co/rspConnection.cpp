@@ -761,8 +761,9 @@ void RSPConnection::_finishWriteQueue( const uint16_t sequence )
         _writeBuffers.pop_front();
 
 #ifndef NDEBUG
-        const DatagramData* datagram =
-            reinterpret_cast< const DatagramData* >( buffer->getData( ));
+        DatagramData* datagram =
+                         reinterpret_cast< DatagramData* >( buffer->getData( ));
+        datagram->byteswap();
         LBASSERT( datagram->writerID == _id );
         LBASSERTINFO( datagram->sequence ==
                       uint16_t( connection->_sequence + readBuffers.size( )),
