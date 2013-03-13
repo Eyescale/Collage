@@ -40,7 +40,7 @@
  * parameters. A ConnectionSet may be used to demultiplex input from a set of
  * connections.
  *
- * The next abstraciton in collage offers peer-to-peer communication between
+ * The next abstraction in Collage offers peer-to-peer communication between
  * processes, represented by Node and LocalNode. A process typically uses one
  * LocalNode to listen on connection requests and to communicate with other
  * nodes. A Node is a proxy for a remote LocalNode. To exchange information, an
