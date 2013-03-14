@@ -1848,7 +1848,7 @@ bool LocalNode::_cmdGetNodeDataReply( ICommand& command )
 bool LocalNode::_cmdAcquireSendToken( ICommand& command )
 {
     LBASSERT( inCommandThread( ));
-    if( !_impl->sendToken == 0 ) // enqueue command if no token available
+    if( !_impl->sendToken ) // enqueue command if no token available
     {
         const uint32_t timeout = Global::getTimeout();
         if( timeout == LB_TIMEOUT_INDEFINITE ||
