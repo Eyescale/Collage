@@ -52,7 +52,7 @@ namespace detail { class ConnectionSet; }
         /** Destruct this connection set. @version 1.0 */
         CO_API ~ConnectionSet();
 
-        /** @name Managing connections. */
+        /** @name Managing connections */
         //@{
         /** Add the connection to this set. Thread-safe. @version 1.0 */
         CO_API void addConnection( ConnectionPtr connection );
@@ -73,7 +73,7 @@ namespace detail { class ConnectionSet; }
         CO_API const Connections& getConnections() const;
         //@}
 
-        /** @name Performing a selection. */
+        /** @name Performing a selection */
         //@{
         /**
          * Select a Connection which is ready for I/O.

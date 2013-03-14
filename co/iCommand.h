@@ -86,7 +86,7 @@ namespace detail { class ICommand; }
         CO_API ConstBufferPtr getBuffer() const;
         //@}
 
-        /** @internal @name Command dispatch. */
+        /** @internal @name Command dispatch */
         //@{
         /** @internal Change the command type for subsequent dispatching. */
         CO_API void setType( const CommandType type );
@@ -106,7 +106,7 @@ namespace detail { class ICommand; }
 
         friend CO_API std::ostream& operator << (std::ostream&,const ICommand&);
 
-        /** @internal @name DataIStream functions. */
+        /** @internal @name DataIStream functions */
         //@{
         CO_API virtual size_t nRemainingBuffers() const;
         CO_API virtual uint128_t getVersion() const;

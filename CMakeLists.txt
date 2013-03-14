@@ -10,7 +10,7 @@ include(revision)
 
 set(RELEASE_VERSION OFF) # OFF or 'Mm0' ABI version
 set(VERSION_MAJOR "0")
-set(VERSION_MINOR "8")
+set(VERSION_MINOR "9")
 set(VERSION_PATCH "0")
 #set(LAST_RELEASE )
 
@@ -19,7 +19,7 @@ include(GitTargets)
 include(UpdateFile)
 
 include(FindPackages)
-set(COLLAGE_TRANSIENT_LIBRARIES Lunchbox)
+set(COLLAGE_DEPENDENT_LIBRARIES Lunchbox)
 
 set(FEATURES)
 include_directories(BEFORE ${CMAKE_SOURCE_DIR})
@@ -61,32 +61,14 @@ add_subdirectory(tests)
 add_subdirectory(co)
 add_subdirectory(doc)
 
-find_program(LINKS_EXECUTABLE links)
-if(LINKS_EXECUTABLE)
-  add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/RELNOTES.txt
-    COMMAND ${LINKS_EXECUTABLE} -dump doc/RelNotes.dox > RELNOTES.txt
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    DEPENDS ${CMAKE_SOURCE_DIR}/doc/RelNotes.dox)
-  add_custom_target(RELNOTES.txt ALL DEPENDS ${CMAKE_SOURCE_DIR}/RELNOTES.txt)
-endif()
-
-find_package(PythonInterp)
-if(PYTHON_EXECUTABLE)
-  add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/README.rst
-    COMMAND ${PYTHON_EXECUTABLE} CMake/html2rst.py doc/RelNotes.dox > README.rst
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    DEPENDS ${CMAKE_SOURCE_DIR}/doc/RelNotes.dox)
-  add_custom_target(README.rst ALL DEPENDS ${CMAKE_SOURCE_DIR}/README.rst)
-endif()
-
 if(MSVC)
   message(STATUS "Configured with${FEATURES}")
 else()
   message(STATUS "Configured with ${CMAKE_BUILD_TYPE}${FEATURES}")
 endif()
 
-include(DoxygenRule)
 include(CPackConfig)
+include(DoxygenRule)
 
 set(CTEST_CUSTOM_WARNING_EXCEPTION ${CTEST_CUSTOM_WARNING_EXCEPTION}
   # http://public.kitware.com/Bug/view.php?id=10179

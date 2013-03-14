@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -30,41 +30,41 @@
 
 namespace co
 {
-    /** A worker thread. */
-    template< class Q > class WorkerThread : public lunchbox::Thread
-    {
-    public:
-        /** Construct a new worker thread. @version 1.1.5 */
-        WorkerThread() {}
+/** A worker thread processing items out of a CommandQueue. */
+template< class Q > class WorkerThread : public lunchbox::Thread
+{
+public:
+    /** Construct a new worker thread. @version 1.0 */
+    WorkerThread() {}
 
-        /** Destruct the worker. @version 1.1.5 */
-        virtual ~WorkerThread() {}
+    /** Destruct the worker. @version 1.0 */
+    virtual ~WorkerThread() {}
 
-        /** @return the queue to the worker thread. @version 1.1.5 */
-        Q* getWorkerQueue() { return &_commands; }
+    /** @return the queue to the worker thread. @version 1.0 */
+    Q* getWorkerQueue() { return &_commands; }
 
-    protected:
-        /** @sa lunchbox::Thread::init() */
-        virtual bool init()
-            {
-                setName( lunchbox::className( this ));
-                return true;
-            }
+protected:
+    /** @sa lunchbox::Thread::init() */
+    virtual bool init()
+        {
+            setName( lunchbox::className( this ));
+            return true;
+        }
 
-        /** @sa lunchbox::Thread::run() */
-        CO_WORKER_API virtual void run();
+    /** @sa lunchbox::Thread::run() */
+    CO_WORKER_API virtual void run();
 
-        /** @return true to stop the worker thread. @version 1.1.5 */
-        virtual bool stopRunning() { return false; }
+    /** @return true to stop the worker thread. @version 1.0 */
+    virtual bool stopRunning() { return false; }
 
-        /** @return true to indicate pending idle tasks. @version 1.1.5 */
-        virtual bool notifyIdle() { return false; }
+    /** @return true to indicate pending idle tasks. @version 1.0 */
+    virtual bool notifyIdle() { return false; }
 
-    private:
-        /** The receiver->worker thread command queue. */
-        Q _commands;
-    };
+private:
+    /** The receiver->worker thread command queue. */
+    Q _commands;
+};
 
-    typedef WorkerThread< CommandQueue > Worker; // instantiated in worker.cpp
+typedef WorkerThread< CommandQueue > Worker; // instantiated in worker.cpp
 }
 #endif //CO_WORKER_H

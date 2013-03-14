@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -40,7 +40,6 @@ namespace co
 
 class Barrier;
 class Buffer;
-class CPUCompressor; //!< @internal
 class CommandQueue;
 class Connection;
 class ConnectionDescription;
@@ -62,14 +61,11 @@ class ObjectDataOCommand;
 class ObjectFactory;
 class ObjectHandler;
 class ObjectOCommand;
-class Plugin;        //!< @internal
-class PluginRegistry;
 class QueueItem;
 class QueueMaster;
 class QueueSlave;
 class Serializable;
 class Zeroconf;
-struct CompressorInfo; //!< @internal
 template< class Q > class WorkerThread;
 struct ObjectVersion;
 
@@ -148,20 +144,12 @@ typedef std::vector< ObjectVersion > ObjectVersions;
 typedef ObjectVersions::const_iterator ObjectVersionsCIter;
 typedef std::deque< ObjectDataIStream* > ObjectDataIStreamDeque;
 typedef std::vector< ObjectDataIStream* > ObjectDataIStreams;
-
-typedef std::vector< CompressorInfo > CompressorInfos;
-typedef std::vector< const CompressorInfo* > CompressorInfoPtrs;
-typedef std::vector< Plugin* > Plugins;
-
-typedef CompressorInfos::const_iterator CompressorInfosCIter;
-typedef Plugins::const_iterator PluginsCIter;
 /** @endcond */
 
 #ifndef EQ_2_0_API
 namespace base
 {
 using namespace lunchbox;
-using co::PluginRegistry;
 using co::Global;
 }
 #endif

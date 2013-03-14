@@ -44,7 +44,6 @@ private:
     friend class QueueMaster;
 
     QueueItem( QueueMaster& master );
-
     QueueItem( const QueueItem& rhs );
 
     virtual void sendData( const void*, const uint64_t, const bool )

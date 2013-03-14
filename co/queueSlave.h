@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
  *                    2011, Carsten Rohn <carsten.rohn@rtt.ag>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -22,10 +22,9 @@
 #ifndef CO_QUEUESLAVE_H
 #define CO_QUEUESLAVE_H
 
-#include "api.h"
-#include "global.h" // used inline
-#include "object.h" // base class
-#include "types.h"
+#include <co/api.h>
+#include <co/object.h> // base class
+#include <co/types.h>
 
 namespace co
 {
@@ -44,22 +43,21 @@ public:
      * Construct a new queue consumer.
      *
      * The implementation will prefetch items from the queue master to cache
-     * thems locally. The prefetchMark determines when new items are requested,
+     * them locally. The prefetchMark determines when new items are requested,
      * and the prefetchAmount how many items are fetched. Prefetching items
      * hides the network latency by pipelining the network communication with
-     * the processing but may introduce imbalance between queue slaves if used
-     * aggressively.
+     * the processing, but introduces some imbalance between queue slaves.
      *
-     * @param prefetchMark the low-water mark for prefetching.
-     * @param prefetchAmount the refill quantity when prefetching.
+     * @param prefetchMark the low-water mark for prefetching, or
+     *                     LB_UNDEFINED_UINT32 to use the Global default.
+     * @param prefetchAmount the refill quantity when prefetching, or
+     *                       LB_UNDEFINED_UINT32 to use the Global default.
      * @version 1.0
      */
-    CO_API QueueSlave( const uint32_t prefetchMark =
-                       Global::getIAttribute( Global::IATTR_QUEUE_MIN_SIZE ),
-                       const uint32_t prefetchAmount =
-                       Global::getIAttribute( Global::IATTR_QUEUE_REFILL ));
+    CO_API QueueSlave( const uint32_t prefetchMark = LB_UNDEFINED_UINT32,
+                       const uint32_t prefetchAmount = LB_UNDEFINED_UINT32 );
 
-    /** Destruct this new queue consumer. @version 1.0 */
+    /** Destruct this queue consumer. @version 1.0 */
     virtual CO_API ~QueueSlave();
 
     /**

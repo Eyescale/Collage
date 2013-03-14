@@ -42,7 +42,7 @@ if(Boost_name)
   include_directories(SYSTEM ${${Boost_name}_INCLUDE_DIRS})
 endif()
 
-find_package(Lunchbox 1.7.0 REQUIRED)
+find_package(Lunchbox 1.7.1 REQUIRED)
 if(Lunchbox_FOUND)
   set(Lunchbox_name Lunchbox)
 endif()
@@ -55,6 +55,8 @@ if(Lunchbox_name)
   include_directories(${${Lunchbox_name}_INCLUDE_DIRS})
 endif()
 
+
+set(COLLAGE_DEPENDS OFED;UDT;Boost;Lunchbox)
 
 # Write defines.h and options.cmake
 if(NOT FIND_PACKAGES_INCLUDE)

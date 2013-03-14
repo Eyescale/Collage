@@ -1,5 +1,5 @@
 
-# Copyright (c) 2011-2012 Stefan Eilemann <eile@eyescale.ch>
+# Copyright (c) 2011-2013 Stefan Eilemann <eile@eyescale.ch>
 
-install(FILES ../RELNOTES.txt ../AUTHORS ../CHANGES.txt ../ACKNOWLEDGEMENTS
-        ../LGPL ../LICENSE.txt DESTINATION share/Collage/doc COMPONENT doc)
+install(FILES RELNOTES.md ../AUTHORS ../CHANGES.txt ../LGPL ../LICENSE.txt
+  DESTINATION share/Collage/doc COMPONENT doc)

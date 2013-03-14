@@ -27,7 +27,7 @@ namespace co
     class Exception;
     std::ostream& operator << ( std::ostream& os, const Exception& e );
 
-    /** A base Exception for Collage operations. */
+    /** A base Exception class for Collage operations. */
     class Exception : public std::exception
     {
     public:

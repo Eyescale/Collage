@@ -19,7 +19,7 @@
 
 #include "global.h"
 
-#include "pluginRegistry.h"
+#include <lunchbox/pluginRegistry.h>
 
 #include <limits>
 #include <stdlib.h>
@@ -37,7 +37,6 @@ namespace co
 
 namespace
 {
-static PluginRegistry _pluginRegistry;
 
 static uint32_t _getObjectBufferSize()
 {
@@ -169,9 +168,10 @@ uint32_t Global::getObjectBufferSize()
     return  _objectBufferSize;
 }
 
-PluginRegistry& Global::getPluginRegistry()
+lunchbox::PluginRegistry& Global::getPluginRegistry()
 {
-    return _pluginRegistry;
+    static lunchbox::PluginRegistry pluginRegistry;
+    return pluginRegistry;
 }
 
 void Global::setIAttribute( const IAttribute attr, const int32_t value )

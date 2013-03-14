@@ -31,7 +31,6 @@
 
 #include <co/objectDataOCommand.h> // private header
 #include <co/objectDataICommand.h> // private header
-#include <co/cpuCompressor.h> // private header
 
 // Tests the functionality of the DataOStream and DataIStream
 
@@ -129,6 +128,11 @@ protected:
             stream << doubles;
             stream << _message;
 
+            char blob[128];
+            for( size_t i=0; i < 128; ++i )
+                blob[ i ] = char( i );
+            stream << co::Array< void >( blob, 128 );
+
             stream.disable();
         }
 
@@ -217,7 +221,14 @@ int main( int argc, char **argv )
     TESTINFO( message == _message,
               '\'' <<  message << "' != '" << _message << '\'' );
 
+    char blob[128] = { 0 };
+    stream >> co::Array< void >( blob, 128 );
+    for( size_t i=0; i < 128; ++i )
+        TEST( blob[ i ] == char( i ));
+
     TEST( sender.join( ));
     connection->close();
+
+    co::exit();
     return EXIT_SUCCESS;
 }

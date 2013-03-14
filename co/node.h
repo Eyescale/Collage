@@ -50,7 +50,7 @@ namespace detail { class Node; }
          */
         CO_API Node( const uint32_t type = co::NODETYPE_NODE );
 
-        /** @name Data Access. */
+        /** @name Data Access */
         //@{
         /** @return the type of the node. @version 1.0 */
         CO_API uint32_t getType() const;
@@ -74,7 +74,7 @@ namespace detail { class Node; }
         CO_API bool isClosing() const;
         //@}
 
-        /** @name Connectivity information. */
+        /** @name Connectivity information */
         //@{
         /** @return true if the node is local (listening). @version 1.0 */
         bool isLocal() const { return isListening(); }
