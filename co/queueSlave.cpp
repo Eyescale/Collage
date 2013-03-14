@@ -28,6 +28,7 @@
 #include "objectOCommand.h"
 #include "objectICommand.h"
 #include "queueCommand.h"
+#include "exception.h"
 
 namespace co
 {
@@ -83,7 +84,7 @@ void QueueSlave::applyInstanceData( co::DataIStream& is )
     _impl->master = localNode->connect( masterNodeID );
 }
 
-ObjectICommand QueueSlave::pop()
+ObjectICommand QueueSlave::pop( const uint32_t timeout )
 {
     static lunchbox::a_int32_t _request;
     const int32_t request = ++_request;
@@ -97,19 +98,27 @@ ObjectICommand QueueSlave::pop()
                     << _impl->prefetchAmount << getInstanceID() << request;
         }
 
-        ObjectICommand cmd( _impl->queue.pop( ));
-        switch( cmd.getCommand( ))
+        try
         {
-          case CMD_QUEUE_ITEM:
-              return ObjectICommand( cmd );
+            ObjectICommand cmd( _impl->queue.pop( timeout ));
+            switch( cmd.getCommand( ))
+            {
+            case CMD_QUEUE_ITEM:
+                return ObjectICommand( cmd );
 
-          default:
-              LBUNIMPLEMENTED;
-          case CMD_QUEUE_EMPTY:
-              if( cmd.get< int32_t >() == request )
-                  return ObjectICommand( 0, 0, 0, false );
-              // else left-over or not our empty command, discard and retry
-              break;
+            default:
+                LBUNIMPLEMENTED;
+            case CMD_QUEUE_EMPTY:
+                if( cmd.get< int32_t >() == request )
+                    return ObjectICommand( 0, 0, 0, false );
+                // else left-over or not our empty command, discard and retry
+                break;
+            }
+        }
+        catch (co::Exception& e)
+        {
+            LBWARN << e.what() << std::endl;
+            return ObjectICommand( 0, 0, 0, false );;
         }
     }
 }
