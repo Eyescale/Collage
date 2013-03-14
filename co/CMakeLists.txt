@@ -55,6 +55,12 @@ set_target_properties(Collage
   PROPERTIES VERSION ${VERSION} SOVERSION ${VERSION_ABI})
 
 install(FILES ${CO_PUBLIC_HEADERS} DESTINATION include/co COMPONENT dev)
+
+if (MSVC)
+  install(FILES ${CMAKE_BINARY_DIR}/bin/Debug/Collage.pdb DESTINATION bin COMPONENT lib CONFIGURATIONS Debug)
+  install(FILES ${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/Collage.pdb DESTINATION bin COMPONENT lib CONFIGURATIONS RelWithDebInfo)
+endif()
+
 install(TARGETS Collage
         ARCHIVE DESTINATION lib COMPONENT dev
         RUNTIME DESTINATION bin COMPONENT lib
