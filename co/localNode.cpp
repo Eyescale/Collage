@@ -839,7 +839,6 @@ NodePtr LocalNode::connect( const NodeID& nodeID )
     }
 
     LBWARN << "Node " << nodeID << " connection failed" << std::endl;
-    LBUNREACHABLE;
     return 0;
 }
 
