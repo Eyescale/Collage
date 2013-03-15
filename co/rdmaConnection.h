@@ -29,6 +29,9 @@
 
 #include <bitset>
 
+#ifdef _WIN32
+#  define NOMINMAX
+#endif
 #include <rdma/rdma_cma.h>
 
 #ifndef _WIN32

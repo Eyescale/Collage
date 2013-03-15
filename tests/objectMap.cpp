@@ -78,7 +78,9 @@ public:
 class TestNode : public co::LocalNode
 {
 public:
+#pragma warning( disable: 4355)
     TestNode() : factory(), objectMap( *this, factory ) {}
+#pragma warning( default: 4355)
 
     ObjectFactory factory;
     co::ObjectMap objectMap;

@@ -626,7 +626,7 @@ void LocalNode::ping( NodePtr peer )
 bool LocalNode::pingIdleNodes()
 {
     LBASSERT( !_impl->inReceiverThread( ) );
-    const int64_t timeout = Global::getKeepaliveTimeout();
+    const int64_t aliveTimeout = Global::getKeepaliveTimeout() / 2;
     Nodes nodes;
     getNodes( nodes, false );
 
@@ -634,7 +634,7 @@ bool LocalNode::pingIdleNodes()
     for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
     {
         NodePtr node = *i;
-        if( getTime64() - node->getLastReceiveTime() > timeout )
+        if( getTime64() - node->getLastReceiveTime() > aliveTimeout )
         {
             LBINFO << " Ping Node: " <<  node->getNodeID() << " last seen "
                    << node->getLastReceiveTime() << std::endl;
@@ -1848,7 +1848,7 @@ bool LocalNode::_cmdGetNodeDataReply( ICommand& command )
 bool LocalNode::_cmdAcquireSendToken( ICommand& command )
 {
     LBASSERT( inCommandThread( ));
-    if( !_impl->sendToken == 0 ) // enqueue command if no token available
+    if( !_impl->sendToken ) // enqueue command if no token available
     {
         const uint32_t timeout = Global::getTimeout();
         if( timeout == LB_TIMEOUT_INDEFINITE ||

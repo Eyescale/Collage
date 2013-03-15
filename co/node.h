@@ -153,7 +153,7 @@ namespace detail { class Node; }
         CO_API const NodeID& getNodeID() const;
 
         /** @internal @return last receive time. */
-        int64_t getLastReceiveTime() const;
+        CO_API int64_t getLastReceiveTime() const;
 
         /** @internal Serialize the node's information. */
         CO_API std::string serialize() const;

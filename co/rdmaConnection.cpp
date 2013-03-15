@@ -36,6 +36,7 @@
 #  include <sys/epoll.h>
 #  include <sys/mman.h>
 #  include <poll.h>
+#  include <unistd.h>
 #endif
 
 #include <errno.h>
@@ -43,7 +44,6 @@
 #include <limits>
 #include <sstream>
 #include <stddef.h>
-#include <unistd.h>
 
 #include <rdma/rdma_verbs.h>
 
@@ -2384,7 +2384,7 @@ bool BufferPool::resize( ibv_pd *pd, uint32_t num_bufs )
             boost::interprocess::mapped_region::get_page_size());
         if ( !_buffer )
         {
-            :BERROR << "_aligned_malloc : Couldn't allocate aligned memory. "
+            LBERROR << "_aligned_malloc : Couldn't allocate aligned memory. "
                     << lunchbox::sysError << std::endl;
             goto err;
         }

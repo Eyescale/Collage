@@ -70,7 +70,7 @@ public:
      *         queue is empty.
      * @version 1.0
      */
-    CO_API ObjectICommand pop();
+    CO_API ObjectICommand pop( const uint32_t timeout = EQ_TIMEOUT_INDEFINITE );
 
 private:
     detail::QueueSlave* const _impl;

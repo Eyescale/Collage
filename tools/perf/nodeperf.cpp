@@ -188,7 +188,7 @@ int main( int argc, char **argv )
         if( sizeArg.isSet( ))
             packetSize = sizeArg.getValue();
         if( packetsArg.isSet( ))
-            nPackets = packetsArg.getValue();
+            nPackets = (uint32_t)packetsArg.getValue();
         if( waitArg.isSet( ))
             waitTime = waitArg.getValue();
     }
