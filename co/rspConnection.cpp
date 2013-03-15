@@ -1,6 +1,6 @@
 
 /* Copyright (c)      2009, Cedric Stalder <cedric.stalder@gmail.com>
- *               2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2009-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -70,27 +70,29 @@ static uint16_t _numBuffers = 0;
 }
 
 RSPConnection::RSPConnection()
-        : _id( 0 )
-        , _idAccepted( false )
-        , _mtu( Global::getIAttribute( Global::IATTR_UDP_MTU ))
-        , _ackFreq( Global::getIAttribute( Global::IATTR_RSP_ACK_FREQUENCY ))
-        , _payloadSize( _mtu - sizeof( DatagramData ))
-        , _timeouts( 0 )
-        , _event( new EventConnection )
-        , _read( 0 )
-        , _write( 0 )
-        , _timeout( _ioService )
-        , _wakeup( _ioService )
-        , _maxBucketSize( ( _mtu * _ackFreq) >> 1 )
-        , _bucketSize( 0 )
-        , _sendRate( 0 )
-        , _thread( 0 )
-        , _acked( std::numeric_limits< uint16_t >::max( ))
-        , _threadBuffers( Global::getIAttribute( Global::IATTR_RSP_NUM_BUFFERS))
-        , _recvBuffer( _mtu )
-        , _readBuffer( 0 )
-        , _readBufferPos( 0 )
-        , _sequence( 0 )
+    : _id( 0 )
+    , _idAccepted( false )
+    , _mtu( Global::getIAttribute( Global::IATTR_UDP_MTU ))
+    , _ackFreq( Global::getIAttribute( Global::IATTR_RSP_ACK_FREQUENCY ))
+    , _payloadSize( _mtu - sizeof( DatagramData ))
+    , _timeouts( 0 )
+    , _event( new EventConnection )
+    , _read( 0 )
+    , _write( 0 )
+    , _timeout( _ioService )
+    , _wakeup( _ioService )
+    , _maxBucketSize( ( _mtu * _ackFreq) >> 1 )
+    , _bucketSize( 0 )
+    , _sendRate( 0 )
+    , _thread( 0 )
+    , _acked( std::numeric_limits< uint16_t >::max( ))
+    , _threadBuffers( Global::getIAttribute( Global::IATTR_RSP_NUM_BUFFERS))
+    , _recvBuffer( _mtu )
+    , _readBuffer( 0 )
+    , _readBufferPos( 0 )
+    , _sequence( 0 )
+    // ensure we have a handleConnectedTimeout before the write pop
+    , _writeTimeOut( Global::IATTR_RSP_ACK_TIMEOUT * EQ_RSP_MAX_TIMEOUTS * 2 )
 {
     _buildNewID();
     ConnectionDescriptionPtr description = _getDescription();
@@ -110,8 +112,6 @@ RSPConnection::RSPConnection()
     LBLOG( LOG_RSP ) << "New RSP connection, " << _buffers.size()
                      << " buffers of " << _mtu << " bytes" << std::endl;
 
-    // ensure we have a handleConnectedTimeout before the write pop
-    _writeTimeOut = Global::IATTR_RSP_ACK_TIMEOUT * EQ_RSP_MAX_TIMEOUTS * 2;
 }
 
 RSPConnection::~RSPConnection()
@@ -493,15 +493,15 @@ void RSPConnection::_handleConnectedTimeout()
             }
         }
 
-        // if all connections failed we probably got disconnected -> close and exit
-        // else close all failed child connections
+        // if all connections failed we probably got disconnected -> close and
+        // exit else close all failed child connections
         if ( all )
         {
             _sendSimpleDatagram( ID_EXIT, _id );
             _appBuffers.pushFront( 0 ); // unlock write function
 
-            RSPConnectionsCIter i =_children.begin();
-            for( ; i !=_children.end(); ++i)
+            for( RSPConnectionsCIter i =_children.begin();
+                 i !=_children.end(); ++i)
             {
                 RSPConnectionPtr child = *i;
                 child->_setState( STATE_CLOSING );
@@ -510,28 +510,27 @@ void RSPConnection::_handleConnectedTimeout()
 
             _clearWriteQueues();
             _ioService.stop();
+            return;
         }
-        else
-        {
-            RSPConnectionsCIter i =_children.begin();
-            while ( i !=_children.end() )
-            {
-                RSPConnectionPtr child = *i;
-                if ( child->_acked < _sequence - 1 && _id != child->_id )
-                {
-                    _sendSimpleDatagram( ID_EXIT, child->_id );
-                    _removeConnection( child->_id );
-                }
-                else
-                {
-                    uint16_t wb = static_cast<uint16_t>( _writeBuffers.size( ));
-                    child->_acked = _sequence - wb;
-                    ++i;
-                }
-            }
 
-            _timeouts = 0;
+        RSPConnectionsCIter i =_children.begin();
+        while ( i !=_children.end() )
+        {
+            RSPConnectionPtr child = *i;
+            if ( child->_acked < _sequence - 1 && _id != child->_id )
+            {
+                _sendSimpleDatagram( ID_EXIT, child->_id );
+                _removeConnection( child->_id );
+            }
+            else
+            {
+                uint16_t wb = static_cast<uint16_t>( _writeBuffers.size( ));
+                child->_acked = _sequence - wb;
+                ++i;
+            }
         }
+
+        _timeouts = 0;
     }
 }
 

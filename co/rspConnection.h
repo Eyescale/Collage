@@ -1,6 +1,6 @@
 
 /* Copyright (c)      2009, Cedric Stalder <cedric.stalder@gmail.com>
- *               2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2009-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -292,7 +292,7 @@ namespace co
         typedef std::deque< Nack > RepeatQueue;
         RepeatQueue _repeatQueue; //!< nacks to repeat
 
-        unsigned int _writeTimeOut;
+        const unsigned _writeTimeOut;
 
         void _close();
         uint16_t _buildNewID();

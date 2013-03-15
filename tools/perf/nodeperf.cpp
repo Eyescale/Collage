@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2012-2013, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -188,7 +188,7 @@ int main( int argc, char **argv )
         if( sizeArg.isSet( ))
             packetSize = sizeArg.getValue();
         if( packetsArg.isSet( ))
-            nPackets = (uint32_t)packetsArg.getValue();
+            nPackets = uint32_t( packetsArg.getValue( ));
         if( waitArg.isSet( ))
             waitTime = waitArg.getValue();
     }
@@ -341,4 +341,3 @@ int main( int argc, char **argv )
     LBCHECK( co::exit( ));
     return EXIT_SUCCESS;
 }
-

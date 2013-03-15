@@ -66,8 +66,9 @@ public:
      * The returned item can deserialize additional data using the DataIStream
      * operators.
      *
+     * @param timeout An optional timeout for the operation.
      * @return an item from the distributed queue, or an invalid item if the
-     *         queue is empty.
+     *         queue is empty or the operation timed out.
      * @version 1.0
      */
     CO_API ObjectICommand pop( const uint32_t timeout = EQ_TIMEOUT_INDEFINITE );

@@ -626,7 +626,7 @@ void LocalNode::ping( NodePtr peer )
 bool LocalNode::pingIdleNodes()
 {
     LBASSERT( !_impl->inReceiverThread( ) );
-    const int64_t aliveTimeout = Global::getKeepaliveTimeout() / 2;
+    const int64_t timeout = Global::getKeepaliveTimeout() / 2;
     Nodes nodes;
     getNodes( nodes, false );
 
@@ -634,7 +634,7 @@ bool LocalNode::pingIdleNodes()
     for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
     {
         NodePtr node = *i;
-        if( getTime64() - node->getLastReceiveTime() > aliveTimeout )
+        if( getTime64() - node->getLastReceiveTime() > timeout )
         {
             LBINFO << " Ping Node: " <<  node->getNodeID() << " last seen "
                    << node->getLastReceiveTime() << std::endl;

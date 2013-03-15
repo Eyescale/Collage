@@ -118,7 +118,7 @@ ObjectICommand QueueSlave::pop( const uint32_t timeout )
         catch (co::Exception& e)
         {
             LBWARN << e.what() << std::endl;
-            return ObjectICommand( 0, 0, 0, false );;
+            return ObjectICommand( 0, 0, 0, false );
         }
     }
 }
