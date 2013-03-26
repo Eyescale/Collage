@@ -31,7 +31,17 @@ namespace co
 {
 namespace
 {
-    static lunchbox::a_int32_t _initialized;
+static int32_t _checkVersion()
+{
+    static std::string version = Version::getString();
+    if( version != Version::getString( ))
+        LBWARN << "Duplicate DSO loading, Collage v" << version
+               << " already loaded while loading v" << Version::getString()
+               << std::endl;
+    return 0;
+}
+
+static lunchbox::a_int32_t _initialized( _checkVersion( ));
 }
 
 bool _init( const int argc, char** argv )

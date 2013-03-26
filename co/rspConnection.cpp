@@ -459,7 +459,7 @@ void RSPConnection::_clearWriteQueues()
 {
     while( !_threadBuffers.isEmpty() )
     {
-        Buffer* buffer;
+        Buffer* buffer = 0;
         _threadBuffers.pop( buffer );
         _writeBuffers.push_back( buffer );
     }
