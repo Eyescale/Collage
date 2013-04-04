@@ -288,7 +288,8 @@ void ObjectStore::swapObject( Object* oldObject, Object* newObject )
     if( !oldObject->isAttached() )
         return;
 
-    LBLOG( LOG_OBJECTS ) << "Swap " << lunchbox::className( oldObject ) <<std::endl;
+    LBLOG( LOG_OBJECTS ) << "Swap " << lunchbox::className( oldObject )
+                         << std::endl;
     const UUID& id = oldObject->getID();
 
     lunchbox::ScopedFastWrite mutex( _objects );
