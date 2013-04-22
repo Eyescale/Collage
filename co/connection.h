@@ -329,7 +329,7 @@ namespace detail { class Connection; }
 
 namespace lunchbox
 {
-template<> inline void byteswap( co::Connection*& value ) { /*NOP*/ }
+template<> inline void byteswap( co::Connection*& /*value*/ ) { /*NOP*/ }
 }
 
 #endif //CO_CONNECTION_H
