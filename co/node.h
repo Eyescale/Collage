@@ -212,7 +212,7 @@ namespace detail { class Node; }
 
 namespace lunchbox
 {
-template<> inline void byteswap( co::Node*& /*value*/ ) { /*NOP*/ }
+template<> inline void byteswap( co::Node*& ) { /*NOP*/ }
 }
 
 #endif // CO_NODE_H
