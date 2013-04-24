@@ -31,6 +31,7 @@ namespace co
 {
 namespace detail { class Object; }
 class ObjectCM;
+typedef lunchbox::RefPtr< ObjectCM > ObjectCMPtr;
 
 #  define CO_COMMIT_NEXT LB_UNDEFINED_UINT32 //!< the next commit incarnation
 
@@ -388,7 +389,6 @@ public:
     /** @internal @return the master object instance identifier. */
     NodePtr getMasterNode();
 
-    void addSlave( MasterCMCommand& command ); //!< @internal
     /** @internal */
     CO_API void removeSlave( NodePtr node, const uint32_t instanceID );
     CO_API void removeSlaves( NodePtr node ); //!< @internal
@@ -438,7 +438,10 @@ protected:
 
 private:
     detail::Object* const impl_;
-    void _setChangeManager( ObjectCM* cm );
+    void _setChangeManager( ObjectCMPtr cm );
+
+    ObjectCMPtr _getChangeManager();
+    friend class ObjectStore;
 
     LB_TS_VAR( _thread );
 };

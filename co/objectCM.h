@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -33,147 +33,150 @@
 
 namespace co
 {
+class ObjectCM;
+typedef lunchbox::RefPtr< ObjectCM > ObjectCMPtr;
+
+/**
+ * @internal
+ * The object change manager base class.
+ *
+ * Each object has a change manager to create and store version information.
+ * The type of change manager depends on the object implementation, and if it is
+ * the master object or a slave object.
+ */
+class ObjectCM : public Dispatcher, public lunchbox::Referenced
+{
+public:
+    /** Construct a new change manager. */
+    ObjectCM( Object* object );
+    virtual ~ObjectCM() {}
+
+    /** Initialize the change manager. */
+    virtual void init() = 0;
+
+    /** @name Versioning */
+    //@{
+    /** @sa Object::push() */
+    virtual void push( const uint128_t& groupID, const uint128_t& typeID,
+                       const Nodes& nodes );
+
     /**
-     * @internal
-     * The object change manager base class.
+     * Commit a new version.
      *
-     * Each object has a change manager to create and store version information.
-     * The type of change manager depends on the object implementation, and if
-     * it is the master object or a slave object.
+     * @param incarnation the commit incarnation for auto obsoletion.
+     * @return the new head version.
      */
-    class ObjectCM : public Dispatcher
-    {
-    public:
-        /** Construct a new change manager. */
-        ObjectCM( Object* object );
-        virtual ~ObjectCM() {}
+    virtual uint128_t commit( const uint32_t incarnation )
+        { LBUNIMPLEMENTED; return VERSION_NONE; }
 
-        /** Initialize the change manager. */
-        virtual void init() = 0;
+    /**
+     * Automatically obsolete old versions.
+     *
+     * @param count the number of versions to retain, excluding the head
+     *              version.
+     */
+    virtual void setAutoObsolete( const uint32_t count ){ LBUNIMPLEMENTED; }
 
-        /** @name Versioning */
-        //@{
-        /** @sa Object::push() */
-        virtual void push( const uint128_t& groupID, const uint128_t& typeID,
-                           const Nodes& nodes );
+    /** @return get the number of versions this object retains. */
+    virtual uint32_t getAutoObsolete() const { LBUNIMPLEMENTED; return 0; }
 
-        /**
-         * Commit a new version.
-         *
-         * @param incarnation the commit incarnation for auto obsoletion.
-         * @return the new head version.
-         */
-        virtual uint128_t commit( const uint32_t incarnation )
-            { LBUNIMPLEMENTED; return VERSION_NONE; }
+    /**
+     * Sync to a given version.
+     *
+     * @param version the version to synchronize, must be bigger than the
+     *                current version.
+     * @return the version of the object after the operation.
+     */
+    virtual uint128_t sync( const uint128_t& version )
+        { LBUNIMPLEMENTED; return VERSION_FIRST; }
 
-        /**
-         * Automatically obsolete old versions.
-         *
-         * @param count the number of versions to retain, excluding the head
-         *              version.
-         */
-        virtual void setAutoObsolete( const uint32_t count ){ LBUNIMPLEMENTED; }
+    /** @return the latest available (head) version. */
+    virtual uint128_t getHeadVersion() const = 0;
 
-        /** @return get the number of versions this object retains. */
-        virtual uint32_t getAutoObsolete() const { LBUNIMPLEMENTED; return 0; }
+    /** @return the current version. */
+    virtual uint128_t getVersion() const = 0;
+    //@}
 
-        /**
-         * Sync to a given version.
-         *
-         * @param version the version to synchronize, must be bigger than the
-         *                current version.
-         * @return the version of the object after the operation.
-         */
-        virtual uint128_t sync( const uint128_t& version )
-            { LBUNIMPLEMENTED; return VERSION_FIRST; }
+    /** @return if this object keeps instance data buffers. */
+    virtual bool isBuffered() const{ return false; }
 
-        /** @return the latest available (head) version. */
-        virtual uint128_t getHeadVersion() const = 0;
+    /** @return if this instance is the master version. */
+    virtual bool isMaster() const = 0;
 
-        /** @return the current version. */
-        virtual uint128_t getVersion() const = 0;
-        //@}
+    /** @return the instance identifier of the master object. */
+    virtual uint32_t getMasterInstanceID() const = 0;
 
-        /** @return if this object keeps instance data buffers. */
-        virtual bool isBuffered() const{ return false; }
+    /** Set the master node. */
+    virtual void setMasterNode( NodePtr ) { /* nop */ }
 
-        /** @return if this instance is the master version. */
-        virtual bool isMaster() const = 0;
+    /** @return the master node, may be 0. */
+    virtual NodePtr getMasterNode() { return 0; }
 
-        /** @return the instance identifier of the master object. */
-        virtual uint32_t getMasterInstanceID() const = 0;
+    /**
+     * Add a subscribed slave to the managed object.
+     *
+     * @param command the subscribe command initiating the add.
+     */
+    virtual void addSlave( MasterCMCommand command ) = 0;
 
-        /** Set the master node. */
-        virtual void setMasterNode( NodePtr ) { /* nop */ }
+    /**
+     * Remove a subscribed slave.
+     *
+     * @param node the slave node.
+     * @param instanceID the slave's instance identifier.
+     */
+    virtual void removeSlave( NodePtr node, const uint32_t instanceID )
+        { LBUNIMPLEMENTED; }
 
-        /** @return the master node, may be 0. */
-        virtual NodePtr getMasterNode() { return 0; }
+    /** Remove all subscribed slaves from the given node. */
+    virtual void removeSlaves( NodePtr node ) = 0;
 
-        /**
-         * Add a subscribed slave to the managed object.
-         *
-         * @param command the subscribe command initiating the add.
-         */
-        virtual void addSlave( MasterCMCommand command ) = 0;
+    /** @return the vector of current slave nodes. */
+    virtual const Nodes getSlaveNodes() const { return Nodes(); }
 
-        /**
-         * Remove a subscribed slave.
-         *
-         * @param node the slave node.
-         * @param instanceID the slave's instance identifier.
-         */
-        virtual void removeSlave( NodePtr node, const uint32_t instanceID )
-            { LBUNIMPLEMENTED; }
+    /** Apply the initial data after mapping. */
+    virtual void applyMapData( const uint128_t& version )
+        { LBUNIMPLEMENTED; }
 
-        /** Remove all subscribed slaves from the given node. */
-        virtual void removeSlaves( NodePtr node ) = 0;
+    /** Add existing instance data to the object (from local node cache) */
+    virtual void addInstanceDatas( const ObjectDataIStreamDeque&,
+                                   const uint128_t& )
+        { LBDONTCALL; }
 
-        /** @return the vector of current slave nodes. */
-        virtual const Nodes getSlaveNodes() const { return Nodes(); }
+    /** Speculatively send instance data to all nodes. */
+    virtual void sendInstanceData( Nodes& nodes ){}
 
-        /** Apply the initial data after mapping. */
-        virtual void applyMapData( const uint128_t& version )
-            { LBUNIMPLEMENTED; }
+    /** @internal @return the object. */
+    const Object* getObject( ) const { return _object; }
 
-        /** Add existing instance data to the object (from local node cache) */
-        virtual void addInstanceDatas( const ObjectDataIStreamDeque&,
-                                       const uint128_t& )
-            { LBDONTCALL; }
+    /** @internal Swap the object. */
+    void setObject( Object* object )
+        { LBASSERT( object ); _object = object; }
 
-        /** Speculatively send instance data to all nodes. */
-        virtual void sendInstanceData( Nodes& nodes ){}
+    /** The default CM for unattached objects. */
+    static ObjectCMPtr ZERO;
 
-        /** @internal @return the object. */
-        const Object* getObject( ) const { return _object; }
-
-        /** @internal Swap the object. */
-        void setObject( Object* object )
-            { LBASSERT( object ); _object = object; }
-
-        /** The default CM for unattached objects. */
-        static ObjectCM* ZERO;
-
-    protected:
-        /** The managed object. */
-        Object* _object;
+protected:
+    /** The managed object. */
+    Object* _object;
 
 #ifdef EQ_INSTRUMENT_MULTICAST
-        static lunchbox::a_int32_t _hit;
-        static lunchbox::a_int32_t _miss;
+    static lunchbox::a_int32_t _hit;
+    static lunchbox::a_int32_t _miss;
 #endif
 
-        void _addSlave( MasterCMCommand command, const uint128_t& version );
-        virtual void _initSlave( MasterCMCommand command,
-                                 const uint128_t& replyVersion,
-                                 bool replyUseCache );
-        void _sendMapSuccess( const MasterCMCommand& command,
-                              const bool multicast );
-        void _sendMapReply( const MasterCMCommand& command,
-                            const uint128_t& version, const bool result,
-                            const bool useCache, const bool multicast );
-        void _sendEmptyVersion( const MasterCMCommand& command,
-                                const uint128_t& version, const bool multicast);
-    };
+    void _addSlave( MasterCMCommand command, const uint128_t& version );
+    virtual void _initSlave( MasterCMCommand command,
+                             const uint128_t& replyVersion,
+                             bool replyUseCache );
+    void _sendMapSuccess( const MasterCMCommand& command,
+                          const bool multicast );
+    void _sendMapReply( const MasterCMCommand& command,
+                        const uint128_t& version, const bool result,
+                        const bool useCache, const bool multicast );
+    void _sendEmptyVersion( const MasterCMCommand& command,
+                            const uint128_t& version, const bool multicast);
+};
 }
 
 #endif // CO_OBJECTCM_H

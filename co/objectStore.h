@@ -182,9 +182,9 @@ namespace co
         typedef ObjectsHash::const_iterator ObjectsHashCIter;
 
         /** All registered and mapped objects.
-         *   - write locked only in receiver thread
-         *   - read unlocked in receiver thread
-         *   - read locked in all other threads
+         *   - locked writes (only in receiver thread)
+         *   - unlocked reads in receiver thread
+         *   - locked reads in all other threads
          */
         lunchbox::Lockable< ObjectsHash, lunchbox::SpinLock > _objects;
 

@@ -28,7 +28,7 @@
 #include "objectInstanceDataOStream.h"
 #include "objectDataOCommand.h"
 
-co::ObjectCM* co::ObjectCM::ZERO = new co::NullCM;
+co::ObjectCMPtr co::ObjectCM::ZERO = new co::NullCM;
 
 #ifdef EQ_INSTRUMENT_MULTICAST
 lunchbox::a_int32_t co::ObjectCM::_hit( 0 );
@@ -82,8 +82,8 @@ void ObjectCM::_addSlave( MasterCMCommand command, const uint128_t& version )
     _initSlave( command, version, replyUseCache );
 }
 
-void ObjectCM::_initSlave( MasterCMCommand command, const uint128_t& replyVersion,
-                           bool replyUseCache )
+void ObjectCM::_initSlave( MasterCMCommand command,
+                           const uint128_t& replyVersion, bool replyUseCache )
 {
 #if 0
     LBLOG( LOG_OBJECTS ) << "Object id " << _object->_id << " v" << _version

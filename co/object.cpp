@@ -64,7 +64,7 @@ public:
     uint32_t instanceID;
 
     /** The object's change manager. */
-    ObjectCM* cm;
+    ObjectCMPtr cm;
 };
 }
 
@@ -87,8 +87,6 @@ Object::~Object()
         impl_->localNode->releaseObject( this );
     impl_->localNode = 0;
 
-    if( impl_->cm != ObjectCM::ZERO )
-        delete impl_->cm;
     impl_->cm = 0;
     delete impl_;
 }
@@ -172,15 +170,15 @@ void Object::transfer( Object* from )
     from->impl_->instanceID = EQ_INSTANCE_INVALID;
 }
 
-void Object::_setChangeManager( ObjectCM* cm )
+void Object::_setChangeManager( ObjectCMPtr cm )
 {
     if( impl_->cm != ObjectCM::ZERO )
     {
         LBVERB
             << "Overriding existing object change manager, obj "
-            << lunchbox::className( this ) << ", old cm " << lunchbox::className( impl_->cm )
-            << ", new cm " << lunchbox::className( cm ) << std::endl;
-        delete impl_->cm;
+            << lunchbox::className( this ) << ", old cm "
+            << lunchbox::className( impl_->cm ) << ", new cm "
+            << lunchbox::className( cm ) << std::endl;
     }
 
     impl_->cm = cm;
@@ -188,6 +186,11 @@ void Object::_setChangeManager( ObjectCM* cm )
     LBLOG( LOG_OBJECTS ) << "set new change manager " << lunchbox::className( cm )
                          << " for " << lunchbox::className( this )
                          << std::endl;
+}
+
+ObjectCMPtr Object::_getChangeManager()
+{
+    return impl_->cm;
 }
 
 ObjectOCommand Object::send( NodePtr node, const uint32_t cmd,
@@ -283,11 +286,6 @@ bool Object::isBuffered() const
 bool Object::isMaster() const
 {
     return impl_->cm->isMaster();
-}
-
-void Object::addSlave( MasterCMCommand& command )
-{
-    impl_->cm->addSlave( command );
 }
 
 void Object::removeSlave( NodePtr node, const uint32_t instanceID )

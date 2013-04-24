@@ -787,7 +787,7 @@ bool ObjectStore::_cmdMapObject( ICommand& cmd )
                          << command.getInstanceID() << " req "
                          << command.getRequestID() << std::endl;
 
-    Object* master = 0;
+    ObjectCMPtr masterCM;
     {
         lunchbox::ScopedFastRead mutex( _objects );
         ObjectsHash::const_iterator i = _objects->find( id );
@@ -800,15 +800,15 @@ bool ObjectStore::_cmdMapObject( ICommand& cmd )
                 Object* object = *j;
                 if( object->isMaster( ))
                 {
-                    master = object;
+                    masterCM = object->_getChangeManager();
                     break;
                 }
             }
         }
     }
 
-    if( master )
-        master->addSlave( command );
+    if( masterCM )
+        masterCM->addSlave( command );
     else
     {
         LBWARN << "Can't find master object to map " << id << std::endl;
