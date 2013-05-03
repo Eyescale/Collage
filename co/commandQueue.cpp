@@ -90,7 +90,7 @@ ICommand CommandQueue::pop( const uint32_t timeout )
 
 ICommands CommandQueue::popAll( const uint32_t timeout )
 {
-    const ICommands& result = _impl->commands.timedPop( timeout );
+    const ICommands& result = _impl->commands.timedPopRange( timeout );
 
     if( result.empty( ))
         throw Exception( Exception::TIMEOUT_COMMANDQUEUE );
