@@ -1005,6 +1005,7 @@ void RSPConnection::_handleConnectedData( const size_t bytes )
         case ID_HELLO:
         case ID_CONFIRM:
         case ID_EXIT:
+        case ID_DENY:
         case COUNTNODE:
             _handleInitData( bytes, true );
             break;
@@ -1252,8 +1253,6 @@ bool RSPConnection::_handleAck( const size_t bytes )
 
 bool RSPConnection::_handleNack( const size_t bytes )
 {
-    if( bytes < sizeof( DatagramNack ))
-        return false;
     DatagramNack& nack =
                     *reinterpret_cast< DatagramNack* >( _recvBuffer.getData( ));
     nack.byteswap();
