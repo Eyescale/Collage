@@ -122,8 +122,6 @@ bool SocketConnection::connect()
     if( description->port == 0 )
         return false;
 
-    _setState( STATE_CONNECTING );
-
     if( description->getHostname().empty( ))
         description->setHostname( "127.0.0.1" );
 
@@ -133,6 +131,8 @@ bool SocketConnection::connect()
         LBWARN << "Can't parse connection parameters" << std::endl;
         return false;
     }
+
+    _setState( STATE_CONNECTING );
 
     if( !_createSocket( ))
         return false;
