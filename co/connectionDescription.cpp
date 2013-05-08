@@ -49,6 +49,7 @@ static ConnectionType _getConnectionType( const std::string& string )
     if( string == "UDT" )
         return CONNECTIONTYPE_UDT;
 
+    LBWARN << "Unknown connection type: " << string;
     return CONNECTIONTYPE_NONE;
 }
 }
