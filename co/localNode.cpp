@@ -1889,12 +1889,12 @@ bool LocalNode::_cmdReleaseSendToken( ICommand& )
         return true;
     }
 
-	ICommand& request = _impl->sendTokenQueue.front();
+    ICommand& request = _impl->sendTokenQueue.front();
 
-	const uint32_t requestID = request.get< uint32_t >();
-	request.getNode()->send( CMD_NODE_ACQUIRE_SEND_TOKEN_REPLY ) << requestID;
-	_impl->sendTokenQueue.pop_front();
-	return true;
+    const uint32_t requestID = request.get< uint32_t >();
+    request.getNode()->send( CMD_NODE_ACQUIRE_SEND_TOKEN_REPLY ) << requestID;
+    _impl->sendTokenQueue.pop_front();
+    return true;
 }
 
 bool LocalNode::_cmdAddListener( ICommand& command )
