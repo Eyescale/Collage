@@ -9,9 +9,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Object-Oriented C++ Network Library")
 set(CPACK_PACKAGE_DESCRIPTION_FILE ${CMAKE_SOURCE_DIR}/doc/RELNOTES.md)
 set(CPACK_RESOURCE_FILE_README ${CMAKE_SOURCE_DIR}/doc/RELNOTES.md)
 
-set(CPACK_DEBIAN_BUILD_DEPENDS bison flex libboost-system-dev
-  libboost-date-time-dev libboost-regex-dev libboost-serialization-dev
-  librdmacm-dev libibverbs-dev librdmacm-dev libudt-dev
+set(CPACK_DEBIAN_BUILD_DEPENDS ${${UPPER_PROJECT_NAME}_BUILD_DEBS}
   ${LUNCHBOX_DEB_DEPENDENCIES})
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libstdc++6, libboost-system-dev, libboost-date-time-dev, libboost-regex-dev, libboost-serialization-dev, librdmacm-dev, libibverbs-dev, librdmacm-dev, libudt-dev, ${LUNCHBOX_DEB_DEPENDENCIES}")
 
