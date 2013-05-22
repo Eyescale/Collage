@@ -1,5 +1,5 @@
 Name:		Collage
-Version:	0.9.1
+Version:	0.0.0
 Release:	1%{?dist}
 Summary:	Cross-platform C++ network library
 
@@ -7,7 +7,7 @@ Group:		Development/Libraries
 License:	LGPLv2
 URL:		http://www.libcollage.net/
 Source0:	http://www.equalizergraphics.com/downloads/%{name}-%{version}.tar.gz
-Patch0:		Collage-0.9.1-build-fix.patch
+Patch0:		Collage-0.0.0-build-fix.patch
 BuildRequires:	cmake
 BuildRequires:	boost-devel glew-devel lunchbox1
 
