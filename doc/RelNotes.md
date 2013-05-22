@@ -65,10 +65,12 @@ since the last release:
 Collage 1.0 includes various bugfixes over the Equalizer 1.4 release,
 including the following:
 
-* [22](https://github.com/Eyescale/Collage/issues/22) Crash during
+* [22](https://github.com/Eyescale/Collage/issues/22): Crash during
   concurrent object deregister and map
 * [13](https://github.com/Eyescale/Collage/issues/13): Global argument
   parsing broken
+* [3](https://github.com/Eyescale/Collage/issues/3): Snappy compressor
+  does not work on PPC
 
 ## Known Bugs {#Bugs}
 
@@ -80,8 +82,6 @@ The following bugs were known at release time. Please file a [Bug Report](https:
   not endian-safe
 * [14](https://github.com/Eyescale/Collage/issues/14): coNetperf server
   occasionally crashes on client disconnect
-* [3](https://github.com/Eyescale/Collage/issues/3): Snappy compressor
-  does not work on PPC
 * [2](https://github.com/Eyescale/Collage/issues/2): Multiple dispatcher
   inheritance not working with xlC
 
@@ -94,13 +94,13 @@ system. Collage uses CMake and
 platform-specific build environment. The following platforms and build
 environments are tested for version 1.0:
 
-* Linux: Ubuntu 12.04, 12.10, RHEL 6.3 (Makefile, i386, x64)
+* Linux: Ubuntu 12.04, 12.10, 13.04, RHEL 6.3 (Makefile, i386, x64)
 * Windows: 7 (Visual Studio 2008, i386, x64)
 * Mac OS X: 10.8 (Makefile, XCode, i386, x64)
 
 The Equalizer Programming and User Guide covers the basics of Collage
 programming. The API documentation can be found on
-[github](http://eyescale.github.com/).
+[github](http://eyescale.github.io/).
 
 As with any open source project, the available source code, in
 particular the shipped tools provide a reference for developing or

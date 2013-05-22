@@ -48,7 +48,7 @@ if(Boost_name)
   endif()
 endif()
 
-find_package(Lunchbox 1.7.5 REQUIRED)
+find_package(Lunchbox 1.8.0 REQUIRED)
 if(Lunchbox_FOUND)
   set(Lunchbox_name Lunchbox)
 endif()

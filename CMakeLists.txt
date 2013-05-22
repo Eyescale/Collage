@@ -1,6 +1,6 @@
 
 # Copyright (c) 2010 Daniel Pfeifer <daniel@pfeifer-mail.de>
-#               2010-2012 Stefan Eilemann <eile@eyescale.ch>
+#               2010-2013 Stefan Eilemann <eile@eyescale.ch>
 
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(Collage)
@@ -8,11 +8,11 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
 
 include(revision)
 
-set(RELEASE_VERSION OFF) # OFF or 'Mm0' ABI version
+set(RELEASE_VERSION 1) # OFF or 'Mm0' ABI version
 set(VERSION_MAJOR "0")
-set(VERSION_MINOR "9")
+set(VERSION_MINOR "0")
 set(VERSION_PATCH "0")
-#set(LAST_RELEASE )
+set(LAST_RELEASE 1.0.0)
 
 include(Common)
 include(GitTargets)
