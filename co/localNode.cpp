@@ -546,12 +546,6 @@ void LocalNode::_closeNode( NodePtr node )
         _impl->connectionNodes.erase( connection );
     }
 
-    if( mcConnection )
-    {
-        _removeConnection( mcConnection );
-        _impl->connectionNodes.erase( mcConnection );
-    }
-
     _impl->objectStore->removeInstanceData( node->getNodeID( ));
 
     lunchbox::ScopedFastWrite mutex( _impl->nodes );
