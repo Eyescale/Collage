@@ -110,7 +110,7 @@ void DataIStream::_read( void* data, uint64_t size )
 
     LBASSERT( _impl->input );
 
-    if( _impl->position + size > _impl->inputSize )
+    if( size > _impl->inputSize - _impl->position )
     {
         LBERROR << "Not enough data in input buffer: need " << size
                 << " bytes, " << _impl->inputSize - _impl->position << " left "
