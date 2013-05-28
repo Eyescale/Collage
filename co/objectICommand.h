@@ -42,7 +42,7 @@ class ObjectICommand : public ICommand
 public:
     /** @internal */
     CO_API ObjectICommand( LocalNodePtr local, NodePtr remote,
-                          ConstBufferPtr buffer, const bool swap );
+                           ConstBufferPtr buffer, const bool swap );
 
     /** Copy-construct an object command from a generic ICommand. @version 1.0*/
     CO_API ObjectICommand( const ICommand& command );

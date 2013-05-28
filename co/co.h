@@ -66,6 +66,7 @@
 
 #include <co/barrier.h>
 #include <co/buffer.h>
+#include <co/bufferConnection.h>
 #include <co/connectionDescription.h>
 #include <co/connection.h>
 #include <co/connectionSet.h>

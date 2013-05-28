@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -27,42 +27,48 @@ namespace co
 {
 namespace detail { class BufferConnection; }
 
-    /** A proxy connection buffering outgoing data into a memory buffer. */
-    class BufferConnection : public Connection
-    {
-    public:
-        /** Construct a new buffer connection. @version 1.0 */
-        CO_API BufferConnection();
+/** A proxy connection buffering outgoing data into a memory buffer. */
+class BufferConnection : public Connection
+{
+public:
+    /** Construct a new buffer connection. @version 1.0 */
+    CO_API BufferConnection();
 
-        /** Destruct this buffer connection. @version 1.0 */
-        CO_API virtual ~BufferConnection();
+    /** Destruct this buffer connection. @version 1.0 */
+    CO_API virtual ~BufferConnection();
 
-        /**
-         * Flush the accumulated data, sending it to the given connection.
-         * @version 1.0
-         */
-        CO_API void sendBuffer( ConnectionPtr connection );
+    /**
+     * Flush the accumulated data, sending it to the given connection.
+     * @version 1.0
+     */
+    CO_API void sendBuffer( ConnectionPtr connection );
 
-        /** @return the size of the accumulated data. @version 1.0 */
-        CO_API uint64_t getSize() const;
+    /** @return the internal data buffer. @version 1.0 */
+    CO_API const lunchbox::Bufferb& getBuffer() const;
 
-    protected:
-        /** @internal */
-        //@{
-        virtual void readNB( void*, const uint64_t ) { LBDONTCALL; }
-        virtual int64_t readSync( void*, const uint64_t, const bool )
-            { LBDONTCALL; return -1; }
-        CO_API virtual int64_t write( const void* buffer, const uint64_t bytes);
+    /** @return the internal data buffer. @version 1.0 */
+    CO_API lunchbox::Bufferb& getBuffer();
 
-        virtual Notifier getNotifier() const { LBDONTCALL; return 0; }
-        //@}
+    /** @return the size of the accumulated data. @version 1.0 */
+    CO_API uint64_t getSize() const;
 
-    private:
-        detail::BufferConnection* const _impl;
-    };
+protected:
+    /** @internal */
+    //@{
+    virtual void readNB( void*, const uint64_t ) { LBDONTCALL; }
+    virtual int64_t readSync( void*, const uint64_t, const bool )
+        { LBDONTCALL; return -1; }
+    CO_API virtual int64_t write( const void* buffer, const uint64_t bytes);
 
-    typedef lunchbox::RefPtr< BufferConnection > BufferConnectionPtr;
-    typedef lunchbox::RefPtr< const BufferConnection > ConstBufferConnectionPtr;
+    virtual Notifier getNotifier() const { LBDONTCALL; return 0; }
+    //@}
+
+private:
+    detail::BufferConnection* const _impl;
+};
+
+typedef lunchbox::RefPtr< BufferConnection > BufferConnectionPtr;
+typedef lunchbox::RefPtr< const BufferConnection > ConstBufferConnectionPtr;
 }
 
-#endif //CO_BUFFER_CONNECTION_H
+#endif // CO_BUFFER_CONNECTION_H

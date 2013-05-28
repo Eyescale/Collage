@@ -179,7 +179,7 @@ public:
      * be generated, that is, the current version is returned. The high
      * value of the returned version will always be 0.
      *
-     * Slave objects can be commited, but have certain caveats for
+     * Slave objects can be committed, but have certain caveats for
      * serialization. Please refer to the Equalizer Programming Guide for
      * details. Slave object commits will return a random version on a
      * successful commit, or VERSION_NONE if the object has not changed since

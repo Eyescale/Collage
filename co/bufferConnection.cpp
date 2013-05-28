@@ -48,6 +48,16 @@ BufferConnection::~BufferConnection()
     delete _impl;
 }
 
+const lunchbox::Bufferb& BufferConnection::getBuffer() const
+{
+    return _impl->buffer;
+}
+
+lunchbox::Bufferb& BufferConnection::getBuffer()
+{
+    return _impl->buffer;
+}
+
 uint64_t BufferConnection::getSize() const
 {
     return _impl->buffer.getSize();
