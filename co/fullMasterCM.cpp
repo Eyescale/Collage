@@ -169,7 +169,6 @@ void FullMasterCM::_initSlave( MasterCMCommand command,
     _checkConsistency();
 
     const uint128_t& version = command.getRequestedVersion();
-
     const uint128_t oldest = _instanceDatas.front()->os.getVersion();
     uint128_t start = (version == VERSION_OLDEST || version < oldest ) ?
                           oldest : version;
@@ -188,8 +187,7 @@ void FullMasterCM::_initSlave( MasterCMCommand command,
     const uint128_t replyVersion = start;
     if( replyUseCache )
     {
-        if( minCachedVersion <= start &&
-            maxCachedVersion >= start )
+        if( minCachedVersion <= start && maxCachedVersion >= start )
         {
 #ifdef EQ_INSTRUMENT_MULTICAST
             _hit += maxCachedVersion + 1 - start;

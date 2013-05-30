@@ -73,7 +73,6 @@ void ObjectCM::_addSlave( MasterCMCommand command, const uint128_t& version )
         _sendMapSuccess( command, false /* mc */ );
         _sendEmptyVersion( command, version, false /* mc */ );
         _sendMapReply( command, version, true, false, false /* mc */ );
-
         return;
     }
 
