@@ -121,7 +121,7 @@ namespace detail { class Node; }
          *
          * The returned command can be used to pass additional data. The data
          * will be send after the command object is destroyed, aka when it is
-         * running out of scope.
+         * running out of scope. Thread safe.
          *
          * @param cmd the node command to execute.
          * @param multicast prefer multicast connection for sending.
@@ -138,7 +138,7 @@ namespace detail { class Node; }
          *
          * The returned command can be used to pass additional data. The data
          * will be send after the command object is destroyed, aka when it is
-         * running out of scope.
+         * running out of scope. Thread safe.
          *
          * @param commandID the ID of the registered custom command.
          * @param multicast prefer multicast connection for sending.
