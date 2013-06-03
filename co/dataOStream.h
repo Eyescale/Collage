@@ -67,7 +67,7 @@ namespace DataStreamTest { class Sender; }
         DataOStream& streamDataHeader( DataOStream& os );
 
         /** @internal Send the (compressed) data using the given connection. */
-        void sendData( ConnectionPtr connection, const uint64_t dataSize );
+        void sendBody( ConnectionPtr connection, const uint64_t dataSize );
 
         /** @internal @return the compressed data size, 0 if uncompressed.*/
         uint64_t getCompressedDataSize() const;

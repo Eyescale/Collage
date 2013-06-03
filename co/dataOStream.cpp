@@ -421,7 +421,7 @@ DataOStream& DataOStream::streamDataHeader( DataOStream& os )
     return os;
 }
 
-void DataOStream::sendData( ConnectionPtr connection, const uint64_t dataSize )
+void DataOStream::sendBody( ConnectionPtr connection, const uint64_t dataSize )
 {
     const uint32_t compressor = _impl->getCompressor();
     if( compressor == EQ_COMPRESSOR_NONE )

@@ -99,7 +99,7 @@ ObjectDataOCommand::~ObjectDataOCommand()
              ++i )
         {
             ConnectionPtr conn = *i;
-            _impl->stream->sendData( conn, _impl->dataSize );
+            _impl->stream->sendBody( conn, _impl->dataSize );
         }
     }
 
