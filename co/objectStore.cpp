@@ -358,7 +358,6 @@ uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
     if( !master )
         return mapObjectNB( object, id, version ); // will call us again
 
-    LB_TS_NOT_THREAD( _commandThread );
     LB_TS_NOT_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS )
         << "Mapping " << lunchbox::className( object ) << " to id " << id
