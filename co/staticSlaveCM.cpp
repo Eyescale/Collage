@@ -51,11 +51,13 @@ StaticSlaveCM::~StaticSlaveCM()
 void StaticSlaveCM::applyMapData( const uint128_t& version )
 {
     LBASSERT( _currentIStream );
-    LBASSERT( version == VERSION_FIRST );
+    LBASSERT( version == VERSION_FIRST ||
+              version == VERSION_NONE );
     _currentIStream->waitReady();
 
     LBASSERT( _object );
-    LBASSERT( _currentIStream->getVersion() == VERSION_FIRST );
+    LBASSERT( _currentIStream->getVersion() == VERSION_FIRST ||
+              _currentIStream->getVersion() == VERSION_NONE );
     LBASSERT( _currentIStream->hasInstanceData( ));
 
     if( _currentIStream->hasData( )) // not VERSION_NONE

@@ -341,7 +341,8 @@ bool VersionedSlaveCM::_cmdData( ICommand& cmd )
         _queuedVersions.getBack( debugStream );
         if ( debugStream )
         {
-            LBASSERT( debugStream->getVersion() + 1 == version );
+            LBASSERT( debugStream->getVersion() + 1 == version ||
+                      debugStream->getVersion() == VERSION_NONE );
         }
 #endif
         _queuedVersions.push( _currentIStream );
