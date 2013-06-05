@@ -149,9 +149,9 @@ uint128_t VersionedSlaveCM::getHeadVersion() const
 void VersionedSlaveCM::_unpackOneVersion( ObjectDataIStream* is )
 {
     LBASSERT( is );
-    LBASSERTINFO( _version == is->getVersion() - 1, "Expected version "
-                  << _version + 1 << ", got " << is->getVersion() << " for "
-                  << *_object );
+    LBASSERTINFO( _version == is->getVersion() - 1 || _version == VERSION_NONE, 
+                  "Expected version " << _version + 1 << " or 0, got " 
+                  << is->getVersion() << " for " << *_object );
 
     if( is->hasInstanceData( ))
         _object->applyInstanceData( *is );
