@@ -208,6 +208,9 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * mapObjectNB() and mapObjectSync() to asynchronously map multiple
          * objects in parallel improves performance of this operation.
          *
+         * After mapping, the object will have the version used to initialize
+         * it, or VERSION_NONE if mapped to this version.
+         *
          * @param object the object.
          * @param id the master object identifier.
          * @param version the initial version.
