@@ -52,6 +52,19 @@ namespace detail { class Node; }
 
         /** @name Data Access */
         //@{
+        /**
+         * Get the node's unique identifier.
+         *
+         * In rare cases (two nodes initiate a two-sided LocalNode::connect())
+         * to each other, two node instances with the same identifier might
+         * exist temporarily during the connection handshake.
+         *
+         * @return the node's unique identifier.
+         * @version 1.0
+         */
+        CO_API const NodeID& getNodeID() const;
+
+
         /** @return the type of the node. @version 1.0 */
         CO_API uint32_t getType() const;
 
@@ -148,9 +161,6 @@ namespace detail { class Node; }
         CO_API CustomOCommand send( const uint128_t& commandID,
                                     const bool multicast = false );
         //@}
-
-        /** @return the node's unique identifier. @version 1.0 */
-        CO_API const NodeID& getNodeID() const;
 
         /** @internal @return last receive time. */
         CO_API int64_t getLastReceiveTime() const;
