@@ -65,6 +65,8 @@ since the last release:
 Collage 1.0 includes various bugfixes over the Equalizer 1.4 release,
 including the following:
 
+* [25](https://github.com/Eyescale/Collage/issues/25): mapObject races
+  with commit
 * [22](https://github.com/Eyescale/Collage/issues/22): Crash during
   concurrent object deregister and map
 * [13](https://github.com/Eyescale/Collage/issues/13): Global argument
