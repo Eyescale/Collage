@@ -37,6 +37,7 @@
 #include "objectICommand.h"
 #include "objectStore.h"
 #include "pipeConnection.h"
+#include "sendToken.h"
 #include "worker.h"
 #include "zeroconf.h"
 
@@ -754,21 +755,17 @@ LocalNode::SendToken LocalNode::acquireSendToken( NodePtr node )
 
     bool ret = false;
     if( waitRequest( requestID, ret, Global::getTimeout( )))
-        return node;
+        return new co::SendToken( node );
 
-    LBERROR << "Timeout while acquiring send token " << requestID
-            << std::endl;
+    LBERROR << "Timeout while acquiring send token " << requestID << std::endl;
     return 0;
 }
 
-void LocalNode::releaseSendToken( SendToken& node )
+void LocalNode::releaseSendToken( SendToken token )
 {
     LBASSERT( !_impl->inReceiverThread( ));
-    if( !node )
-        return;
-
-    node->send( CMD_NODE_RELEASE_SEND_TOKEN );
-    node = 0; // In case app stores token in member variable
+    if( token )
+        token->release();
 }
 
 //----------------------------------------------------------------------

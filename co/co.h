@@ -85,6 +85,7 @@
 #include <co/objectMap.h>
 #include <co/objectOCommand.h>
 #include <co/oCommand.h>
+#include <co/sendToken.h>
 #include <co/serializable.h>
 #include <co/zeroconf.h>
 #include <lunchbox/lunchbox.h>

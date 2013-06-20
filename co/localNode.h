@@ -412,16 +412,22 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          */
         CO_API virtual bool dispatchCommand( ICommand& command );
 
-        typedef NodePtr SendToken; //!< An acquired send token
+
+        /** A handle for a send token acquired by acquireSendToken(). */
+        typedef lunchbox::RefPtr< co::SendToken > SendToken;
 
         /**
-         * Acquire a singular send token from the given node.
-         * @return The send token to release.
+         * Acquire a send token from the given node.
+         *
+         * The token is released automatically when it leaves its scope or
+         * explicitly using releaseSendToken().
+         *
+         * @return The send token.
          */
         CO_API SendToken acquireSendToken( NodePtr toNode );
 
         /** Release the given send token. */
-        CO_API void releaseSendToken( SendToken& token );
+        CO_API void releaseSendToken( SendToken token );
 
         /** @return a Zeroconf communicator handle for this node. @version 1.0*/
         CO_API Zeroconf getZeroconf();
