@@ -136,6 +136,7 @@ typedef ICommands::const_iterator                  ICommandsCIter;
 /** @cond IGNORE */
 class BufferListener;
 class MasterCMCommand;
+class SendToken;
 
 typedef lunchbox::RefPtr< Buffer > BufferPtr;
 typedef lunchbox::RefPtr< const Buffer > ConstBufferPtr;
