@@ -50,6 +50,7 @@ set(CO_PUBLIC_HEADERS
   queueItem.h
   queueMaster.h
   queueSlave.h
+  sendToken.h
   serializable.h
   types.h
   worker.h
@@ -135,6 +136,7 @@ set(CO_SOURCES
   queueItem.cpp
   queueMaster.cpp
   queueSlave.cpp
+  sendToken.cpp
   serializable.cpp
   socketConnection.cpp
   staticSlaveCM.cpp
