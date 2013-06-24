@@ -1711,7 +1711,6 @@ bool LocalNode::_cmdID( ICommand& command )
         LBASSERT( command.getNode()->_getMulticast( ));
         return true;
     }
-
     LBINFO << "handle ID " << command << " node " << nodeID << std::endl;
 
     ConnectionPtr connection = _impl->incoming.getConnection();
