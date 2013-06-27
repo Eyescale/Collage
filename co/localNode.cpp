@@ -1224,9 +1224,6 @@ void LocalNode::_handleDisconnect()
 
 bool LocalNode::_handleData()
 {
-    _impl->smallBuffers.compact();
-    _impl->bigBuffers.compact();
-
     ConnectionPtr connection = _impl->incoming.getConnection();
     LBASSERT( connection );
 
