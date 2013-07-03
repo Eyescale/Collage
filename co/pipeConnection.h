@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2011, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -55,24 +55,25 @@ namespace co
         /** Destruct this pipe connection. */
         CO_API virtual ~PipeConnection();
 
-        virtual bool connect();
-        virtual void close() { _close(); }
+        virtual bool connect() override;
+        virtual void close() override { _close(); }
 
 #ifdef _WIN32
-        virtual Notifier getNotifier() const;
+        virtual Notifier getNotifier() const override;
 #endif
 
-        virtual void acceptNB() { /* nop */ }
+        virtual void acceptNB() override { /* nop */ }
 
         /** @return the sibling of this pipe connection. */
-        virtual ConnectionPtr acceptSync() { return _sibling; }
+        virtual ConnectionPtr acceptSync() override { return _sibling; }
 
     protected:
 #ifdef _WIN32
-        virtual void readNB( void* buffer, const uint64_t bytes );
+        virtual void readNB( void* buffer, const uint64_t bytes ) override;
         virtual int64_t readSync( void* buffer, const uint64_t bytes,
-                                  const bool ignored );
-        virtual int64_t write( const void* buffer, const uint64_t bytes );
+                                  const bool ignored ) override;
+        virtual int64_t write( const void* buffer,
+                               const uint64_t bytes ) override;
 #endif
 
     private:

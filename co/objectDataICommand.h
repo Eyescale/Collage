@@ -42,7 +42,7 @@ public:
     CO_API ~ObjectDataICommand();
 
     /** @return the object version. */
-    virtual uint128_t getVersion() const;
+    virtual uint128_t getVersion() const override;
 
     /** @return the index in a sequence of commands. */
     uint32_t getSequence() const;

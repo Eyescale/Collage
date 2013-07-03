@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -39,20 +39,20 @@ namespace co
     public:
         NamedPipeConnection();
 
-        virtual bool connect();
-        virtual bool listen();
-        virtual void acceptNB();
-        virtual ConnectionPtr acceptSync();
+        virtual bool connect() override;
+        virtual bool listen() override;
+        virtual void acceptNB() override;
+        virtual ConnectionPtr acceptSync() override;
 
-        virtual void close() { _close(); }
+        virtual void close() override { _close(); }
 
-        virtual Notifier getNotifier() const { return _read.hEvent; }
+        virtual Notifier getNotifier() const override { return _read.hEvent; }
 
-        virtual void readNB( void* buffer, const uint64_t bytes );
+        virtual void readNB( void* buffer, const uint64_t bytes ) override;
         virtual int64_t readSync( void* buffer, const uint64_t bytes,
-            const bool ignored );
-        virtual int64_t write( const void* buffer, const uint64_t bytes );
-
+            const bool ignored ) override;
+        virtual int64_t write( const void* buffer,
+                               const uint64_t bytes ) override;
     protected:
         virtual ~NamedPipeConnection();
 

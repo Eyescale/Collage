@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -42,31 +42,32 @@ namespace co
         VersionedSlaveCM( Object* object, uint32_t masterInstanceID );
         virtual ~VersionedSlaveCM();
 
-        virtual void init() {}
+        virtual void init() override {}
 
         /**
          * @name Versioning
          */
         //@{
-        virtual uint128_t commit( const uint32_t incarnation );
-        virtual uint128_t sync( const uint128_t& version );
+        virtual uint128_t commit( const uint32_t incarnation ) override;
+        virtual uint128_t sync( const uint128_t& version ) override;
 
-        virtual uint128_t getHeadVersion() const;
-        virtual uint128_t getVersion() const { return _version; }
+        virtual uint128_t getHeadVersion() const override;
+        virtual uint128_t getVersion() const override { return _version; }
         //@}
 
-        virtual bool isMaster() const { return false; }
+        virtual bool isMaster() const override { return false; }
 
-        virtual uint32_t getMasterInstanceID() const {return _masterInstanceID;}
-        virtual void setMasterNode( NodePtr node ) { _master = node; }
-        virtual NodePtr getMasterNode() { return _master; }
+        virtual uint32_t getMasterInstanceID() const override
+            { return _masterInstanceID; }
+        virtual void setMasterNode( NodePtr node ) override { _master = node; }
+        virtual NodePtr getMasterNode() override { return _master; }
 
-        virtual void addSlave( MasterCMCommand command ) { LBDONTCALL; }
-        virtual void removeSlaves( NodePtr ) {}
+        virtual void addSlave( MasterCMCommand ) override { LBDONTCALL; }
+        virtual void removeSlaves( NodePtr ) override {}
 
-        virtual void applyMapData( const uint128_t& version );
+        virtual void applyMapData( const uint128_t& version ) override;
         virtual void addInstanceDatas( const ObjectDataIStreamDeque&,
-                                       const uint128_t& startVersion );
+                                       const uint128_t& startVersion ) override;
     private:
         /** The current version. */
         uint128_t _version;
@@ -94,7 +95,7 @@ namespace co
         void _sendAck();
 
         /** Apply the data in the input stream to the object */
-        virtual void _unpackOneVersion( ObjectDataIStream* is );
+        virtual void _unpackOneVersion( ObjectDataIStream* is ) final;
 
         /* The command handlers. */
         bool _cmdData( ICommand& command );

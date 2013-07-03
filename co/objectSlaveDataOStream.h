@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2010-2013, Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -35,7 +35,7 @@ namespace co
 
     protected:
         virtual void sendData( const void* buffer, const uint64_t size,
-                               const bool last );
+                               const bool last ) override;
 
     private:
         UUID _commit;

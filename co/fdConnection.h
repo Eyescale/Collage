@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2011, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -38,10 +38,11 @@ namespace co
         FDConnection();
         virtual ~FDConnection() {}
 
-        virtual void readNB( void*, const uint64_t ) { /* NOP */ }
+        virtual void readNB( void*, const uint64_t ) override { /* NOP */ }
         virtual int64_t readSync( void* buffer, const uint64_t bytes,
-                                  const bool ignored );
-        virtual int64_t write( const void* buffer, const uint64_t bytes );
+                                  const bool ignored ) override;
+        virtual int64_t write( const void* buffer,
+                               const uint64_t bytes ) override;
 
         int   _readFD;     //!< The read file descriptor.
         int   _writeFD;    //!< The write file descriptor.

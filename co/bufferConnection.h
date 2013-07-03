@@ -55,12 +55,13 @@ public:
 protected:
     /** @internal */
     //@{
-    virtual void readNB( void*, const uint64_t ) { LBDONTCALL; }
-    virtual int64_t readSync( void*, const uint64_t, const bool )
+    virtual void readNB( void*, const uint64_t ) override { LBDONTCALL; }
+    virtual int64_t readSync( void*, const uint64_t, const bool ) override
         { LBDONTCALL; return -1; }
-    CO_API virtual int64_t write( const void* buffer, const uint64_t bytes);
+    CO_API virtual int64_t write( const void* buffer,
+                                  const uint64_t bytes) override;
 
-    virtual Notifier getNotifier() const { LBDONTCALL; return 0; }
+    virtual Notifier getNotifier() const override { LBDONTCALL; return 0; }
     //@}
 
 private:

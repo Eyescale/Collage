@@ -46,7 +46,7 @@ private:
     QueueItem( QueueMaster& master );
     QueueItem( const QueueItem& rhs );
 
-    virtual void sendData( const void*, const uint64_t, const bool )
+    virtual void sendData( const void*, const uint64_t, const bool ) override
         { LBDONTCALL }
 
     detail::QueueItem* const _impl;

@@ -42,9 +42,9 @@ public:
     CO_API uint64_t getDirty() const;
 
     /** @return true if the serializable has to be committed. @version 1.0 */
-    CO_API virtual bool isDirty() const;
+    CO_API virtual bool isDirty() const override;
 
-    /** @return true if the given dirty bit is set. @version 1.0 */
+    /** @return true if the given dirty bits are set. @version 1.0 */
     CO_API virtual bool isDirty( const uint64_t dirtyBits ) const;
 
     /** @sa Object::commit() */
@@ -109,22 +109,22 @@ protected:
     CO_API virtual void unsetDirty( const uint64_t bits );
 
     /** @sa Object::getChangeType() */
-    virtual ChangeType getChangeType() const { return DELTA; }
+    virtual ChangeType getChangeType() const override { return DELTA; }
 
     /** @sa Object::notifyAttached() */
-    CO_API virtual void notifyAttached();
+    CO_API virtual void notifyAttached() override;
 
 private:
     detail::Serializable* const _impl;
     friend class detail::Serializable;
 
-    virtual void getInstanceData( co::DataOStream& os )
+    virtual void getInstanceData( co::DataOStream& os ) final
         { serialize( os, DIRTY_ALL ); }
 
-    CO_API virtual void applyInstanceData( co::DataIStream& is );
+    CO_API virtual void applyInstanceData( co::DataIStream& is ) final;
 
-    CO_API virtual void pack( co::DataOStream& os );
-    CO_API virtual void unpack( co::DataIStream& is );
+    CO_API virtual void pack( co::DataOStream& os ) final;
+    CO_API virtual void unpack( co::DataIStream& is ) final;
 };
 }
 #endif // CO_SERIALIZABLE_H

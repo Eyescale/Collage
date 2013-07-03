@@ -76,11 +76,12 @@ public:
 private:
     detail::QueueSlave* const _impl;
 
-    CO_API virtual void attach( const UUID& id, const uint32_t instanceID );
+    CO_API virtual void attach( const UUID& id,
+                                const uint32_t instanceID ) override;
 
-    virtual ChangeType getChangeType() const { return STATIC; }
-    virtual void getInstanceData( co::DataOStream& ) { LBDONTCALL }
-    virtual void applyInstanceData( co::DataIStream& is );
+    virtual ChangeType getChangeType() const override { return STATIC; }
+    virtual void getInstanceData( co::DataOStream& ) override { LBDONTCALL }
+    virtual void applyInstanceData( co::DataIStream& is ) override;
 };
 
 } // co

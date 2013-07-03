@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2010-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -45,26 +45,27 @@ namespace co
         VersionedMasterCM( Object* object );
         virtual ~VersionedMasterCM();
 
-        virtual void init(){}
+        virtual void init() override {}
 
         /** @name Versioning */
         //@{
-        virtual uint128_t sync( const uint128_t& version );
+        virtual uint128_t sync( const uint128_t& version ) override;
 
-        virtual uint128_t getHeadVersion() const
+        virtual uint128_t getHeadVersion() const override
             { Mutex mutex( _slaves ); return _version; }
-        virtual uint128_t getVersion() const
+        virtual uint128_t getVersion() const override
             { Mutex mutex( _slaves ); return _version; }
         //@}
 
-        virtual bool isMaster() const { return true; }
-        virtual uint32_t getMasterInstanceID() const
+        virtual bool isMaster() const override { return true; }
+        virtual uint32_t getMasterInstanceID() const override
             { LBDONTCALL; return EQ_INSTANCE_INVALID; }
 
-        virtual void addSlave( MasterCMCommand command );
-        virtual void removeSlave( NodePtr node, const uint32_t instanceID );
-        virtual void removeSlaves( NodePtr node );
-        virtual const Nodes getSlaveNodes() const
+        virtual void addSlave( MasterCMCommand command ) override;
+        virtual void removeSlave( NodePtr node,
+                                  const uint32_t instanceID ) override;
+        virtual void removeSlaves( NodePtr node ) override;
+        virtual const Nodes getSlaveNodes() const override
             { Mutex mutex( _slaves ); return *_slaves; }
 
     protected:

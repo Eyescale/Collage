@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -41,24 +41,25 @@ namespace co
         StaticMasterCM( Object* object ) : ObjectCM( object ) {}
         virtual ~StaticMasterCM() {}
 
-        virtual void init(){}
+        virtual void init() override {}
 
         /** @name Versioning */
         //@{
-        virtual void setAutoObsolete( const uint32_t ) {}
-        virtual uint32_t getAutoObsolete() const { return 0; }
+        virtual void setAutoObsolete( const uint32_t ) override {}
+        virtual uint32_t getAutoObsolete() const override { return 0; }
 
-        virtual uint128_t getHeadVersion() const { return VERSION_FIRST; }
-        virtual uint128_t getVersion() const     { return VERSION_FIRST; }
+        virtual uint128_t getHeadVersion() const override
+            { return VERSION_FIRST; }
+        virtual uint128_t getVersion() const override { return VERSION_FIRST; }
         //@}
 
-        virtual bool isMaster() const { return true; }
-        virtual uint32_t getMasterInstanceID() const
+        virtual bool isMaster() const override { return true; }
+        virtual uint32_t getMasterInstanceID() const override
             { LBDONTCALL; return EQ_INSTANCE_INVALID; }
 
-        virtual void addSlave( MasterCMCommand command )
+        virtual void addSlave( MasterCMCommand command ) override
             { ObjectCM::_addSlave( command, VERSION_FIRST ); }
-        virtual void removeSlaves( NodePtr ) { /* NOP */}
+        virtual void removeSlaves( NodePtr ) override { /* NOP */}
     };
 }
 

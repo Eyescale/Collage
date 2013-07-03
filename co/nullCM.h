@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -37,19 +37,20 @@ namespace co
         NullCM() : ObjectCM( 0 ) {}
         virtual ~NullCM() {}
 
-        virtual void init() {}
+        virtual void init() override {}
 
-        virtual void push( const uint128_t&, const uint128_t&, const Nodes& )
-            { LBDONTCALL; }
+        virtual void push( const uint128_t&, const uint128_t&,
+                           const Nodes& ) override { LBDONTCALL; }
 
-        virtual uint128_t getHeadVersion() const   { return VERSION_NONE; }
-        virtual uint128_t getVersion() const       { return VERSION_NONE; }
-        virtual bool isMaster() const { return false; }
-        virtual uint32_t getMasterInstanceID() const
+        virtual uint128_t getHeadVersion() const override
+            { return VERSION_NONE; }
+        virtual uint128_t getVersion() const override { return VERSION_NONE; }
+        virtual bool isMaster() const override { return false; }
+        virtual uint32_t getMasterInstanceID() const override
             { LBDONTCALL; return EQ_INSTANCE_INVALID; }
 
-        virtual void addSlave( MasterCMCommand command ) { LBDONTCALL; }
-        virtual void removeSlaves( NodePtr ) { LBDONTCALL; }
+        virtual void addSlave( MasterCMCommand command ) override { LBDONTCALL; }
+        virtual void removeSlaves( NodePtr ) override { LBDONTCALL; }
 
     private:
     };

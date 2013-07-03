@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -103,7 +103,7 @@ public:
             _hasConnection = true;
         }
 
-    virtual void run()
+    virtual void run() override
         {
             _hasConnection.waitEQ( true );
             while( _connection.isValid( ))
@@ -143,7 +143,7 @@ public:
             , _packetSize( packetSize )
             , _useThreads( useThreads ) {}
 
-    virtual bool init()
+    virtual bool init() override
         {
             LBCHECK( _connection->listen( ));
             _connection->acceptNB();
@@ -171,7 +171,7 @@ public:
             return true;
         }
 
-    virtual void run()
+    virtual void run() override
         {
             co::ConnectionPtr resultConn;
             co::ConnectionPtr newConn;

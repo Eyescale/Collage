@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2010-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -39,20 +39,20 @@ namespace co
         CO_API EventConnection();
         CO_API virtual ~EventConnection();
 
-        CO_API virtual bool connect();
-        CO_API virtual void close() { _close(); }
+        CO_API virtual bool connect() override;
+        CO_API virtual void close() override { _close(); }
 
         CO_API void set();
         CO_API void reset();
 
-        CO_API virtual Notifier getNotifier() const;
+        CO_API virtual Notifier getNotifier() const override;
 
     protected:
-        virtual void readNB( void*, const uint64_t )
+        virtual void readNB( void*, const uint64_t ) override
             { LBDONTCALL; }
-        virtual int64_t readSync( void*, const uint64_t, const bool )
+        virtual int64_t readSync( void*, const uint64_t, const bool ) override
             { LBDONTCALL; return -1; }
-        CO_API virtual int64_t write( const void*, const uint64_t )
+        CO_API virtual int64_t write( const void*, const uint64_t ) override
             { LBDONTCALL; return -1; }
 
     private:

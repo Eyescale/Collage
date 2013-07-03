@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -33,7 +33,7 @@ namespace co
         ObjectDataOStream( const ObjectCM* cm );
         virtual ~ObjectDataOStream(){}
 
-        virtual void reset();
+        virtual void reset() override;
 
         /** Set up commit of the given version to the receivers. */
         virtual void enableCommit( const uint128_t& version,

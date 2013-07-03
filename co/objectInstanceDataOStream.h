@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder  <cedric.stalder@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -32,11 +32,11 @@ namespace co
         ObjectInstanceDataOStream( const ObjectCM* cm );
         virtual ~ObjectInstanceDataOStream();
 
-        virtual void reset();
+        virtual void reset() override;
 
         /** Set up commit of the given version to the receivers. */
         virtual void enableCommit( const uint128_t& version,
-                                   const Nodes& receivers );
+                                   const Nodes& receivers ) override;
 
         /** Set up push of the given version to the receivers. */
         void enablePush( const uint128_t& version, const Nodes& receivers );
@@ -57,7 +57,7 @@ namespace co
 
     protected:
         virtual void sendData( const void* buffer, const uint64_t size,
-                               const bool last );
+                               const bool last ) override;
 
     private:
         NodeID _nodeID;

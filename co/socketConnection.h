@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -54,26 +54,28 @@ namespace co
          */
         SocketConnection( const ConnectionType type = CONNECTIONTYPE_TCPIP );
 
-        virtual bool connect();
-        virtual bool listen();
-        virtual void acceptNB();
-        virtual ConnectionPtr acceptSync();
-        virtual void close() { _close(); }
+        virtual bool connect() override;
+        virtual bool listen() override;
+        virtual void acceptNB() override;
+        virtual ConnectionPtr acceptSync() override;
+        virtual void close() override { _close(); }
 
 
 #ifdef WIN32
         /** @sa Connection::getNotifier */
-        virtual Notifier getNotifier() const { return _overlappedRead.hEvent; }
+        virtual Notifier getNotifier() const override
+            { return _overlappedRead.hEvent; }
 #endif
 
     protected:
         virtual ~SocketConnection();
 
 #ifdef WIN32
-        virtual void readNB( void* buffer, const uint64_t bytes );
+        virtual void readNB( void* buffer, const uint64_t bytes ) override;
         virtual int64_t readSync( void* buffer, const uint64_t bytes,
-                                  const bool block );
-        virtual int64_t write( const void* buffer, const uint64_t bytes );
+                                  const bool block ) override;
+        virtual int64_t write( const void* buffer,
+                               const uint64_t bytes ) override;
 
         typedef UINT_PTR Socket;
 #else

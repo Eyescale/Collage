@@ -101,3 +101,6 @@ file(APPEND ${DEFINES_FILE_IN}
 
 include(UpdateFile)
 update_file(${DEFINES_FILE_IN} ${DEFINES_FILE})
+if(Boost_FOUND) # another WAR for broken boost stuff...
+  set(Boost_VERSION ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION})
+endif()

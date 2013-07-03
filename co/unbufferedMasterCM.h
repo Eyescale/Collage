@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -39,9 +39,9 @@ namespace co
 
         /** @name Versioning */
         //@{
-        virtual uint128_t commit( const uint32_t incarnation );
-        virtual void setAutoObsolete( const uint32_t ) {}
-        virtual uint32_t getAutoObsolete() const { return 0; }
+        virtual uint128_t commit( const uint32_t incarnation ) override;
+        virtual void setAutoObsolete( const uint32_t ) override {}
+        virtual uint32_t getAutoObsolete() const override { return 0; }
         //@}
 
     private:

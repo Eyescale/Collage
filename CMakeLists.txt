@@ -6,8 +6,6 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(Collage)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
 
-include(revision)
-
 set(RELEASE_VERSION OFF) # OFF or 'Mm0' ABI version
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "1")
@@ -16,6 +14,7 @@ set(LAST_RELEASE 1.0.0)
 
 include(Common)
 include(GitTargets)
+include(Revision)
 include(UpdateFile)
 
 include(FindPackages)

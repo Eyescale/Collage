@@ -83,7 +83,7 @@ public:
 protected:
     /** @internal */
     CO_API virtual void sendData( const void* buffer, const uint64_t size,
-                                  const bool last );
+                                  const bool last ) override;
 
 private:
     OCommand& operator = ( const OCommand& );

@@ -40,7 +40,8 @@ class Object : public co::Serializable
 private:
     Buffer buffer_;
 
-    virtual void attach( const co::UUID& id, const uint32_t instanceID )
+    virtual void attach( const co::UUID& id,
+                         const uint32_t instanceID ) override
     {
         co::Serializable::attach( id, instanceID );
 
@@ -80,17 +81,17 @@ public:
 private:
     Buffer buffer_;
 
-    virtual co::NodePtr createNode( const uint32_t type )
+    virtual co::NodePtr createNode( const uint32_t type ) override
         { return type == 0xC0FFEEu ? new PerfNodeProxy : new co::Node( type ); }
 
-    virtual void notifyConnect( co::NodePtr node )
+    virtual void notifyConnect( co::NodePtr node ) override
     {
         LBINFO << "Connect from " << node << std::endl;
         lunchbox::ScopedFastWrite _mutex( nodes_ );
         nodes_->push_back( node );
     }
 
-    virtual void notifyDisconnect( co::NodePtr node )
+    virtual void notifyDisconnect( co::NodePtr node ) override
     {
         lunchbox::ScopedFastWrite _mutex( nodes_ );
         co::NodesIter i = std::find( nodes_->begin(), nodes_->end(), node );

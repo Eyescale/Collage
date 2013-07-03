@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -41,19 +41,19 @@ namespace co
         FullMasterCM( Object* object );
         virtual ~FullMasterCM();
 
-        virtual void init();
-        virtual uint128_t commit( const uint32_t incarnation );
+        virtual void init() override;
+        virtual uint128_t commit( const uint32_t incarnation ) override;
         virtual void push( const uint128_t& groupID, const uint128_t& typeID,
-                           const Nodes& nodes );
+                           const Nodes& nodes ) override;
 
         /** @name Versioning */
         //@{
-        virtual void setAutoObsolete( const uint32_t count );
-        virtual uint32_t getAutoObsolete() const { return _nVersions; }
+        virtual void setAutoObsolete( const uint32_t count ) override;
+        virtual uint32_t getAutoObsolete() const override { return _nVersions; }
         //@}
 
         /** Speculatively send instance data to all nodes. */
-        virtual void sendInstanceData( Nodes& nodes );
+        virtual void sendInstanceData( Nodes& nodes ) override;
 
     protected:
         struct InstanceData
@@ -67,7 +67,7 @@ namespace co
 
         virtual void _initSlave( MasterCMCommand command,
                                  const uint128_t& replyVersion,
-                                 bool replyUseCache );
+                                 bool replyUseCache ) override;
 
         InstanceData* _newInstanceData();
         void _addInstanceData( InstanceData* data );
@@ -77,7 +77,7 @@ namespace co
         void _obsolete();
         void _checkConsistency() const;
 
-        virtual bool isBuffered() const{ return true; }
+        virtual bool isBuffered() const override { return true; }
         virtual void _commit();
 
     private:

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -36,26 +36,28 @@ namespace co
         StaticSlaveCM( Object* object );
         virtual ~StaticSlaveCM();
 
-        virtual void init(){}
+        virtual void init() override {}
 
         /**
          * @name Versioning
          */
         //@{
-        virtual uint128_t getHeadVersion() const { return VERSION_FIRST; }
-        virtual uint128_t getVersion() const     { return VERSION_FIRST; }
+        virtual uint128_t getHeadVersion() const override
+            { return VERSION_FIRST; }
+        virtual uint128_t getVersion() const override { return VERSION_FIRST; }
         //@}
 
-        virtual bool isMaster() const { return false; }
-        virtual uint32_t getMasterInstanceID() const
+        virtual bool isMaster() const override { return false; }
+        virtual uint32_t getMasterInstanceID() const override
             { return EQ_INSTANCE_INVALID; }
 
-        virtual void addSlave( MasterCMCommand command ) { LBDONTCALL; }
-        virtual void removeSlaves( NodePtr ) {}
+        virtual void addSlave( MasterCMCommand command ) override
+            { LBDONTCALL; }
+        virtual void removeSlaves( NodePtr ) override {}
 
-        virtual void applyMapData( const uint128_t& version );
+        virtual void applyMapData( const uint128_t& version ) override;
         virtual void addInstanceDatas( const ObjectDataIStreamDeque&,
-                                       const uint128_t& startVersion );
+                                       const uint128_t& startVersion ) override;
     protected:
         /** input stream for receiving the current version */
         ObjectDataIStream* _currentIStream;

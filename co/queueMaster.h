@@ -63,11 +63,12 @@ public:
 private:
     detail::QueueMaster* const _impl;
 
-    CO_API virtual void attach( const UUID& id, const uint32_t instanceID );
+    CO_API virtual void attach( const UUID& id,
+                                const uint32_t instanceID ) override;
 
-    virtual ChangeType getChangeType() const { return STATIC; }
-    virtual void getInstanceData( co::DataOStream& os );
-    virtual void applyInstanceData( co::DataIStream& ) { LBDONTCALL }
+    virtual ChangeType getChangeType() const override { return STATIC; }
+    virtual void getInstanceData( co::DataOStream& os ) override;
+    virtual void applyInstanceData( co::DataIStream& ) override { LBDONTCALL }
 
     friend class QueueItem;
     void _addItem( QueueItem& item );
