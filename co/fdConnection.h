@@ -38,10 +38,10 @@ namespace co
         FDConnection();
         virtual ~FDConnection() {}
 
-        virtual void readNB( void*, const uint64_t ) override { /* NOP */ }
-        virtual int64_t readSync( void* buffer, const uint64_t bytes,
+        void readNB( void*, const uint64_t ) override { /* NOP */ }
+        int64_t readSync( void* buffer, const uint64_t bytes,
                                   const bool ignored ) override;
-        virtual int64_t write( const void* buffer,
+        int64_t write( const void* buffer,
                                const uint64_t bytes ) override;
 
         int   _readFD;     //!< The read file descriptor.

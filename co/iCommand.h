@@ -108,10 +108,10 @@ namespace detail { class ICommand; }
 
         /** @internal @name DataIStream functions */
         //@{
-        CO_API virtual size_t nRemainingBuffers() const override;
-        CO_API virtual uint128_t getVersion() const override;
-        CO_API virtual NodePtr getMaster() override;
-        CO_API virtual bool getNextBuffer( uint32_t&, uint32_t&, const void**,
+        CO_API size_t nRemainingBuffers() const override;
+        CO_API uint128_t getVersion() const override;
+        CO_API NodePtr getMaster() override;
+        CO_API bool getNextBuffer( uint32_t&, uint32_t&, const void**,
                                            uint64_t& ) override;
         //@}
 

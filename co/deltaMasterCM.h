@@ -38,7 +38,7 @@ namespace co
         virtual ~DeltaMasterCM();
 
     protected:
-        virtual void _commit() override;
+        void _commit() override;
 
     private:
         /* The command handlers. */

@@ -53,7 +53,7 @@ namespace co
         virtual uint32_t getType() const { return _type; }
 
         /** Output the exception in human-readable form. @version 1.0 */
-        virtual const char* what() const throw() override
+        const char* what() const throw() override
         {
             switch( _type )
             {

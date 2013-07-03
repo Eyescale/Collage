@@ -33,7 +33,7 @@ namespace co
         ObjectDataOStream( const ObjectCM* cm );
         virtual ~ObjectDataOStream(){}
 
-        virtual void reset() override;
+        void reset() override;
 
         /** Set up commit of the given version to the receivers. */
         virtual void enableCommit( const uint128_t& version,

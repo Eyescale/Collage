@@ -36,27 +36,25 @@ namespace co
         StaticSlaveCM( Object* object );
         virtual ~StaticSlaveCM();
 
-        virtual void init() override {}
+        void init() override {}
 
         /**
          * @name Versioning
          */
         //@{
-        virtual uint128_t getHeadVersion() const override
-            { return VERSION_FIRST; }
-        virtual uint128_t getVersion() const override { return VERSION_FIRST; }
+        uint128_t getHeadVersion() const override { return VERSION_FIRST; }
+        uint128_t getVersion() const override { return VERSION_FIRST; }
         //@}
 
-        virtual bool isMaster() const override { return false; }
-        virtual uint32_t getMasterInstanceID() const override
+        bool isMaster() const override { return false; }
+        uint32_t getMasterInstanceID() const override
             { return EQ_INSTANCE_INVALID; }
 
-        virtual void addSlave( MasterCMCommand command ) override
-            { LBDONTCALL; }
-        virtual void removeSlaves( NodePtr ) override {}
+        void addSlave( MasterCMCommand command ) override { LBDONTCALL; }
+        void removeSlaves( NodePtr ) override {}
 
-        virtual void applyMapData( const uint128_t& version ) override;
-        virtual void addInstanceDatas( const ObjectDataIStreamDeque&,
+        void applyMapData( const uint128_t& version ) override;
+        void addInstanceDatas( const ObjectDataIStreamDeque&,
                                        const uint128_t& startVersion ) override;
     protected:
         /** input stream for receiving the current version */

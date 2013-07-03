@@ -103,7 +103,7 @@ public:
             _hasConnection = true;
         }
 
-    virtual void run() override
+    void run() override
         {
             _hasConnection.waitEQ( true );
             while( _connection.isValid( ))
@@ -143,7 +143,7 @@ public:
             , _packetSize( packetSize )
             , _useThreads( useThreads ) {}
 
-    virtual bool init() override
+    bool init() override
         {
             LBCHECK( _connection->listen( ));
             _connection->acceptNB();
@@ -171,7 +171,7 @@ public:
             return true;
         }
 
-    virtual void run() override
+    void run() override
         {
             co::ConnectionPtr resultConn;
             co::ConnectionPtr newConn;

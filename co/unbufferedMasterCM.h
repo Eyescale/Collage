@@ -39,9 +39,9 @@ namespace co
 
         /** @name Versioning */
         //@{
-        virtual uint128_t commit( const uint32_t incarnation ) override;
-        virtual void setAutoObsolete( const uint32_t ) override {}
-        virtual uint32_t getAutoObsolete() const override { return 0; }
+        uint128_t commit( const uint32_t incarnation ) override;
+        void setAutoObsolete( const uint32_t ) override {}
+        uint32_t getAutoObsolete() const override { return 0; }
         //@}
 
     private:

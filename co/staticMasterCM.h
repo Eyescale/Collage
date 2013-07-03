@@ -41,25 +41,24 @@ namespace co
         StaticMasterCM( Object* object ) : ObjectCM( object ) {}
         virtual ~StaticMasterCM() {}
 
-        virtual void init() override {}
+        void init() override {}
 
         /** @name Versioning */
         //@{
-        virtual void setAutoObsolete( const uint32_t ) override {}
-        virtual uint32_t getAutoObsolete() const override { return 0; }
+        void setAutoObsolete( const uint32_t ) override {}
+        uint32_t getAutoObsolete() const override { return 0; }
 
-        virtual uint128_t getHeadVersion() const override
-            { return VERSION_FIRST; }
-        virtual uint128_t getVersion() const override { return VERSION_FIRST; }
+        uint128_t getHeadVersion() const override { return VERSION_FIRST; }
+        uint128_t getVersion() const override { return VERSION_FIRST; }
         //@}
 
-        virtual bool isMaster() const override { return true; }
-        virtual uint32_t getMasterInstanceID() const override
+        bool isMaster() const override { return true; }
+        uint32_t getMasterInstanceID() const override
             { LBDONTCALL; return EQ_INSTANCE_INVALID; }
 
-        virtual void addSlave( MasterCMCommand command ) override
+        void addSlave( MasterCMCommand command ) override
             { ObjectCM::_addSlave( command, VERSION_FIRST ); }
-        virtual void removeSlaves( NodePtr ) override { /* NOP */}
+        void removeSlaves( NodePtr ) override { /* NOP */}
     };
 }
 

@@ -164,21 +164,21 @@ class RDMAConnection : public Connection
 public:
     RDMAConnection( );
 
-    virtual bool connect() override;
-    virtual bool listen() override;
-    virtual void close() override { _close( ); }
+    bool connect() override;
+    bool listen() override;
+    void close() override { _close( ); }
 
-    virtual void acceptNB() override;
-    virtual ConnectionPtr acceptSync() override;
+    void acceptNB() override;
+    ConnectionPtr acceptSync() override;
 
 protected:
-    virtual void    readNB  ( void* buffer, const uint64_t bytes ) override;
-    virtual int64_t readSync( void* buffer, const uint64_t bytes,
+    void    readNB  ( void* buffer, const uint64_t bytes ) override;
+    int64_t readSync( void* buffer, const uint64_t bytes,
                               const bool block ) override;
-    virtual int64_t write( const void* buffer, const uint64_t bytes ) override;
+    int64_t write( const void* buffer, const uint64_t bytes ) override;
 
 public:
-    virtual Notifier getNotifier() const override;
+    Notifier getNotifier() const override;
 
 protected:
     virtual ~RDMAConnection();

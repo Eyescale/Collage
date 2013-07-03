@@ -37,20 +37,20 @@ namespace co
         NullCM() : ObjectCM( 0 ) {}
         virtual ~NullCM() {}
 
-        virtual void init() override {}
+        void init() override {}
 
-        virtual void push( const uint128_t&, const uint128_t&,
+        void push( const uint128_t&, const uint128_t&,
                            const Nodes& ) override { LBDONTCALL; }
 
-        virtual uint128_t getHeadVersion() const override
+        uint128_t getHeadVersion() const override
             { return VERSION_NONE; }
-        virtual uint128_t getVersion() const override { return VERSION_NONE; }
-        virtual bool isMaster() const override { return false; }
-        virtual uint32_t getMasterInstanceID() const override
+        uint128_t getVersion() const override { return VERSION_NONE; }
+        bool isMaster() const override { return false; }
+        uint32_t getMasterInstanceID() const override
             { LBDONTCALL; return EQ_INSTANCE_INVALID; }
 
-        virtual void addSlave( MasterCMCommand command ) override { LBDONTCALL; }
-        virtual void removeSlaves( NodePtr ) override { LBDONTCALL; }
+        void addSlave( MasterCMCommand command ) override { LBDONTCALL; }
+        void removeSlaves( NodePtr ) override { LBDONTCALL; }
 
     private:
     };

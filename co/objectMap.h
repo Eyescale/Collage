@@ -118,22 +118,22 @@ public:
     CO_API void clear();
 
     /** Commit all registered objects. @version 1.0 */
-    CO_API virtual uint128_t commit( const uint32_t incarnation =
+    CO_API uint128_t commit( const uint32_t incarnation =
                                      CO_COMMIT_NEXT ) override;
 
 protected:
-    CO_API virtual bool isDirty() const override; //!< @internal
+    CO_API bool isDirty() const override; //!< @internal
 
     /** @internal */
-    CO_API virtual void serialize( DataOStream& os,
+    CO_API void serialize( DataOStream& os,
                                    const uint64_t dirtyBits ) override;
 
     /** @internal */
-    CO_API virtual void deserialize( DataIStream& is,
+    CO_API void deserialize( DataIStream& is,
                                      const uint64_t dirtyBits ) override;
     /** @internal */
-    virtual ChangeType getChangeType() const override { return DELTA; }
-    CO_API virtual void notifyAttached() override; //!< @internal
+    ChangeType getChangeType() const override { return DELTA; }
+    CO_API void notifyAttached() override; //!< @internal
 
     /** @internal The changed parts of the object since the last serialize(). */
     enum DirtyBits

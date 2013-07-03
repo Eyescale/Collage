@@ -39,19 +39,19 @@ namespace co
     public:
         NamedPipeConnection();
 
-        virtual bool connect() override;
-        virtual bool listen() override;
-        virtual void acceptNB() override;
-        virtual ConnectionPtr acceptSync() override;
+        bool connect() override;
+        bool listen() override;
+        void acceptNB() override;
+        ConnectionPtr acceptSync() override;
 
-        virtual void close() override { _close(); }
+        void close() override { _close(); }
 
         virtual Notifier getNotifier() const override { return _read.hEvent; }
 
-        virtual void readNB( void* buffer, const uint64_t bytes ) override;
-        virtual int64_t readSync( void* buffer, const uint64_t bytes,
+        void readNB( void* buffer, const uint64_t bytes ) override;
+        int64_t readSync( void* buffer, const uint64_t bytes,
             const bool ignored ) override;
-        virtual int64_t write( const void* buffer,
+        int64_t write( const void* buffer,
                                const uint64_t bytes ) override;
     protected:
         virtual ~NamedPipeConnection();

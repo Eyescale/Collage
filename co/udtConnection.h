@@ -46,21 +46,21 @@ class UDTConnection : public Connection
 public:
     UDTConnection( );
 
-    virtual bool connect() override;
-    virtual bool listen() override;
-    virtual void close() override;
+    bool connect() override;
+    bool listen() override;
+    void close() override;
 
-    virtual void acceptNB() override;
-    virtual ConnectionPtr acceptSync() override;
+    void acceptNB() override;
+    ConnectionPtr acceptSync() override;
 
 public:
-    virtual void    readNB  ( void* buffer, const uint64_t bytes ) override;
-    virtual int64_t readSync( void* buffer, const uint64_t bytes,
+    void    readNB  ( void* buffer, const uint64_t bytes ) override;
+    int64_t readSync( void* buffer, const uint64_t bytes,
                               const bool ignored ) override;
-    virtual int64_t write( const void* buffer, const uint64_t bytes ) override;
+    int64_t write( const void* buffer, const uint64_t bytes ) override;
 
 public:
-    virtual Notifier getNotifier() const override { return _notifier; };
+    Notifier getNotifier() const override { return _notifier; };
 
 protected:
     virtual ~UDTConnection();

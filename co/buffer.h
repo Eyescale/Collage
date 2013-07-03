@@ -56,7 +56,7 @@ private:
     detail::Buffer* const _impl;
     LB_TS_VAR( _writeThread );
 
-    virtual void notifyFree() override;
+    void notifyFree() override;
 };
 
 std::ostream& operator << ( std::ostream&, const Buffer& );

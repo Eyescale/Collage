@@ -32,10 +32,10 @@ namespace co
         ObjectInstanceDataOStream( const ObjectCM* cm );
         virtual ~ObjectInstanceDataOStream();
 
-        virtual void reset() override;
+        void reset() override;
 
         /** Set up commit of the given version to the receivers. */
-        virtual void enableCommit( const uint128_t& version,
+        void enableCommit( const uint128_t& version,
                                    const Nodes& receivers ) override;
 
         /** Set up push of the given version to the receivers. */
@@ -56,7 +56,7 @@ namespace co
         void sendMapData( NodePtr node, const uint32_t instanceID );
 
     protected:
-        virtual void sendData( const void* buffer, const uint64_t size,
+        void sendData( const void* buffer, const uint64_t size,
                                const bool last ) override;
 
     private:

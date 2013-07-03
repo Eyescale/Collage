@@ -42,22 +42,22 @@ namespace co
         void addDataCommand( ObjectDataICommand command );
         size_t getDataSize() const;
 
-        virtual uint128_t getVersion() const override { return _version.get(); }
+        uint128_t getVersion() const override { return _version.get(); }
         uint128_t getPendingVersion() const;
 
         void waitReady() const { _version.waitNE( VERSION_INVALID ); }
         bool isReady() const { return _version != VERSION_INVALID; }
 
-        virtual size_t nRemainingBuffers() const override
+        size_t nRemainingBuffers() const override
             { return _commands.size(); }
 
-        virtual void reset() override;
+        void reset() override;
 
         bool hasInstanceData() const;
-        CO_API virtual NodePtr getMaster() override;
+        CO_API NodePtr getMaster() override;
 
     protected:
-        virtual bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
+        bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
                               const void** chunkData, uint64_t& size ) override;
 
     private:

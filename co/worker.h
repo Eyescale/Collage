@@ -45,14 +45,14 @@ public:
 
 protected:
     /** @sa lunchbox::Thread::init() */
-    virtual bool init() override
+     bool init() override
     {
         setName( lunchbox::className( this ));
         return true;
     }
 
     /** @sa lunchbox::Thread::run() */
-    CO_WORKER_API virtual void run() override;
+    CO_WORKER_API void run() override;
 
     /** @return true to stop the worker thread. @version 1.0 */
     virtual bool stopRunning() { return false; }

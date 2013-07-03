@@ -53,23 +53,23 @@ namespace co
         /** Create a new RSP-based connection. */
         RSPConnection();
 
-        virtual bool listen() override;
-        virtual void close() override { _close(); }
+        bool listen() override;
+        void close() override { _close(); }
 
         /** Identical to listen() for multicast connections. */
-        virtual bool connect() override { return listen(); }
+        bool connect() override { return listen(); }
 
-        virtual void acceptNB() override { LBASSERT( isListening( )); }
+        void acceptNB() override { LBASSERT( isListening( )); }
 
-        virtual ConnectionPtr acceptSync() override;
-        virtual void readNB( void*, const uint64_t ) override {/* NOP */}
-        virtual int64_t readSync( void* buffer, const uint64_t bytes,
+        ConnectionPtr acceptSync() override;
+        void readNB( void*, const uint64_t ) override {/* NOP */}
+        int64_t readSync( void* buffer, const uint64_t bytes,
                                   const bool ignored ) override;
-        virtual int64_t write( const void* buffer,
+        int64_t write( const void* buffer,
                                const uint64_t bytes ) override;
 
         /** @internal Finish all pending send operations. */
-        virtual void finish() override;
+        void finish() override;
 
         /** @internal @return current send speed in kilobyte per second. */
         int64_t getSendRate() const { return _sendRate; }
@@ -81,7 +81,7 @@ namespace co
          */
         uint16_t getID() const { return _id; }
 
-        virtual Notifier getNotifier() const override
+        Notifier getNotifier() const override
             { return _event->getNotifier(); }
 
     protected:
@@ -96,8 +96,8 @@ namespace co
                 : _connection( connection ){}
             virtual ~Thread(){ _connection = 0; }
         protected:
-            virtual void run() override;
-            virtual bool init() override { return _connection->_initThread(); }
+            void run() override;
+            bool init() override { return _connection->_initThread(); }
 
         private:
             RSPConnectionPtr _connection;

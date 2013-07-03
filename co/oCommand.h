@@ -82,7 +82,7 @@ public:
 
 protected:
     /** @internal */
-    CO_API virtual void sendData( const void* buffer, const uint64_t size,
+    CO_API void sendData( const void* buffer, const uint64_t size,
                                   const bool last ) override;
 
 private:

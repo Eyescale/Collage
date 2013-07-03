@@ -55,24 +55,24 @@ namespace co
         /** Destruct this pipe connection. */
         CO_API virtual ~PipeConnection();
 
-        virtual bool connect() override;
-        virtual void close() override { _close(); }
+        bool connect() override;
+        void close() override { _close(); }
 
 #ifdef _WIN32
-        virtual Notifier getNotifier() const override;
+        Notifier getNotifier() const override;
 #endif
 
-        virtual void acceptNB() override { /* nop */ }
+        void acceptNB() override { /* nop */ }
 
         /** @return the sibling of this pipe connection. */
-        virtual ConnectionPtr acceptSync() override { return _sibling; }
+        ConnectionPtr acceptSync() override { return _sibling; }
 
     protected:
 #ifdef _WIN32
-        virtual void readNB( void* buffer, const uint64_t bytes ) override;
-        virtual int64_t readSync( void* buffer, const uint64_t bytes,
+        void readNB( void* buffer, const uint64_t bytes ) override;
+        int64_t readSync( void* buffer, const uint64_t bytes,
                                   const bool ignored ) override;
-        virtual int64_t write( const void* buffer,
+        int64_t write( const void* buffer,
                                const uint64_t bytes ) override;
 #endif
 

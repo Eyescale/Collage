@@ -41,19 +41,19 @@ namespace co
         FullMasterCM( Object* object );
         virtual ~FullMasterCM();
 
-        virtual void init() override;
-        virtual uint128_t commit( const uint32_t incarnation ) override;
-        virtual void push( const uint128_t& groupID, const uint128_t& typeID,
+        void init() override;
+        uint128_t commit( const uint32_t incarnation ) override;
+        void push( const uint128_t& groupID, const uint128_t& typeID,
                            const Nodes& nodes ) override;
 
         /** @name Versioning */
         //@{
-        virtual void setAutoObsolete( const uint32_t count ) override;
-        virtual uint32_t getAutoObsolete() const override { return _nVersions; }
+        void setAutoObsolete( const uint32_t count ) override;
+        uint32_t getAutoObsolete() const override { return _nVersions; }
         //@}
 
         /** Speculatively send instance data to all nodes. */
-        virtual void sendInstanceData( Nodes& nodes ) override;
+        void sendInstanceData( Nodes& nodes ) override;
 
     protected:
         struct InstanceData
@@ -65,7 +65,7 @@ namespace co
             uint32_t commitCount;
         };
 
-        virtual void _initSlave( MasterCMCommand command,
+        void _initSlave( MasterCMCommand command,
                                  const uint128_t& replyVersion,
                                  bool replyUseCache ) override;
 
@@ -77,7 +77,7 @@ namespace co
         void _obsolete();
         void _checkConsistency() const;
 
-        virtual bool isBuffered() const override { return true; }
+        bool isBuffered() const override { return true; }
         virtual void _commit();
 
     private:

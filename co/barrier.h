@@ -86,14 +86,14 @@ namespace detail { class Barrier; }
     protected:
         /** @internal */
         //@{
-        virtual void attach( const UUID& id,
+        void attach( const UUID& id,
                              const uint32_t instanceID ) override;
-        virtual ChangeType getChangeType() const override { return DELTA; }
+        ChangeType getChangeType() const override { return DELTA; }
 
-        virtual void getInstanceData( DataOStream& os ) override;
-        virtual void applyInstanceData( DataIStream& is ) override;
-        virtual void pack( DataOStream& os ) override;
-        virtual void unpack( DataIStream& is ) override;
+        void getInstanceData( DataOStream& os ) override;
+        void applyInstanceData( DataIStream& is ) override;
+        void pack( DataOStream& os ) override;
+        void unpack( DataIStream& is ) override;
         //@}
 
     private:
