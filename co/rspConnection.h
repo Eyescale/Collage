@@ -109,6 +109,7 @@ namespace co
             NACK,      //!< negative ack, request missing packets
             ACK,       //!< positive ack all data
             ID_HELLO,  //!< announce a new id
+			ID_HELLO_REPLY, //!< reply to hello, transmit cur packet number 
             ID_DENY,   //!< deny the id, already used
             ID_CONFIRM,//!< a new node is connected
             ID_EXIT,   //!< a node is disconnected
@@ -123,15 +124,15 @@ namespace co
             uint16_t type;
             uint16_t protocolVersion;
             uint16_t connectionID;  // clientID for type COUNTNODE
-            uint16_t numConnections;
-
+            uint16_t connectionData;
+            
             void byteswap()
             {
 #ifdef COLLAGE_BIGENDIAN
                 lunchbox::byteswap( type );
                 lunchbox::byteswap( protocolVersion );
                 lunchbox::byteswap( connectionID );
-                lunchbox::byteswap( numConnections );
+                lunchbox::byteswap( connectionData );
 #endif
             }
         };
@@ -346,9 +347,10 @@ namespace co
         void _addRepeat( const Nack* nacks, const uint16_t num );
 
         /** format and send an simple request which use only type and id field*/
-        void _sendSimpleDatagram( const DatagramType type, const uint16_t id );
+        void _sendSimpleDatagram( const DatagramType type, const uint16_t id,
+			                      const uint16_t data);
 
-        /** format and send an ack request for the current sequence */
+		/** format and send an ack request for the current sequence */
         void _sendAckRequest();
 
         /** format and send a positive ack */
@@ -361,7 +363,7 @@ namespace co
         void _checkNewID( const uint16_t id );
 
         /* add a new connection detected in the multicast network */
-        bool _addConnection( const uint16_t id );
+		bool _addConnection( const uint16_t id, const uint16_t sequence);
         void _removeConnection( const uint16_t id );
 
         void _setTimeout( const int32_t timeOut );

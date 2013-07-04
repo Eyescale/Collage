@@ -139,7 +139,7 @@ void RSPConnection::_close()
     if( _thread )
     {
         LBASSERT( !_thread->isCurrent( ));
-        _sendSimpleDatagram( ID_EXIT, _id );
+        _sendSimpleDatagram( ID_EXIT, _id, 0 );
         _ioService.stop();
         _thread->join();
         delete _thread;
@@ -423,13 +423,13 @@ void RSPConnection::_handleAcceptIDTimeout()
     if( _timeouts < 20 )
     {
         LBLOG( LOG_RSP ) << "Announce " << _id << std::endl;
-        _sendSimpleDatagram( ID_HELLO, _id );
+        _sendSimpleDatagram( ID_HELLO, _id, 0 );
     }
     else
     {
         LBLOG( LOG_RSP ) << "Confirm " << _id << std::endl;
-        _sendSimpleDatagram( ID_CONFIRM, _id );
-        _addConnection( _id );
+        _sendSimpleDatagram(ID_CONFIRM, _id, _sequence);
+        _addConnection( _id, _sequence );
         _idAccepted = true;
         _timeouts = 0;
         // send a first datagram to announce me and discover all other
@@ -497,7 +497,7 @@ void RSPConnection::_handleConnectedTimeout()
         // exit else close all failed child connections
         if ( all )
         {
-            _sendSimpleDatagram( ID_EXIT, _id );
+            _sendSimpleDatagram( ID_EXIT, _id, 0 );
             _appBuffers.pushFront( 0 ); // unlock write function
 
             for( RSPConnectionsCIter i =_children.begin();
@@ -519,7 +519,7 @@ void RSPConnection::_handleConnectedTimeout()
             RSPConnectionPtr child = *i;
             if ( child->_acked < _sequence - 1 && _id != child->_id )
             {
-                _sendSimpleDatagram( ID_EXIT, child->_id );
+                _sendSimpleDatagram( ID_EXIT, child->_id, 0 );
                 _removeConnection( child->_id );
             }
             else
@@ -564,7 +564,7 @@ bool RSPConnection::_initThread()
 
    // send a first datagram to announce me and discover other connections
     LBLOG( LOG_RSP ) << "Announce " << _id << std::endl;
-    _sendSimpleDatagram( ID_HELLO, _id );
+    _sendSimpleDatagram( ID_HELLO, _id, 0 );
     _setTimeout( 10 );
     _asyncReceiveFrom();
     _ioService.run();
@@ -915,13 +915,15 @@ void RSPConnection::_handleAcceptIDData( const size_t bytes )
         case ID_HELLO:
             _checkNewID( node.connectionID );
             break;
-
+		case ID_HELLO_REPLY:
+			_addConnection( node.connectionID, node.connectionData );
+			break;
         case ID_DENY:
             // a connection refused my ID, try another ID
             if( node.connectionID == _id )
             {
                 _timeouts = 0;
-                _sendSimpleDatagram( ID_HELLO, _buildNewID() );
+                _sendSimpleDatagram( ID_HELLO, _buildNewID(), 0 );
                 LBLOG( LOG_RSP ) << "Announce " << _id << std::endl;
             }
             break;
@@ -955,14 +957,17 @@ void RSPConnection::_handleInitData( const size_t bytes, const bool connected )
         case ID_CONFIRM:
             if( !connected )
                 _timeouts = 0;
-            _addConnection( node.connectionID );
+            _addConnection( node.connectionID, node.connectionData );
             return;
 
         case COUNTNODE:
-            LBLOG( LOG_RSP ) << "Got " << node.numConnections << " nodes from "
+            LBLOG( LOG_RSP ) << "Got " << node.connectionData << " nodes from "
                              << node.connectionID << std::endl;
-            _addConnection( node.connectionID );
             return;
+
+		case ID_HELLO_REPLY:
+			_addConnection( node.connectionID, node.connectionData );
+			return;
 
         case ID_EXIT:
             _removeConnection( node.connectionID );
@@ -1003,6 +1008,7 @@ void RSPConnection::_handleConnectedData( const size_t bytes )
             break;
 
         case ID_HELLO:
+		case ID_HELLO_REPLY:
         case ID_CONFIRM:
         case ID_EXIT:
         case ID_DENY:
@@ -1464,8 +1470,10 @@ void RSPConnection::_checkNewID( uint16_t id )
     if( id == _id || _findConnection( id ).isValid( ))
     {
         LBLOG( LOG_RSP ) << "Deny " << id << std::endl;
-        _sendSimpleDatagram( ID_DENY, _id );
-    }
+        _sendSimpleDatagram( ID_DENY, _id, 0 );
+	} 
+	else 
+		_sendSimpleDatagram(ID_HELLO_REPLY, _id, _sequence);
 }
 
 RSPConnectionPtr RSPConnection::_findConnection( const uint16_t id )
@@ -1478,36 +1486,37 @@ RSPConnectionPtr RSPConnection::_findConnection( const uint16_t id )
     return 0;
 }
 
-bool RSPConnection::_addConnection( const uint16_t id )
+bool RSPConnection::_addConnection( const uint16_t id, const uint16_t sequence )
 {
-    if( _findConnection( id ))
-        return false;
+	if( _findConnection( id ))
+		return false;
 
-    LBINFO << "add connection " << id << std::endl;
-    RSPConnectionPtr connection = new RSPConnection();
-    connection->_id = id;
-    connection->_parent = this;
-    connection->_setState( STATE_CONNECTED );
-    connection->_setDescription( _getDescription( ));
-    LBASSERT( connection->_appBuffers.isEmpty( ));
+	LBINFO << "add connection " << id << std::endl;
+	RSPConnectionPtr connection = new RSPConnection();
+	connection->_id = id;
+	connection->_parent = this;
+	connection->_setState( STATE_CONNECTED );
+	connection->_setDescription( _getDescription( ));
+	connection->_sequence = sequence;
+	LBASSERT( connection->_appBuffers.isEmpty( ));
 
-    // Make all buffers available for reading
-    for( BuffersCIter i = connection->_buffers.begin();
-         i != connection->_buffers.end(); ++i )
-    {
-        Buffer* buffer = *i;
-        LBCHECK( connection->_threadBuffers.push( buffer ));
-    }
+	// Make all buffers available for reading
+	for( BuffersCIter i = connection->_buffers.begin();
+		i != connection->_buffers.end(); ++i )
+	{
+		Buffer* buffer = *i;
+		LBCHECK( connection->_threadBuffers.push( buffer ));
+	}
 
-    _children.push_back( connection );
-    _sendCountNode();
+	_children.push_back( connection );
+	_sendCountNode();
 
-    lunchbox::ScopedWrite mutex( _mutexConnection );
-    _newChildren.push_back( connection );
+	lunchbox::ScopedWrite mutex( _mutexConnection );
+	_newChildren.push_back( connection );
 
-    lunchbox::ScopedWrite mutex2( _mutexEvent );
-    _event->set();
-    return true;
+	lunchbox::ScopedWrite mutex2( _mutexEvent );
+	_event->set();
+	return true;
 }
 
 void RSPConnection::_removeConnection( const uint16_t id )
@@ -1607,16 +1616,14 @@ void RSPConnection::_sendCountNode()
         return;
 
     LBLOG( LOG_RSP ) << _children.size() << " nodes" << std::endl;
-    DatagramNode count = { COUNTNODE, EQ_RSP_PROTOCOL_VERSION, _id,
-                           uint16_t( _children.size( )) };
-    count.byteswap();
-    _write->send( buffer( &count, sizeof( count )) );
+	_sendSimpleDatagram( COUNTNODE, _id, uint16_t( _children.size( )) );
 }
 
 void RSPConnection::_sendSimpleDatagram( const DatagramType type,
-                                         const uint16_t id )
+                                         const uint16_t id, 
+										 const uint16_t data )
 {
-    DatagramNode simple = { uint16_t( type ), EQ_RSP_PROTOCOL_VERSION, id, 0 };
+    DatagramNode simple = { uint16_t( type ), EQ_RSP_PROTOCOL_VERSION, id, data };
     simple.byteswap();
     _write->send( buffer( &simple, sizeof( simple )) );
 }
