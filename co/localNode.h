@@ -471,10 +471,10 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         CO_API bool connect( NodePtr node, ConnectionPtr connection );
 
         /** @internal Notify remote node connection. */
-        virtual void notifyConnect( NodePtr node ) {}
+        virtual void notifyConnect( NodePtr ) {}
 
         /** @internal Notify remote node disconnection. */
-        virtual void notifyDisconnect( NodePtr node ) {}
+        virtual void notifyDisconnect( NodePtr ) {}
 
         /**
          * Factory method to create a new node.
