@@ -171,10 +171,10 @@ void OCommand::sendData( const void* buffer, const uint64_t size,
     for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )
     {
         ConnectionPtr connection = *i;
-        if ( connection.isValid() )
+        if ( connection )
             connection->send( bytes, sendSize, _impl->isLocked );
         else
-            LBERROR << "Can't send data, node has been closed" << std::endl;
+            LBERROR << "Can't send data, node is closed" << std::endl;
     }
 }
 
