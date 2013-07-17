@@ -10,4 +10,4 @@ script:
  - env TRAVIS=1 make -j8 Collage-test ARGS=-V
 before_install:
  - sudo apt-get update -qq
- - sudo apt-get install -qq libavahi-compat-libdnssd-dev libboost-date-time-dev libboost-regex-dev libboost-serialization-dev libboost-system-dev libhwloc-dev libibverbs-dev librdmacm-dev libudt-dev 
+ - sudo apt-get install -qq cmake git git-svn libavahi-compat-libdnssd-dev libboost-date-time-dev libboost-regex-dev libboost-serialization-dev libboost-system-dev libhwloc-dev libibverbs-dev librdmacm-dev libudt-dev 

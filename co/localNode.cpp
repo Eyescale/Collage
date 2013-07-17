@@ -716,7 +716,7 @@ void LocalNode::objectPush( const uint128_t& groupID,
     if( i != _impl->pushHandlers->end( ))
         i->second( groupID, objectType, objectID, istream );
 
-    if( istream.hasData( ))
+    if( istream.wasUsed() && istream.hasData( ))
         LBWARN << "Incomplete Object::push for group " << groupID << " type "
                << objectType << " object " << objectID << std::endl;
 }

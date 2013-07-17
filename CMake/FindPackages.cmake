@@ -64,7 +64,7 @@ if(Lunchbox_name)
 endif()
 
 
-set(COLLAGE_BUILD_DEBS libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libhwloc-dev;libibverbs-dev;librdmacm-dev;libudt-dev)
+set(COLLAGE_BUILD_DEBS cmake;git;git-svn;libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libhwloc-dev;libibverbs-dev;librdmacm-dev;libudt-dev;pkg-config;subversion)
 
 set(COLLAGE_DEPENDS OFED;UDT;Boost;Lunchbox)
 

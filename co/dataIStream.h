@@ -136,6 +136,9 @@ public:
      */
     CO_API uint64_t getRemainingBufferSize();
 
+    /** @internal @return true if any data was read. */
+    bool wasUsed() const;
+
     /** @return true if not all data has been read. @version 1.0 */
     bool hasData() { return _checkBuffer(); }
 

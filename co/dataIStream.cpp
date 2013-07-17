@@ -109,8 +109,7 @@ void DataIStream::_read( void* data, uint64_t size )
     }
 
     LBASSERT( _impl->input );
-
-    if( _impl->position + size > _impl->inputSize )
+    if( size > _impl->inputSize - _impl->position )
     {
         LBERROR << "Not enough data in input buffer: need " << size
                 << " bytes, " << _impl->inputSize - _impl->position << " left "
@@ -144,6 +143,11 @@ uint64_t DataIStream::getRemainingBufferSize()
         return 0;
 
     return _impl->inputSize - _impl->position;
+}
+
+bool DataIStream::wasUsed() const
+{
+    return _impl->input != 0;
 }
 
 bool DataIStream::_checkBuffer()
