@@ -72,7 +72,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/CMake/FindPackagesPost.cmake)
   include(${CMAKE_SOURCE_DIR}/CMake/FindPackagesPost.cmake)
 endif()
 
-set(COLLAGE_BUILD_DEBS libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libhwloc-dev;libibverbs-dev;libjpeg-turbo8-dev;librdmacm-dev;libturbojpeg;libudt-dev)
+set(COLLAGE_BUILD_DEBS cmake;git;git-svn;libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libhwloc-dev;libibverbs-dev;libjpeg-turbo8-dev;librdmacm-dev;libturbojpeg;libudt-dev;pkg-config;subversion)
 
 set(COLLAGE_DEPENDS OFED;UDT;Boost;Lunchbox)
 
