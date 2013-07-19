@@ -389,9 +389,7 @@ int64_t NamedPipeConnection::write( const void* buffer, const uint64_t bytes )
       case ERROR_IO_PENDING:
       case ERROR_IO_INCOMPLETE:
       {
-          const uint32_t timeout = Global::getTimeout();
-
-          if( WAIT_OBJECT_0 != WaitForSingleObject( _write.hEvent, timeout ))
+          if( WAIT_OBJECT_0 != WaitForSingleObject( _write.hEvent, INFINITE ))
               throw Exception( Exception::TIMEOUT_WRITE );
           break;
       }
