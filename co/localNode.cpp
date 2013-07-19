@@ -1,7 +1,7 @@
 
-/* Copyright (c)  2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
- *                     2010, Cedric Stalder <cedric.stalder@gmail.com>
- *                     2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+ *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
+ *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -43,6 +43,7 @@
 #include "zeroconf.h"
 
 #include <lunchbox/hash.h>
+#include <boost/bind.hpp>
 
 namespace co
 {
@@ -697,8 +698,10 @@ bool LocalNode::mapObjectSync( const uint32_t requestID )
 Futureb LocalNode::mapObjectf( Object* object, const UUID& id,
                                const uint128_t& version )
 {
-    return Futureb( new MapObjectFuture( _impl->objectStore,
-                       _impl->objectStore->mapObjectNB( object, id, version )));
+    const MapObjectFuture::SyncFunc& func =
+        boost::bind( &ObjectStore::mapObjectSync, _impl->objectStore,
+                     _impl->objectStore->mapObjectNB( object, id, version ));
+    return Futureb( new MapObjectFuture( func ));
 }
 
 void LocalNode::unmapObject( Object* object )

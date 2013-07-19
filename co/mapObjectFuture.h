@@ -21,6 +21,7 @@
 #define CO_MAPOBJECTFUTURE_H
 
 #include "objectStore.h"
+#include <boost/function/function0.hpp>
 
 namespace co
 {
@@ -30,21 +31,27 @@ namespace
 class MapObjectFuture : public lunchbox::FutureImpl< bool >
 {
 public:
-    MapObjectFuture( ObjectStore* store, const uint32_t request )
-        : store_( store ), request_( request ), state_( PENDING )
+    typedef boost::function< bool() > SyncFunc;
+
+    MapObjectFuture( const SyncFunc& func )
+        : func_( func ), state_( PENDING )
     {}
-    virtual ~MapObjectFuture() { LBASSERT( wait( )); }
+    virtual ~MapObjectFuture()
+    {
+        if( state_ == PENDING )
+            LBCHECK( wait( ));
+    }
 
     virtual bool wait() final
     {
         if( state_ == PENDING )
-            state_ = store_->mapObjectSync( request_ ) ? TRUE : FALSE;
+            state_ = func_() ? TRUE : FALSE;
         return state_ == TRUE;
     }
 
 private:
-    ObjectStore* const store_;
-    const uint32_t request_;
+    const SyncFunc func_;
+
     enum
     {
         PENDING,
