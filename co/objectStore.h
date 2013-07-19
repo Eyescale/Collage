@@ -96,6 +96,13 @@ namespace co
         /** Finalize the mapping of a distributed object. */
         bool mapObjectSync( const uint32_t requestID );
 
+        /** Start synchronizing an object. */
+        uint32_t syncObjectNB( Object* object, NodePtr master, const UUID& id,
+                               const int32_t instanceID );
+
+        /** Finalize the synchronizatin of a distributed object. */
+        bool syncObjectSync( const uint32_t requestID );
+
         /**
          * Unmap a mapped object.
          *

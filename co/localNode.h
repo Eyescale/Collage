@@ -243,9 +243,26 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         /** Finalize the mapping of a distributed object. @version 1.0 */
         CO_API virtual bool mapObjectSync( const uint32_t requestID );
 
-        /** @internal */
-        CO_API Futureb mapObjectf( Object* object, const UUID& id,
-                                   const uint128_t& version );
+        /**
+         * Synchronize the local object with the remote object.
+         *
+         * The object is synchronized to the newest version of the first
+         * attached object on the given master node matching the
+         * instanceID. When CO_INSTANCE_ALL is given, the first instance is
+         * used.
+         *
+         * @param object The local object instance to synchronize.
+         * @param master The node where the synchronizing object is attached.
+         * @param id the object identifier.
+         * @param instanceID the instance identifier of the synchronizing
+         *                   object.
+         * @return A future which will deliver the success status of the
+         *         operation on Futureb::wait().
+         * @version 1.1.1
+         */
+        CO_API Futureb syncObject( Object* object, NodePtr master,
+                                   const UUID& id,
+                                   const int32_t instanceID = CO_INSTANCE_ALL );
         /**
          * Unmap a mapped object.
          *

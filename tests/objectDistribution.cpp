@@ -45,10 +45,12 @@ static const std::string message =
 class Object : public co::Object
 {
 public:
-    Object( const ChangeType type ) : _type( type ){}
+    Object( const ChangeType type ) : nSync( 0 ), _type( type ) {}
     Object( const ChangeType type, co::DataIStream& is )
-            : _type( type )
-        { applyInstanceData( is ); }
+        : nSync( 0 ), _type( type )
+    { applyInstanceData( is ); }
+
+    size_t nSync;
 
 protected:
     virtual ChangeType getChangeType() const { return _type; }
@@ -56,13 +58,14 @@ protected:
         { os << message << _type; }
 
     virtual void applyInstanceData( co::DataIStream& is )
-        {
-            std::string msg;
-            ChangeType type;
-            is >> msg >> type;
-            TEST( message == msg );
-            TEST( _type == type );
-        }
+    {
+        std::string msg;
+        ChangeType type;
+        is >> msg >> type;
+        TEST( message == msg );
+        TEST( _type == type );
+        ++nSync;
+    }
 
 private:
     const ChangeType _type;
@@ -73,7 +76,7 @@ class Server : public co::LocalNode
 public:
     Server() : object( 0 ) {}
 
-    co::Object* object;
+    Object* object;
 
 protected:
     virtual void objectPush( const uint128_t& groupID, const uint128_t& typeID,
@@ -135,9 +138,15 @@ int main( int argc, char **argv )
         object.push( 42, i, nodes );
 
         monitor.waitEQ( type );
-        co::Futureb mapOp = server->mapObjectf( server->object, object.getID(),
-                                                co::VERSION_NONE );
-        TEST( mapOp.wait( ));
+        TEST( object.nSync == 0 );
+        TEST( server->object->nSync == 1 );
+
+        co::Futureb syncOp = server->syncObject( server->object, client,
+                                                 object.getID( ));
+        TEST( syncOp.wait( ));
+        TEST( object.nSync == 0 );
+        TEST( server->object->nSync == 2 );
+
         server->unmapObject( server->object );
         delete server->object;
         server->object = 0;

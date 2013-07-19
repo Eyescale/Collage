@@ -695,12 +695,13 @@ bool LocalNode::mapObjectSync( const uint32_t requestID )
     return _impl->objectStore->mapObjectSync( requestID );
 }
 
-Futureb LocalNode::mapObjectf( Object* object, const UUID& id,
-                               const uint128_t& version )
+Futureb LocalNode::syncObject( Object* object, NodePtr master, const UUID& id,
+                               const int32_t instanceID )
 {
     const MapObjectFuture::SyncFunc& func =
-        boost::bind( &ObjectStore::mapObjectSync, _impl->objectStore,
-                     _impl->objectStore->mapObjectNB( object, id, version ));
+        boost::bind( &ObjectStore::syncObjectSync, _impl->objectStore,
+                     _impl->objectStore->syncObjectNB( object, master, id,
+                                                       instanceID ));
     return Futureb( new MapObjectFuture( func ));
 }
 

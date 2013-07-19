@@ -438,8 +438,23 @@ bool ObjectStore::mapObjectSync( const uint32_t requestID )
         object->applyMapData( version ); // apply initial instance data
 
     object->notifyAttached();
-    LBLOG( LOG_OBJECTS ) << "Mapped " << lunchbox::className( object ) << std::endl;
+    LBLOG( LOG_OBJECTS )
+        << "Mapped " << lunchbox::className( object ) << std::endl;
     return mapped;
+}
+
+uint32_t ObjectStore::syncObjectNB( Object* object, NodePtr master,
+                                    const UUID& id, const int32_t instanceID )
+{
+    return LB_UNDEFINED_UINT32;
+}
+
+bool ObjectStore::syncObjectSync( const uint32_t requestID )
+{
+    if( requestID == LB_UNDEFINED_UINT32 )
+        return false;
+    LBUNIMPLEMENTED;
+    return true;
 }
 
 void ObjectStore::unmapObject( Object* object )
