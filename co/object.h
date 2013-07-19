@@ -338,7 +338,7 @@ public:
      * @version 1.0
      */
     CO_API ObjectOCommand send( NodePtr node, const uint32_t cmd,
-                                const uint32_t instanceID = EQ_INSTANCE_ALL );
+                                const uint32_t instanceID = CO_INSTANCE_ALL );
     //@}
 
     /** @name Notifications */

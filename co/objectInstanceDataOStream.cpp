@@ -33,7 +33,7 @@ namespace co
 {
 ObjectInstanceDataOStream::ObjectInstanceDataOStream( const ObjectCM* cm )
         : ObjectDataOStream( cm )
-        , _instanceID( EQ_INSTANCE_ALL )
+        , _instanceID( CO_INSTANCE_ALL )
         , _command( 0 )
 {}
 
@@ -44,7 +44,7 @@ void ObjectInstanceDataOStream::reset()
 {
     ObjectDataOStream::reset();
     _nodeID = 0;
-    _instanceID = EQ_INSTANCE_NONE;
+    _instanceID = CO_INSTANCE_NONE;
     _command = 0;
 }
 
@@ -53,7 +53,7 @@ void ObjectInstanceDataOStream::enableCommit( const uint128_t& version,
 {
     _command = CMD_NODE_OBJECT_INSTANCE_COMMIT;
     _nodeID = 0;
-    _instanceID = EQ_INSTANCE_NONE;
+    _instanceID = CO_INSTANCE_NONE;
     ObjectDataOStream::enableCommit( version, receivers );
 }
 
@@ -62,7 +62,7 @@ void ObjectInstanceDataOStream::enablePush( const uint128_t& version,
 {
     _command = CMD_NODE_OBJECT_INSTANCE_PUSH;
     _nodeID = 0;
-    _instanceID = EQ_INSTANCE_NONE;
+    _instanceID = CO_INSTANCE_NONE;
     ObjectDataOStream::enableCommit( version, receivers );
 }
 
@@ -73,7 +73,7 @@ void ObjectInstanceDataOStream::push( const Nodes& receivers,
 {
     _command = CMD_NODE_OBJECT_INSTANCE_PUSH;
     _nodeID = 0;
-    _instanceID = EQ_INSTANCE_NONE;
+    _instanceID = CO_INSTANCE_NONE;
     _setupConnections( receivers );
 
     _resend();
@@ -87,7 +87,7 @@ void ObjectInstanceDataOStream::sendInstanceData( const Nodes& receivers )
 {
     _command = CMD_NODE_OBJECT_INSTANCE;
     _nodeID = 0;
-    _instanceID = EQ_INSTANCE_NONE;
+    _instanceID = CO_INSTANCE_NONE;
     _setupConnections( receivers );
     _resend();
     _clearConnections();

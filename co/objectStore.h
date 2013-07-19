@@ -113,7 +113,7 @@ namespace co
          * @param object the object.
          * @param id the object identifier.
          * @param instanceID the node-local instance identifier, or
-         *               EQ_INSTANCE_INVALID if this method should generate one.
+         *               CO_INSTANCE_INVALID if this method should generate one.
          */
         void attachObject( Object* object, const UUID& id,
                            const uint32_t instanceID );

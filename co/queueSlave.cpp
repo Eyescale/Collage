@@ -38,7 +38,7 @@ class QueueSlave
 {
 public:
     QueueSlave( const uint32_t mark, const uint32_t amount)
-        : masterInstanceID( EQ_INSTANCE_ALL )
+        : masterInstanceID( CO_INSTANCE_ALL )
         , prefetchMark( mark == LB_UNDEFINED_UINT32 ?
                         Global::getIAttribute( Global::IATTR_QUEUE_MIN_SIZE ) :
                         mark )

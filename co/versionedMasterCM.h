@@ -59,7 +59,7 @@ namespace co
 
         bool isMaster() const override { return true; }
         uint32_t getMasterInstanceID() const override
-            { LBDONTCALL; return EQ_INSTANCE_INVALID; }
+            { LBDONTCALL; return CO_INSTANCE_INVALID; }
 
         void addSlave( MasterCMCommand command ) override;
         void removeSlave( NodePtr node, const uint32_t instanceID ) override;

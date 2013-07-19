@@ -50,7 +50,7 @@ class Object
 public:
     Object()
         : id( true )
-        , instanceID( EQ_INSTANCE_INVALID )
+        , instanceID( CO_INSTANCE_INVALID )
         , cm( ObjectCM::ZERO )
         {}
 
@@ -93,7 +93,7 @@ Object::~Object()
 
 bool Object::isAttached() const
 {
-    return impl_->instanceID != EQ_INSTANCE_INVALID;
+    return impl_->instanceID != CO_INSTANCE_INVALID;
 }
 
 LocalNodePtr Object::getLocalNode()
@@ -122,7 +122,7 @@ void Object::attach( const UUID& id, const uint32_t instanceID )
 {
     LBASSERT( !isAttached() );
     LBASSERT( impl_->localNode );
-    LBASSERT( instanceID <= EQ_INSTANCE_MAX );
+    LBASSERT( instanceID <= CO_INSTANCE_MAX );
 
     impl_->id         = id;
     impl_->instanceID = instanceID;
@@ -133,7 +133,7 @@ void Object::attach( const UUID& id, const uint32_t instanceID )
 
 void Object::detach()
 {
-    impl_->instanceID = EQ_INSTANCE_INVALID;
+    impl_->instanceID = CO_INSTANCE_INVALID;
     impl_->localNode = 0;
 }
 
@@ -167,7 +167,7 @@ void Object::transfer( Object* from )
 
     from->impl_->cm = ObjectCM::ZERO;
     from->impl_->localNode = 0;
-    from->impl_->instanceID = EQ_INSTANCE_INVALID;
+    from->impl_->instanceID = CO_INSTANCE_INVALID;
 }
 
 void Object::_setChangeManager( ObjectCMPtr cm )

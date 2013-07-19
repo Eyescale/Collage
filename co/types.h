@@ -33,10 +33,10 @@ namespace co
 
 #define CO_SEPARATOR '#'
 
-#define EQ_INSTANCE_MAX     LB_MAX_UINT32 //!< The biggest instance id possible
-#define EQ_INSTANCE_NONE    0xfffffffdu   //!< None/NULL identifier
-#define EQ_INSTANCE_INVALID 0xfffffffeu   //!< Invalid/unset instance identifier
-#define EQ_INSTANCE_ALL     0xffffffffu   //!< all object instances
+#define CO_INSTANCE_MAX     LB_MAX_UINT32 //!< The biggest instance id possible
+#define CO_INSTANCE_NONE    0xfffffffdu   //!< None/NULL identifier
+#define CO_INSTANCE_INVALID 0xfffffffeu   //!< Invalid/unset instance identifier
+#define CO_INSTANCE_ALL     0xffffffffu   //!< all object instances
 
 class Barrier;
 class Buffer;
@@ -149,6 +149,10 @@ typedef std::vector< ObjectDataIStream* > ObjectDataIStreams;
 /** @endcond */
 
 #ifndef EQ_2_0_API
+#define EQ_INSTANCE_MAX     CO_INSTANCE_MAX
+#define EQ_INSTANCE_NONE    CO_INSTANCE_NONE
+#define EQ_INSTANCE_INVALID CO_INSTANCE_INVALID
+#define EQ_INSTANCE_ALL     CO_INSTANCE_ALL
 namespace base
 {
 using namespace lunchbox;

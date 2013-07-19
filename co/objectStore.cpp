@@ -234,7 +234,7 @@ uint32_t _genNextID( lunchbox::a_int32_t& val )
         result = static_cast< uint32_t >(
             static_cast< int64_t >( id ) + 0x7FFFFFFFu );
     }
-    while( result > EQ_INSTANCE_MAX );
+    while( result > CO_INSTANCE_MAX );
 
     return result;
 }
@@ -247,7 +247,7 @@ void ObjectStore::_attachObject( Object* object, const UUID& id,
     LB_TS_THREAD( _receiverThread );
 
     uint32_t instanceID = inInstanceID;
-    if( inInstanceID == EQ_INSTANCE_INVALID )
+    if( inInstanceID == CO_INSTANCE_INVALID )
         instanceID = _genNextID( _instanceIDs );
 
     object->attach( id, instanceID );
@@ -333,7 +333,7 @@ void ObjectStore::_detachObject( Object* object )
             _objects->erase( id );
     }
 
-    LBASSERT( object->getInstanceID() != EQ_INSTANCE_INVALID );
+    LBASSERT( object->getInstanceID() != CO_INSTANCE_INVALID );
     object->detach();
     return;
 }
@@ -459,7 +459,7 @@ void ObjectStore::unmapObject( Object* object )
     LB_TS_NOT_THREAD( _commandThread );
 
     const uint32_t masterInstanceID = object->getMasterInstanceID();
-    if( masterInstanceID != EQ_INSTANCE_INVALID )
+    if( masterInstanceID != CO_INSTANCE_INVALID )
     {
         NodePtr master = object->getMasterNode();
         LBASSERT( master )
@@ -480,7 +480,7 @@ void ObjectStore::unmapObject( Object* object )
 
     // no unsubscribe sent: Detach directly
     detachObject( object );
-    object->setupChangeManager( Object::NONE, false, 0, EQ_INSTANCE_INVALID );
+    object->setupChangeManager( Object::NONE, false, 0, CO_INSTANCE_INVALID );
     object->notifyDetached();
 }
 
@@ -494,8 +494,8 @@ bool ObjectStore::registerObject( Object* object )
 
     object->notifyAttach();
     object->setupChangeManager( object->getChangeType(), true, _localNode,
-                                EQ_INSTANCE_INVALID );
-    attachObject( object, id, EQ_INSTANCE_INVALID );
+                                CO_INSTANCE_INVALID );
+    attachObject( object, id, CO_INSTANCE_INVALID );
 
     if( Global::getIAttribute( Global::IATTR_NODE_SEND_QUEUE_SIZE ) > 0 )
         _localNode->send( CMD_NODE_REGISTER_OBJECT ) << object;
@@ -527,7 +527,7 @@ void ObjectStore::deregisterObject( Object* object )
 
     const UUID id = object->getID();
     detachObject( object );
-    object->setupChangeManager( Object::NONE, true, 0, EQ_INSTANCE_INVALID );
+    object->setupChangeManager( Object::NONE, true, 0, CO_INSTANCE_INVALID );
     if( _instanceCache )
         _instanceCache->erase( id );
     object->notifyDetached();
@@ -598,12 +598,12 @@ bool ObjectStore::dispatchObjectCommand( ICommand& cmd )
     if( i == _objects->end( ))
         // When the instance ID is set to none, we only care about the command
         // when we have an object of the given ID (multicast)
-        return ( instanceID == EQ_INSTANCE_NONE );
+        return ( instanceID == CO_INSTANCE_NONE );
 
     const Objects& objects = i->second;
     LBASSERTINFO( !objects.empty(), command );
 
-    if( instanceID <= EQ_INSTANCE_MAX )
+    if( instanceID <= CO_INSTANCE_MAX )
     {
         for( Objects::const_iterator j = objects.begin(); j!=objects.end(); ++j)
         {
@@ -1005,24 +1005,24 @@ bool ObjectStore::_cmdInstance( ICommand& inCommand )
     {
       case CMD_NODE_OBJECT_INSTANCE:
         LBASSERT( nodeID == 0 );
-        LBASSERT( command.getInstanceID() == EQ_INSTANCE_NONE );
+        LBASSERT( command.getInstanceID() == CO_INSTANCE_NONE );
         return true;
 
       case CMD_NODE_OBJECT_INSTANCE_MAP:
         if( nodeID != _localNode->getNodeID( )) // not for me
             return true;
 
-        LBASSERT( command.getInstanceID() <= EQ_INSTANCE_MAX );
+        LBASSERT( command.getInstanceID() <= CO_INSTANCE_MAX );
         return dispatchObjectCommand( command );
 
       case CMD_NODE_OBJECT_INSTANCE_COMMIT:
         LBASSERT( nodeID == 0 );
-        LBASSERT( command.getInstanceID() == EQ_INSTANCE_NONE );
+        LBASSERT( command.getInstanceID() == CO_INSTANCE_NONE );
         return dispatchObjectCommand( command );
 
       case CMD_NODE_OBJECT_INSTANCE_PUSH:
         LBASSERT( nodeID == 0 );
-        LBASSERT( command.getInstanceID() == EQ_INSTANCE_NONE );
+        LBASSERT( command.getInstanceID() == CO_INSTANCE_NONE );
         _pushData.addDataCommand( command.getObjectID(), command );
         return true;
 
