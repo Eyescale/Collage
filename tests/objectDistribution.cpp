@@ -77,22 +77,19 @@ public:
 
 protected:
     virtual void objectPush( const uint128_t& groupID, const uint128_t& typeID,
-                             const uint128_t& objectID,
-                             co::DataIStream& istream )
-        {
-            const co::Object::ChangeType type =
-                co::Object::ChangeType( typeID.low( ));
-            TESTINFO( istream.nRemainingBuffers() == 1 || // buffered
-                      istream.nRemainingBuffers() == 2,   // unbuffered
-                      istream.nRemainingBuffers( ));
-            TEST( !object );
-            object = new Object( type, istream );
-            TESTINFO( !istream.hasData(), istream.nRemainingBuffers( ));
-            TESTINFO( monitor != type, monitor << " == " << type );
-            monitor = type;
-        }
-
-private:
+                             const uint128_t& objectID, co::DataIStream& is )
+    {
+        const co::Object::ChangeType type =
+            co::Object::ChangeType( typeID.low( ));
+        TESTINFO( is.nRemainingBuffers() == 1 || // buffered
+                  is.nRemainingBuffers() == 2,   // unbuffered
+                  is.nRemainingBuffers( ));
+        TEST( !object );
+        object = new Object( type, is );
+        TESTINFO( !is.hasData(), is.nRemainingBuffers( ));
+        TESTINFO( monitor != type, monitor << " == " << type );
+        monitor = type;
+    }
 };
 
 int main( int argc, char **argv )
@@ -138,8 +135,9 @@ int main( int argc, char **argv )
         object.push( 42, i, nodes );
 
         monitor.waitEQ( type );
-        TEST( server->mapObject( server->object, object.getID(),
-                                 co::VERSION_NONE ));
+        co::Futureb mapOp = server->mapObjectf( server->object, object.getID(),
+                                                co::VERSION_NONE );
+        TEST( mapOp.wait( ));
         server->unmapObject( server->object );
         delete server->object;
         server->object = 0;

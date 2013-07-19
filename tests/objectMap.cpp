@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2013, Daniel Nachbaur <daniel.nachbaur@epfl.ch>
+ *               2013, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published

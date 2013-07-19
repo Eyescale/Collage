@@ -31,6 +31,7 @@
 #include "exception.h"
 #include "global.h"
 #include "iCommand.h"
+#include "mapObjectFuture.h"
 #include "nodeCommand.h"
 #include "oCommand.h"
 #include "object.h"
@@ -41,17 +42,7 @@
 #include "worker.h"
 #include "zeroconf.h"
 
-#include <lunchbox/clock.h>
 #include <lunchbox/hash.h>
-#include <lunchbox/lockable.h>
-#include <lunchbox/log.h>
-#include <lunchbox/requestHandler.h>
-#include <lunchbox/rng.h>
-#include <lunchbox/scopedMutex.h>
-#include <lunchbox/sleep.h>
-#include <lunchbox/spinLock.h>
-#include <lunchbox/types.h>
-#include <lunchbox/servus.h>
 
 namespace co
 {
@@ -701,6 +692,13 @@ uint32_t LocalNode::mapObjectNB( Object* object, const UUID& id,
 bool LocalNode::mapObjectSync( const uint32_t requestID )
 {
     return _impl->objectStore->mapObjectSync( requestID );
+}
+
+Futureb LocalNode::mapObjectf( Object* object, const UUID& id,
+                               const uint128_t& version )
+{
+    return Futureb( new MapObjectFuture( _impl->objectStore,
+                       _impl->objectStore->mapObjectNB( object, id, version )));
 }
 
 void LocalNode::unmapObject( Object* object )

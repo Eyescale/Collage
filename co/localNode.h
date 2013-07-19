@@ -243,6 +243,9 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         /** Finalize the mapping of a distributed object. @version 1.0 */
         CO_API virtual bool mapObjectSync( const uint32_t requestID );
 
+        /** @internal */
+        CO_API Futureb mapObjectf( Object* object, const UUID& id,
+                                   const uint128_t& version );
         /**
          * Unmap a mapped object.
          *
