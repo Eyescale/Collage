@@ -177,7 +177,7 @@ void ObjectStore::disableSendOnRegister()
 //---------------------------------------------------------------------------
 // identifier master node mapping
 //---------------------------------------------------------------------------
-NodeID ObjectStore::_findMasterNodeID( const UUID& identifier )
+NodeID ObjectStore::findMasterNodeID( const UUID& identifier )
 {
     LB_TS_NOT_THREAD( _commandThread );
 
@@ -339,24 +339,11 @@ void ObjectStore::_detachObject( Object* object )
 }
 
 uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
-                                   const uint128_t& version )
-{
-    LBASSERTINFO( id.isGenerated(), id );
-    if( !id.isGenerated( ))
-        return LB_UNDEFINED_UINT32;
-
-    NodePtr master = _connectMaster( id );
-    LBASSERT( master );
-    if( master )
-        return mapObjectNB( object, id, version, master );
-    return LB_UNDEFINED_UINT32;
-}
-
-uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
                                    const uint128_t& version, NodePtr master )
 {
     if( !master )
-        return mapObjectNB( object, id, version ); // will call us again
+        return _localNode->mapObjectNB( object, id,
+                                        version ); // will call us again
 
     LB_TS_NOT_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS )
@@ -546,24 +533,6 @@ void ObjectStore::deregisterObject( Object* object )
     if( _instanceCache )
         _instanceCache->erase( id );
     object->notifyDetached();
-}
-
-NodePtr ObjectStore::_connectMaster( const UUID& id )
-{
-    const NodeID masterNodeID = _findMasterNodeID( id );
-    if( masterNodeID == 0 )
-    {
-        LBWARN << "Can't find master node for object id " << id <<std::endl;
-        return 0;
-    }
-
-    NodePtr master = _localNode->connect( masterNodeID );
-    if( master.isValid() && !master->isClosed( ))
-        return master;
-
-    LBWARN << "Can't connect master node with id " << masterNodeID
-           << " for object id " << id << std::endl;
-    return 0;
 }
 
 bool ObjectStore::notifyCommandThreadIdle()

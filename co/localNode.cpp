@@ -680,7 +680,12 @@ bool LocalNode::mapObject( Object* object, const UUID& id,
 uint32_t LocalNode::mapObjectNB( Object* object, const UUID& id,
                                  const uint128_t& version )
 {
-    return _impl->objectStore->mapObjectNB( object, id, version );
+    NodePtr master = connectObjectMaster( id );
+    LBASSERT( master );
+
+    if( !master )
+        return LB_UNDEFINED_UINT32;
+    return mapObjectNB( object, id, version, master );
 }
 
 uint32_t LocalNode::mapObjectNB( Object* object, const UUID& id,
@@ -1041,6 +1046,31 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
     LBASSERTINFO( node->getNodeID() != getNodeID(), getNodeID() );
     LBINFO << node << " connected to " << *(Node*)this << std::endl;
     return CONNECT_OK;
+}
+
+NodePtr LocalNode::connectObjectMaster( const UUID& id )
+{
+    LBASSERTINFO( id.isGenerated(), id );
+    if( !id.isGenerated( ))
+    {
+        LBWARN << "Invalid object id " << id << std::endl;
+        return 0;
+    }
+
+    const NodeID masterNodeID = _impl->objectStore->findMasterNodeID( id );
+    if( masterNodeID == 0 )
+    {
+        LBWARN << "Can't find master node for object " << id << std::endl;
+        return 0;
+    }
+
+    NodePtr master = connect( masterNodeID );
+    if( master.isValid() && !master->isClosed( ))
+        return master;
+
+    LBWARN << "Can't connect master node with id " << masterNodeID
+           << " for object " << id << std::endl;
+    return 0;
 }
 
 NodePtr LocalNode::createNode( const uint32_t type )

@@ -147,6 +147,20 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         CO_API NodePtr connect( const NodeID& nodeID );
 
         /**
+         * Find and connect the node where the given object is registered.
+         *
+         * This object is relatively expensive, since potentially all connected
+         * nodes are queried.
+         *
+         * @param id the identifier of the object to search for.
+         * @return the connected node, or an invalid RefPtr if the node could
+         *         not be found or connected.
+         * @sa registerObject(), connect()
+         * @version 1.1.1
+         */
+        CO_API NodePtr connectObjectMaster( const UUID& id );
+
+        /**
          * Disconnect a connected node.
          *
          * @param node the remote node.

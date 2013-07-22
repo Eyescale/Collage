@@ -48,6 +48,15 @@ namespace co
         /** Remove all objects and clear all caches. */
         void clear();
 
+        /**
+         * Return the master node id for an identifier.
+         *
+         * @param id the identifier.
+         * @return the master node, or 0 if no master node is
+         *         found for the identifier.
+         */
+        NodeID findMasterNodeID( const UUID& id );
+
         /** @name ICommand Dispatch */
         //@{
         /**
@@ -84,10 +93,6 @@ namespace co
          * @param object the object instance.
          */
         virtual void deregisterObject( Object* object );
-
-        /** Start mapping a distributed object. */
-        uint32_t mapObjectNB( Object* object, const UUID& id,
-                              const uint128_t& version );
 
         /** Start mapping a distributed object. */
         uint32_t mapObjectNB( Object* object, const UUID& id,
@@ -206,17 +211,6 @@ namespace co
         SendQueue _sendQueue;          //!< Object data to broadcast when idle
         InstanceCache* _instanceCache; //!< cached object mapping data
         DataIStreamQueue _pushData;    //!< Object::push() queue
-
-        /**
-         * Returns the master node id for an identifier.
-         *
-         * @param id the identifier.
-         * @return the master node, or 0 if no master node is
-         *         found for the identifier.
-         */
-        NodeID _findMasterNodeID( const UUID& id );
-
-        NodePtr _connectMaster( const UUID& id );
 
         void _attachObject( Object* object, const UUID& id,
                             const uint32_t instanceID );
