@@ -30,6 +30,14 @@
 //#define PROFILE
 // 31300 hits, 35 misses, 297640 lookups, 126976b allocated in 31 buffers
 // 31300 hits, 35 misses, 49228 lookups, 135168b allocated in 34 buffers
+//
+// The buffer cache periodically frees allocated buffers to bound memory usage:
+// * 'minFree' buffers (given in ctor) are always kept free
+// * above 'size >> _maxFreeShift' free buffers compaction occurs
+// * compaction tries to reach '(size >> _maxFreeShift) >> _targetShift' buffers
+//
+// In other words, using the values below, if more than half of the buffers are
+// free, the cache is compacted to until one quarter of the buffers is free.
 
 namespace co
 {
@@ -38,7 +46,8 @@ namespace
 typedef std::vector< Buffer* > Data;
 typedef Data::const_iterator DataCIter;
 
-static const uint32_t _freeShift = 1; // 'size >> shift' buffers can be free
+static const uint32_t _maxFreeShift = 1; // _maxFree = size >> shift
+static const uint32_t _targetShift = 1; // _targetFree = _maxFree >> shift
 
 #ifdef PROFILE
 static lunchbox::a_int32_t _hits;
@@ -54,7 +63,7 @@ class BufferCache : public BufferListener
 {
 public:
     BufferCache( const int32_t minFree )
-            : _minFree( minFree )
+        : _minFree( minFree )
     {
         LBASSERT( minFree > 1);
         flush();
@@ -137,7 +146,7 @@ public:
             _cache.push_back( new co::Buffer( this ));
 
         _free += add - 1;
-        const int32_t num = int32_t( _cache.size() >> _freeShift );
+        const int32_t num = int32_t( _cache.size() >> _maxFreeShift );
         _maxFree = LB_MAX( _minFree, num );
         _position = _cache.begin();
 
@@ -153,20 +162,21 @@ public:
         if( _free <= _maxFree )
             return;
 
-        const int32_t target = _maxFree >> 1;
+        const int32_t tgt = _maxFree >> _targetShift;
+        const int32_t target = LB_MAX( tgt, _minFree );
         LBASSERT( target > 0 );
         for( Data::iterator i = _cache.begin(); i != _cache.end(); )
         {
             const co::Buffer* cmd = *i;
             if( cmd->isFree( ))
             {
+                LBASSERT( _free > 0 );
 #  ifdef PROFILE
                 ++_frees;
 #  endif
                 i = _cache.erase( i );
                 delete cmd;
 
-                LBASSERT( _free > 0 );
                 if( --_free <= target )
                     break;
             }
@@ -174,7 +184,7 @@ public:
                 ++i;
         }
 
-        const int32_t num = int32_t( _cache.size() >> _freeShift );
+        const int32_t num = int32_t( _cache.size() >> _maxFreeShift );
         _maxFree = LB_MAX( _minFree, num );
         _position = _cache.begin();
     }
