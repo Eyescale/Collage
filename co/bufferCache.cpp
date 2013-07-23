@@ -50,11 +50,11 @@ static const uint32_t _maxFreeShift = 1; // _maxFree = size >> shift
 static const uint32_t _targetShift = 1; // _targetFree = _maxFree >> shift
 
 #ifdef PROFILE
-static lunchbox::a_int32_t _hits;
-static lunchbox::a_int32_t _misses;
-static lunchbox::a_int32_t _lookups;
-static lunchbox::a_int32_t _allocs;
-static lunchbox::a_int32_t _frees;
+static lunchbox::a_ssize_t _hits;
+static lunchbox::a_ssize_t _misses;
+static lunchbox::a_ssize_t _lookups;
+static lunchbox::a_ssize_t _allocs;
+static lunchbox::a_ssize_t _frees;
 #endif
 }
 namespace detail
@@ -62,7 +62,7 @@ namespace detail
 class BufferCache : public BufferListener
 {
 public:
-    BufferCache( const int32_t minFree )
+    BufferCache( const ssize_t minFree )
         : _minFree( minFree )
     {
         LBASSERT( minFree > 1);
@@ -92,19 +92,36 @@ public:
         _cache.clear();
         _cache.push_back( new co::Buffer( this ));
         _free = 1;
+        _alloced = 0;
         _maxFree = _minFree;
         _position = _cache.begin();
     }
 
+    BufferPtr alloc( const uint64_t size )
+    {
+        LBASSERTINFO( size >= COMMAND_ALLOCSIZE, size );
+        LBASSERTINFO( size < LB_BIT48,
+                      "Out-of-sync network stream: size " << size << "?" );
+
+        BufferPtr buffer = newBuffer();
+        LBASSERT( buffer->getRefCount() == 1 );
+
+        if( !buffer->getData( ))
+            ++_alloced;
+
+        buffer->reserve( size );
+        buffer->resize( 0 );
+        return buffer;
+    }
+
     BufferPtr newBuffer()
     {
-        const uint32_t cacheSize = uint32_t( _cache.size( ));
-        LBASSERTINFO( size_t( _free ) <= cacheSize,
-                      size_t( _free ) << " > " << cacheSize );
+        LBASSERTINFO( size_t( _free ) <= _cache.size(),
+                      size_t( _free ) << " > " << _cache.size( ));
 
         if( _free > 0 )
         {
-            LBASSERT( cacheSize > 0 );
+            LBASSERT( _cache.size() > 0 );
 
             const DataCIter end = _position;
             DataCIter& i = _position;
@@ -141,12 +158,12 @@ public:
             }
         }
 
-        const uint32_t add = (cacheSize >> 3) + 1;
+        const size_t add = (_cache.size() >> 3) + 1;
         for( size_t j = 0; j < add; ++j )
             _cache.push_back( new co::Buffer( this ));
 
         _free += add - 1;
-        const int32_t num = int32_t( _cache.size() >> _maxFreeShift );
+        const ssize_t num = ssize_t( _cache.size() >> _maxFreeShift );
         _maxFree = LB_MAX( _minFree, num );
         _position = _cache.begin();
 
@@ -159,34 +176,30 @@ public:
 
     void compact()
     {
-        if( _free <= _maxFree )
+        if( ssize_t( _cache.size( )) - _alloced <= _maxFree )
             return;
 
-        const int32_t tgt = _maxFree >> _targetShift;
-        const int32_t target = LB_MAX( tgt, _minFree );
+        const ssize_t freeTarget = _maxFree >> _targetShift;
+        const ssize_t target = _cache.size() - freeTarget;
         LBASSERT( target > 0 );
-        for( Data::iterator i = _cache.begin(); i != _cache.end(); )
+        for( Data::const_iterator i = _cache.begin(); i != _cache.end(); ++i )
         {
-            const co::Buffer* cmd = *i;
-            if( cmd->isFree( ))
+            co::Buffer* cmd = *i;
+            if( cmd->isFree() && cmd->getData( ))
             {
                 LBASSERT( _free > 0 );
 #  ifdef PROFILE
                 ++_frees;
 #  endif
-                i = _cache.erase( i );
-                delete cmd;
+                cmd->clear();
 
-                if( --_free <= target )
+                if( --_alloced <= target )
                     break;
             }
-            else
-                ++i;
         }
 
-        const int32_t num = int32_t( _cache.size() >> _maxFreeShift );
+        const ssize_t num = ssize_t( _alloced >> _maxFreeShift );
         _maxFree = LB_MAX( _minFree, num );
-        _position = _cache.begin();
     }
 
 private:
@@ -194,19 +207,17 @@ private:
 
     Data _cache;
     DataCIter _position; //!< Last lookup position
-    lunchbox::a_int32_t _free; //!< The current number of free items
+    lunchbox::a_ssize_t _free; //!< The current number of free items
+    ssize_t _alloced; //!< The current number of buffers with an allocation
 
-    const int32_t _minFree;
-    int32_t _maxFree; //!< The maximum number of free items
+    const ssize_t _minFree;
+    ssize_t _maxFree; //!< The maximum number of free items
 
-    virtual void notifyFree( co::Buffer* )
-    {
-        ++_free;
-    }
+    virtual void notifyFree( co::Buffer* ) { ++_free; }
 };
 }
 
-BufferCache::BufferCache( const int32_t minFree )
+BufferCache::BufferCache( const ssize_t minFree )
         : _impl( new detail::BufferCache( minFree ))
 {}
 
@@ -224,20 +235,12 @@ void BufferCache::flush()
 BufferPtr BufferCache::alloc( const uint64_t size )
 {
     LB_TS_SCOPED( _thread );
-    LBASSERTINFO( size >= COMMAND_ALLOCSIZE, size );
-    LBASSERTINFO( size < LB_BIT48,
-                  "Out-of-sync network stream: buffer size " << size << "?" );
-
-    BufferPtr buffer = _impl->newBuffer();
-    LBASSERT( buffer->getRefCount() == 1 );
-
-    buffer->reserve( size );
-    buffer->resize( 0 );
-    return buffer;
+    return _impl->alloc( size );
 }
 
 void BufferCache::compact()
 {
+    LB_TS_SCOPED( _thread );
     _impl->compact();
 }
 

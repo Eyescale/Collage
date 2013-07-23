@@ -39,7 +39,7 @@ namespace detail { class BufferCache; }
     class BufferCache
     {
     public:
-        CO_API BufferCache( const int32_t minFree );
+        CO_API BufferCache( const ssize_t minFree );
         CO_API ~BufferCache();
 
         /** @return a new buffer. */
