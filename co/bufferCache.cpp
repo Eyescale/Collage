@@ -43,7 +43,7 @@ namespace co
 {
 namespace
 {
-typedef std::vector< Buffer* > Data;
+typedef std::list< Buffer* > Data;
 typedef Data::const_iterator DataCIter;
 
 static const uint32_t _maxFreeShift = 1; // _maxFree = size >> shift
