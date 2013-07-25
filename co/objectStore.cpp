@@ -1054,7 +1054,6 @@ bool ObjectStore::_cmdSyncObject( ICommand& cmd )
 
     const uint32_t cacheInstanceID = command.getMasterInstanceID();
     ObjectCMPtr cm;
-    uint32_t instanceID = CO_INSTANCE_INVALID;
     {
         lunchbox::ScopedFastRead mutex( _objects );
         ObjectsHash::const_iterator i = _objects->find( id );
@@ -1068,7 +1067,6 @@ bool ObjectStore::_cmdSyncObject( ICommand& cmd )
                 if( command.getInstanceID() == object->getInstanceID( ))
                 {
                     cm = object->_getChangeManager();
-                    instanceID = object->getInstanceID();
                     LBASSERT( cm );
                     break;
                 }
@@ -1077,7 +1075,6 @@ bool ObjectStore::_cmdSyncObject( ICommand& cmd )
                     continue;
 
                 cm = object->_getChangeManager();
-                instanceID = object->getInstanceID();
                 LBASSERT( cm );
                 if( cacheInstanceID == object->getInstanceID( ))
                     break;
