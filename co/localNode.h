@@ -222,39 +222,50 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * mapObjectNB() and mapObjectSync() to asynchronously map multiple
          * objects in parallel improves performance of this operation.
          *
-         * After mapping, the object will have the version used to initialize
-         * it, or VERSION_NONE if mapped to this version.
+         * After mapping, the object will have the version used during
+         * initialization, or VERSION_NONE if mapped to this version.
+         *
+         * When no master node is given, connectObjectMaster() is used to find
+         * the node with the master instance.
+         *
+         * This method returns immediately after initiating the
+         * mapping. Evaluating the value of the returned lunchbox::Future will
+         * block on the completion of the operation and return true if the
+         * object was mapped, false if the master of the object is not found or
+         * the requested version is no longer available.
          *
          * @param object the object.
          * @param id the master object identifier.
+         * @param master the node with the master instance, may be 0.
          * @param version the initial version.
-         * @return true if the object was mapped, false if the master of the
-         *         object is not found or the requested version is no longer
-         *         available.
+         * @return A lunchbox::Future which will deliver the success status of
+         *         the operation on evaluation.
          * @sa registerObject
          * @version 1.0
          */
-        CO_API bool mapObject( Object* object, const UUID& id,
-                               const uint128_t& version = VERSION_OLDEST );
+        CO_API Futureb mapObject( Object* object, const UUID& id,
+                                  NodePtr master,
+                                  const uint128_t& version = VERSION_OLDEST );
 
         /** Convenience wrapper for mapObject(). @version 1.0 */
-        bool mapObject( Object* object, const ObjectVersion& v )
-            { return mapObject( object, v.identifier, v.version ); }
+        Futureb mapObject( Object* object, const ObjectVersion& v )
+            { return mapObject( object, v.identifier, 0, v.version ); }
 
-        /** Start mapping a distributed object. @sa mapObject() @version 1.0 */
+        /** @deprecated */
+        Futureb mapObject( Object* object, const UUID& id,
+                           const uint128_t& version = VERSION_OLDEST )
+            { return mapObject( object, id, 0, version ); }
+
+        /** @deprecated use mapObject() */
         CO_API uint32_t mapObjectNB( Object* object, const UUID& id,
                                      const uint128_t& version = VERSION_OLDEST);
 
-        /**
-         * Start mapping a distributed object from a known master node.
-         * @sa mapObject()
-         * @version 1.0
-         */
+        /** @deprecated use mapObject() */
         CO_API virtual uint32_t mapObjectNB( Object* object, const UUID& id,
                                              const uint128_t& version,
                                              NodePtr master );
 
-        /** Finalize the mapping of a distributed object. @version 1.0 */
+        /** @deprecated use mapObject() */
         CO_API virtual bool mapObjectSync( const uint32_t requestID );
 
         /**
@@ -263,8 +274,8 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * The object is synchronized to the newest version of the first
          * attached object on the given master node matching the
          * instanceID. When no master node is given, connectObjectMaster() is
-         * used to find the master node. When CO_INSTANCE_ALL is given, the
-         * first instance is used. Before a successful return,
+         * used to find the node with the master instance. When CO_INSTANCE_ALL
+         * is given, the first instance is used. Before a successful return,
          * applyInstanceData() is called on the calling thread to synchronize
          * the given object.
          *
@@ -273,8 +284,8 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          * @param id the object identifier.
          * @param instanceID the instance identifier of the synchronizing
          *                   object.
-         * @return A future which will deliver the success status of the
-         *         operation on Futureb::wait().
+         * @return A lunchbox::Future which will deliver the success status of
+         *         the operation on evaluation.
          * @version 1.1.1
          */
         CO_API Futureb syncObject( Object* object, NodePtr master,

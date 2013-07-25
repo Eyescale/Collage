@@ -670,22 +670,21 @@ void LocalNode::deregisterObject( Object* object )
 {
     _impl->objectStore->deregisterObject( object );
 }
-bool LocalNode::mapObject( Object* object, const UUID& id,
-                           const uint128_t& version )
+
+Futureb LocalNode::mapObject( Object* object, const UUID& id, NodePtr master,
+                              const uint128_t& version )
 {
-    const uint32_t requestID = mapObjectNB( object, id, version );
-    return mapObjectSync( requestID );
+    const uint32_t request = _impl->objectStore->mapObjectNB( object, id,
+                                                              version, master );
+    const MapObjectFuture::SyncFunc& func =
+        boost::bind( &ObjectStore::mapObjectSync, _impl->objectStore, request );
+    return Futureb( new MapObjectFuture( func ));
 }
 
 uint32_t LocalNode::mapObjectNB( Object* object, const UUID& id,
                                  const uint128_t& version )
 {
-    NodePtr master = connectObjectMaster( id );
-    LBASSERT( master );
-
-    if( !master )
-        return LB_UNDEFINED_UINT32;
-    return mapObjectNB( object, id, version, master );
+    return _impl->objectStore->mapObjectNB( object, id, version, 0 );
 }
 
 uint32_t LocalNode::mapObjectNB( Object* object, const UUID& id,
