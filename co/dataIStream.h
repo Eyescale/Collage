@@ -143,7 +143,10 @@ public:
     bool hasData() { return _checkBuffer(); }
 
     /** @return the provider of the istream. */
-    CO_API virtual NodePtr getMaster() = 0;
+    CO_API virtual NodePtr getRemoteNode() const = 0;
+
+    /** @return the receiver of the istream. */
+    CO_API virtual LocalNodePtr getLocalNode() const = 0;
     //@}
 
 protected:

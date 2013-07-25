@@ -44,13 +44,13 @@ public:
     DataOStream() {}
 
 protected:
-    virtual void sendData( const void* buffer, const uint64_t size,
-                           const bool last )
-        {
-            co::ObjectDataOCommand( getConnections(), co::CMD_OBJECT_DELTA,
-                                    co::COMMANDTYPE_OBJECT, co::UUID(), 0,
-                                    co::uint128_t(), 0, size, last, this );
-        }
+    void sendData( const void* buffer, const uint64_t size, const bool last )
+        override
+    {
+        co::ObjectDataOCommand( getConnections(), co::CMD_OBJECT_DELTA,
+                                co::COMMANDTYPE_OBJECT, co::UUID(), 0,
+                                co::uint128_t(), 0, size, last, this );
+    }
 };
 
 class DataIStream : public co::DataIStream
@@ -65,9 +65,10 @@ public:
             _commands.push( command );
         }
 
-    virtual size_t nRemainingBuffers() const { return _commands.getSize(); }
-    virtual lunchbox::uint128_t getVersion() const { return co::VERSION_NONE;}
-    virtual co::NodePtr getMaster() { return 0; }
+    size_t nRemainingBuffers() const override { return _commands.getSize(); }
+    lunchbox::uint128_t getVersion() const override { return co::VERSION_NONE; }
+    co::NodePtr getRemoteNode() const override { return 0; }
+    co::LocalNodePtr getLocalNode() const override { return 0; }
 
 protected:
     virtual bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,

@@ -190,7 +190,7 @@ bool ICommand::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
     return true;
 }
 
-NodePtr ICommand::getNode() const
+NodePtr ICommand::getRemoteNode() const
 {
     return _impl->remote;
 }

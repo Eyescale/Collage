@@ -233,7 +233,8 @@ void FullMasterCM::_initSlave( const MasterCMCommand& command,
 
         InstanceData* data = *i;
         LBASSERT( data );
-        data->os.sendMapData( command.getNode(), command.getInstanceID( ));
+        data->os.sendMapData( command.getRemoteNode(),
+                              command.getInstanceID( ));
 
 #ifdef EQ_INSTRUMENT_MULTICAST
         ++_miss;

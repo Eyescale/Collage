@@ -55,7 +55,9 @@ namespace co
         void reset() override;
 
         bool hasInstanceData() const;
-        CO_API NodePtr getMaster() override;
+
+        CO_API NodePtr getRemoteNode() const override;
+        CO_API LocalNodePtr getLocalNode() const override;
 
     protected:
         bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,

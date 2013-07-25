@@ -73,11 +73,14 @@ namespace detail { class ICommand; }
             return value;
         }
 
-        /** @return the sending node proxy instance. @version 1.0 */
-        CO_API NodePtr getNode() const;
+        /** @deprecated use getRemoteNode() */
+        NodePtr getNode() const { return getRemoteNode(); }
+
+        /** @return the sending node proxy instance. @version 1.1.1 */
+        CO_API NodePtr getRemoteNode() const override;
 
         /** @return the receiving node. @version 1.0 */
-        CO_API LocalNodePtr getLocalNode() const;
+        CO_API LocalNodePtr getLocalNode() const override;
 
         /** @return true if the command has valid data. @version 1.0 */
         CO_API bool isValid() const;

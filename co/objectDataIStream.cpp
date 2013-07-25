@@ -108,14 +108,24 @@ bool ObjectDataIStream::hasInstanceData() const
     return( command.getCommand() == CMD_OBJECT_INSTANCE );
 }
 
-NodePtr ObjectDataIStream::getMaster()
+NodePtr ObjectDataIStream::getRemoteNode() const
 {
     if( !_usedCommand.isValid() && _commands.empty( ))
         return 0;
 
     const ICommand& command = _usedCommand.isValid() ? _usedCommand :
                                                       _commands.front();
-    return command.getNode();
+    return command.getRemoteNode();
+}
+
+LocalNodePtr ObjectDataIStream::getLocalNode() const
+{
+    if( !_usedCommand.isValid() && _commands.empty( ))
+        return 0;
+
+    const ICommand& command = _usedCommand.isValid() ? _usedCommand :
+                                                      _commands.front();
+    return command.getLocalNode();
 }
 
 size_t ObjectDataIStream::getDataSize() const
