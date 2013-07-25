@@ -62,7 +62,7 @@ namespace co
         void setMasterNode( NodePtr node ) override { _master = node; }
         NodePtr getMasterNode() override { return _master; }
 
-        void addSlave( MasterCMCommand ) override { LBDONTCALL; }
+        void addSlave( const MasterCMCommand& ) override { LBDONTCALL; }
         void removeSlaves( NodePtr ) override {}
 
         void applyMapData( const uint128_t& version ) override;

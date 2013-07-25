@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -22,6 +22,8 @@
 
 #include "log.h"
 #include "node.h"
+#include "nodeCommand.h"
+#include "oCommand.h"
 #include "object.h"
 #include "objectDataIStream.h"
 
@@ -162,7 +164,7 @@ void FullMasterCM::_obsolete()
     _checkConsistency();
 }
 
-void FullMasterCM::_initSlave( MasterCMCommand command,
+void FullMasterCM::_initSlave( const MasterCMCommand& command,
                                const uint128_t& /*replyVersion*/,
                                bool replyUseCache )
 {
@@ -374,6 +376,28 @@ void FullMasterCM::push( const uint128_t& groupID, const uint128_t& typeID,
     Mutex mutex( _slaves );
     InstanceData* instanceData = _instanceDatas.back();
     instanceData->os.push( nodes, _object->getID(), groupID, typeID );
+}
+
+void FullMasterCM::sendSync( const MasterCMCommand& command )
+{
+    //const uint128_t& version = command.getRequestedVersion();
+    const uint128_t& maxCachedVersion = command.getMaxCachedVersion();
+    const bool useCache =
+        command.useCache() &&
+        command.getMasterInstanceID() == _object->getInstanceID() &&
+        maxCachedVersion == _version;
+
+    if( !useCache )
+    {
+        Mutex mutex( _slaves );
+        InstanceData* instanceData = _instanceDatas.back();
+        instanceData->os.sync( command );
+    }
+
+    NodePtr node = command.getNode();
+    node->send( CMD_NODE_SYNC_OBJECT_REPLY, useCache /*preferMulticast*/ )
+        << node->getNodeID() << command.getObjectID() << command.getRequestID()
+        << true << command.useCache() << useCache;
 }
 
 }

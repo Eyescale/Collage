@@ -60,7 +60,31 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
     os.disable(); // handled by remote recv thread
 }
 
-void ObjectCM::_addSlave( MasterCMCommand command, const uint128_t& version )
+void ObjectCM::sendSync( const MasterCMCommand& command )
+{
+    LBASSERT( _object );
+    const uint128_t& maxCachedVersion = command.getMaxCachedVersion();
+    const bool useCache =
+        command.useCache() &&
+        command.getMasterInstanceID() == _object->getInstanceID() &&
+        maxCachedVersion == getVersion();
+
+    if( !useCache )
+    {
+        ObjectInstanceDataOStream os( this );
+        os.enableSync( getVersion(), command );
+        _object->getInstanceData( os );
+        os.disable();
+    }
+    NodePtr node = command.getNode();
+    node->send( CMD_NODE_SYNC_OBJECT_REPLY, useCache /*preferMulticast*/ )
+        << node->getNodeID() << command.getObjectID() << command.getRequestID()
+        << true << command.useCache() << useCache;
+
+}
+
+void ObjectCM::_addSlave( const MasterCMCommand& command,
+                          const uint128_t& version )
 {
     LBASSERT( version != VERSION_NONE );
     LBASSERT( command.getType() == COMMANDTYPE_NODE );
@@ -81,7 +105,7 @@ void ObjectCM::_addSlave( MasterCMCommand command, const uint128_t& version )
     _initSlave( command, version, replyUseCache );
 }
 
-void ObjectCM::_initSlave( MasterCMCommand command,
+void ObjectCM::_initSlave( const MasterCMCommand& command,
                            const uint128_t& replyVersion, bool replyUseCache )
 {
 #if 0

@@ -101,7 +101,7 @@ uint128_t VersionedMasterCM::_apply( ObjectDataIStream* is )
     return version;
 }
 
-void VersionedMasterCM::addSlave( MasterCMCommand command )
+void VersionedMasterCM::addSlave( const MasterCMCommand& command )
 {
     LB_TS_THREAD( _cmdThread );
     Mutex mutex( _slaves );

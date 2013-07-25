@@ -103,10 +103,10 @@ namespace co
 
         /** Start synchronizing an object. */
         uint32_t syncObjectNB( Object* object, NodePtr master, const UUID& id,
-                               const int32_t instanceID );
+                               const uint32_t instanceID );
 
         /** Finalize the synchronizatin of a distributed object. */
-        bool syncObjectSync( const uint32_t requestID );
+        bool syncObjectSync( const uint32_t requestID, Object* object );
 
         /**
          * Unmap a mapped object.
@@ -216,6 +216,9 @@ namespace co
                             const uint32_t instanceID );
         void _detachObject( Object* object );
 
+        bool _checkInstanceCache( const uint128_t& id, uint128_t& from,
+                                  uint128_t& to, uint32_t& instanceID );
+
         /** The command handler functions. */
         bool _cmdFindMasterNodeID( ICommand& command );
         bool _cmdFindMasterNodeIDReply( ICommand& command );
@@ -224,6 +227,8 @@ namespace co
         bool _cmdMapObject( ICommand& command );
         bool _cmdMapObjectSuccess( ICommand& command );
         bool _cmdMapObjectReply( ICommand& command );
+        bool _cmdSyncObject( ICommand& command );
+        bool _cmdSyncObjectReply( ICommand& command );
         bool _cmdUnmapObject( ICommand& command );
         bool _cmdUnsubscribeObject( ICommand& command );
         bool _cmdInstance( ICommand& command );

@@ -40,7 +40,8 @@ namespace co
         void init() override {}
 
         void push( const uint128_t&, const uint128_t&,
-                           const Nodes& ) override { LBDONTCALL; }
+                   const Nodes& ) override { LBDONTCALL; }
+        void sendSync( const MasterCMCommand& ) override { LBDONTCALL; }
 
         uint128_t getHeadVersion() const override
             { return VERSION_NONE; }
@@ -49,7 +50,7 @@ namespace co
         uint32_t getMasterInstanceID() const override
             { LBDONTCALL; return CO_INSTANCE_INVALID; }
 
-        void addSlave( MasterCMCommand command ) override { LBDONTCALL; }
+        void addSlave( const MasterCMCommand& command ) override { LBDONTCALL; }
         void removeSlaves( NodePtr ) override { LBDONTCALL; }
 
     private:

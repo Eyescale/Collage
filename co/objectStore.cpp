@@ -87,12 +87,18 @@ ObjectStore::ObjectStore( LocalNode* localNode )
         CmdFunc( this, &ObjectStore::_cmdInstance ), 0 );
     localNode->_registerCommand( CMD_NODE_OBJECT_INSTANCE_PUSH,
         CmdFunc( this, &ObjectStore::_cmdInstance ), 0 );
+    localNode->_registerCommand( CMD_NODE_OBJECT_INSTANCE_SYNC,
+        CmdFunc( this, &ObjectStore::_cmdInstance ), 0 );
     localNode->_registerCommand( CMD_NODE_DISABLE_SEND_ON_REGISTER,
         CmdFunc( this, &ObjectStore::_cmdDisableSendOnRegister ), queue );
     localNode->_registerCommand( CMD_NODE_REMOVE_NODE,
         CmdFunc( this, &ObjectStore::_cmdRemoveNode ), queue );
     localNode->_registerCommand( CMD_NODE_OBJECT_PUSH,
         CmdFunc( this, &ObjectStore::_cmdObjectPush ), queue );
+    localNode->_registerCommand( CMD_NODE_SYNC_OBJECT,
+        CmdFunc( this, &ObjectStore::_cmdSyncObject ), queue );
+    localNode->_registerCommand( CMD_NODE_SYNC_OBJECT_REPLY,
+        CmdFunc( this, &ObjectStore::_cmdSyncObjectReply ), 0 );
 }
 
 ObjectStore::~ObjectStore()
@@ -341,16 +347,22 @@ void ObjectStore::_detachObject( Object* object )
 uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
                                    const uint128_t& version, NodePtr master )
 {
-    if( !master )
-        return _localNode->mapObjectNB( object, id,
-                                        version ); // will call us again
-
     LB_TS_NOT_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS )
         << "Mapping " << lunchbox::className( object ) << " to id " << id
         << " version " << version << std::endl;
     LBASSERT( object );
     LBASSERTINFO( id.isGenerated(), id );
+
+    if( !master )
+        master = _localNode->connectObjectMaster( id );
+
+    if( !master || !master->isReachable( ))
+    {
+        LBWARN << "Mapping of object " << id << " failed, invalid master node"
+               << std::endl;
+        return LB_UNDEFINED_UINT32;
+    }
 
     if( !object || !id.isGenerated( ))
     {
@@ -369,42 +381,39 @@ uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
         return LB_UNDEFINED_UINT32;
     }
 
-    if( !master || !master->isReachable( ))
-    {
-        LBWARN << "Mapping of object " << id << " failed, invalid master node"
-               << std::endl;
-        return LB_UNDEFINED_UINT32;
-    }
-
     const uint32_t requestID = _localNode->registerRequest( object );
     uint128_t minCachedVersion = VERSION_HEAD;
     uint128_t maxCachedVersion = VERSION_NONE;
     uint32_t masterInstanceID = 0;
-    bool useCache = false;
-
-    if( _instanceCache )
-    {
-        const InstanceCache::Data& cached = (*_instanceCache)[ id ];
-        if( cached != InstanceCache::Data::NONE )
-        {
-            const ObjectDataIStreamDeque& versions = cached.versions;
-            LBASSERT( !cached.versions.empty( ));
-            useCache = true;
-            masterInstanceID = cached.masterInstanceID;
-            minCachedVersion = versions.front()->getVersion();
-            maxCachedVersion = versions.back()->getVersion();
-            LBLOG( LOG_OBJECTS ) << "Object " << id << " have v"
-                                 << minCachedVersion << ".."
-                                 << maxCachedVersion << std::endl;
-        }
-    }
-
+    const bool useCache = _checkInstanceCache( id, minCachedVersion,
+                                               maxCachedVersion,
+                                               masterInstanceID );
     object->notifyAttach();
     master->send( CMD_NODE_MAP_OBJECT )
         << version << minCachedVersion << maxCachedVersion << id
         << object->getMaxVersions() << requestID << _genNextID( _instanceIDs )
         << masterInstanceID << useCache;
     return requestID;
+}
+
+bool ObjectStore::_checkInstanceCache( const uint128_t& id, uint128_t& from,
+                                       uint128_t& to, uint32_t& instanceID )
+{
+    if( !_instanceCache )
+        return false;
+
+    const InstanceCache::Data& cached = (*_instanceCache)[ id ];
+    if( cached == InstanceCache::Data::NONE )
+        return false;
+
+    const ObjectDataIStreamDeque& versions = cached.versions;
+    LBASSERT( !cached.versions.empty( ));
+    instanceID = cached.masterInstanceID;
+    from = versions.front()->getVersion();
+    to = versions.back()->getVersion();
+    LBLOG( LOG_OBJECTS ) << "Object " << id << " have v" << from << ".." << to
+                         << std::endl;
+    return true;
 }
 
 bool ObjectStore::mapObjectSync( const uint32_t requestID )
@@ -431,16 +440,89 @@ bool ObjectStore::mapObjectSync( const uint32_t requestID )
 }
 
 uint32_t ObjectStore::syncObjectNB( Object* object, NodePtr master,
-                                    const UUID& id, const int32_t instanceID )
+                                    const UUID& id, const uint32_t instanceID )
 {
-    return LB_UNDEFINED_UINT32;
+    LB_TS_NOT_THREAD( _receiverThread );
+    LBLOG( LOG_OBJECTS )
+        << "Syncing " << lunchbox::className( object ) << " with id " << id
+        << std::endl;
+    LBASSERT( object );
+    LBASSERTINFO( id.isGenerated(), id );
+
+    if( !object || !id.isGenerated( ))
+    {
+        LBWARN << "Invalid object " << object << " or id " << id << std::endl;
+        return LB_UNDEFINED_UINT32;
+    }
+
+    if( !master )
+        master = _localNode->connectObjectMaster( id );
+
+    if( !master || !master->isReachable( ))
+    {
+        LBWARN << "Mapping of object " << id << " failed, invalid master node"
+               << std::endl;
+        return LB_UNDEFINED_UINT32;
+    }
+
+    const uint32_t requestID =
+        _localNode->registerRequest( new ObjectDataIStream );
+    uint128_t minCachedVersion = VERSION_HEAD;
+    uint128_t maxCachedVersion = VERSION_NONE;
+    uint32_t cacheInstanceID = 0;
+
+    bool useCache = _checkInstanceCache( id, minCachedVersion, maxCachedVersion,
+                                         cacheInstanceID );
+    if( useCache )
+    {
+        switch( instanceID )
+        {
+        case CO_INSTANCE_ALL:
+            break;
+        default:
+            if( instanceID == cacheInstanceID )
+                break;
+
+            useCache = false;
+            LBCHECK( _instanceCache->release( id, 1 ));
+            break;
+        }
+    }
+
+    // Use stream expected by MasterCMCommand
+    master->send( CMD_NODE_SYNC_OBJECT )
+        << VERSION_NEWEST << minCachedVersion << maxCachedVersion << id
+        << uint64_t(0) /* maxVersions */ << requestID << instanceID
+        << cacheInstanceID << useCache;
+    return requestID;
 }
 
-bool ObjectStore::syncObjectSync( const uint32_t requestID )
+bool ObjectStore::syncObjectSync( const uint32_t requestID, Object* object )
 {
     if( requestID == LB_UNDEFINED_UINT32 )
         return false;
-    LBUNIMPLEMENTED;
+
+    void* data = _localNode->getRequestData( requestID );
+    if( data == 0 )
+        return false;
+
+    ObjectDataIStream* is = LBSAFECAST( ObjectDataIStream*, data );
+
+    bool ok = false;
+    _localNode->waitRequest( requestID, ok );
+
+    if( !ok )
+    {
+        LBWARN << "Object synchronization failed" << std::endl;
+        delete is;
+        return false;
+    }
+
+    is->waitReady();
+    object->applyInstanceData( *is );
+    LBLOG( LOG_OBJECTS ) << "Synced " << lunchbox::className( object )
+                         << std::endl;
+    delete is;
     return true;
 }
 
@@ -839,7 +921,11 @@ bool ObjectStore::_cmdMapObjectReply( ICommand& command )
 {
     LB_TS_THREAD( _receiverThread );
 
-    const UUID& nodeID = command.get< UUID >();
+    // Map reply commands are potentially multicasted (see above)
+    // verify that we are the intended receiver
+    if( command.get< UUID >() != _localNode->getNodeID( ))
+        return true;
+
     const UUID& objectID = command.get< UUID >();
     const uint128_t& version = command.get< uint128_t >();
     const uint32_t requestID = command.get< uint32_t >();
@@ -849,11 +935,6 @@ bool ObjectStore::_cmdMapObjectReply( ICommand& command )
 
     LBLOG( LOG_OBJECTS ) << "Cmd map object reply " << command << " id "
                          << objectID << " req " << requestID << std::endl;
-
-    // Map reply commands are potentially multicasted (see above)
-    // verify that we are the intended receiver
-    if( nodeID != _localNode->getNodeID( ))
-        return true;
 
     LBASSERT( _localNode->getRequestData( requestID ));
 
@@ -960,13 +1041,126 @@ bool ObjectStore::_cmdUnmapObject( ICommand& command )
     return true;
 }
 
+bool ObjectStore::_cmdSyncObject( ICommand& cmd )
+{
+    LB_TS_THREAD( _commandThread );
+    MasterCMCommand command( cmd );
+    const uint128_t& id = command.getObjectID();
+    LBINFO << command.getNode() << std::endl;
+
+    LBLOG( LOG_OBJECTS ) << "Cmd sync object id " << id << "."
+                         << command.getInstanceID() << " req "
+                         << command.getRequestID() << std::endl;
+
+    const uint32_t cacheInstanceID = command.getMasterInstanceID();
+    ObjectCMPtr cm;
+    uint32_t instanceID = CO_INSTANCE_INVALID;
+    {
+        lunchbox::ScopedFastRead mutex( _objects );
+        ObjectsHash::const_iterator i = _objects->find( id );
+        if( i != _objects->end( ))
+        {
+            const Objects& objects = i->second;
+
+            for( ObjectsCIter j = objects.begin(); j != objects.end(); ++j )
+            {
+                Object* object = *j;
+                if( command.getInstanceID() == object->getInstanceID( ))
+                {
+                    cm = object->_getChangeManager();
+                    instanceID = object->getInstanceID();
+                    LBASSERT( cm );
+                    break;
+                }
+
+                if( command.getInstanceID() != CO_INSTANCE_ALL )
+                    continue;
+
+                cm = object->_getChangeManager();
+                instanceID = object->getInstanceID();
+                LBASSERT( cm );
+                if( cacheInstanceID == object->getInstanceID( ))
+                    break;
+            }
+            if( !cm )
+                LBWARN << "Can't find object to sync " << id << "."
+                       << command.getInstanceID() << " in " << objects.size()
+                       << " instances" << std::endl;
+        }
+        if( !cm )
+            LBWARN << "Can't find object to sync " << id
+                   << ", no object with identifier" << std::endl;
+    }
+    if( cm )
+        cm->sendSync( command );
+    else
+    {
+        NodePtr node = command.getNode();
+        node->send( CMD_NODE_SYNC_OBJECT_REPLY )
+            << node->getNodeID() << id << command.getRequestID()
+            << false << command.useCache() << false;
+    }
+    return true;
+}
+
+bool ObjectStore::_cmdSyncObjectReply( ICommand& command )
+{
+    LB_TS_THREAD( _receiverThread );
+
+    // Sync reply commands are potentially multicasted (see above)
+    // verify that we are the intended receiver
+    if( command.get< UUID >() != _localNode->getNodeID( ))
+        return true;
+
+    const uint128_t& id = command.get< uint128_t >();
+    const uint32_t requestID = command.get< uint32_t >();
+    const bool result = command.get< bool >();
+    const bool releaseCache = command.get< bool >();
+    const bool useCache = command.get< bool >();
+    void* const data = _localNode->getRequestData( requestID );
+    ObjectDataIStream* const is = LBSAFECAST( ObjectDataIStream*, data );
+
+    LBLOG( LOG_OBJECTS ) << "Cmd sync object reply " << command << " req "
+                         << requestID << std::endl;
+    if( result )
+    {
+        if( useCache )
+        {
+            LBASSERT( releaseCache );
+            LBASSERT( _instanceCache );
+
+            const InstanceCache::Data& cached = (*_instanceCache)[ id ];
+            LBASSERT( cached != InstanceCache::Data::NONE );
+            LBASSERT( !cached.versions.empty( ));
+
+            *is = *cached.versions.back();
+            LBCHECK( _instanceCache->release( id, 2 ));
+        }
+        else if( releaseCache )
+        {
+            LBCHECK( _instanceCache->release( id, 1 ));
+        }
+    }
+    else
+    {
+        if( releaseCache )
+            _instanceCache->release( id, 1 );
+
+        LBWARN << "Could not sync object " << id << " request " << requestID
+               << std::endl;
+    }
+
+    _localNode->serveRequest( requestID, result );
+    return true;
+}
+
 bool ObjectStore::_cmdInstance( ICommand& inCommand )
 {
     LB_TS_THREAD( _receiverThread );
     LBASSERT( _localNode );
 
     ObjectDataICommand command( inCommand );
-    const NodeID nodeID = command.get< NodeID >();
+    const NodeID& nodeID = command.get< NodeID >();
     const uint32_t masterInstanceID = command.get< uint32_t >();
     const uint32_t cmd = command.getCommand();
 
@@ -976,10 +1170,11 @@ bool ObjectStore::_cmdInstance( ICommand& inCommand )
     command.setType( COMMANDTYPE_OBJECT );
     command.setCommand( CMD_OBJECT_INSTANCE );
 
-    if( _instanceCache )
+    const uint128_t& version = command.getVersion();
+    if( _instanceCache && version.high() == 0 )
     {
-        const ObjectVersion rev( command.getObjectID(), command.getVersion( ));
-#ifndef CO_AGGRESSIVE_CACHING // Issue #82:
+        const ObjectVersion rev( command.getObjectID(), version );
+#ifndef CO_AGGRESSIVE_CACHING // Issue Equalizer#82:
         if( cmd != CMD_NODE_OBJECT_INSTANCE_PUSH )
 #endif
             _instanceCache->add( rev, masterInstanceID, command, 0 );
@@ -1009,6 +1204,20 @@ bool ObjectStore::_cmdInstance( ICommand& inCommand )
         LBASSERT( command.getInstanceID() == CO_INSTANCE_NONE );
         _pushData.addDataCommand( command.getObjectID(), command );
         return true;
+
+      case CMD_NODE_OBJECT_INSTANCE_SYNC:
+      {
+        if( nodeID != _localNode->getNodeID( )) // not for me
+            return true;
+
+        void* data = _localNode->getRequestData( command.getInstanceID( ));
+        LBASSERT( command.getInstanceID() != CO_INSTANCE_NONE );
+        LBASSERTINFO( data, this );
+
+        ObjectDataIStream* is = LBSAFECAST( ObjectDataIStream*, data );
+        is->addDataCommand( command );
+        return true;
+      }
 
       default:
         LBUNREACHABLE;

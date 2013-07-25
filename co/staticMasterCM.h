@@ -56,7 +56,7 @@ namespace co
         uint32_t getMasterInstanceID() const override
             { LBDONTCALL; return CO_INSTANCE_INVALID; }
 
-        void addSlave( MasterCMCommand command ) override
+        void addSlave( const MasterCMCommand& command ) override
             { ObjectCM::_addSlave( command, VERSION_FIRST ); }
         void removeSlaves( NodePtr ) override { /* NOP */}
     };

@@ -149,10 +149,6 @@ typedef std::vector< ObjectDataIStream* > ObjectDataIStreams;
 /** @endcond */
 
 #ifndef EQ_2_0_API
-#define EQ_INSTANCE_MAX     CO_INSTANCE_MAX
-#define EQ_INSTANCE_NONE    CO_INSTANCE_NONE
-#define EQ_INSTANCE_INVALID CO_INSTANCE_INVALID
-#define EQ_INSTANCE_ALL     CO_INSTANCE_ALL
 namespace base
 {
 using namespace lunchbox;

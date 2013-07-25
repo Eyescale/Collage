@@ -36,8 +36,10 @@ namespace co
     {
     public:
         ObjectDataIStream();
-        ObjectDataIStream( const ObjectDataIStream& from );
+        ObjectDataIStream( const ObjectDataIStream& rhs );
         virtual ~ObjectDataIStream();
+
+        ObjectDataIStream& operator = ( const ObjectDataIStream& rhs );
 
         void addDataCommand( ObjectDataICommand command );
         size_t getDataSize() const;
@@ -48,8 +50,7 @@ namespace co
         void waitReady() const { _version.waitNE( VERSION_INVALID ); }
         bool isReady() const { return _version != VERSION_INVALID; }
 
-        size_t nRemainingBuffers() const override
-            { return _commands.size(); }
+        size_t nRemainingBuffers() const override { return _commands.size(); }
 
         void reset() override;
 
@@ -58,7 +59,7 @@ namespace co
 
     protected:
         bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
-                              const void** chunkData, uint64_t& size ) override;
+                            const void** chunkData, uint64_t& size ) override;
 
     private:
         typedef std::deque< ICommand > CommandDeque;

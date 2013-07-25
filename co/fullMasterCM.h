@@ -44,7 +44,8 @@ namespace co
         void init() override;
         uint128_t commit( const uint32_t incarnation ) override;
         void push( const uint128_t& groupID, const uint128_t& typeID,
-                           const Nodes& nodes ) override;
+                   const Nodes& nodes ) override;
+        void sendSync( const MasterCMCommand& command ) override;
 
         /** @name Versioning */
         //@{
@@ -65,9 +66,9 @@ namespace co
             uint32_t commitCount;
         };
 
-        void _initSlave( MasterCMCommand command,
-                                 const uint128_t& replyVersion,
-                                 bool replyUseCache ) override;
+        void _initSlave( const MasterCMCommand& command,
+                         const uint128_t& replyVersion,
+                         bool replyUseCache ) override;
 
         InstanceData* _newInstanceData();
         void _addInstanceData( InstanceData* data );

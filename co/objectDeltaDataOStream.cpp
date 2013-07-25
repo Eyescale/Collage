@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder  <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *

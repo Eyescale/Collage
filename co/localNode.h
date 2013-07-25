@@ -149,7 +149,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         /**
          * Find and connect the node where the given object is registered.
          *
-         * This object is relatively expensive, since potentially all connected
+         * This method is relatively expensive, since potentially all connected
          * nodes are queried.
          *
          * @param id the identifier of the object to search for.
@@ -258,12 +258,15 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
         CO_API virtual bool mapObjectSync( const uint32_t requestID );
 
         /**
-         * Synchronize the local object with the remote object.
+         * Synchronize the local object with a remote object.
          *
          * The object is synchronized to the newest version of the first
          * attached object on the given master node matching the
-         * instanceID. When CO_INSTANCE_ALL is given, the first instance is
-         * used.
+         * instanceID. When no master node is given, connectObjectMaster() is
+         * used to find the master node. When CO_INSTANCE_ALL is given, the
+         * first instance is used. Before a successful return,
+         * applyInstanceData() is called on the calling thread to synchronize
+         * the given object.
          *
          * @param object The local object instance to synchronize.
          * @param master The node where the synchronizing object is attached.
@@ -276,7 +279,7 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
          */
         CO_API Futureb syncObject( Object* object, NodePtr master,
                                    const UUID& id,
-                                   const int32_t instanceID = CO_INSTANCE_ALL );
+                                   const uint32_t instanceID=CO_INSTANCE_ALL );
         /**
          * Unmap a mapped object.
          *

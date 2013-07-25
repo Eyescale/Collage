@@ -45,7 +45,7 @@ namespace detail { class ICommand; }
     public:
         CO_API ICommand(); //!< @internal
         CO_API ICommand( LocalNodePtr local, NodePtr remote,
-                        ConstBufferPtr buffer, const bool swap ); //!< @internal
+                         ConstBufferPtr buffer, const bool swap ); //!<@internal
         CO_API ICommand( const ICommand& rhs ); //!< @internal
 
         CO_API virtual ~ICommand(); //!< @internal

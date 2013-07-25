@@ -61,6 +61,13 @@ public:
                        const Nodes& nodes );
 
     /**
+     * Synchronize an instance to the managed object.
+     *
+     * @param command the command initiating the sync.
+     */
+    virtual void sendSync( const MasterCMCommand& command );
+
+    /**
      * Commit a new version.
      *
      * @param incarnation the commit incarnation for auto obsoletion.
@@ -117,7 +124,7 @@ public:
      *
      * @param command the subscribe command initiating the add.
      */
-    virtual void addSlave( MasterCMCommand command ) = 0;
+    virtual void addSlave( const MasterCMCommand& command ) = 0;
 
     /**
      * Remove a subscribed slave.
@@ -165,8 +172,8 @@ protected:
     static lunchbox::a_int32_t _miss;
 #endif
 
-    void _addSlave( MasterCMCommand command, const uint128_t& version );
-    virtual void _initSlave( MasterCMCommand command,
+    void _addSlave( const MasterCMCommand& command, const uint128_t& version );
+    virtual void _initSlave( const MasterCMCommand& command,
                              const uint128_t& replyVersion,
                              bool replyUseCache );
     void _sendMapSuccess( const MasterCMCommand& command,

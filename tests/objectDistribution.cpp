@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -138,12 +138,14 @@ int main( int argc, char **argv )
         object.push( 42, i, nodes );
 
         monitor.waitEQ( type );
+        TEST( server->mapObject( server->object, object.getID(),
+                                 co::VERSION_NONE ));
         TEST( object.nSync == 0 );
         TEST( server->object->nSync == 1 );
 
-        co::Futureb syncOp = server->syncObject( server->object, client,
-                                                 object.getID( ));
-        TEST( syncOp.wait( ));
+        TESTINFO( client->syncObject( server->object, serverProxy,
+                                      object.getID( )),
+                  "type " << type );
         TEST( object.nSync == 0 );
         TEST( server->object->nSync == 2 );
 

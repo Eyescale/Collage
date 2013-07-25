@@ -50,7 +50,7 @@ namespace co
         uint32_t getMasterInstanceID() const override
             { return CO_INSTANCE_INVALID; }
 
-        void addSlave( MasterCMCommand command ) override { LBDONTCALL; }
+        void addSlave( const MasterCMCommand& command ) override { LBDONTCALL; }
         void removeSlaves( NodePtr ) override {}
 
         void applyMapData( const uint128_t& version ) override;

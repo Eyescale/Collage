@@ -31,11 +31,21 @@ ObjectDataIStream::ObjectDataIStream()
     _reset();
 }
 
-ObjectDataIStream::ObjectDataIStream( const ObjectDataIStream& from )
-        : DataIStream( from )
-        , _commands( from._commands )
-        , _version( from._version )
+ObjectDataIStream::ObjectDataIStream( const ObjectDataIStream& rhs )
+    : DataIStream( rhs )
 {
+    *this = rhs;
+}
+
+ObjectDataIStream& ObjectDataIStream::operator = ( const ObjectDataIStream& rhs)
+{
+    if( this != &rhs )
+    {
+        DataIStream::operator = ( rhs );
+        _commands = rhs._commands;
+        _version = rhs._version;
+    }
+    return *this;
 }
 
 ObjectDataIStream::~ObjectDataIStream()
