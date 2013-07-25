@@ -113,7 +113,6 @@ namespace detail { class ICommand; }
         //@{
         CO_API size_t nRemainingBuffers() const override;
         CO_API uint128_t getVersion() const override;
-        CO_API NodePtr getMaster() override;
         CO_API bool getNextBuffer( uint32_t&, uint32_t&, const void**,
                                            uint64_t& ) override;
         //@}

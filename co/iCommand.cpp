@@ -167,11 +167,6 @@ uint128_t ICommand::getVersion() const
     return VERSION_NONE;
 }
 
-NodePtr ICommand::getMaster()
-{
-    return getNode();
-}
-
 bool ICommand::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
                              const void** chunkData, uint64_t& size )
 {
