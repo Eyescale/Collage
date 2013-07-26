@@ -165,7 +165,9 @@ public:
         const int32_t tgt = _maxFree >> _targetShift;
         const int32_t target = LB_MAX( tgt, _minFree );
         LBASSERT( target > 0 );
-        for( Data::iterator i = _cache.begin(); i != _cache.end(); )
+
+        Data::iterator i = _cache.begin();
+        while( i != _cache.end( ))
         {
             const co::Buffer* cmd = *i;
             if( cmd->isFree( ))
@@ -186,7 +188,7 @@ public:
 
         const int32_t num = int32_t( _cache.size() >> _maxFreeShift );
         _maxFree = LB_MAX( _minFree, num );
-        _position = _cache.begin();
+        _position = (i == _cache.end( )) ? _cache.begin() : i;
     }
 
 private:
