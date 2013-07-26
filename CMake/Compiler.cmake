@@ -33,7 +33,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
   endif()
   if(CMAKE_COMPILER_IS_CLANG)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments -ferror-limit=5")
   endif()
 
   if(NOT GCC_COMPILER_VERSION VERSION_LESS 4.3)
@@ -55,12 +55,20 @@ elseif(CMAKE_COMPILER_IS_INTEL)
 
 # xlc/BlueGene/PPC
 elseif(CMAKE_COMPILER_IS_XLCXX)
-  # Fix to link dynamically. On the next pass should add an if
-  # statement: if shared ...
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -qstrict -qarch=qp -q64 -qnostaticlink -qnostaticlink=libgcc")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qstrict -qarch=qp -q64 -qnostaticlink -qnostaticlink=libgcc")
-
-  # adding -qnohot to avoid higher order optimization loops
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS} -qnohot")
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS} -qnohot")
+  # default: Maintain code semantics Fix to link dynamically. On the
+  # next pass should add an if statement: 'if shared ...'.  Overriding
+  # default release flags since the default were '-O -NDEBUG'. By
+  # default, set flags for backend since this is the most common use
+  # case
+  OPTION(XLC_BACKEND "Compile for BlueGene compute nodes using XLC compilers"
+    ON)
+  if(XLC_BACKEND)
+    set(CMAKE_CXX_FLAGS_RELEASE
+      "-O3 -qtune=qp -qarch=qp -q64 -qstrict -qnohot -qnostaticlink -DNDEBUG")
+    set(CMAKE_C_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+  else()
+    set(CMAKE_CXX_FLAGS_RELEASE
+      "-O3 -q64 -qstrict -qnostaticlink -qnostaticlink=libgcc -DNDEBUG")
+    set(CMAKE_C_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+  endif()
 endif()
