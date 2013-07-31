@@ -942,6 +942,12 @@ NodePtr LocalNode::_connectFromZeroconf( const NodeID& nodeID )
         in >> type;
 
         NodePtr node = createNode( type );
+        if( !node )
+        {
+            LBINFO << "Can't create node of type " << type << std::endl;
+            continue;
+        }
+
         const std::string& numStr = _impl->service->get( instance,
                                                          "co_numPorts" );
         uint32_t num = 0;
@@ -1610,6 +1616,19 @@ bool LocalNode::_cmdConnect( ICommand& command )
     // create and add connected node
     if( !peer )
         peer = createNode( nodeType );
+    if( !peer )
+    {
+        LBINFO << "Can't create node of type " << nodeType << ", disconnecting"
+               << std::endl;
+
+        // refuse connection
+        OCommand( Connections( 1, connection ), cmd ) << NodeID() << requestID;
+
+        // NOTE: There is no close() here. The reply command above has to be
+        // received by the peer first, before closing the connection.
+        _removeConnection( connection );
+        return true;
+    }
 
     if( !peer->deserialize( data ))
         LBWARN << "Error during node initialization" << std::endl;
@@ -1673,8 +1692,8 @@ bool LocalNode::_cmdConnectReply( ICommand& command )
     {
         LBINFO << "Closing simultaneous connection from " << peer << " on "
                << connection << std::endl;
-        _removeConnection( connection );
 
+        _removeConnection( connection );
         _closeNode( peer );
         serveRequest( requestID, false );
         return true;
@@ -1691,6 +1710,13 @@ bool LocalNode::_cmdConnectReply( ICommand& command )
         }
         else
             peer = createNode( nodeType );
+    }
+    if( !peer )
+    {
+        LBINFO << "Can't create node of type " << nodeType << ", disconnecting"
+               << std::endl;
+        _removeConnection( connection );
+        return true;
     }
 
     LBASSERTINFO( peer->getType() == nodeType,
@@ -1862,13 +1888,18 @@ bool LocalNode::_cmdGetNodeDataReply( ICommand& command )
 
     // new node: create and add unconnected node
     NodePtr node = createNode( nodeType );
-    LBASSERT( node.isValid( ));
+    if( node )
+    {
+        LBASSERT( node.isValid( ));
 
-    if( !node->deserialize( nodeData ))
-        LBWARN << "Failed to initialize node data" << std::endl;
-    LBASSERT( nodeData.empty( ));
+        if( !node->deserialize( nodeData ))
+            LBWARN << "Failed to initialize node data" << std::endl;
+        LBASSERT( nodeData.empty( ));
+        node->ref( this );
+    }
+    else
+        LBINFO << "Can't create node of type " << nodeType << std::endl;
 
-    node->ref( this );
     serveRequest( requestID, node.get( ));
     return true;
 }
