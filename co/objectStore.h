@@ -33,215 +33,216 @@
 
 namespace co
 {
-    class InstanceCache;
+class InstanceCache;
 
-    /** An object store manages Object mapping for a LocalNode. */
-    class ObjectStore : public Dispatcher
-    {
-    public:
-        /** Construct a new ObjectStore. */
-        ObjectStore( LocalNode* localNode );
+/** An object store manages Object mapping for a LocalNode. */
+class ObjectStore : public Dispatcher
+{
+public:
+    /** Construct a new ObjectStore. */
+    ObjectStore( LocalNode* localNode, a_ssize_t* counters );
 
-        /** Destruct this ObjectStore. */
-        virtual ~ObjectStore();
+    /** Destruct this ObjectStore. */
+    virtual ~ObjectStore();
 
-        /** Remove all objects and clear all caches. */
-        void clear();
+    /** Remove all objects and clear all caches. */
+    void clear();
 
-        /**
-         * Return the master node id for an identifier.
-         *
-         * @param id the identifier.
-         * @return the master node, or 0 if no master node is
-         *         found for the identifier.
-         */
-        NodeID findMasterNodeID( const UUID& id );
+    /**
+     * Return the master node id for an identifier.
+     *
+     * @param id the identifier.
+     * @return the master node, or 0 if no master node is
+     *         found for the identifier.
+     */
+    NodeID findMasterNodeID( const UUID& id );
 
-        /** @name ICommand Dispatch */
-        //@{
-        /**
-         * Dispatches an object command to the registered command queue.
-         *
-         * Object commands are dispatched to the appropriate objects mapped on
-         * this session.
-         *
-         * @param command the command.
-         * @return true if the command was dispatched, false otherwise.
-         */
-        bool dispatchObjectCommand( ICommand& command );
-        //@}
+    /** @name ICommand Dispatch */
+    //@{
+    /**
+     * Dispatches an object command to the registered command queue.
+     *
+     * Object commands are dispatched to the appropriate objects mapped on
+     * this session.
+     *
+     * @param command the command.
+     * @return true if the command was dispatched, false otherwise.
+     */
+    bool dispatchObjectCommand( ICommand& command );
+    //@}
 
-        /** @name Object Registration */
-        //@{
-        /**
-         * Register a distributed object.
-         *
-         * Registering a distributed object assigns a session-unique identifier
-         * to this object, and makes this object the master version. The
-         * identifier is used to map slave instances of the object. Master
-         * versions of objects are typically writable and can commit new
-         * versions of the distributed object.
-         *
-         * @param object the object instance.
-         * @return true if the object was registered, false otherwise.
-         */
-        bool registerObject( Object* object );
+    /** @name Object Registration */
+    //@{
+    /**
+     * Register a distributed object.
+     *
+     * Registering a distributed object assigns a session-unique identifier
+     * to this object, and makes this object the master version. The
+     * identifier is used to map slave instances of the object. Master
+     * versions of objects are typically writable and can commit new
+     * versions of the distributed object.
+     *
+     * @param object the object instance.
+     * @return true if the object was registered, false otherwise.
+     */
+    bool registerObject( Object* object );
 
-        /**
-         * Deregister a distributed object.
-         *
-         * @param object the object instance.
-         */
-        virtual void deregisterObject( Object* object );
+    /**
+     * Deregister a distributed object.
+     *
+     * @param object the object instance.
+     */
+    virtual void deregisterObject( Object* object );
 
-        /** Start mapping a distributed object. */
-        uint32_t mapObjectNB( Object* object, const UUID& id,
-                              const uint128_t& version, NodePtr master );
+    /** Start mapping a distributed object. */
+    uint32_t mapObjectNB( Object* object, const UUID& id,
+                          const uint128_t& version, NodePtr master );
 
-        /** Finalize the mapping of a distributed object. */
-        bool mapObjectSync( const uint32_t requestID );
+    /** Finalize the mapping of a distributed object. */
+    bool mapObjectSync( const uint32_t requestID );
 
-        /** Start synchronizing an object. */
-        uint32_t syncObjectNB( Object* object, NodePtr master, const UUID& id,
-                               const uint32_t instanceID );
-
-        /** Finalize the synchronizatin of a distributed object. */
-        bool syncObjectSync( const uint32_t requestID, Object* object );
-
-        /**
-         * Unmap a mapped object.
-         *
-         * @param object the mapped object.
-         */
-        void unmapObject( Object* object );
-
-        /**
-         * Attach an object to an identifier.
-         *
-         * Attaching an object to an identifier enables it to receive object
-         * commands though the local node. It does not establish any data
-         * mapping to other object instances with the same identifier.
-         *
-         * @param object the object.
-         * @param id the object identifier.
-         * @param instanceID the node-local instance identifier, or
-         *               CO_INSTANCE_INVALID if this method should generate one.
-         */
-        void attachObject( Object* object, const UUID& id,
+    /** Start synchronizing an object. */
+    uint32_t syncObjectNB( Object* object, NodePtr master, const UUID& id,
                            const uint32_t instanceID );
 
-        /**
-         * Detach an object.
-         *
-         * @param object the attached object.
-         */
-        void detachObject( Object* object );
+    /** Finalize the synchronizatin of a distributed object. */
+    bool syncObjectSync( const uint32_t requestID, Object* object );
 
-        /** @internal swap the existing object by a new object and keep
-                      the cm, id and instanceID. */
-        void swapObject( Object* oldObject, Object* newObject );
-        //@}
+    /**
+     * Unmap a mapped object.
+     *
+     * @param object the mapped object.
+     */
+    void unmapObject( Object* object );
 
-        /** @name Instance Cache. */
-        //@{
-        /** Expire all data older than age from the cache. */
-        void expireInstanceData( const int64_t age );
+    /**
+     * Attach an object to an identifier.
+     *
+     * Attaching an object to an identifier enables it to receive object
+     * commands though the local node. It does not establish any data
+     * mapping to other object instances with the same identifier.
+     *
+     * @param object the object.
+     * @param id the object identifier.
+     * @param instanceID the node-local instance identifier, or
+     *               CO_INSTANCE_INVALID if this method should generate one.
+     */
+    void attachObject( Object* object, const UUID& id,
+                       const uint32_t instanceID );
 
-        /** Remove all entries of the node from the cache. */
-        void removeInstanceData( const NodeID& nodeID );
+    /**
+     * Detach an object.
+     *
+     * @param object the attached object.
+     */
+    void detachObject( Object* object );
 
-        /** Disable the instance cache of an stopped local node. */
-        void disableInstanceCache();
+    /** @internal swap the existing object by a new object and keep
+        the cm, id and instanceID. */
+    void swapObject( Object* oldObject, Object* newObject );
+    //@}
 
-        /** Enable sending data of newly registered objects when idle. */
-        void enableSendOnRegister();
+    /** @name Instance Cache. */
+    //@{
+    /** Expire all data older than age from the cache. */
+    void expireInstanceData( const int64_t age );
 
-        /**
-         * Disable sending data of newly registered objects when idle.
-         *
-         * Enable and disable are counted, that is, the last disable on a
-         * matched series of enable/disable will be effective. When
-         * send-on-register gets deactivated, the associated queue is cleared
-         * and all data send on multicast connections is finished.
-         */
-        void disableSendOnRegister();
+    /** Remove all entries of the node from the cache. */
+    void removeInstanceData( const NodeID& nodeID );
 
-        /**
-         * @internal
-         * Notification - no pending commands for the command thread.
-         * @return true if more work is pending.
-         */
-        virtual bool notifyCommandThreadIdle();
+    /** Disable the instance cache of an stopped local node. */
+    void disableInstanceCache();
 
-        /**
-         * @internal
-         * Remove a slave node in all objects
-         */
-        void removeNode( NodePtr node );
-        //@}
+    /** Enable sending data of newly registered objects when idle. */
+    void enableSendOnRegister();
 
-    private:
-        /** The local node managing the object store. */
-        LocalNode* const _localNode;
+    /**
+     * Disable sending data of newly registered objects when idle.
+     *
+     * Enable and disable are counted, that is, the last disable on a
+     * matched series of enable/disable will be effective. When
+     * send-on-register gets deactivated, the associated queue is cleared
+     * and all data send on multicast connections is finished.
+     */
+    void disableSendOnRegister();
 
-        /** The identifiers for node-local instance identifiers. */
-        lunchbox::a_int32_t _instanceIDs;
+    /**
+     * @internal
+     * Notification - no pending commands for the command thread.
+     * @return true if more work is pending.
+     */
+    virtual bool notifyCommandThreadIdle();
 
-        /** enableSendOnRegister() invocations. */
-        lunchbox::a_int32_t _sendOnRegister;
+    /**
+     * @internal
+     * Remove a slave node in all objects
+     */
+    void removeNode( NodePtr node );
+    //@}
 
-        typedef stde::hash_map< lunchbox::uint128_t, Objects > ObjectsHash;
-        typedef ObjectsHash::const_iterator ObjectsHashCIter;
+private:
+    /** The local node managing the object store. */
+    LocalNode* const _localNode;
 
-        /** All registered and mapped objects.
-         *   - locked writes (only in receiver thread)
-         *   - unlocked reads in receiver thread
-         *   - locked reads in all other threads
-         */
-        lunchbox::Lockable< ObjectsHash, lunchbox::SpinLock > _objects;
+    /** The identifiers for node-local instance identifiers. */
+    lunchbox::a_int32_t _instanceIDs;
 
-        struct SendQueueItem
-        {
-            int64_t age;
-            Object* object;
-        };
+    /** enableSendOnRegister() invocations. */
+    lunchbox::a_int32_t _sendOnRegister;
 
-        typedef std::deque< SendQueueItem > SendQueue;
+    typedef stde::hash_map< lunchbox::uint128_t, Objects > ObjectsHash;
+    typedef ObjectsHash::const_iterator ObjectsHashCIter;
 
-        SendQueue _sendQueue;          //!< Object data to broadcast when idle
-        InstanceCache* _instanceCache; //!< cached object mapping data
-        DataIStreamQueue _pushData;    //!< Object::push() queue
+    /** All registered and mapped objects.
+     *   - locked writes (only in receiver thread)
+     *   - unlocked reads in receiver thread
+     *   - locked reads in all other threads
+     */
+    lunchbox::Lockable< ObjectsHash, lunchbox::SpinLock > _objects;
 
-        void _attachObject( Object* object, const UUID& id,
-                            const uint32_t instanceID );
-        void _detachObject( Object* object );
-
-        bool _checkInstanceCache( const uint128_t& id, uint128_t& from,
-                                  uint128_t& to, uint32_t& instanceID );
-
-        /** The command handler functions. */
-        bool _cmdFindMasterNodeID( ICommand& command );
-        bool _cmdFindMasterNodeIDReply( ICommand& command );
-        bool _cmdAttachObject( ICommand& command );
-        bool _cmdDetachObject( ICommand& command );
-        bool _cmdMapObject( ICommand& command );
-        bool _cmdMapObjectSuccess( ICommand& command );
-        bool _cmdMapObjectReply( ICommand& command );
-        bool _cmdSyncObject( ICommand& command );
-        bool _cmdSyncObjectReply( ICommand& command );
-        bool _cmdUnmapObject( ICommand& command );
-        bool _cmdUnsubscribeObject( ICommand& command );
-        bool _cmdInstance( ICommand& command );
-        bool _cmdRegisterObject( ICommand& command );
-        bool _cmdDeregisterObject( ICommand& command );
-        bool _cmdDisableSendOnRegister( ICommand& command );
-        bool _cmdRemoveNode( ICommand& command );
-        bool _cmdObjectPush( ICommand& command );
-
-        LB_TS_VAR( _receiverThread );
-        LB_TS_VAR( _commandThread );
+    struct SendQueueItem
+    {
+        int64_t age;
+        Object* object;
     };
 
-    std::ostream& operator << ( std::ostream& os, ObjectStore* objectStore );
+    typedef std::deque< SendQueueItem > SendQueue;
+
+    SendQueue _sendQueue;          //!< Object data to broadcast when idle
+    InstanceCache* _instanceCache; //!< cached object mapping data
+    DataIStreamQueue _pushData;    //!< Object::push() queue
+    a_ssize_t* const _counters; // LocalNode performance counters
+
+    void _attachObject( Object* object, const UUID& id,
+                        const uint32_t instanceID );
+    void _detachObject( Object* object );
+
+    bool _checkInstanceCache( const uint128_t& id, uint128_t& from,
+                              uint128_t& to, uint32_t& instanceID );
+
+    /** The command handler functions. */
+    bool _cmdFindMasterNodeID( ICommand& command );
+    bool _cmdFindMasterNodeIDReply( ICommand& command );
+    bool _cmdAttachObject( ICommand& command );
+    bool _cmdDetachObject( ICommand& command );
+    bool _cmdMapObject( ICommand& command );
+    bool _cmdMapObjectSuccess( ICommand& command );
+    bool _cmdMapObjectReply( ICommand& command );
+    bool _cmdSyncObject( ICommand& command );
+    bool _cmdSyncObjectReply( ICommand& command );
+    bool _cmdUnmapObject( ICommand& command );
+    bool _cmdUnsubscribeObject( ICommand& command );
+    bool _cmdInstance( ICommand& command );
+    bool _cmdRegisterObject( ICommand& command );
+    bool _cmdDeregisterObject( ICommand& command );
+    bool _cmdDisableSendOnRegister( ICommand& command );
+    bool _cmdRemoveNode( ICommand& command );
+    bool _cmdObjectPush( ICommand& command );
+
+    LB_TS_VAR( _receiverThread );
+    LB_TS_VAR( _commandThread );
+};
+
+std::ostream& operator << ( std::ostream& os, ObjectStore* objectStore );
 }
 #endif // CO_OBJECTSTORE_H

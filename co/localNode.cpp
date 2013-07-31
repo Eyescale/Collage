@@ -106,34 +106,33 @@ class LocalNode
 {
 public:
     LocalNode()
-            : smallBuffers( 200 )
-            , bigBuffers( 20 )
-            , sendToken( true )
-            , lastSendToken( 0 )
-            , objectStore( 0 )
-            , receiverThread( 0 )
-            , commandThread( 0 )
-            , service( "_collage._tcp" )
-        {
-        }
+        : smallBuffers( 200 )
+        , bigBuffers( 20 )
+        , sendToken( true )
+        , lastSendToken( 0 )
+        , objectStore( 0 )
+        , receiverThread( 0 )
+        , commandThread( 0 )
+        , service( "_collage._tcp" )
+    {}
 
     ~LocalNode()
-        {
-            LBASSERT( incoming.isEmpty( ));
-            LBASSERT( connectionNodes.empty( ));
-            LBASSERT( pendingCommands.empty( ));
-            LBASSERT( nodes->empty( ));
+    {
+        LBASSERT( incoming.isEmpty( ));
+        LBASSERT( connectionNodes.empty( ));
+        LBASSERT( pendingCommands.empty( ));
+        LBASSERT( nodes->empty( ));
 
-            delete objectStore;
-            objectStore = 0;
-            LBASSERT( !commandThread->isRunning( ));
-            delete commandThread;
-            commandThread = 0;
+        delete objectStore;
+        objectStore = 0;
+        LBASSERT( !commandThread->isRunning( ));
+        delete commandThread;
+        commandThread = 0;
 
-            LBASSERT( !receiverThread->isRunning( ));
-            delete receiverThread;
-            receiverThread = 0;
-        }
+        LBASSERT( !receiverThread->isRunning( ));
+        delete receiverThread;
+        receiverThread = 0;
+    }
 
     bool inReceiverThread() const { return receiverThread->isCurrent(); }
 
@@ -178,6 +177,9 @@ public:
     CommandThread* commandThread;
 
     lunchbox::Lockable< lunchbox::Servus > service;
+
+    // Performance counters:
+    a_ssize_t counters[ co::LocalNode::COUNTER_ALL ];
 };
 }
 
@@ -187,7 +189,7 @@ LocalNode::LocalNode( const uint32_t type )
 {
     _impl->receiverThread = new detail::ReceiverThread( this );
     _impl->commandThread  = new detail::CommandThread( this );
-    _impl->objectStore = new ObjectStore( this );
+    _impl->objectStore = new ObjectStore( this, _impl->counters );
 
     CommandQueue* queue = getCommandThreadQueue();
     registerCommand( CMD_NODE_CONNECT,
@@ -1120,6 +1122,11 @@ bool LocalNode::inCommandThread() const
 int64_t LocalNode::getTime64() const
 {
     return _impl->clock.getTime64();
+}
+
+ssize_t LocalNode::getCounter( const Counter counter ) const
+{
+    return _impl->counters[ counter ];
 }
 
 void LocalNode::flushCommands()

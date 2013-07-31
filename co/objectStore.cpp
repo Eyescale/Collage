@@ -48,11 +48,12 @@ namespace co
 {
 typedef CommandFunc<ObjectStore> CmdFunc;
 
-ObjectStore::ObjectStore( LocalNode* localNode )
+ObjectStore::ObjectStore( LocalNode* localNode, a_ssize_t* counters )
         : _localNode( localNode )
         , _instanceIDs( -0x7FFFFFFF )
         , _instanceCache( new InstanceCache( Global::getIAttribute(
                               Global::IATTR_INSTANCE_CACHE_SIZE ) * LB_1MB ) )
+        , _counters( counters )
 {
     LBASSERT( localNode );
     CommandQueue* queue = localNode->getCommandThreadQueue();
@@ -262,8 +263,10 @@ void ObjectStore::_attachObject( Object* object, const UUID& id,
         lunchbox::ScopedFastWrite mutex( _objects );
         Objects& objects = _objects.data[ id ];
         LBASSERTINFO( !object->isMaster() || objects.empty(),
-            "Attaching master " << *object << ", " << objects.size() <<
-            " attached objects with same ID, first is: " << *objects[0] );
+                      "Attaching master " << *object << ", " <<
+                      objects.size() << " attached objects with same ID, " <<
+                      "first is " << ( objects[0]->isMaster() ? "master " :
+                                       "slave " ) << *objects[0] );
         objects.push_back( object );
     }
 
@@ -571,7 +574,7 @@ void ObjectStore::unmapObject( Object* object )
 bool ObjectStore::registerObject( Object* object )
 {
     LBASSERT( object );
-    LBASSERT( !object->isAttached() );
+    LBASSERT( !object->isAttached( ));
 
     const UUID& id = object->getID( );
     LBASSERTINFO( id.isGenerated(), id );
@@ -882,6 +885,8 @@ bool ObjectStore::_cmdMapObject( ICommand& cmd )
             << node->getNodeID() << id << command.getRequestedVersion()
             << command.getRequestID() << false << command.useCache() << false;
     }
+
+    ++_counters[ LocalNode::COUNTER_MAP_OBJECT_REMOTE ];
     return true;
 }
 

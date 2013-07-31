@@ -74,6 +74,7 @@ using lunchbox::Strings;
 using lunchbox::StringsCIter;
 using lunchbox::UUID;
 using lunchbox::uint128_t;
+using lunchbox::a_ssize_t;
 
 typedef UUID NodeID; //!< A unique identifier for nodes.
 

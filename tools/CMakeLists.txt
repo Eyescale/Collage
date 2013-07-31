@@ -1,4 +1,5 @@
 # Copyright (c) 2010 Daniel Pfeifer <daniel@pfeifer-mail.de>
+#               2013 Stefan.Eilemann@epfl.ch
 
 include(CMakeParseArguments)
 include(PurpleInstallPDB)
@@ -17,3 +18,4 @@ endmacro(CO_ADD_TOOL NAME)
 
 co_add_tool(coNetperf SOURCES perf/netperf.cpp)
 co_add_tool(coNodeperf SOURCES perf/nodeperf.cpp)
+co_add_tool(coObjectperf SOURCES perf/objectperf.cpp)

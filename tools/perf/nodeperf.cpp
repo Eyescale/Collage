@@ -16,7 +16,7 @@
  */
 
 // Tests network throughput between co::Nodes
-// Usage: see 'nodePerf -h'
+// Usage: see 'coNodeperf -h'
 
 #include <co/co.h>
 #include <tclap/CmdLine.h>

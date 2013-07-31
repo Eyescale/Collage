@@ -16,7 +16,7 @@
  */
 
 // Tests network throughput
-// Usage: see 'netPerf -h'
+// Usage: see 'coNetperf -h'
 
 #define LB_RELEASE_ASSERT
 
@@ -447,4 +447,3 @@ int main( int argc, char **argv )
     LBCHECK( co::exit( ));
     return EXIT_SUCCESS;
 }
-
