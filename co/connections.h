@@ -40,9 +40,9 @@ namespace co
  * @param nodes the nodes to send to.
  * @param result the connection vector receiving new connections.
  */
-inline void gatherConnections( const Nodes& nodes, Connections& result )
+inline Connections gatherConnections( const Nodes& nodes )
 {
-    LBASSERT( result.empty( ));
+    Connections result;
     typedef stde::hash_map< ConstConnectionDescriptionPtr, NodePtr,
                            lunchbox::hashRefPtr< const ConnectionDescription > >
         MCNodes;
@@ -89,6 +89,7 @@ inline void gatherConnections( const Nodes& nodes, Connections& result )
         if( connection.isValid( ))
             result.push_back( connection );
     }
+    return result;
 }
 
 }

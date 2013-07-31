@@ -238,7 +238,7 @@ void DataOStream::_enable()
 
 void DataOStream::_setupConnections( const Nodes& receivers )
 {
-    gatherConnections( receivers, _impl->connections );
+    _impl->connections = gatherConnections( receivers );
 }
 
 void DataOStream::_setupConnections( const Connections& connections )
