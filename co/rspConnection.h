@@ -163,7 +163,7 @@ private:
         uint16_t end;
     };
 
-#       define EQ_RSP_MAX_NACKS 300 // fits in a single IP frame
+#       define CO_RSP_MAX_NACKS 300 // fits in a single IP frame
     /** Request resend of lost packets */
     struct DatagramNack
     {
@@ -179,7 +179,7 @@ private:
         uint16_t       readerID;
         uint16_t       writerID;
         uint16_t       count;       //!< number of NACK requests used
-        Nack           nacks[ EQ_RSP_MAX_NACKS ];
+        Nack           nacks[ CO_RSP_MAX_NACKS ];
 
         void byteswap()
             {

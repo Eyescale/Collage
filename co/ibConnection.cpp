@@ -20,8 +20,8 @@
 
 #include "ibConnection.h"
 
-#ifdef EQ_INFINIBAND
-#define EQ_NUMCONN_IB 32
+#ifdef CO_INFINIBAND
+#define CO_NUMCONN_IB 32
 #pragma comment ( lib, "ibal.lib" )
 
 
@@ -37,10 +37,10 @@ IBConnection::IBConnection( )
     _description->type = CONNECTIONTYPE_IB;
     _description->bandwidth = 819200;
 
-    _completionQueues.resize( EQ_NUMCONN_IB );
-    _interfaces.resize( EQ_NUMCONN_IB );
+    _completionQueues.resize( CO_NUMCONN_IB );
+    _interfaces.resize( CO_NUMCONN_IB );
 
-    for ( int i = 0; i < EQ_NUMCONN_IB; i++ )
+    for ( int i = 0; i < CO_NUMCONN_IB; i++ )
     {
         _interfaces[i] = new IBInterface();
         _completionQueues[i] = new IBCompletionQueue();
@@ -54,7 +54,7 @@ IBConnection::~IBConnection()
 {
     _close();
 
-    for ( int i = 0; i < EQ_NUMCONN_IB; i++ )
+    for ( int i = 0; i < CO_NUMCONN_IB; i++ )
     {
         if ( _interfaces[i] )
             delete _interfaces[i];
@@ -115,7 +115,7 @@ void IBConnection::_close()
         _socketConnection->close();
     _socketConnection = 0;
 
-    for ( int i = 0; i < EQ_NUMCONN_IB; i++ )
+    for ( int i = 0; i < CO_NUMCONN_IB; i++ )
     {
         _interfaces[i]->close();
         _completionQueues[i]->close();
@@ -183,7 +183,7 @@ bool IBConnection::_preRegister( )
     }
     _readEvent = CreateEvent( 0, true, false, 0 );
 
-    for ( int i = 0; i < EQ_NUMCONN_IB; i++ )
+    for ( int i = 0; i < CO_NUMCONN_IB; i++ )
     {
         if( !_completionQueues[i]->create( this, &_adapter,
              _interfaces[i]->getNumberBlockMemory() ))
@@ -206,7 +206,7 @@ bool IBConnection::_preRegister( )
 }
 bool IBConnection::_establish( bool isServer )
 {
-    for ( int i = 0; i < EQ_NUMCONN_IB; i++ )
+    for ( int i = 0; i < CO_NUMCONN_IB; i++ )
         if ( !_establish( isServer, i ))
         {
             _socketConnection->close();
@@ -359,12 +359,12 @@ void IBConnection::removeEvent()
 
 void IBConnection::incReadInterface()
 {
-    numRead = ( numRead + 1 ) % EQ_NUMCONN_IB;
+    numRead = ( numRead + 1 ) % CO_NUMCONN_IB;
 }
 
 void IBConnection::incWriteInterface()
 {
-    numWrite = ( numWrite + 1 ) % EQ_NUMCONN_IB;
+    numWrite = ( numWrite + 1 ) % CO_NUMCONN_IB;
 }
 
 //----------------------------------------------------------------------
@@ -397,4 +397,4 @@ int64_t IBConnection::write( const void* buffer, const uint64_t bytes)
 }
 
 }
-#endif //EQ_INFINIBAND
+#endif //CO_INFINIBAND

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2010-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -38,7 +38,7 @@ static co::ConnectionType types[] =
 #ifdef WIN32
     co::CONNECTIONTYPE_NAMEDPIPE,
 #endif
-#ifdef EQ_INFINIBAND
+#ifdef CO_INFINIBAND
     co::CONNECTIONTYPE_IB,
 #endif
     co::CONNECTIONTYPE_NONE // must be last

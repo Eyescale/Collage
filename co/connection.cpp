@@ -34,7 +34,7 @@
 
 #include <co/exception.h>
 
-#ifdef EQ_INFINIBAND
+#ifdef CO_INFINIBAND
 #  include "IBConnection.h"
 #endif
 #ifdef CO_USE_OFED
@@ -162,7 +162,7 @@ ConnectionPtr Connection::create( ConnectionDescriptionPtr description )
             break;
 #endif
 
-#ifdef EQ_INFINIBAND
+#ifdef CO_INFINIBAND
         case CONNECTIONTYPE_IB:
             connection = new IBConnection;
             break;

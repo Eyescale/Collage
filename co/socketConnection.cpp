@@ -39,7 +39,7 @@
 #  ifndef WSA_FLAG_SDP
 #    define WSA_FLAG_SDP 0x40
 #  endif
-#  define EQ_RECV_TIMEOUT 250 /*ms*/
+#  define CO_RECV_TIMEOUT 250 /*ms*/
 #else
 #  include <arpa/inet.h>
 #  include <netdb.h>
@@ -491,7 +491,7 @@ int64_t SocketConnection::readSync( void* buffer, const uint64_t bytes,
 
             case WSASYSCALLFAILURE:  // happens sometimes!?
             case WSA_IO_PENDING:
-                if( GetTickCount() - startTime > EQ_RECV_TIMEOUT ) // timeout
+                if( GetTickCount() - startTime > CO_RECV_TIMEOUT ) // timeout
                 {
                     LBWARN << "Error timeout " << std::endl;
                     return READ_ERROR;

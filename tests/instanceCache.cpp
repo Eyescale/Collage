@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2009-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -17,7 +17,7 @@
  */
 
 #ifndef NDEBUG
-#  define EQ_TEST_RUNTIME 600000 // 10min
+#  define CO_TEST_RUNTIME 600000 // 10min
 #endif
 
 #include <test.h>

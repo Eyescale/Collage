@@ -27,13 +27,13 @@
 #include "object.h"
 #include "objectDataIStream.h"
 
-//#define EQ_INSTRUMENT
+//#define CO_INSTRUMENT
 
 namespace co
 {
 namespace
 {
-#ifdef EQ_INSTRUMENT
+#ifdef CO_INSTRUMENT
 lunchbox::a_int32_t _bytesBuffered;
 #endif
 }
@@ -121,7 +121,7 @@ void FullMasterCM::_updateCommitCount( const uint32_t incarnation )
         if( data->commitCount <= _commitCount )
             break;
 
-#ifdef EQ_INSTRUMENT
+#ifdef CO_INSTRUMENT
         _bytesBuffered -= data->os.getSaveBuffer().getSize();
         LBINFO << _bytesBuffered << " bytes used" << std::endl;
 #endif
@@ -147,7 +147,7 @@ void FullMasterCM::_obsolete()
         if( data->commitCount >= (_commitCount - _nVersions))
             break;
 
-#ifdef EQ_INSTRUMENT
+#ifdef CO_INSTRUMENT
         _bytesBuffered -= data->os.getSaveBuffer().getSize();
         LBINFO << _bytesBuffered << " bytes used" << std::endl;
 #endif
@@ -191,7 +191,7 @@ void FullMasterCM::_initSlave( const MasterCMCommand& command,
     {
         if( minCachedVersion <= start && maxCachedVersion >= start )
         {
-#ifdef EQ_INSTRUMENT_MULTICAST
+#ifdef CO_INSTRUMENT_MULTICAST
             _hit += maxCachedVersion + 1 - start;
 #endif
             start = maxCachedVersion + 1;
@@ -199,7 +199,7 @@ void FullMasterCM::_initSlave( const MasterCMCommand& command,
         else if( maxCachedVersion == end )
         {
             end = LB_MAX( start, minCachedVersion - 1 );
-#ifdef EQ_INSTRUMENT_MULTICAST
+#ifdef CO_INSTRUMENT_MULTICAST
             _hit += _version - end;
 #endif
         }
@@ -236,7 +236,7 @@ void FullMasterCM::_initSlave( const MasterCMCommand& command,
         data->os.sendMapData( command.getRemoteNode(),
                               command.getInstanceID( ));
 
-#ifdef EQ_INSTRUMENT_MULTICAST
+#ifdef CO_INSTRUMENT_MULTICAST
         ++_miss;
 #endif
     }
@@ -249,7 +249,7 @@ void FullMasterCM::_initSlave( const MasterCMCommand& command,
     else
         _sendMapReply( command, replyVersion, true, replyUseCache, true );
 
-#ifdef EQ_INSTRUMENT_MULTICAST
+#ifdef CO_INSTRUMENT_MULTICAST
     if( _miss % 100 == 0 )
         LBINFO << "Cached " << _hit << "/" << _hit + _miss
                << " instance data transmissions" << std::endl;
@@ -311,7 +311,7 @@ void FullMasterCM::_addInstanceData( InstanceData* data )
     LBASSERT( data->os.getVersion() != VERSION_INVALID );
 
     _instanceDatas.push_back( data );
-#ifdef EQ_INSTRUMENT
+#ifdef CO_INSTRUMENT
     _bytesBuffered += data->os.getSaveBuffer().getSize();
     LBINFO << _bytesBuffered << " bytes used" << std::endl;
 #endif

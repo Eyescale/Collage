@@ -19,7 +19,7 @@
  */
 
 #include "ibCompletionQueue.h"
-#ifdef EQ_INFINIBAND
+#ifdef CO_INFINIBAND
 
 #include <eq/base/log.h>
 #include <eq/base/debug.h>
@@ -179,4 +179,4 @@ void IBCompletionQueue::resetEventRead()
     ResetEvent( getReadNotifier() );
 }
 }
-#endif //EQ_INFINIBAND
+#endif //CO_INFINIBAND

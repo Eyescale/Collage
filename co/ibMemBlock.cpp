@@ -18,7 +18,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 #include "ibMemBlock.h"
-#ifdef EQ_INFINIBAND
+#ifdef CO_INFINIBAND
 
 #include <iba/ib_al.h>
 
@@ -76,4 +76,4 @@ bool IBMemBlock::create( ib_pd_handle_t  protectionDomain,
 }
 
 }
-#endif //EQ_INFINIBAND
+#endif //CO_INFINIBAND

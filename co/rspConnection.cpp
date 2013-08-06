@@ -32,9 +32,9 @@
 
 #include <boost/bind.hpp>
 
-//#define EQ_INSTRUMENT_RSP
-#define EQ_RSP_MERGE_WRITES
-#define EQ_RSP_MAX_TIMEOUTS 1000
+//#define CO_INSTRUMENT_RSP
+#define CO_RSP_MERGE_WRITES
+#define CO_RSP_MAX_TIMEOUTS 1000
 #ifdef _WIN32
 #  define CO_RSP_DEFAULT_PORT (4242)
 #else
@@ -43,7 +43,7 @@
 
 
 // Note: Do not use version > 255, endianness detection magic relies on this.
-const uint16_t EQ_RSP_PROTOCOL_VERSION = 0;
+const uint16_t CO_RSP_PROTOCOL_VERSION = 0;
 
 using namespace boost::asio;
 
@@ -52,7 +52,7 @@ namespace co
 
 namespace
 {
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
 lunchbox::a_int32_t nReadData;
 lunchbox::a_int32_t nBytesRead;
 lunchbox::a_int32_t nBytesWritten;
@@ -98,7 +98,7 @@ RSPConnection::RSPConnection()
     , _readBufferPos( 0 )
     , _sequence( 0 )
     // ensure we have a handleConnectedTimeout before the write pop
-    , _writeTimeOut( Global::IATTR_RSP_ACK_TIMEOUT * EQ_RSP_MAX_TIMEOUTS * 2 )
+    , _writeTimeOut( Global::IATTR_RSP_ACK_TIMEOUT * CO_RSP_MAX_TIMEOUTS * 2 )
 {
     _buildNewID();
     ConnectionDescriptionPtr description = _getDescription();
@@ -397,7 +397,7 @@ int64_t RSPConnection::readSync( void* buffer, const uint64_t bytes, const bool)
             _event->reset();
     }
 
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
     nBytesRead += bytes;
 #endif
     return bytes;
@@ -485,7 +485,7 @@ void RSPConnection::_handleConnectedTimeout()
 
     _processOutgoing();
 
-    if( _timeouts >= EQ_RSP_MAX_TIMEOUTS )
+    if( _timeouts >= CO_RSP_MAX_TIMEOUTS )
     {
         LBERROR << "Too many timeouts during send: " << _timeouts << std::endl;
         bool all = true;
@@ -553,10 +553,10 @@ RSPConnection::_getDatagramNode( const size_t bytes )
     DatagramNode& node =
                     *reinterpret_cast< DatagramNode* >( _recvBuffer.getData( ));
     node.byteswap();
-    if( node.protocolVersion != EQ_RSP_PROTOCOL_VERSION )
+    if( node.protocolVersion != CO_RSP_PROTOCOL_VERSION )
     {
         LBERROR << "Protocol version mismatch, got " << node.protocolVersion
-                << " instead of " << EQ_RSP_PROTOCOL_VERSION << std::endl;
+                << " instead of " << CO_RSP_PROTOCOL_VERSION << std::endl;
         //close();
         return 0;
     }
@@ -601,7 +601,7 @@ void RSPConnection::_postWakeup()
 
 void RSPConnection::_processOutgoing()
 {
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
     if( instrumentClock.getTime64() > 1000 )
     {
         LBWARN << *this << std::endl;
@@ -641,7 +641,7 @@ void RSPConnection::_processOutgoing()
     // (repeat) ack request
     _clock.reset();
     ++_timeouts;
-    if ( _timeouts < EQ_RSP_MAX_TIMEOUTS )
+    if ( _timeouts < CO_RSP_MAX_TIMEOUTS )
         _sendAckRequest();
     _setTimeout( timeout );
 }
@@ -659,7 +659,7 @@ void RSPConnection::_writeData()
     DatagramData* header = reinterpret_cast<DatagramData*>( buffer->getData( ));
     header->sequence = _sequence++;
 
-#ifdef EQ_RSP_MERGE_WRITES
+#ifdef CO_RSP_MERGE_WRITES
     if( header->size < _payloadSize && !_threadBuffers.isEmpty( ))
     {
         std::vector< Buffer* > appBuffers;
@@ -679,7 +679,7 @@ void RSPConnection::_writeData()
             header->size += header2->size;
             LBCHECK( _threadBuffers.pop( buffer2 ));
             appBuffers.push_back( buffer2 );
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
             ++nMergedDatagrams;
 #endif
         }
@@ -700,7 +700,7 @@ void RSPConnection::_writeData()
     header->byteswap();
     _write->send( boost::asio::buffer( header, size ));
 
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
     ++nDatagrams;
     nBytesWritten += header->size;
 #endif
@@ -717,7 +717,7 @@ void RSPConnection::_writeData()
 
 void RSPConnection::_waitWritable( const uint64_t bytes )
 {
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
     lunchbox::Clock clock;
 #endif
 
@@ -742,7 +742,7 @@ void RSPConnection::_waitWritable( const uint64_t bytes )
     }
     _bucketSize -= size;
 
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
     writeWaitTime += clock.getTimef();
 #endif
 
@@ -785,7 +785,7 @@ void RSPConnection::_repeatData()
             _waitWritable( size ); // OPT: process incoming in between
             // already done by _writeData: header->byteswap();
             _write->send( boost::asio::buffer( header, size ) );
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
             ++nRepeated;
 #endif
         }
@@ -1048,7 +1048,7 @@ bool RSPConnection::_handleData( const size_t bytes )
                     *reinterpret_cast< DatagramData* >( _recvBuffer.getData( ));
     datagram.byteswap();
 
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
     ++nReadData;
 #endif
     const uint16_t writerID = datagram.writerID;
@@ -1211,7 +1211,7 @@ bool RSPConnection::_handleAck( const size_t bytes )
                      *reinterpret_cast< DatagramAck* >( _recvBuffer.getData( ));
     ack.byteswap();
 
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
     ++nAcksRead;
 #endif
 
@@ -1238,7 +1238,7 @@ bool RSPConnection::_handleAck( const size_t bytes )
         return true;
     }
 
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
     ++nAcksAccepted;
 #endif
     connection->_acked = ack.sequence;
@@ -1271,7 +1271,7 @@ bool RSPConnection::_handleNack( const size_t bytes )
                     *reinterpret_cast< DatagramNack* >( _recvBuffer.getData( ));
     nack.byteswap();
 
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
     ++nNAcksRead;
 #endif
 
@@ -1404,8 +1404,8 @@ bool RSPConnection::_handleAckRequest( const size_t bytes )
     }
     // else find all missing datagrams
 
-    const uint16_t max = EQ_RSP_MAX_NACKS - 2;
-    Nack nacks[ EQ_RSP_MAX_NACKS ];
+    const uint16_t max = CO_RSP_MAX_NACKS - 2;
+    Nack nacks[ CO_RSP_MAX_NACKS ];
     uint16_t i = 0;
 
     nacks[ i ].start = connection->_sequence;
@@ -1624,7 +1624,7 @@ void RSPConnection::_sendCountNode()
         return;
 
     LBLOG( LOG_RSP ) << _children.size() << " nodes" << std::endl;
-    DatagramNode count = { COUNTNODE, EQ_RSP_PROTOCOL_VERSION, _id,
+    DatagramNode count = { COUNTNODE, CO_RSP_PROTOCOL_VERSION, _id,
                            uint16_t( _children.size( )) };
     count.byteswap();
     _write->send( buffer( &count, sizeof( count )) );
@@ -1633,7 +1633,7 @@ void RSPConnection::_sendCountNode()
 void RSPConnection::_sendSimpleDatagram( const DatagramType type,
                                          const uint16_t id )
 {
-    DatagramNode simple = { uint16_t( type ), EQ_RSP_PROTOCOL_VERSION, id,
+    DatagramNode simple = { uint16_t( type ), CO_RSP_PROTOCOL_VERSION, id,
                             _sequence };
     simple.byteswap();
     _write->send( buffer( &simple, sizeof( simple )) );
@@ -1643,7 +1643,7 @@ void RSPConnection::_sendAck( const uint16_t writerID,
                               const uint16_t sequence )
 {
     LBASSERT( _id != writerID );
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
     ++nAcksSend;
 #endif
 
@@ -1657,8 +1657,8 @@ void RSPConnection::_sendNack( const uint16_t writerID, const Nack* nacks,
                                const uint16_t count )
 {
     LBASSERT( count > 0 );
-    LBASSERT( count <= EQ_RSP_MAX_NACKS );
-#ifdef EQ_INSTRUMENT_RSP
+    LBASSERT( count <= CO_RSP_MAX_NACKS );
+#ifdef CO_INSTRUMENT_RSP
     ++nNAcksSend;
 #endif
     /* optimization: use the direct access to the reader. */
@@ -1669,7 +1669,7 @@ void RSPConnection::_sendNack( const uint16_t writerID, const Nack* nacks,
     }
 
     const size_t size = sizeof( DatagramNack ) -
-                        (EQ_RSP_MAX_NACKS - count) * sizeof( Nack );
+                        (CO_RSP_MAX_NACKS - count) * sizeof( Nack );
 
     // set the header
     DatagramNack packet;
@@ -1681,7 +1681,7 @@ void RSPConnection::_sendNack( const uint16_t writerID, const Nack* nacks,
 
 void RSPConnection::_sendAckRequest()
 {
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
     ++nAckRequests;
 #endif
     LBLOG( LOG_RSP ) << "send ack request for " << uint16_t( _sequence -1 )
@@ -1698,7 +1698,7 @@ std::ostream& operator << ( std::ostream& os,
        << "RSPConnection id " << connection.getID() << " send rate "
        << connection.getSendRate();
 
-#ifdef EQ_INSTRUMENT_RSP
+#ifdef CO_INSTRUMENT_RSP
     const int prec = os.precision();
     os.precision( 3 );
 

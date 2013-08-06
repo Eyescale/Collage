@@ -18,7 +18,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 #include <eq/base/base.h>
-#ifdef EQ_INFINIBAND
+#ifdef CO_INFINIBAND
 
 #ifndef CO_IBADAPTER_H
 #define CO_IBADAPTER_H
@@ -64,4 +64,4 @@ class IBAdapter
 };
 }
 #endif //CO_IBADAPTER_H
-#endif //EQ_INFINIBAND
+#endif //CO_INFINIBAND

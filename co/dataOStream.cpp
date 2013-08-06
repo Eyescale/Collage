@@ -37,8 +37,8 @@ namespace co
 {
 namespace
 {
-//#define EQ_INSTRUMENT_DATAOSTREAM
-#ifdef EQ_INSTRUMENT_DATAOSTREAM
+//#define CO_INSTRUMENT_DATAOSTREAM
+#ifdef CO_INSTRUMENT_DATAOSTREAM
 lunchbox::a_int32_t nBytes;
 lunchbox::a_int32_t nBytesIn;
 lunchbox::a_int32_t nBytesOut;
@@ -128,7 +128,7 @@ public:
     {
         if( state == result || state == STATE_UNCOMPRESSIBLE )
             return;
-#ifdef EQ_INSTRUMENT_DATAOSTREAM
+#ifdef CO_INSTRUMENT_DATAOSTREAM
         nBytesIn += size;
 #endif
         const uint64_t threshold =
@@ -142,11 +142,11 @@ public:
 
         const uint64_t inDims[2] = { 0, size };
 
-#ifdef EQ_INSTRUMENT_DATAOSTREAM
+#ifdef CO_INSTRUMENT_DATAOSTREAM
         lunchbox::Clock clock;
 #endif
         compressor.compress( src, inDims );
-#ifdef EQ_INSTRUMENT_DATAOSTREAM
+#ifdef CO_INSTRUMENT_DATAOSTREAM
         compressionTime += uint32_t( clock.getTimef() * 1000.f );
 #endif
 
@@ -162,7 +162,7 @@ public:
             compressor.getResult( i, &chunk, &chunkSize );
             compressedDataSize += chunkSize;
         }
-#ifdef EQ_INSTRUMENT_DATAOSTREAM
+#ifdef CO_INSTRUMENT_DATAOSTREAM
         nBytesOut += compressedDataSize;
 #endif
 
@@ -336,7 +336,7 @@ bool DataOStream::hasSentData() const
 void DataOStream::_write( const void* data, uint64_t size )
 {
     LBASSERT( _impl->enabled );
-#ifdef EQ_INSTRUMENT_DATAOSTREAM
+#ifdef CO_INSTRUMENT_DATAOSTREAM
     nBytes += size;
     if( compressionTime > 100000 )
         LBWARN << *this << std::endl;
@@ -432,7 +432,7 @@ void DataOStream::sendBody( ConnectionPtr connection, const uint64_t dataSize )
         return;
     }
 
-#ifdef EQ_INSTRUMENT_DATAOSTREAM
+#ifdef CO_INSTRUMENT_DATAOSTREAM
     nBytesSent += _impl->buffer.getSize();
 #endif
     const uint32_t nChunks = _impl->compressor.getNumResults();
@@ -441,7 +441,7 @@ void DataOStream::sendBody( ConnectionPtr connection, const uint64_t dataSize )
     void** chunks = static_cast< void ** >
                                   ( alloca( nChunks * sizeof( void* )));
 
-#ifdef EQ_INSTRUMENT_DATAOSTREAM
+#ifdef CO_INSTRUMENT_DATAOSTREAM
     const uint64_t compressedSize = _getCompressedData( chunks, chunkSizes );
     nBytesSaved += _impl->buffer.getSize() - compressedSize;
 #else
@@ -466,7 +466,7 @@ uint64_t DataOStream::getCompressedDataSize() const
 std::ostream& operator << ( std::ostream& os, const DataOStream& dataOStream )
 {
     os << "DataOStream "
-#ifdef EQ_INSTRUMENT_DATAOSTREAM
+#ifdef CO_INSTRUMENT_DATAOSTREAM
        << "compressed " << nBytesIn << " -> " << nBytesOut << " of " << nBytes
        << " in " << compressionTime/1000 << "ms, saved " << nBytesSaved
        << " of " << nBytesSent << " brutto sent";

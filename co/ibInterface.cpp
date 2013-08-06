@@ -21,12 +21,12 @@
 #include "ibConnection.h"
 #include "eq/base/clock.h"
 #include "eq/base/memcpy.h"
-#ifdef EQ_INFINIBAND
-//#define EQ_MEASURE_TIME 0
-#define EQ_MAXBLOCKBUFFER 65536
-#define EQ_NUMBLOCKMEMORY 1    // maybe remove it
-#define EQ_MAXBUFFSIZE EQ_NUMBUFFER*EQ_MAXBLOCKBUFFER
-#define EQ_IB_MAXINLINE 600
+#ifdef CO_INFINIBAND
+//#define CO_MEASURE_TIME 0
+#define CO_MAXBLOCKBUFFER 65536
+#define CO_NUMBLOCKMEMORY 1    // maybe remove it
+#define CO_MAXBUFFSIZE CO_NUMBUFFER*CO_MAXBLOCKBUFFER
+#define CO_IB_MAXINLINE 600
 namespace co
 {
 
@@ -42,12 +42,12 @@ IBInterface::IBInterface( )
     srand(1);
     _countWrite = 0;
     _psn = cl_hton32( rand() & 0xffffff );
-    _writePoll.resize( EQ_NUMBLOCKMEMORY );
-    _readPoll.resize( EQ_NUMBLOCKMEMORY );
-    _dests.resize( EQ_NUMBLOCKMEMORY );
-    _writeBlocks.resize( EQ_NUMBLOCKMEMORY );
-    _readBlocks.resize( EQ_NUMBLOCKMEMORY );
-    for (int i = 0; i < EQ_NUMBLOCKMEMORY ; i++)
+    _writePoll.resize( CO_NUMBLOCKMEMORY );
+    _readPoll.resize( CO_NUMBLOCKMEMORY );
+    _dests.resize( CO_NUMBLOCKMEMORY );
+    _writeBlocks.resize( CO_NUMBLOCKMEMORY );
+    _readBlocks.resize( CO_NUMBLOCKMEMORY );
+    for (int i = 0; i < CO_NUMBLOCKMEMORY ; i++)
     {
         _writeBlocks[i] = new IBMemBlock();
         _readBlocks[i] = new IBMemBlock();
@@ -55,8 +55,8 @@ IBInterface::IBInterface( )
 
 
      memset( _readPoll.getData(), 0, sizeof ( uint32_t )
-                            * EQ_NUMBLOCKMEMORY );
-     memset( _writePoll.getData(), true, sizeof ( bool ) * EQ_NUMBLOCKMEMORY );
+                            * CO_NUMBLOCKMEMORY );
+     memset( _writePoll.getData(), true, sizeof ( bool ) * CO_NUMBLOCKMEMORY );
 
     _floatTimeReadNB = 0.0f;
     _floatTimeReadSync  = 0.0f;
@@ -78,7 +78,7 @@ IBInterface::~IBInterface()
 
 uint32_t IBInterface::getNumberBlockMemory()
 {
-    return EQ_NUMBLOCKMEMORY;
+    return CO_NUMBLOCKMEMORY;
 }
 struct IBDest IBInterface::getMyDest( uint32_t index )
 {
@@ -104,8 +104,8 @@ bool IBInterface::_createQueuePair( IBAdapter* adapter )
     // outstanding on the queue pair's send and receive queue.
     // This value must be less than or equal to the maximum reported
     // by the channel adapter associated with the queue pair.
-    queuePairCreate.sq_depth     = EQ_NUMBLOCKMEMORY;
-    queuePairCreate.rq_depth     = EQ_NUMBLOCKMEMORY;
+    queuePairCreate.sq_depth     = CO_NUMBLOCKMEMORY;
+    queuePairCreate.rq_depth     = CO_NUMBLOCKMEMORY;
     // Indicates the maximum number scatter-gather elements that may be
     // given in a send and receive  work request.  This value must be less
     // than or equal to the maximum reported by the channel adapter associated
@@ -118,7 +118,7 @@ bool IBInterface::_createQueuePair( IBAdapter* adapter )
     // connection type RC
     queuePairCreate.qp_type       = IB_QPT_RELIABLE_CONN;
     queuePairCreate.sq_signaled   = true;
-    queuePairCreate.sq_max_inline = EQ_IB_MAXINLINE;
+    queuePairCreate.sq_max_inline = CO_IB_MAXINLINE;
 
     // Creates a queue pair
     ib_api_status_t ibStatus = ib_create_qp( adapter->getProtectionDomain(),
@@ -139,15 +139,15 @@ bool IBInterface::create( IBAdapter* adapter,
     _completionQueue = completionQueue;
     _ibConnection = ibConnection;
     // memory block Write
-    for ( int i = 0; i < EQ_NUMBLOCKMEMORY ; i++ )
+    for ( int i = 0; i < CO_NUMBLOCKMEMORY ; i++ )
     {
         if ( !_writeBlocks[i]->create( adapter->getProtectionDomain(),
-            EQ_MAXBLOCKBUFFER ))
+            CO_MAXBLOCKBUFFER ))
             return false;
 
         // memory block Read
         if ( !_readBlocks[i]->create( adapter->getProtectionDomain(),
-            EQ_MAXBLOCKBUFFER ))
+            CO_MAXBLOCKBUFFER ))
             return false;
     }
 
@@ -255,10 +255,10 @@ void IBInterface::modiyQueuePairAttribute( )
 
     _completionQueue->triggerRead();
     ResetEvent( _completionQueue->getReadNotifier());
-    for ( int i = 0; i < EQ_NUMBLOCKMEMORY ; i++ )
+    for ( int i = 0; i < CO_NUMBLOCKMEMORY ; i++ )
     {
         _recvList.vaddr  = _readBlocks[ i ]->getVaddr();
-        _recvList.length = EQ_MAXBLOCKBUFFER;
+        _recvList.length = CO_MAXBLOCKBUFFER;
         _recvList.lkey   = _readBlocks[ i ]->getLocalKey();
 
         //receive
@@ -275,7 +275,7 @@ void IBInterface::modiyQueuePairAttribute( )
 
 void IBInterface::close()
 {
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
     LBINFO << " Time total to ReadNB     : "
            << _floatTimeReadNB << std::endl;
     LBINFO << " Time total to ReadSync   : "
@@ -301,7 +301,7 @@ void IBInterface::close()
         status = ib_destroy_qp( _queuePair, 0 );
         _queuePair = 0;
     }
-    for (int i = 0; i < EQ_NUMBLOCKMEMORY ; i++)
+    for (int i = 0; i < CO_NUMBLOCKMEMORY ; i++)
     {
         _writeBlocks[i]->close();
         _readBlocks[i]->close();
@@ -313,7 +313,7 @@ void IBInterface::close()
 bool IBInterface::_ibPostRecv( uint32_t numBuffer )
 {
     _recvList.vaddr  = _readBlocks[ numBuffer ]->getVaddr();
-    _recvList.length = EQ_MAXBLOCKBUFFER;
+    _recvList.length = CO_MAXBLOCKBUFFER;
     _recvList.lkey   = _readBlocks[ numBuffer ]->getLocalKey();
 
     //receive
@@ -334,13 +334,13 @@ bool IBInterface::_ibPostRecv( uint32_t numBuffer )
 
 void IBInterface::readNB( void* buffer, const uint64_t bytes )
 {
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
     eq::lunchbox::Clock       clock;
     clock.reset();
 #endif
 
 
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
     _floatTimeReadNB += clock.getTimef();
 #endif
 }
@@ -348,7 +348,7 @@ void IBInterface::readNB( void* buffer, const uint64_t bytes )
 int64_t IBInterface::readSync( void* buffer, uint32_t bytes )
 {
 
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
     eq::lunchbox::Clock       clock;
     clock.reset();
 #endif
@@ -358,20 +358,20 @@ int64_t IBInterface::readSync( void* buffer, uint32_t bytes )
 
     // if no data in buffer, we ask for a receive operation
     while ( sizebuf < 1 )
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
         eq::lunchbox::Clock       clockWait;
         clockWait.reset();
 #endif
 
         sizebuf = _waitPollCQ( _numBufRead );
 
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
             _timeTotalWaitPoll += clockWait.getTimef();
 #endif
 
     if ( sizebuf > _posReadInBuffer )
     {
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
         eq::lunchbox::Clock       clockCopy;
         clockCopy.reset();
 #endif
@@ -388,7 +388,7 @@ int64_t IBInterface::readSync( void* buffer, uint32_t bytes )
                                  ( _readBlocks[_numBufRead]->buf.getData() ) +
                                    _posReadInBuffer, nbRead );
         _posReadInBuffer += nbRead;
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
         _timeCopyBufferRead += clockCopy.getTimef();
 #endif
         // all buffer has been taken
@@ -399,13 +399,13 @@ int64_t IBInterface::readSync( void* buffer, uint32_t bytes )
            _posReadInBuffer = 0;
            _readPoll.getData()[ _numBufRead ] = 0;
            // next Read in on the next CQ
-           if (_numBufRead == EQ_NUMBLOCKMEMORY-1 )
+           if (_numBufRead == CO_NUMBLOCKMEMORY-1 )
               _ibConnection->incReadInterface();
 
            // notify that read is finnish
            _ibPostRecv( _numBufRead );
            // To do work with more buffer in a CQ
-           _numBufRead = ( _numBufRead + 1 ) % EQ_NUMBLOCKMEMORY;
+           _numBufRead = ( _numBufRead + 1 ) % CO_NUMBLOCKMEMORY;
         }
         return nbRead;
     }
@@ -413,7 +413,7 @@ int64_t IBInterface::readSync( void* buffer, uint32_t bytes )
     LBWARN << "ERROR IN READ SYNC"<< std::endl;
     return -1;
 
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
     _floatTimeReadSync += clock.getTimef();
 #endif
 }
@@ -467,7 +467,7 @@ int64_t IBInterface::_waitPollCQ( uint32_t numBuffer )
 
 int64_t IBInterface::postRdmaWrite( const void* buffer, uint32_t numBytes )
 {
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
     eq::lunchbox::Clock       clock;
     clock.reset();
 #endif
@@ -479,7 +479,7 @@ int64_t IBInterface::postRdmaWrite( const void* buffer, uint32_t numBytes )
     wcFree = &wc;
     wcFree->p_next = 0;
     wcDone = 0;
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
     eq::lunchbox::Clock       clockWait;
     clockWait.reset();
 #endif
@@ -505,15 +505,15 @@ int64_t IBInterface::postRdmaWrite( const void* buffer, uint32_t numBytes )
             ibStatus = IB_SUCCESS;
         }
     } while ( ibStatus == IB_SUCCESS );
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
     _timeTotalWriteWait += clockWait.getTimef();
 #endif
     uint32_t incBytes = 0;
     uint32_t compt = 0;
     uint32_t size;
-    size = LB_MIN( numBytes, EQ_MAXBLOCKBUFFER );
+    size = LB_MIN( numBytes, CO_MAXBLOCKBUFFER );
     ib_local_ds_t    list;
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
     eq::lunchbox::Clock       clockCopy;
     clockCopy.reset();
 #endif
@@ -523,7 +523,7 @@ int64_t IBInterface::postRdmaWrite( const void* buffer, uint32_t numBytes )
     eq::lunchbox::fastCopy( _writeBlocks[ _numBufWrite ]->buf.getData(),
                              buffer , size );
     list.vaddr   = _writeBlocks[ _numBufWrite ]->getVaddr();
-#ifdef EQ_MEASURE_TIME
+#ifdef CO_MEASURE_TIME
     _timeCopyBufferWrite += clockCopy.getTimef();
 #endif
     list.lkey    = _writeBlocks[_numBufWrite ]->getLocalKey();
@@ -553,14 +553,14 @@ int64_t IBInterface::postRdmaWrite( const void* buffer, uint32_t numBytes )
     }
     _writePoll.getData()[ _numBufWrite ] = false;
 
-    if ( _numBufWrite == EQ_NUMBLOCKMEMORY -1 )
+    if ( _numBufWrite == CO_NUMBLOCKMEMORY -1 )
         _ibConnection->incWriteInterface();
 
-    _numBufWrite = ( _numBufWrite + 1 ) % EQ_NUMBLOCKMEMORY;
-#ifdef EQ_MEASURE_TIME
+    _numBufWrite = ( _numBufWrite + 1 ) % CO_NUMBLOCKMEMORY;
+#ifdef CO_MEASURE_TIME
     _timeTotalWrite += clock.getTimef();
 #endif
     return size;
 }
 }
-#endif //EQ_INFINIBAND
+#endif //CO_INFINIBAND

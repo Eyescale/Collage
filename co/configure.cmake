@@ -33,7 +33,7 @@ endif()
 
 if(WIN32)
   list(APPEND COLLAGE_DEFINES WIN32 WIN32_API WIN32_LEAN_AND_MEAN
-    #EQ_INFINIBAND #Enable for IB builds (needs WinOF 2.0 installed)
+    #CO_INFINIBAND #Enable for IB builds (needs WinOF 2.0 installed)
     )
   set(ARCH Win32)
 endif(WIN32)

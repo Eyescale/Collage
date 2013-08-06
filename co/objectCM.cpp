@@ -30,7 +30,7 @@
 
 co::ObjectCMPtr co::ObjectCM::ZERO = new co::NullCM;
 
-#ifdef EQ_INSTRUMENT_MULTICAST
+#ifdef CO_INSTRUMENT_MULTICAST
 lunchbox::a_int32_t co::ObjectCM::_hit( 0 );
 lunchbox::a_int32_t co::ObjectCM::_miss( 0 );
 #endif
@@ -125,7 +125,7 @@ void ObjectCM::_initSlave( const MasterCMCommand& command,
         command.getMinCachedVersion() <= replyVersion &&
         command.getMaxCachedVersion() >= replyVersion )
     {
-#ifdef EQ_INSTRUMENT_MULTICAST
+#ifdef CO_INSTRUMENT_MULTICAST
         ++_hit;
 #endif
         _sendMapSuccess( command, false );
@@ -133,7 +133,7 @@ void ObjectCM::_initSlave( const MasterCMCommand& command,
         return;
     }
 
-#ifdef EQ_INSTRUMENT_MULTICAST
+#ifdef CO_INSTRUMENT_MULTICAST
     ++_miss;
 #endif
     replyUseCache = false;

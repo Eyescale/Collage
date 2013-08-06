@@ -17,7 +17,7 @@
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-#ifdef EQ_INFINIBAND
+#ifdef CO_INFINIBAND
 
 #ifndef EQNET_IBCOCOMPLETIONQUEUE_H
 #define EQNET_IBCOCOMPLETIONQUEUE_H
@@ -93,4 +93,4 @@ private:
 }
 }
 #endif //CO_IBCOMPLETIONQUEUE_H
-#endif //EQ_INFINIBAND
+#endif //CO_INFINIBAND

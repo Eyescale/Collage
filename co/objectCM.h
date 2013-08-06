@@ -26,8 +26,8 @@
 #include <co/objectVersion.h> // VERSION_FOO values
 #include <co/types.h>
 
-//#define EQ_INSTRUMENT_MULTICAST
-#ifdef EQ_INSTRUMENT_MULTICAST
+//#define CO_INSTRUMENT_MULTICAST
+#ifdef CO_INSTRUMENT_MULTICAST
 #  include <lunchbox/atomic.h>
 #endif
 
@@ -167,7 +167,7 @@ protected:
     /** The managed object. */
     Object* _object;
 
-#ifdef EQ_INSTRUMENT_MULTICAST
+#ifdef CO_INSTRUMENT_MULTICAST
     static lunchbox::a_int32_t _hit;
     static lunchbox::a_int32_t _miss;
 #endif

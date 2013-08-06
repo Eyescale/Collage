@@ -19,7 +19,7 @@
 
 #include <eq/base/log.h>
 #include "ibAdapter.h"
-#ifdef EQ_INFINIBAND
+#ifdef CO_INFINIBAND
 
 namespace co
 {
@@ -132,4 +132,4 @@ bool IBAdapter::open( )
     return true;
 }
 }
-#endif //EQ_INFINIBAND
+#endif //CO_INFINIBAND

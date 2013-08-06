@@ -35,9 +35,9 @@
 #include <string.h>
 #include <sys/types.h>
 
-#define EQ_PIPE_BUFFER_SIZE 515072
-#define EQ_READ_BUFFER_SIZE 257536
-#define EQ_WRITE_BUFFER_SIZE 257536
+#define CO_PIPE_BUFFER_SIZE 515072
+#define CO_READ_BUFFER_SIZE 257536
+#define CO_WRITE_BUFFER_SIZE 257536
 
 namespace co
 {
@@ -135,8 +135,8 @@ bool NamedPipeConnection::_createNamedPipe()
                      PIPE_READMODE_BYTE |         // message-read
                      PIPE_WAIT,                   // blocking mode
                      PIPE_UNLIMITED_INSTANCES,    // number of instances
-                     EQ_PIPE_BUFFER_SIZE,         // output buffer size
-                     EQ_PIPE_BUFFER_SIZE,         // input buffer size
+                     CO_PIPE_BUFFER_SIZE,         // output buffer size
+                     CO_PIPE_BUFFER_SIZE,         // input buffer size
                      0,                           // default time-out (unused)
                      0 /*&sa*/);                  // default security attributes
 
@@ -314,7 +314,7 @@ void NamedPipeConnection::readNB( void* buffer, const uint64_t bytes )
         return;
 
     ResetEvent( _read.hEvent );
-    DWORD use = LB_MIN( bytes, EQ_READ_BUFFER_SIZE );
+    DWORD use = LB_MIN( bytes, CO_READ_BUFFER_SIZE );
 
 
     if( ReadFile( _fd, buffer, use, &_readDone, &_read ) )
@@ -366,7 +366,7 @@ int64_t NamedPipeConnection::write( const void* buffer, const uint64_t bytes )
         return -1;
 
     DWORD wrote;
-    const DWORD use = LB_MIN( bytes, EQ_WRITE_BUFFER_SIZE );
+    const DWORD use = LB_MIN( bytes, CO_WRITE_BUFFER_SIZE );
 
     ResetEvent( _write.hEvent );
     if( WriteFile( _fd, buffer, use, &wrote, &_write ))

@@ -149,13 +149,5 @@ typedef std::deque< ObjectDataIStream* > ObjectDataIStreamDeque;
 typedef std::vector< ObjectDataIStream* > ObjectDataIStreams;
 /** @endcond */
 
-#ifndef EQ_2_0_API
-namespace base
-{
-using namespace lunchbox;
-using co::Global;
-}
-#endif
-
 }
 #endif // CO_TYPES_H

@@ -21,7 +21,7 @@
 #define CO_IBCONNECTION_H
 
 #include <eq/base/base.h>
-#ifdef EQ_INFINIBAND
+#ifdef CO_INFINIBAND
 
 #include "socketConnection.h"
 
@@ -99,6 +99,6 @@ private:
     LB_TS_VAR( _recvThread );
 };
 }
-#endif //EQ_INFINIBAND
+#endif //CO_INFINIBAND
 
 #endif //CO_IBCONNECTION_H
