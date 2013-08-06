@@ -1563,7 +1563,7 @@ bool RDMAConnection::_needFC( )
     int ret = poll( &pfd, 1, 0 );
     if ( ret == -1 )
     {
-        LBERROR << "poll: " << base::sysError << std::endl;
+        LBERROR << "poll: " << lunchbox::sysError << std::endl;
         return true;
     }
     bytesAvail = ret != 0;
