@@ -5,6 +5,10 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(Collage)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
+if(NOT BUILDYARD)
+  include(Buildyard)
+  return()
+endif()
 
 set(RELEASE_VERSION OFF) # OFF or 'Mm0' ABI version
 set(VERSION_MAJOR "1")
