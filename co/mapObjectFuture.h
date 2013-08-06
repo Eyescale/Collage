@@ -45,8 +45,8 @@ public:
     virtual bool wait() final
     {
         if( state_ == PENDING )
-            state_ = func_() ? TRUE : FALSE;
-        return state_ == TRUE;
+            state_ = func_() ? SUCCESS : FAILURE;
+        return state_ == SUCCESS;
     }
 
 private:
@@ -55,8 +55,8 @@ private:
     enum
     {
         PENDING,
-        TRUE,
-        FALSE
+        SUCCESS,
+        FAILURE
     }
     state_;
 };
