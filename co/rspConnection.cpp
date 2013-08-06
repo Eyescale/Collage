@@ -35,6 +35,12 @@
 //#define EQ_INSTRUMENT_RSP
 #define EQ_RSP_MERGE_WRITES
 #define EQ_RSP_MAX_TIMEOUTS 1000
+#ifdef _WIN32
+#  define CO_RSP_DEFAULT_PORT (4242)
+#else
+#  define CO_RSP_DEFAULT_PORT (4242 + getuid())
+#endif
+
 
 // Note: Do not use version > 255, endianness detection magic relies on this.
 const uint16_t EQ_RSP_PROTOCOL_VERSION = 0;
@@ -207,7 +213,7 @@ bool RSPConnection::listen()
 
     // init udp connection
     if( description->port == 0 )
-        description->port = EQ_DEFAULT_PORT;
+        description->port = CO_RSP_DEFAULT_PORT;
     if( description->getHostname().empty( ))
         description->setHostname( "239.255.42.43" );
     if( description->getInterface().empty( ))

@@ -30,12 +30,6 @@
 #include <string.h>
 #include <vector>
 
-#ifdef _WIN32
-#  define EQ_DEFAULT_PORT (4242)
-#else
-#  define EQ_DEFAULT_PORT (4242 + getuid())
-#endif
-
 namespace co
 {
 namespace detail { class Connection; }
