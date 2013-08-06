@@ -4,9 +4,9 @@ notifications:
     on_success: never
 language: cpp
 script:
- - git clone --depth 10 https://github.com/Eyescale/Buildyard.git
- - cd Buildyard
- - git clone --depth 10 https://github.com/Eyescale/config.git config.eyescale
+ - mkdir Build
+ - cd Build
+ - cmake ..
  - env TRAVIS=1 make -j8 Collage-test ARGS=-V
 before_install:
  - sudo apt-get update -qq
