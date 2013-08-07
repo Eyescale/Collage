@@ -264,6 +264,8 @@ bool LocalNode::initLocal( const int argc, char** argv )
     // - incomplete man pages
     for( int i=1; i<argc; ++i )
     {
+        if( std::string( "--eq-listen" ) == argv[i] )
+            LBWARN << "Deprecated --eq-listen, use --co-listen" << std::endl;
         if( std::string( "--eq-listen" ) == argv[i] ||
             std::string( "--co-listen" ) == argv[i] )
         {
@@ -283,7 +285,7 @@ bool LocalNode::initLocal( const int argc, char** argv )
             }
             else
             {
-                LBWARN << "No argument given to --eq-listen!" << std::endl;
+                LBWARN << "No argument given to --co-listen!" << std::endl;
             }
         }
         else if ( std::string( "--co-globals" ) == argv[i] )
