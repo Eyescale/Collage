@@ -29,8 +29,8 @@
 
 namespace co
 {
-//#define EQ_INSTRUMENT_CACHE
-#ifdef EQ_INSTRUMENT_CACHE
+//#define CO_INSTRUMENT_CACHE
+#ifdef CO_INSTRUMENT_CACHE
 namespace
 {
 lunchbox::a_int32_t nRead;
@@ -90,7 +90,7 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
 {
     LBASSERTINFO( command.isValid(), command );
 
-#ifdef EQ_INSTRUMENT_CACHE
+#ifdef CO_INSTRUMENT_CACHE
     ++nWrite;
 #endif
 
@@ -129,7 +129,7 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
     {
         if( item.data.versions.back()->isReady( ))
         {
-#ifdef EQ_INSTRUMENT_CACHE
+#ifdef CO_INSTRUMENT_CACHE
             ++nWriteReady;
 #endif
             return false; // Already have stream
@@ -144,7 +144,7 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
         const uint128_t previousVersion = previous->getPendingVersion();
         if( previousVersion > rev.version )
         {
-#ifdef EQ_INSTRUMENT_CACHE
+#ifdef CO_INSTRUMENT_CACHE
             ++nWriteOld;
 #endif
             return false;
@@ -177,7 +177,7 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
     _releaseItems( 1 );
     _releaseItems( 0 );
 
-#ifdef EQ_INSTRUMENT_CACHE
+#ifdef CO_INSTRUMENT_CACHE
     if( _items->find( rev.identifier ) != _items->end( ))
         ++nWriteHit;
     else
@@ -214,7 +214,7 @@ void InstanceCache::remove( const NodeID& nodeID )
 
 const InstanceCache::Data& InstanceCache::operator[]( const UUID& id )
 {
-#ifdef EQ_INSTRUMENT_CACHE
+#ifdef CO_INSTRUMENT_CACHE
     ++nRead;
 #endif
 
@@ -228,7 +228,7 @@ const InstanceCache::Data& InstanceCache::operator[]( const UUID& id )
     ++item.access;
     ++item.used;
 
-#ifdef EQ_INSTRUMENT_CACHE
+#ifdef CO_INSTRUMENT_CACHE
     ++nReadHit;
 #endif
     return item.data;
@@ -365,7 +365,7 @@ void InstanceCache::_releaseItems( const uint32_t minUsage )
                 streamsLeft = true;
 
             keys.push_back( i->first );
-#ifdef EQ_INSTRUMENT_CACHE
+#ifdef CO_INSTRUMENT_CACHE
             ++nUsedRelease;
 #endif
         }
@@ -387,7 +387,7 @@ void InstanceCache::_releaseItems( const uint32_t minUsage )
                 _releaseFirstStream( item );
                 if( !item.data.versions.empty( ))
                     streamsLeft = true;
-#ifdef EQ_INSTRUMENT_CACHE
+#ifdef CO_INSTRUMENT_CACHE
                 ++nUsedRelease;
 #endif
             }
@@ -406,7 +406,7 @@ void InstanceCache::_releaseItems( const uint32_t minUsage )
         LBWARN << "Overfull instance cache, too many pinned items, size "
                << _size << " target " << target << " max " << _maxSize
                << " " << _items->size() << " entries"
-#ifdef EQ_INSTRUMENT_CACHE
+#ifdef CO_INSTRUMENT_CACHE
                << ": " << *this
 #endif
                << std::endl;
@@ -417,7 +417,7 @@ std::ostream& operator << ( std::ostream& os,
 {
     os << "InstanceCache " << instanceCache.getSize() / 1048576 << "/"
        << instanceCache.getMaxSize() / 1048576 << " MB"
-#ifdef EQ_INSTRUMENT_CACHE
+#ifdef CO_INSTRUMENT_CACHE
        << ", " << nReadHit << "/" << nRead << " reads, " << nWriteHit
        << "/" << nWrite << " writes (" << nWriteMiss << " misses, " << nWriteOld
        << " old, " << nWriteReady << " dups) " << nUsedRelease << " used, "

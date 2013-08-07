@@ -18,8 +18,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef EQNET_NULLCM_H
-#define EQNET_NULLCM_H
+#ifndef CO_NULLCM_H
+#define CO_NULLCM_H
 
 #include "objectCM.h"    // base class
 
@@ -57,4 +57,4 @@ namespace co
     };
 }
 
-#endif // EQNET_NULLCM_H
+#endif // CO_NULLCM_H

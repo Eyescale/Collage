@@ -19,8 +19,8 @@
  */
 #ifdef CO_INFINIBAND
 
-#ifndef EQNET_IBCOCOMPLETIONQUEUE_H
-#define EQNET_IBCOCOMPLETIONQUEUE_H
+#ifndef CO_IBCOCOMPLETIONQUEUE_H
+#define CO_IBCOCOMPLETIONQUEUE_H
 #include <iba/ib_al.h>
 
 #include <eq/base/atomic.h>

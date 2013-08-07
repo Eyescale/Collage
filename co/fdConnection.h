@@ -64,4 +64,4 @@ namespace co
     }
 }
 
-#endif //EQNET_FDCONNECTION_H
+#endif //CO_FDCONNECTION_H

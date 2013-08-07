@@ -1101,7 +1101,7 @@ bool RDMAConnection::_createEventChannel( )
             INFINITE,
             WT_EXECUTEINWAITTHREAD ))
     {
-        EQERROR << "RegisterWaitForSingleObject : " << co::base::sysError
+        LBERROR << "RegisterWaitForSingleObject : " << co::base::sysError
                 << std::endl;
         goto err;
     }
@@ -2621,7 +2621,7 @@ void RingBuffer::allocAt( size_t size, void* desiredAddr )
 
     if ( !_map )
     {
-        EQERROR << "First MapViewOfFileEx failed" << std::endl;
+        LBERROR << "First MapViewOfFileEx failed" << std::endl;
         goto err;
     }
 

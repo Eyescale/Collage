@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef EQNET_UNBUFFEREDMASTERCM_H
-#define EQNET_UNBUFFEREDMASTERCM_H
+#ifndef CO_UNBUFFEREDMASTERCM_H
+#define CO_UNBUFFEREDMASTERCM_H
 
 #include "versionedMasterCM.h"           // base class
 
