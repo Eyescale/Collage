@@ -34,9 +34,6 @@
 
 #include <co/exception.h>
 
-#ifdef CO_INFINIBAND
-#  include "IBConnection.h"
-#endif
 #ifdef CO_USE_OFED
 #  include "rdmaConnection.h"
 #endif
@@ -162,11 +159,6 @@ ConnectionPtr Connection::create( ConnectionDescriptionPtr description )
             break;
 #endif
 
-#ifdef CO_INFINIBAND
-        case CONNECTIONTYPE_IB:
-            connection = new IBConnection;
-            break;
-#endif
         case CONNECTIONTYPE_RSP:
             connection = new RSPConnection;
             break;

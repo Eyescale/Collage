@@ -40,8 +40,6 @@ static ConnectionType _getConnectionType( const std::string& string )
         return CONNECTIONTYPE_PIPE;
     if( string == "PIPE" )
         return CONNECTIONTYPE_NAMEDPIPE;
-    if( string == "IB" )
-        return CONNECTIONTYPE_IB;
     if( string == "RSP" )
         return CONNECTIONTYPE_RSP;
     if( string == "RDMA" )

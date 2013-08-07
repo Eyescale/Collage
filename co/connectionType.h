@@ -33,7 +33,7 @@ namespace co
         CONNECTIONTYPE_SDP,       //!< SDP sockets (InfiniBand)
         CONNECTIONTYPE_PIPE,      //!< pipe() based uni-directional connection
         CONNECTIONTYPE_NAMEDPIPE, //!< Named pipe based bidirectional connection
-        CONNECTIONTYPE_IB,        //!< Infiniband RDMA (old, Windows XP only)
+        CONNECTIONTYPE_IB,        //!< @deprecated Win XP Infiniband RDMA
         CONNECTIONTYPE_RDMA,      //!< Infiniband RDMA CM
         CONNECTIONTYPE_UDT,       //!< UDT connection
         CONNECTIONTYPE_MULTICAST = 0x100, //!< @internal MC types after this:
@@ -50,7 +50,6 @@ namespace co
             case CONNECTIONTYPE_SDP: return os << "SDP";
             case CONNECTIONTYPE_PIPE: return os << "ANON_PIPE";
             case CONNECTIONTYPE_NAMEDPIPE: return os << "PIPE";
-            case CONNECTIONTYPE_IB: return os << "IB";
             case CONNECTIONTYPE_RSP: return os << "RSP";
             case CONNECTIONTYPE_NONE: return os << "NONE";
             case CONNECTIONTYPE_RDMA: return os << "RDMA";

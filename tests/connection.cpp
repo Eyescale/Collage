@@ -38,9 +38,6 @@ static co::ConnectionType types[] =
 #ifdef WIN32
     co::CONNECTIONTYPE_NAMEDPIPE,
 #endif
-#ifdef CO_INFINIBAND
-    co::CONNECTIONTYPE_IB,
-#endif
     co::CONNECTIONTYPE_NONE // must be last
 };
 }
