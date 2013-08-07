@@ -15,8 +15,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef EQTEST_TEST_H
-#define EQTEST_TEST_H
+#ifndef COTEST_TEST_H
+#define COTEST_TEST_H
 
 #include <lunchbox/log.h>
 #include <lunchbox/sleep.h>
@@ -98,4 +98,4 @@ int main( int argc, char **argv )
 
 #  define main testMain
 
-#endif // EQTEST_TEST_H
+#endif // COTEST_TEST_H
