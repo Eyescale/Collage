@@ -20,9 +20,13 @@
 
 #include <co/co.h>
 #include <co/connections.h>
-#include <tclap/CmdLine.h>
 #include <boost/foreach.hpp>
 #include <iostream>
+
+#ifndef MIN
+#  define MIN LB_MIN
+#endif
+#include <tclap/CmdLine.h>
 
 static uint64_t objectSize = 0;
 static uint64_t nObjects = 0;

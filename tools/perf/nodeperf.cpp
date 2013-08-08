@@ -19,9 +19,13 @@
 // Usage: see 'coNodeperf -h'
 
 #include <co/co.h>
-#include <tclap/CmdLine.h>
 #include <boost/foreach.hpp>
 #include <iostream>
+
+#ifndef MIN
+#  define MIN LB_MIN
+#endif
+#include <tclap/CmdLine.h>
 
 namespace
 {
