@@ -103,8 +103,10 @@ set(CO_SOURCES
   customICommand.cpp
   customOCommand.cpp
   dataIStream.cpp
+  dataIStreamArchive.cpp
   dataIStreamQueue.cpp
   dataOStream.cpp
+  dataOStreamArchive.cpp
   deltaMasterCM.cpp
   dispatcher.cpp
   eventConnection.cpp
@@ -136,6 +138,7 @@ set(CO_SOURCES
   queueItem.cpp
   queueMaster.cpp
   queueSlave.cpp
+  rspConnection.cpp
   sendToken.cpp
   serializable.cpp
   socketConnection.cpp
@@ -154,6 +157,16 @@ if(WIN32)
 else()
   list(APPEND CO_HEADERS fdConnection.h)
   list(APPEND CO_SOURCES fdConnection.cpp)
+endif()
+
+if(OFED_FOUND)
+  list(APPEND CO_HEADERS rdmaConnection.h)
+  list(APPEND CO_SOURCES rdmaConnection.cpp)
+endif()
+
+if(UDT_FOUND)
+  list(APPEND CO_HEADERS udtConnection.h)
+  list(APPEND CO_SOURCES udtConnection.cpp)
 endif()
 
 list(SORT CO_HEADERS)

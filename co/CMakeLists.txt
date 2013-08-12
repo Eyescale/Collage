@@ -9,7 +9,13 @@ include(files.cmake)
 option(COLLAGE_AGGRESSIVE_CACHING "Disable to reduce memory consumption" ON)
 mark_as_advanced(COLLAGE_AGGRESSIVE_CACHING)
 
-set(CO_ADD_LINKLIB ${PTHREAD_LIBRARIES} ${LUNCHBOX_LIBRARIES})
+set(CO_ADD_LINKLIB ${PTHREAD_LIBRARIES} ${LUNCHBOX_LIBRARIES}
+  ${Boost_SERIALIZATION_LIBRARY} ${Boost_SYSTEM_LIBRARY})
+
+if(NOT Boost_USE_STATIC_LIBS)
+  list(APPEND CO_ADD_LINKLIB ${Boost_DATE_TIME_LIBRARY})
+endif()
+add_definitions(-DBOOST_ARCHIVE_SOURCE)
 
 if(WIN32)
   list(APPEND CO_ADD_LINKLIB ws2_32 mswsock)
@@ -18,21 +24,8 @@ if(LINUX)
   list(APPEND CO_ADD_LINKLIB dl rt)
 endif()
 
-if(Boost_FOUND)
-  list(APPEND CO_SOURCES dataIStreamArchive.cpp dataOStreamArchive.cpp
-                         rspConnection.cpp)
-  list(APPEND CO_ADD_LINKLIB ${Boost_SERIALIZATION_LIBRARY}
-                             ${Boost_SYSTEM_LIBRARY})
-  if(NOT Boost_USE_STATIC_LIBS)
-    list(APPEND CO_ADD_LINKLIB ${Boost_DATE_TIME_LIBRARY})
-  endif()
-  add_definitions(-DBOOST_ARCHIVE_SOURCE)
-endif(Boost_FOUND)
-
 if(OFED_FOUND)
   include_directories(SYSTEM ${OFED_INCLUDE_DIRS})
-  list(APPEND CO_HEADERS rdmaConnection.h)
-  list(APPEND CO_SOURCES rdmaConnection.cpp)
   list(APPEND CO_ADD_LINKLIB ${OFED_LIBRARIES})
   if(WIN32)
     list(APPEND CO_ADD_LINKLIB DelayImp.lib)
@@ -41,8 +34,6 @@ endif()
 
 if(UDT_FOUND)
   include_directories(SYSTEM ${UDT_INCLUDE_DIRS})
-  list(APPEND CO_HEADERS udtConnection.h)
-  list(APPEND CO_SOURCES udtConnection.cpp)
   list(APPEND CO_ADD_LINKLIB ${UDT_LIBRARIES})
 endif()
 
