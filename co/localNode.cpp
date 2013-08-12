@@ -31,7 +31,6 @@
 #include "exception.h"
 #include "global.h"
 #include "iCommand.h"
-#include "mapObjectFuture.h"
 #include "nodeCommand.h"
 #include "oCommand.h"
 #include "object.h"
@@ -61,6 +60,7 @@ typedef HandlerHash::const_iterator HandlerHashCIter;
 typedef std::pair< LocalNode::CommandHandler, CommandQueue* > CommandPair;
 typedef stde::hash_map< uint128_t, CommandPair > CommandHash;
 typedef CommandHash::const_iterator CommandHashCIter;
+typedef lunchbox::FutureFunction< bool > FuturebImpl;
 }
 
 namespace detail
@@ -680,9 +680,9 @@ Futureb LocalNode::mapObject( Object* object, const UUID& id, NodePtr master,
 {
     const uint32_t request = _impl->objectStore->mapObjectNB( object, id,
                                                               version, master );
-    const MapObjectFuture::SyncFunc& func =
-        boost::bind( &ObjectStore::mapObjectSync, _impl->objectStore, request );
-    return Futureb( new MapObjectFuture( func ));
+    const FuturebImpl::Func& func = boost::bind( &ObjectStore::mapObjectSync,
+                                                 _impl->objectStore, request );
+    return Futureb( new FuturebImpl( func ));
 }
 
 uint32_t LocalNode::mapObjectNB( Object* object, const UUID& id,
@@ -708,10 +708,10 @@ Futureb LocalNode::syncObject( Object* object, NodePtr master, const UUID& id,
 {
     const uint32_t request = _impl->objectStore->syncObjectNB( object, master,
                                                                id, instanceID );
-    const MapObjectFuture::SyncFunc& func =
-        boost::bind( &ObjectStore::syncObjectSync, _impl->objectStore, request,
-                     object );
-    return Futureb( new MapObjectFuture( func ));
+    const FuturebImpl::Func& func = boost::bind( &ObjectStore::syncObjectSync,
+                                                 _impl->objectStore, request,
+                                                 object );
+    return Futureb( new FuturebImpl( func ));
 }
 
 void LocalNode::unmapObject( Object* object )

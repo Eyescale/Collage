@@ -155,3 +155,6 @@ else()
   list(APPEND CO_HEADERS fdConnection.h)
   list(APPEND CO_SOURCES fdConnection.cpp)
 endif()
+
+list(SORT CO_HEADERS)
+list(SORT CO_SOURCES)
