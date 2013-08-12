@@ -89,10 +89,10 @@ public:
 
     void map( co::LocalNodePtr local, co::NodePtr remote )
     {
-        co::Futureb mapOp = local->mapObject( this, getID(), remote );
+        co::f_bool_t mapped = local->mapObject( this, getID(), remote );
         BOOST_FOREACH( Object* child, children_ )
             child->map( local, remote );
-        LBCHECK( mapOp.wait( ));
+        LBCHECK( mapped );
     }
 
     void unmap( co::LocalNodePtr local )

@@ -43,6 +43,7 @@
 
 #include <lunchbox/hash.h>
 #include <boost/bind.hpp>
+#include <list>
 
 namespace co
 {
@@ -434,39 +435,28 @@ void LocalNode::addListener( ConnectionPtr connection )
 
 void LocalNode::removeListeners( const Connections& connections )
 {
-    std::vector< uint32_t > requests;
+    std::vector< lunchbox::RequestFuture< void > > requests;
     for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )
     {
         ConnectionPtr connection = *i;
-        requests.push_back( _removeListenerNB( connection ));
-    }
-
-    for( size_t i = 0; i < connections.size(); ++i )
-    {
-        ConnectionPtr connection = connections[i];
-        waitRequest( requests[ i ] );
-        connection->close();
-        // connection and connections hold a reference
-        LBASSERTINFO( connection->getRefCount()==2 || connection->isMulticast(),
-                      connection->getRefCount() << ": " << *connection );
+        requests.push_back( _removeListener( connection ));
     }
 }
 
-uint32_t LocalNode::_removeListenerNB( ConnectionPtr connection )
+lunchbox::RequestFuture< void > LocalNode::_removeListener( ConnectionPtr conn )
 {
     LBASSERT( isListening( ));
-    LBASSERTINFO( !connection->isConnected(), connection );
+    LBASSERTINFO( !conn->isConnected(), conn );
 
-    connection->ref( this );
-    const uint32_t requestID = registerRequest();
+    conn->ref( this );
+    const lunchbox::RequestFuture< void > request = registerRequest< void >();
     Nodes nodes;
     getNodes( nodes );
 
     for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
-        (*i)->send( CMD_NODE_REMOVE_LISTENER ) << requestID << connection.get()
-                                    << connection->getDescription()->toString();
-
-    return requestID;
+        (*i)->send( CMD_NODE_REMOVE_LISTENER ) << request << conn.get()
+                                          << conn->getDescription()->toString();
+    return request;
 }
 
 void LocalNode::_addConnection( ConnectionPtr connection )
@@ -594,11 +584,10 @@ bool LocalNode::disconnect( NodePtr node )
         return true;
 
     LBASSERT( !inCommandThread( ));
+    lunchbox::RequestFuture<void> request = registerRequest<void>( node.get( ));
+    send( CMD_NODE_DISCONNECT ) << request;
 
-    const uint32_t requestID = registerRequest( node.get( ));
-    send( CMD_NODE_DISCONNECT ) << requestID;
-
-    waitRequest( requestID );
+    request.wait();
     _impl->objectStore->removeNode( node );
     return true;
 }
@@ -675,14 +664,14 @@ void LocalNode::deregisterObject( Object* object )
     _impl->objectStore->deregisterObject( object );
 }
 
-Futureb LocalNode::mapObject( Object* object, const UUID& id, NodePtr master,
+f_bool_t LocalNode::mapObject( Object* object, const UUID& id, NodePtr master,
                               const uint128_t& version )
 {
     const uint32_t request = _impl->objectStore->mapObjectNB( object, id,
                                                               version, master );
     const FuturebImpl::Func& func = boost::bind( &ObjectStore::mapObjectSync,
                                                  _impl->objectStore, request );
-    return Futureb( new FuturebImpl( func ));
+    return f_bool_t( new FuturebImpl( func ));
 }
 
 uint32_t LocalNode::mapObjectNB( Object* object, const UUID& id,
@@ -703,7 +692,7 @@ bool LocalNode::mapObjectSync( const uint32_t requestID )
     return _impl->objectStore->mapObjectSync( requestID );
 }
 
-Futureb LocalNode::syncObject( Object* object, NodePtr master, const UUID& id,
+f_bool_t LocalNode::syncObject( Object* object, NodePtr master, const UUID& id,
                                const uint32_t instanceID )
 {
     const uint32_t request = _impl->objectStore->syncObjectNB( object, master,
@@ -711,7 +700,7 @@ Futureb LocalNode::syncObject( Object* object, NodePtr master, const UUID& id,
     const FuturebImpl::Func& func = boost::bind( &ObjectStore::syncObjectSync,
                                                  _impl->objectStore, request,
                                                  object );
-    return Futureb( new FuturebImpl( func ));
+    return f_bool_t( new FuturebImpl( func ));
 }
 
 void LocalNode::unmapObject( Object* object )
@@ -871,11 +860,9 @@ NodePtr LocalNode::_connect( const NodeID& nodeID, NodePtr peer )
     }
     LBASSERT( getNodeID() != nodeID );
 
-    const uint32_t requestID = registerRequest();
-    peer->send( CMD_NODE_GET_NODE_DATA ) << nodeID << requestID;
-
-    void* result = 0;
-    waitRequest( requestID, result );
+    lunchbox::RequestFuture< void* > request = registerRequest< void* >();
+    peer->send( CMD_NODE_GET_NODE_DATA ) << nodeID << request;
+    void* result = request.get();
 
     if( !result )
     {

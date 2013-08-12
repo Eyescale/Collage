@@ -251,16 +251,16 @@ public:
      * @sa registerObject
      * @version 1.0
      */
-    CO_API Futureb mapObject( Object* object, const UUID& id,
-                              NodePtr master,
-                              const uint128_t& version = VERSION_OLDEST );
+    CO_API f_bool_t mapObject( Object* object, const UUID& id,
+                               NodePtr master,
+                               const uint128_t& version = VERSION_OLDEST );
 
     /** Convenience wrapper for mapObject(). @version 1.0 */
-    Futureb mapObject( Object* object, const ObjectVersion& v )
+    f_bool_t mapObject( Object* object, const ObjectVersion& v )
         { return mapObject( object, v.identifier, 0, v.version ); }
 
     /** @deprecated */
-    Futureb mapObject( Object* object, const UUID& id,
+    f_bool_t mapObject( Object* object, const UUID& id,
                        const uint128_t& version = VERSION_OLDEST )
         { return mapObject( object, id, 0, version ); }
 
@@ -296,9 +296,9 @@ public:
      *         the operation on evaluation.
      * @version 1.1.1
      */
-    CO_API Futureb syncObject( Object* object, NodePtr master,
-                               const UUID& id,
-                               const uint32_t instanceID=CO_INSTANCE_ALL );
+    CO_API f_bool_t syncObject( Object* object, NodePtr master,
+                                const UUID& id,
+                                const uint32_t instanceID=CO_INSTANCE_ALL );
     /**
      * Unmap a mapped object.
      *
@@ -561,7 +561,7 @@ private:
 
     NodePtr _connect( const NodeID& nodeID, NodePtr peer );
     NodePtr _connectFromZeroconf( const NodeID& nodeID );
-    uint32_t _removeListenerNB( ConnectionPtr connection );
+    lunchbox::RequestFuture< void > _removeListener( ConnectionPtr connection );
     uint32_t _connect( NodePtr node );
     uint32_t _connect( NodePtr node, ConnectionPtr connection );
 

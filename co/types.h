@@ -69,12 +69,12 @@ class Zeroconf;
 template< class Q > class WorkerThread;
 struct ObjectVersion;
 
-using lunchbox::Futureb;
 using lunchbox::Strings;
 using lunchbox::StringsCIter;
 using lunchbox::UUID;
-using lunchbox::uint128_t;
 using lunchbox::a_ssize_t;
+using lunchbox::f_bool_t;
+using lunchbox::uint128_t;
 
 typedef UUID NodeID; //!< A unique identifier for nodes.
 

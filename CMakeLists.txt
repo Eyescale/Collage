@@ -4,6 +4,7 @@
 
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(Collage)
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
 if(NOT BUILDYARD)
   include(Buildyard)

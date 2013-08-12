@@ -87,6 +87,11 @@ namespace DataStreamTest { class Sender; }
         template< class T >
         DataOStream& operator << ( const lunchbox::Buffer< T >& buffer );
 
+        /** Transmit a request identifier. @version 1.1.1 */
+        template< class T >
+        DataOStream& operator << ( const lunchbox::RequestFuture<T>& request )
+            { return (*this) << request.getID(); }
+
         /** Write a std::vector of serializable items. @version 1.0 */
         template< class T >
         DataOStream& operator << ( const std::vector< T >& value );

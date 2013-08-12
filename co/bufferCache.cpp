@@ -26,6 +26,7 @@
 #include "node.h"
 
 #include <lunchbox/atomic.h>
+#include <list>
 
 //#define PROFILE
 // 31300 hits, 35 misses, 297640 lookups, 126976b allocated in 31 buffers
