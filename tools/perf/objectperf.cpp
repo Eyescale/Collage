@@ -317,7 +317,7 @@ public:
 
     void process()
     {
-        LBCHECK( !impls_.empty( ));
+        LBASSERT( !impls_.empty( ));
 
         canChange_ = false;
         impls_[ active_ ]->process();

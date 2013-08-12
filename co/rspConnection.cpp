@@ -45,7 +45,7 @@
 // Note: Do not use version > 255, endianness detection magic relies on this.
 const uint16_t CO_RSP_PROTOCOL_VERSION = 0;
 
-using namespace boost::asio;
+namespace ip = boost::asio::ip;
 
 namespace co
 {
@@ -412,7 +412,7 @@ void RSPConnection::Thread::run()
 
 void RSPConnection::_handleTimeout( const boost::system::error_code& error )
 {
-    if( error == error::operation_aborted )
+    if( error == boost::asio::error::operation_aborted )
         return;
 
     if( isListening( ))
@@ -589,14 +589,14 @@ void RSPConnection::_setTimeout( const int32_t timeOut )
     LBASSERT( timeOut >= 0 );
     _timeout.expires_from_now( boost::posix_time::milliseconds( timeOut ));
     _timeout.async_wait( boost::bind( &RSPConnection::_handleTimeout, this,
-                                      placeholders::error ));
+                                      boost::asio::placeholders::error ));
 }
 
 void RSPConnection::_postWakeup()
 {
     _wakeup.expires_from_now( boost::posix_time::milliseconds( 0 ));
     _wakeup.async_wait( boost::bind( &RSPConnection::_handleTimeout, this,
-                                     placeholders::error ));
+                                     boost::asio::placeholders::error ));
 }
 
 void RSPConnection::_processOutgoing()
@@ -1034,10 +1034,10 @@ void RSPConnection::_handleConnectedData( const size_t bytes )
 void RSPConnection::_asyncReceiveFrom()
 {
     _read->async_receive_from(
-        buffer( _recvBuffer.getData(), _mtu ), _readAddr,
+        boost::asio::buffer( _recvBuffer.getData(), _mtu ), _readAddr,
         boost::bind( &RSPConnection::_handlePacket, this,
-                     placeholders::error,
-                     placeholders::bytes_transferred ));
+                     boost::asio::placeholders::error,
+                     boost::asio::placeholders::bytes_transferred ));
 }
 
 bool RSPConnection::_handleData( const size_t bytes )
@@ -1627,7 +1627,7 @@ void RSPConnection::_sendCountNode()
     DatagramNode count = { COUNTNODE, CO_RSP_PROTOCOL_VERSION, _id,
                            uint16_t( _children.size( )) };
     count.byteswap();
-    _write->send( buffer( &count, sizeof( count )) );
+    _write->send( boost::asio::buffer( &count, sizeof( count )) );
 }
 
 void RSPConnection::_sendSimpleDatagram( const DatagramType type,
@@ -1636,7 +1636,7 @@ void RSPConnection::_sendSimpleDatagram( const DatagramType type,
     DatagramNode simple = { uint16_t( type ), CO_RSP_PROTOCOL_VERSION, id,
                             _sequence };
     simple.byteswap();
-    _write->send( buffer( &simple, sizeof( simple )) );
+    _write->send( boost::asio::buffer( &simple, sizeof( simple )) );
 }
 
 void RSPConnection::_sendAck( const uint16_t writerID,
@@ -1650,7 +1650,7 @@ void RSPConnection::_sendAck( const uint16_t writerID,
     LBLOG( LOG_RSP ) << "send ack " << sequence << std::endl;
     DatagramAck ack = { ACK, _id, writerID, sequence };
     ack.byteswap();
-    _write->send( buffer( &ack, sizeof( ack )) );
+    _write->send( boost::asio::buffer( &ack, sizeof( ack )) );
 }
 
 void RSPConnection::_sendNack( const uint16_t writerID, const Nack* nacks,
@@ -1676,7 +1676,7 @@ void RSPConnection::_sendNack( const uint16_t writerID, const Nack* nacks,
     packet.set( _id, writerID, count );
     memcpy( packet.nacks, nacks, count * sizeof( Nack ));
     packet.byteswap();
-    _write->send( buffer( &packet, size ));
+    _write->send( boost::asio::buffer( &packet, size ));
 }
 
 void RSPConnection::_sendAckRequest()
@@ -1688,7 +1688,7 @@ void RSPConnection::_sendAckRequest()
                      << std::endl;
     DatagramAckRequest ackRequest = { ACKREQ, _id, uint16_t( _sequence - 1 ) };
     ackRequest.byteswap();
-    _write->send( buffer( &ackRequest, sizeof( DatagramAckRequest )) );
+    _write->send( boost::asio::buffer( &ackRequest, sizeof( DatagramAckRequest )) );
 }
 
 std::ostream& operator << ( std::ostream& os,
