@@ -38,7 +38,7 @@
 #ifdef _WIN32
 #  define CO_RSP_DEFAULT_PORT (4242)
 #else
-#  define CO_RSP_DEFAULT_PORT (4242 + getuid())
+#  define CO_RSP_DEFAULT_PORT ( (getuid() % 64511) + 1024 )
 #endif
 
 
