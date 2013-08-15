@@ -92,7 +92,7 @@ public:
         co::f_bool_t mapped = local->mapObject( this, getID(), remote );
         BOOST_FOREACH( Object* child, children_ )
             child->map( local, remote );
-        LBCHECK( mapped );
+        LBASSERT( mapped );
     }
 
     void unmap( co::LocalNodePtr local )
