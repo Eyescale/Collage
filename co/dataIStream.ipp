@@ -29,13 +29,19 @@ namespace co
     {
         uint64_t nElems = 0;
         *this >> nElems;
-        LBASSERTINFO( nElems <= getRemainingBufferSize(),
-                      nElems << " > " << getRemainingBufferSize( ));
+        const uint64_t maxElems = getRemainingBufferSize();
+        LBASSERTINFO( nElems <= maxElems,
+                      nElems << " > " << maxElems );
         if( nElems == 0 )
             str.clear();
-        else
+        else if( nElems <= maxElems )
             str.assign( static_cast< const char* >( getRemainingBuffer(nElems)),
                         size_t( nElems ));
+        else
+            str.assign(
+                static_cast< const char* >( getRemainingBuffer(maxElems)),
+                size_t( maxElems ));
+
         return *this;
     }
 
