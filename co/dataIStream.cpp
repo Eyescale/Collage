@@ -158,12 +158,15 @@ bool DataIStream::_checkBuffer()
         uint32_t nChunks = 0;
         const void* data = 0;
 
+        _impl->position = 0;
+        _impl->input = 0;
+        _impl->inputSize = 0;
+
         if( !getNextBuffer( compressor, nChunks, &data, _impl->inputSize ))
             return false;
 
         _impl->input = _decompress( data, compressor, nChunks,
                                     _impl->inputSize );
-        _impl->position = 0;
     }
     return true;
 }

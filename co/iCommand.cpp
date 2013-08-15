@@ -168,18 +168,17 @@ uint128_t ICommand::getVersion() const
 }
 
 bool ICommand::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
-                             const void** chunkData, uint64_t& size )
+                              const void** chunkData, uint64_t& size )
 {
+    if( _impl->consumed ) // 2nd call
+        _impl->buffer = 0;
+
     if( !_impl->buffer )
         return false;
 
-#ifndef NDEBUG
-    LBASSERT( !_impl->consumed );
     _impl->consumed = true;
-#endif
-
     *chunkData = _impl->buffer->getData();
-    size = _impl->buffer->getSize();
+    size = reinterpret_cast< const uint64_t* >( *chunkData )[ 0 ];
     compressor = EQ_COMPRESSOR_NONE;
     nChunks = 1;
     return true;
