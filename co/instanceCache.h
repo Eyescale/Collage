@@ -29,7 +29,7 @@
 #include <lunchbox/lockable.h>  // member
 #include <lunchbox/stdExt.h>    // member
 #include <lunchbox/thread.h>    // member
-#include <lunchbox/uuid.h>      // member
+#include <lunchbox/uint128_t.h> // member
 
 #include <iostream>
 

@@ -104,7 +104,7 @@ LocalNodePtr Object::getLocalNode()
 void Object::setID( const UUID& identifier )
 {
     LBASSERT( !isAttached( ));
-    LBASSERT( identifier.isGenerated( ));
+    LBASSERT( identifier.isUUID( ));
     impl_->id = identifier;
 }
 

@@ -355,7 +355,7 @@ uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
         << "Mapping " << lunchbox::className( object ) << " to id " << id
         << " version " << version << std::endl;
     LBASSERT( object );
-    LBASSERTINFO( id.isGenerated(), id );
+    LBASSERTINFO( id.isUUID(), id );
 
     if( !master )
         master = _localNode->connectObjectMaster( id );
@@ -367,7 +367,7 @@ uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
         return LB_UNDEFINED_UINT32;
     }
 
-    if( !object || !id.isGenerated( ))
+    if( !object || !id.isUUID( ))
     {
         LBWARN << "Invalid object " << object << " or id " << id << std::endl;
         return LB_UNDEFINED_UINT32;
@@ -450,9 +450,9 @@ uint32_t ObjectStore::syncObjectNB( Object* object, NodePtr master,
         << "Syncing " << lunchbox::className( object ) << " with id " << id
         << std::endl;
     LBASSERT( object );
-    LBASSERTINFO( id.isGenerated(), id );
+    LBASSERTINFO( id.isUUID(), id );
 
-    if( !object || !id.isGenerated( ))
+    if( !object || !id.isUUID( ))
     {
         LBWARN << "Invalid object " << object << " or id " << id << std::endl;
         return LB_UNDEFINED_UINT32;
@@ -577,7 +577,7 @@ bool ObjectStore::registerObject( Object* object )
     LBASSERT( !object->isAttached( ));
 
     const UUID& id = object->getID( );
-    LBASSERTINFO( id.isGenerated(), id );
+    LBASSERTINFO( id.isUUID(), id );
 
     object->notifyAttach();
     object->setupChangeManager( object->getChangeType(), true, _localNode,
@@ -705,7 +705,7 @@ bool ObjectStore::_cmdFindMasterNodeID( ICommand& command )
 
     const UUID& id = command.get< UUID >();
     const uint32_t requestID = command.get< uint32_t >();
-    LBASSERT( id.isGenerated() );
+    LBASSERT( id.isUUID() );
 
     NodeID masterNodeID;
     {

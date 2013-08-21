@@ -130,12 +130,12 @@ int main( int argc, char **argv )
     nodes.push_back( serverProxy );
 
     lunchbox::Clock clock;
-    for( unsigned i = co::Object::NONE+1; i <= co::Object::UNBUFFERED; ++i )
+    for( uint64_t i = co::Object::NONE+1; i <= co::Object::UNBUFFERED; ++i )
     {
         const co::Object::ChangeType type = co::Object::ChangeType( i );
         Object object( type );
         TEST( client->registerObject( &object ));
-        object.push( co::uint128_t(42), co::uint128_t(i), nodes );
+        object.push( co::uint128_t(42ul), co::uint128_t(i), nodes );
 
         monitor.waitEQ( type );
         TEST( server->mapObject( server->object, object.getID(),

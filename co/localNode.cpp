@@ -1050,8 +1050,8 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
 
 NodePtr LocalNode::connectObjectMaster( const UUID& id )
 {
-    LBASSERTINFO( id.isGenerated(), id );
-    if( !id.isGenerated( ))
+    LBASSERTINFO( id.isUUID(), id );
+    if( !id.isUUID( ))
     {
         LBWARN << "Invalid object id " << id << std::endl;
         return 0;

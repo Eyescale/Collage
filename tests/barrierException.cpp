@@ -27,7 +27,6 @@
 #include <co/node.h>
 #include <lunchbox/sleep.h>
 #include <lunchbox/rng.h>
-#include <lunchbox/uuid.h>
 
 #include <iostream>
 #define CO_TEST_RUNTIME 6000
