@@ -78,7 +78,7 @@ void ObjectInstanceDataOStream::enableSync( const uint128_t& version,
 }
 
 void ObjectInstanceDataOStream::push( const Nodes& receivers,
-                                      const uint128_t& objectID,
+                                      const UUID& objectID,
                                       const uint128_t& groupID,
                                       const uint128_t& typeID )
 {

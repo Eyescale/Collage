@@ -87,7 +87,7 @@ struct ObjectVersion
                    ( identifier == rhs.identifier && version > rhs.version );
         }
 
-    uint128_t identifier; //!< the object identifier
+    UUID identifier; //!< the object identifier
     uint128_t version; //!< the object version
 };
 

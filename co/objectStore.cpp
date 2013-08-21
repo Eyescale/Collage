@@ -399,7 +399,7 @@ uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
     return requestID;
 }
 
-bool ObjectStore::_checkInstanceCache( const uint128_t& id, uint128_t& from,
+bool ObjectStore::_checkInstanceCache( const UUID& id, uint128_t& from,
                                        uint128_t& to, uint32_t& instanceID )
 {
     if( !_instanceCache )
@@ -1114,7 +1114,7 @@ bool ObjectStore::_cmdSyncObjectReply( ICommand& command )
     if( command.get< UUID >() != _localNode->getNodeID( ))
         return true;
 
-    const uint128_t& id = command.get< uint128_t >();
+    const NodeID& id = command.get< NodeID >();
     const uint32_t requestID = command.get< uint32_t >();
     const bool result = command.get< bool >();
     const bool releaseCache = command.get< bool >();
@@ -1283,7 +1283,7 @@ bool ObjectStore::_cmdObjectPush( ICommand& command )
 {
     LB_TS_THREAD( _commandThread );
 
-    const uint128_t& objectID = command.get< uint128_t >();
+    const UUID& objectID = command.get< UUID >();
     const uint128_t& groupID = command.get< uint128_t >();
     const uint128_t& typeID = command.get< uint128_t >();
 

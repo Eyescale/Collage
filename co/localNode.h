@@ -357,13 +357,13 @@ public:
      */
     CO_API virtual void objectPush( const uint128_t& groupID,
                                     const uint128_t& objectType,
-                                    const uint128_t& objectID,
+                                    const UUID& objectID,
                                     DataIStream& istream );
 
     /** Function signature for push handlers. @version 1.0 */
     typedef boost::function< void( const uint128_t&, //!< groupID
                                    const uint128_t&, //!< objectType
-                                   const uint128_t&, //!< objectID
+                                   const UUID&, //!< objectID
                                    DataIStream& ) > PushHandler;
     /**
      * Register a custom handler for Object::push operations

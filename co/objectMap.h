@@ -99,7 +99,7 @@ public:
      * @return 0 if not registered, the valid instance otherwise
      * @version 1.0
      */
-    CO_API Object* map( const uint128_t& identifier, Object* instance = 0 );
+    CO_API Object* map( const UUID& identifier, Object* instance = 0 );
 
     /**
      * Unmap an object from the object map.

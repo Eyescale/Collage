@@ -55,7 +55,7 @@ public:
     {
         LBASSERT( nChildren < nObjects );
         LBASSERT( index < nObjects );
-        setID( co::uint128_t( _objectID, index ));
+        setID( co::UUID( _objectID, index ));
 
         buffer_.resize( objectSize );
         const uint8_t* from = reinterpret_cast< uint8_t* >( this );
@@ -522,7 +522,7 @@ int main( int argc, char **argv )
                 localNode->getZeroconf().getInstances();
             BOOST_FOREACH( const std::string& instance, instances )
                 if( !zeroconf.get( instance, "coObjectperf" ).empty( ))
-                    localNode->connect( co::uint128_t( instance ));
+                    localNode->connect( co::NodeID( instance ));
         }
 
         NodePtr node;

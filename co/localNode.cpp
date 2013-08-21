@@ -715,7 +715,7 @@ void LocalNode::swapObject( Object* oldObject, Object* newObject )
 
 void LocalNode::objectPush( const uint128_t& groupID,
                             const uint128_t& objectType,
-                            const uint128_t& objectID, DataIStream& istream )
+                            const UUID& objectID, DataIStream& istream )
 {
     lunchbox::ScopedRead mutex( _impl->pushHandlers );
     HandlerHashCIter i = _impl->pushHandlers->find( groupID );
@@ -920,7 +920,7 @@ NodePtr LocalNode::_connectFromZeroconf( const NodeID& nodeID )
     for( StringsCIter i = instances.begin(); i != instances.end(); ++i )
     {
         const std::string& instance = *i;
-        const NodeID candidate = uint128_t( instance );
+        const NodeID candidate( instance );
         if( candidate != nodeID )
             continue;
 
