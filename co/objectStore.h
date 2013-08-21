@@ -217,7 +217,7 @@ private:
                         const uint32_t instanceID );
     void _detachObject( Object* object );
 
-    bool _checkInstanceCache( const uint128_t& id, uint128_t& from,
+    bool _checkInstanceCache( const UUID& id, uint128_t& from,
                               uint128_t& to, uint32_t& instanceID );
 
     /** The command handler functions. */

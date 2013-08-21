@@ -75,7 +75,7 @@ void QueueSlave::attach( const UUID& id, const uint32_t instanceID )
 
 void QueueSlave::applyInstanceData( co::DataIStream& is )
 {
-    uint128_t masterNodeID;
+    NodeID masterNodeID;
     is >> _impl->masterInstanceID >> masterNodeID;
 
     LBASSERT( masterNodeID != 0 );

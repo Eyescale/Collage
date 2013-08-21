@@ -46,7 +46,7 @@ namespace co
                          const MasterCMCommand& command );
 
         /** Push a stored instance data. */
-        void push( const Nodes& receivers, const uint128_t& objectID,
+        void push( const Nodes& receivers, const UUID& objectID,
                    const uint128_t& groupID, const uint128_t& typeID );
 
         /** Synchronize a stored instance data. */

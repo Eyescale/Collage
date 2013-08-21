@@ -35,7 +35,7 @@ typedef lunchbox::Buffer< uint64_t > Buffer;
 
 ConnectedNodes nodes_;
 lunchbox::Lock print_;
-static co::uint128_t _objectID( 0x25625429A197D730ull, 0x79F60861189007D5ull );
+static co::UUID _objectID( 0x25625429A197D730ull, 0x79F60861189007D5ull );
 template< class C >
 bool commandHandler( C command, Buffer& buffer, const uint64_t seed );
 
@@ -215,7 +215,7 @@ int main( int argc, char **argv )
     localNode->getZeroconf().set( "coNodeperf", co::Version::getString( ));
 
     Object object;
-    object.setID( _objectID + localNode->getNodeID( ));
+    object.setID( co::UUID( _objectID + localNode->getNodeID( )));
     LBCHECK( localNode->registerObject( &object ));
 
     // run
@@ -232,7 +232,7 @@ int main( int argc, char **argv )
         BOOST_FOREACH( const std::string& instance, instances )
         {
             if( !zeroconf.get( instance, "coNodeperf" ).empty( ))
-                localNode->connect( co::uint128_t( instance ));
+                localNode->connect( co::NodeID( instance ));
         }
     }
     {
@@ -280,7 +280,7 @@ int main( int argc, char **argv )
                         PerfNodeProxyPtr peer =
                                     static_cast< PerfNodeProxy* >( node.get( ));
                         LBCHECK( localNode->mapObject( &peer->object,
-                                               _objectID + peer->getNodeID( )));
+                                    co::UUID( _objectID + peer->getNodeID( ))));
                     }
                 }
                 nodes = *nodes_;
