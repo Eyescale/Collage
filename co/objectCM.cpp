@@ -47,7 +47,10 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
     LBASSERT( _object );
     LBASSERT( !nodes.empty( ));
     if( nodes.empty( ))
+    {
+        LBWARN << "Push to an empty set of nodes" << std::endl;
         return;
+    }
 
     ObjectInstanceDataOStream os( this );
     os.enablePush( getVersion(), nodes );

@@ -79,8 +79,8 @@ public:
     Object* object;
 
 protected:
-    virtual void objectPush( const uint128_t& groupID, const uint128_t& typeID,
-                             const uint128_t& objectID, co::DataIStream& is )
+    void objectPush( const uint128_t& groupID, const uint128_t& typeID,
+                     const co::UUID& objectID, co::DataIStream& is ) override
     {
         const co::Object::ChangeType type =
             co::Object::ChangeType( typeID.low( ));

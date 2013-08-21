@@ -721,6 +721,9 @@ void LocalNode::objectPush( const uint128_t& groupID,
     HandlerHashCIter i = _impl->pushHandlers->find( groupID );
     if( i != _impl->pushHandlers->end( ))
         i->second( groupID, objectType, objectID, istream );
+    else
+        LBWARN << "No custom handler for push group " << groupID
+               << " registered" << std::endl;
 
     if( istream.wasUsed() && istream.hasData( ))
         LBWARN << "Incomplete Object::push for group " << groupID << " type "
