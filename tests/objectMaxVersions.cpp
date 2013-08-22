@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2012-2013, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -65,7 +65,7 @@ public:
     virtual void run()
         {
             lunchbox::sleep( 110 );
-            _object.sync( uint128_t(3ul) );
+            _object.sync( uint128_t(3) );
             TESTINFO( _object.getVersion() == 3, _object.getVersion( ));
         }
 
