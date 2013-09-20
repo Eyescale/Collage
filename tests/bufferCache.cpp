@@ -42,14 +42,13 @@ public:
     bool _cmdStop( co::ICommand& command ) { _running = false; return true; }
 
     Reader() : index( 0 ), _running( false )
-        {
-            registerCommand( 0u,
-                             co::CommandFunc< Reader >( this, &Reader::_cmd ),
-                             &_queue );
-            registerCommand( 1u,
-                             co::CommandFunc<Reader>( this, &Reader::_cmdStop ),
-                             &_queue );
-        }
+    {
+        registerCommand( 0u, co::CommandFunc< Reader >( this, &Reader::_cmd ),
+                         &_queue );
+        registerCommand( 1u, co::CommandFunc<Reader>( this, &Reader::_cmdStop ),
+                         &_queue );
+    }
+
     virtual ~Reader(){}
 
     size_t index;

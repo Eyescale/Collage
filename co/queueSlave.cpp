@@ -40,10 +40,10 @@ public:
     QueueSlave( const uint32_t mark, const uint32_t amount)
         : masterInstanceID( CO_INSTANCE_ALL )
         , prefetchMark( mark == LB_UNDEFINED_UINT32 ?
-                        Global::getIAttribute( Global::IATTR_QUEUE_MIN_SIZE ) :
+                    Global::getIAttribute( Global::IATTR_TILE_QUEUE_MIN_SIZE ) :
                         mark )
         , prefetchAmount( amount == LB_UNDEFINED_UINT32 ?
-                          Global::getIAttribute( Global::IATTR_QUEUE_REFILL ) :
+                      Global::getIAttribute( Global::IATTR_TILE_QUEUE_REFILL ) :
                           amount )
     {}
 

@@ -55,7 +55,7 @@ namespace co
         CO_API static uint32_t getObjectBufferSize();
 
         /** @internal
-         * Set the global variables.
+         * Set global variables.
          *
          * The data is expected to be a list of unsigned ints in the format
          * &#35;&#35;uint0&#35;uint1&#35;uint2&#35;...&#35;uint(n-1)&#35;&#35;
@@ -93,14 +93,15 @@ namespace co
             IATTR_RSP_ACK_FREQUENCY,     //!< @internal reader ack interval
             IATTR_UDP_MTU,               //!< @internal max send size on UDP
             IATTR_UDP_BUFFER_SIZE,       //!< @internal send/receiver buffer
-            IATTR_QUEUE_MIN_SIZE,        //!< @internal (tile) queue min size
-            IATTR_QUEUE_REFILL,          //!< @internal (tile) queue refill size
+            IATTR_TILE_QUEUE_MIN_SIZE,   //!< @internal (tile) queue min size
+            IATTR_TILE_QUEUE_REFILL,     //!< @internal (tile) queue refill size
             IATTR_RDMA_RING_BUFFER_SIZE_MB, //!< @internal send/receive buffer
             IATTR_RDMA_SEND_QUEUE_DEPTH, //!< @internal max send credits
             IATTR_RDMA_RESOLVE_TIMEOUT_MS, //!< @internal address resolution
             IATTR_ROBUSTNESS,            //!< @internal use robustness
             IATTR_TIMEOUT_DEFAULT,       //!< @internal default timeout
             IATTR_OBJECT_COMPRESSION,    //!< @internal threshold to compress
+            IATTR_CMD_QUEUE_LIMIT,     //!< @internal max cmd thread q size/1024
             IATTR_ALL
         };
 
@@ -117,6 +118,9 @@ namespace co
 
         /** @internal @return the keepalive timeout. */
         CO_API static uint32_t getKeepaliveTimeout();
+
+        /** @internal @return the interpreted command thread queue size. */
+        CO_API static size_t getCommandQueueLimit();
         //@}
     };
 }

@@ -3,10 +3,10 @@
 include(System)
 list(APPEND FIND_PACKAGES_DEFINES ${SYSTEM})
 
-find_package(OFED )
-find_package(UDT )
-find_package(Boost 1.41.0 REQUIRED system regex date_time serialization)
-find_package(Lunchbox 1.9.0 REQUIRED)
+find_package(OFED  )
+find_package(UDT  )
+find_package(Boost 1.41.0  REQUIRED system regex date_time serialization)
+find_package(Lunchbox 1.9.0  REQUIRED)
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/CMake/FindPackagesPost.cmake)
   include(${CMAKE_SOURCE_DIR}/CMake/FindPackagesPost.cmake)

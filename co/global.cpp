@@ -93,7 +93,8 @@ int32_t     _iAttributes[Global::IATTR_ALL] =
     5000,   // RDMA_RESOLVE_TIMEOUT_MS
     1,      // IATTR_ROBUSTNESS
     _getTimeout(), // IATTR_TIMEOUT_DEFAULT
-    1023    // IATTR_OBJECT_COMPRESSION
+    1023,   // IATTR_OBJECT_COMPRESSION
+    0,      // IATTR_CMD_QUEUE_LIMIT
 };
 }
 
@@ -103,7 +104,7 @@ bool Global::fromString(const std::string& data )
         return false;
 
     std::vector< uint32_t > newGlobals;
-    newGlobals.reserve(IATTR_ALL);
+    newGlobals.reserve( IATTR_ALL );
 
     size_t endMarker( 1u );
     while( true )
@@ -201,6 +202,14 @@ uint32_t Global::getKeepaliveTimeout()
         return 2000; // ms
 
     return size;
+}
+
+size_t Global::getCommandQueueLimit()
+{
+    const int32_t limit = getIAttribute( IATTR_CMD_QUEUE_LIMIT );
+    if( limit > 0 )
+        return size_t( limit ) << 10;
+    return std::numeric_limits< size_t >::max();
 }
 
 }

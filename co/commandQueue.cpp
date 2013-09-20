@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -32,13 +32,15 @@ namespace detail
 class CommandQueue
 {
 public:
+    CommandQueue( const size_t maxSize ) : commands( maxSize ) {}
+
     /** Thread-safe buffer queue. */
     lunchbox::MTQueue< co::ICommand > commands;
 };
 }
 
-CommandQueue::CommandQueue()
-        : _impl( new detail::CommandQueue )
+CommandQueue::CommandQueue( const size_t maxSize )
+    : _impl( new detail::CommandQueue( maxSize ))
 {
 }
 

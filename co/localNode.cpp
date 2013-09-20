@@ -84,7 +84,10 @@ private:
 class CommandThread : public Worker
 {
 public:
-    CommandThread( co::LocalNode* localNode ) : _localNode( localNode ){}
+    CommandThread( co::LocalNode* localNode )
+        : Worker( Global::getCommandQueueLimit( ))
+        , _localNode( localNode )
+    {}
 
 protected:
     virtual bool init()

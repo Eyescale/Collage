@@ -59,11 +59,11 @@ public:
     DataIStream() : co::DataIStream( false /*swap*/ ){}
 
     void addDataCommand( co::ConstBufferPtr buffer )
-        {
-            co::ObjectDataICommand command( 0, 0, buffer, false /*swap*/ );
-            TESTINFO( command.getCommand() == co::CMD_OBJECT_DELTA, command );
-            _commands.push( command );
-        }
+    {
+        co::ObjectDataICommand command( 0, 0, buffer, false /*swap*/ );
+        TESTINFO( command.getCommand() == co::CMD_OBJECT_DELTA, command );
+        _commands.push( command );
+    }
 
     size_t nRemainingBuffers() const override { return _commands.getSize(); }
     lunchbox::uint128_t getVersion() const override { return co::VERSION_NONE; }
@@ -73,21 +73,21 @@ public:
 protected:
     virtual bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
                                 const void** chunkData, uint64_t& size )
-        {
-            co::ICommand cmd = _commands.tryPop();
-            if( !cmd.isValid( ))
-                return false;
+    {
+        co::ICommand cmd = _commands.tryPop();
+        if( !cmd.isValid( ))
+            return false;
 
-            co::ObjectDataICommand command( cmd );
+        co::ObjectDataICommand command( cmd );
 
-            TEST( command.getCommand() == co::CMD_OBJECT_DELTA );
+        TEST( command.getCommand() == co::CMD_OBJECT_DELTA );
 
-            size = command.getDataSize();
-            compressor = command.getCompressor();
-            nChunks = command.getChunks();
-            *chunkData = command.getRemainingBuffer( size );
-            return true;
-        }
+        size = command.getDataSize();
+        compressor = command.getCompressor();
+        nChunks = command.getChunks();
+        *chunkData = command.getRemainingBuffer( size );
+        return true;
+    }
 
 private:
     co::CommandQueue _commands;

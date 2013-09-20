@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -28,12 +28,17 @@ namespace co
 {
 namespace detail { class CommandQueue; }
 
-    /** A thread-safe queue for ICommand buffers. */
+    /** A thread-safe, blocking queue for ICommand buffers. */
     class CommandQueue : public lunchbox::NonCopyable
     {
     public:
-        /** Construct a new command queue. @version 1.0 */
-        CO_API CommandQueue();
+        /**
+         * Construct a new command queue.
+         *
+         * @param maxSize the maximum number of enqueued commands.
+         * @version 1.0
+        */
+        CO_API CommandQueue( const size_t maxSize = ULONG_MAX );
 
         /** Destruct a new command queue. @version 1.0 */
         CO_API virtual ~CommandQueue();
