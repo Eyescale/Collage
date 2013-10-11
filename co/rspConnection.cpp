@@ -767,6 +767,9 @@ void RSPConnection::_repeatData()
         const uint16_t distance = _sequence - request.start;
         LBASSERT( distance != 0 );
 
+        if ( distance == 0 )
+            continue;
+
         if( distance <= _writeBuffers.size( )) // not already acked
         {
 //          LBLOG( LOG_RSP ) << "Repeat " << request.start << ", " << _sendRate
@@ -1145,9 +1148,7 @@ bool RSPConnection::_handleData( const size_t bytes )
         const Buffer* lastBuffer = i>=0 ? connection->_recvBuffers[i] : 0;
         if( lastBuffer )
         {
-            const DatagramData* last =
-                reinterpret_cast<const DatagramData*>( lastBuffer->getData( ));
-            nack.start = last->sequence + 1;
+            nack.start = connection->_sequence + i; 
         }
     }
 
