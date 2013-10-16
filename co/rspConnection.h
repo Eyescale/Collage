@@ -307,7 +307,7 @@ private:
 
     bool _handleData( const size_t bytes );
     bool _handleAck( const size_t bytes );
-    bool _handleNack( const size_t bytes );
+    bool _handleNack();
     bool _handleAckRequest( const size_t bytes );
 
     Buffer* _newDataBuffer( Buffer& inBuffer );

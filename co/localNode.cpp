@@ -1549,7 +1549,7 @@ bool LocalNode::_cmdStopRcv( ICommand& command )
     return true;
 }
 
-bool LocalNode::_cmdStopCmd( ICommand& command )
+bool LocalNode::_cmdStopCmd( ICommand& )
 {
     LB_TS_THREAD( _cmdThread );
     LBASSERTINFO( isClosing(), *this );

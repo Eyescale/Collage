@@ -63,7 +63,7 @@ VersionedSlaveCM::~VersionedSlaveCM()
     _master = 0;
 }
 
-uint128_t VersionedSlaveCM::commit( const uint32_t incarnation )
+uint128_t VersionedSlaveCM::commit( const uint32_t )
 {
 #if 0
     LBLOG( LOG_OBJECTS ) << "commit v" << _version << " " << command

@@ -41,7 +41,7 @@ UnbufferedMasterCM::UnbufferedMasterCM( Object* object )
 UnbufferedMasterCM::~UnbufferedMasterCM()
 {}
 
-uint128_t UnbufferedMasterCM::commit( const uint32_t incarnation )
+uint128_t UnbufferedMasterCM::commit( const uint32_t )
 {
 #if 0
     LBLOG( LOG_OBJECTS ) << "commit v" << _version << " " << command

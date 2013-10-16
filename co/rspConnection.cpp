@@ -1008,7 +1008,7 @@ void RSPConnection::_handleConnectedData( const size_t bytes )
             break;
 
         case NACK:
-            LBCHECK( _handleNack( bytes ));
+            LBCHECK( _handleNack( ));
             break;
 
         case ACKREQ: // The writer asks for an ack/nack
@@ -1265,7 +1265,7 @@ bool RSPConnection::_handleAck( const size_t bytes )
     return true;
 }
 
-bool RSPConnection::_handleNack( const size_t bytes )
+bool RSPConnection::_handleNack()
 {
     DatagramNack& nack =
                     *reinterpret_cast< DatagramNack* >( _recvBuffer.getData( ));

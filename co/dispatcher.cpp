@@ -45,7 +45,7 @@ Dispatcher::Dispatcher()
         : _impl( new detail::Dispatcher )
 {}
 
-Dispatcher::Dispatcher( const Dispatcher& from )
+Dispatcher::Dispatcher( const Dispatcher& )
         : _impl( new detail::Dispatcher )
 {}
 
