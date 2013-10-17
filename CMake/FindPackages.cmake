@@ -5,6 +5,7 @@ list(APPEND FIND_PACKAGES_DEFINES ${SYSTEM})
 
 find_package(OFED  )
 find_package(UDT  )
+find_package(TCLAP 1.2 )
 find_package(Boost 1.41.0  REQUIRED system regex date_time serialization)
 find_package(Lunchbox 1.9.0  REQUIRED)
 
@@ -42,6 +43,21 @@ if(UDT_name)
   endif()
 endif()
 
+if(TCLAP_FOUND)
+  set(TCLAP_name TCLAP)
+endif()
+if(TCLAP_FOUND)
+  set(TCLAP_name TCLAP)
+endif()
+if(TCLAP_name)
+  list(APPEND FIND_PACKAGES_DEFINES COLLAGE_USE_TCLAP)
+  set(FIND_PACKAGES_FOUND "${FIND_PACKAGES_FOUND} TCLAP")
+  link_directories(${${TCLAP_name}_LIBRARY_DIRS})
+  if(NOT "${${TCLAP_name}_INCLUDE_DIRS}" MATCHES "-NOTFOUND")
+    include_directories(${${TCLAP_name}_INCLUDE_DIRS})
+  endif()
+endif()
+
 if(Boost_FOUND)
   set(Boost_name Boost)
 endif()
@@ -72,9 +88,9 @@ if(Lunchbox_name)
   endif()
 endif()
 
-set(COLLAGE_BUILD_DEBS autoconf;automake;cmake;git;git-svn;libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libhwloc-dev;libibverbs-dev;libjpeg-turbo8-dev;librdmacm-dev;libturbojpeg;libudt-dev;pkg-config;subversion)
+set(COLLAGE_BUILD_DEBS autoconf;automake;cmake;git;git-review;git-svn;libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libhwloc-dev;libibverbs-dev;libjpeg-turbo8-dev;librdmacm-dev;libturbojpeg;libudt-dev;ninja-build;pkg-config;subversion)
 
-set(COLLAGE_DEPENDS OFED;UDT;Boost;Lunchbox)
+set(COLLAGE_DEPENDS OFED;UDT;TCLAP;Boost;Lunchbox)
 
 # Write defines.h and options.cmake
 if(NOT PROJECT_INCLUDE_NAME)

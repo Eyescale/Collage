@@ -1,9 +1,13 @@
 # Copyright (c) 2010 Daniel Pfeifer <daniel@pfeifer-mail.de>
 #               2013 Stefan.Eilemann@epfl.ch
 
+if(NOT COLLAGE_USE_TCLAP)
+  message(STATUS "Missing TCLAP command line parser, tools not available")
+  return()
+endif()
+
 include(CMakeParseArguments)
 include(PurpleInstallPDB)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 macro(CO_ADD_TOOL NAME)
   cmake_parse_arguments(THIS "" "" "SOURCES" ${ARGN})
