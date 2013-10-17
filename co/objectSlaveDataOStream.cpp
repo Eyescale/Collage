@@ -44,7 +44,7 @@ void ObjectSlaveDataOStream::enableSlaveCommit( NodePtr node )
     _enable();
 }
 
-void ObjectSlaveDataOStream::sendData( const void* buffer, const uint64_t size,
+void ObjectSlaveDataOStream::sendData( const void*, const uint64_t size,
                                        const bool last )
 {
     ObjectDataOStream::send( CMD_OBJECT_SLAVE_DELTA, COMMANDTYPE_OBJECT,

@@ -44,7 +44,7 @@ public:
     DataOStream() {}
 
 protected:
-    void sendData( const void* buffer, const uint64_t size, const bool last )
+    void sendData( const void* /*data*/, const uint64_t size, const bool last )
         override
     {
         co::ObjectDataOCommand( getConnections(), co::CMD_OBJECT_DELTA,
