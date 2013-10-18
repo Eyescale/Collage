@@ -4,7 +4,7 @@ include(System)
 list(APPEND FIND_PACKAGES_DEFINES ${SYSTEM})
 find_package(PkgConfig)
 
-set(ENV{PKG_CONFIG_PATH} "/Users/eilemann/Software/Buildyard/Build/install/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+set(ENV{PKG_CONFIG_PATH} "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 if(PKG_CONFIG_FOUND)
   find_package(OFED )
   if((NOT OFED_FOUND) AND (NOT OFED_FOUND))
