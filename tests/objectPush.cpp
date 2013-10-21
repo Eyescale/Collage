@@ -135,7 +135,7 @@ int main( int argc, char **argv )
         const co::Object::ChangeType type = co::Object::ChangeType( i );
         Object object( type );
         TEST( client->registerObject( &object ));
-        object.push( 42, i, nodes );
+        object.push( uint128_t( 42 ), uint128_t( 0, i ), nodes );
 
         monitor.waitEQ( type );
         TEST( server->mapObject( server->object, object.getID(),

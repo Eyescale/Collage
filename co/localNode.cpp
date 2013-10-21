@@ -53,6 +53,8 @@
 #include <lunchbox/types.h>
 #include <lunchbox/servus.h>
 
+#include <list>
+
 namespace co
 {
 namespace

@@ -99,7 +99,7 @@ int main( int argc, char **argv )
     size_t ops = 0;
 
     for( lunchbox::UUID key; key.low() < 65536; ++key ) // Fill cache
-        if( !cache.add( co::ObjectVersion( key, 1 ), 1, in ))
+        if( !cache.add( co::ObjectVersion( key, co::uint128_t( 1 )), 1, in ))
             break;
 
     _clock.reset();
@@ -112,7 +112,7 @@ int main( int argc, char **argv )
     while( _clock.getTime64() < RUNTIME )
     {
         const lunchbox::UUID id( 0, rng.get< uint16_t >( ));
-        const co::ObjectVersion key( id, 1 );
+        const co::ObjectVersion key( id, co::uint128_t( 1 ));
         if( cache[ key.identifier ] != co::InstanceCache::Data::NONE )
         {
             TEST( cache.release( key.identifier, 1 ));
