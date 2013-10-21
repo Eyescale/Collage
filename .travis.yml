@@ -29,6 +29,7 @@ before_install:
  - sudo apt-get install -qq libibverbs-dev || /bin/true
  - sudo apt-get install -qq libjpeg-turbo8-dev || /bin/true
  - sudo apt-get install -qq librdmacm-dev || /bin/true
+ - sudo apt-get install -qq libtclap-dev || /bin/true
  - sudo apt-get install -qq libturbojpeg || /bin/true
  - sudo apt-get install -qq libudt-dev || /bin/true
  - sudo apt-get install -qq ninja-build || /bin/true

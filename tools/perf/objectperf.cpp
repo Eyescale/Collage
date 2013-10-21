@@ -109,9 +109,9 @@ private:
     ChangeType getChangeType() const final { return INSTANCE; }
     //uint32_t chooseCompressor() const final { return EQ_COMPRESSOR_NONE; }
 
-    void serialize( co::DataOStream& os, const uint64_t bits ) override
+    void serialize( co::DataOStream& os, const uint64_t ) override
         { os << buffer_; }
-    void deserialize( co::DataIStream& is, const uint64_t bits ) override
+    void deserialize( co::DataIStream& is, const uint64_t ) override
         { is >> buffer_; }
 };
 
@@ -471,7 +471,9 @@ int main( int argc, char **argv )
         TCLAP::UnlabeledMultiArg< std::string >
             ignoreArgs( "ignore", "Ignored unlabeled arguments", false, "any",
                         command );
+#ifdef TCPLAP_HAS_IGNOREUNMATCHED
         command.ignoreUnmatched( true );
+#endif
         command.parse( argc, argv );
 
         if( remoteArg.isSet( ))

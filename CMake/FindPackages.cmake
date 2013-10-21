@@ -24,12 +24,12 @@ else()
 endif()
 
 if(PKG_CONFIG_EXECUTABLE)
-  find_package(tclap 1.3)
+  find_package(tclap 1.2)
   if((NOT tclap_FOUND) AND (NOT TCLAP_FOUND))
-    pkg_check_modules(tclap tclap>=1.3)
+    pkg_check_modules(tclap tclap>=1.2)
   endif()
 else()
-  find_package(tclap 1.3 )
+  find_package(tclap 1.2 )
 endif()
 
 if(PKG_CONFIG_EXECUTABLE)
@@ -136,7 +136,7 @@ if(Lunchbox_name)
   endif()
 endif()
 
-set(COLLAGE_BUILD_DEBS autoconf;automake;cmake;git;git-review;git-svn;libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libhwloc-dev;libibverbs-dev;libjpeg-turbo8-dev;librdmacm-dev;libturbojpeg;libudt-dev;ninja-build;pkg-config;subversion)
+set(COLLAGE_BUILD_DEBS autoconf;automake;cmake;git;git-review;git-svn;libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libhwloc-dev;libibverbs-dev;libjpeg-turbo8-dev;librdmacm-dev;libtclap-dev;libturbojpeg;libudt-dev;ninja-build;pkg-config;subversion)
 
 set(COLLAGE_DEPENDS OFED;UDT;tclap;Boost;Lunchbox)
 
