@@ -29,7 +29,11 @@
 #include <lunchbox/lockable.h>  // member
 #include <lunchbox/stdExt.h>    // member
 #include <lunchbox/thread.h>    // member
-#include <lunchbox/uuid.h>      // member
+#if LUNCHBOX_VERSION_GE( 1, 9, 0 )
+#  include <lunchbox/uint128_t.h>      // member
+#else
+#  include <lunchbox/uuid.h>      // member
+#endif
 
 #include <iostream>
 

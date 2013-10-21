@@ -1,16 +1,16 @@
 
-/* Copyright (c) 2011, Cedric Stalder <cedric.stalder@gmail.com>> 
- *               2011-2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011, Cedric Stalder <cedric.stalder@gmail.com>>
+ *               2011-2013, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -25,11 +25,8 @@
 #include <co/global.h>
 #include <co/init.h>
 #include <co/node.h>
-#include <lunchbox/sleep.h>
-#include <lunchbox/rng.h>
-#include <lunchbox/uuid.h>
+#include <lunchbox/lunchbox.h>
 
-#include <iostream>
 #define EQ_TEST_RUNTIME 6000
 #define NSLAVES  10
 
@@ -42,12 +39,12 @@ static uint16_t _serverPort = 0;
 class BarrierThread : public lunchbox::Thread
 {
 public:
-    BarrierThread( const uint32_t nOps, const uint32_t port ) 
+    BarrierThread( const uint32_t nOps, const uint32_t port )
         : _nOps( nOps )
-        , _numExceptions( 0 )  
+        , _numExceptions( 0 )
         , _node( new co::LocalNode )
     {
-        co::ConnectionDescriptionPtr description = 
+        co::ConnectionDescriptionPtr description =
             new co::ConnectionDescription;
         description->type = co::CONNECTIONTYPE_TCPIP;
         description->port = port;
@@ -78,7 +75,7 @@ public:
     ~ServerThread( )
     {
         _node->releaseObject( _barrier );
-            
+
         TEST( _node->close());
         _node = 0;
         delete _barrier;
@@ -91,7 +88,7 @@ protected:
     {
         for( uint32_t i = 0; i < _nOps; i++ )
         {
-            const uint32_t timeout = co::Global::getIAttribute( 
+            const uint32_t timeout = co::Global::getIAttribute(
                      co::Global::IATTR_TIMEOUT_DEFAULT );
             try
             {
@@ -113,12 +110,12 @@ class NodeThread : public BarrierThread
 public:
     NodeThread( const lunchbox::UUID& barrierID, const uint32_t port,
                 const uint32_t nOps, const uint32_t timeToSleep )
-         : BarrierThread( nOps, port ) 
+         : BarrierThread( nOps, port )
          , _timeToSleep( timeToSleep )
-         , _barrierID( barrierID ) 
+         , _barrierID( barrierID )
     {
         _server = new co::Node;
-        co::ConnectionDescriptionPtr serverDesc = 
+        co::ConnectionDescriptionPtr serverDesc =
             new co::ConnectionDescription;
         serverDesc->port = _serverPort;
         _server->addConnectionDescription( serverDesc );
@@ -135,7 +132,7 @@ public:
         _node = 0;
         _server = 0;
     }
-    
+
     uint32_t getNumExceptions(){ return _numExceptions; };
 
 protected:
@@ -144,11 +141,11 @@ protected:
         for( uint32_t i = 0; i < _nOps; ++i )
         {
             lunchbox::sleep( _timeToSleep );
-            const uint32_t timeout = co::Global::getIAttribute( 
+            const uint32_t timeout = co::Global::getIAttribute(
                      co::Global::IATTR_TIMEOUT_DEFAULT );
             try
             {
-                
+
                 barrier.enter( timeout );
             }
             catch( co::Exception& e )
@@ -158,7 +155,7 @@ protected:
             }
         }
     }
-            
+
 private:
     const uint32_t _timeToSleep;
     const lunchbox::UUID& _barrierID;
@@ -166,7 +163,7 @@ private:
     co::Barrier barrier;
 };
 
-typedef std::vector< NodeThread* > NodeThreads;  
+typedef std::vector< NodeThread* > NodeThreads;
 
 
 int main( int argc, char **argv )
@@ -176,9 +173,9 @@ int main( int argc, char **argv )
     _serverPort = (rng.get<uint16_t>() % 60000) + 1024;
 
     TEST( testNormal() );
-    TEST( testException() );    
-    TEST( testSleep() );    
-    
+    TEST( testException() );
+    TEST( testSleep() );
+
     co::exit();
     return EXIT_SUCCESS;
 }
@@ -189,8 +186,8 @@ bool testNormal()
     co::Global::setIAttribute( co::Global::IATTR_TIMEOUT_DEFAULT, 10000 );
     NodeThreads nodeThreads;
     nodeThreads.resize(NSLAVES);
- 
-    ServerThread server( NSLAVES, 1 ); 
+
+    ServerThread server( NSLAVES, 1 );
     server.start();
 
     for( uint32_t i = 0; i < NSLAVES; i++ )
@@ -199,13 +196,13 @@ bool testNormal()
                                          1, 0 );
         nodeThreads[i]->start();
     }
-    
+
     server.join();
 
     for( uint32_t i = 0; i < NSLAVES; i++ )
     {
         nodeThreads[i]->join();
-        TEST( nodeThreads[i]->getNumExceptions() == 0 );    
+        TEST( nodeThreads[i]->getNumExceptions() == 0 );
         delete nodeThreads[i];
     }
 
@@ -220,7 +217,7 @@ bool testException()
     NodeThreads nodeThreads;
     nodeThreads.resize( NSLAVES );
 
-    ServerThread server( NSLAVES, 1 ); 
+    ServerThread server( NSLAVES, 1 );
     server.start();
 
     for( uint32_t i = 0; i < NSLAVES - 1; i++ )
@@ -229,7 +226,7 @@ bool testException()
                                          1, 0 );
         nodeThreads[i]->start();
     }
-    
+
     TEST( server.join() );
     TEST( server.getNumExceptions() == 1 );
     for( uint32_t i = 0; i < NSLAVES - 1; i++ )
@@ -238,7 +235,7 @@ bool testException()
         TEST( nodeThreads[i]->getNumExceptions() == 1 );
         delete nodeThreads[i];
     }
-    
+
     return true;
 }
 
@@ -248,26 +245,26 @@ bool testSleep()
     NodeThreads nodeThreads( 5 );
     nodeThreads.resize( 5 );
 
-    ServerThread server( 5, 1 ); 
+    ServerThread server( 5, 1 );
     server.start();
 
     uint16_t port = _serverPort;
 
     nodeThreads[0] = new NodeThread( server.getBarrierID(), ++port, 5, 1000 );
     nodeThreads[0]->start();
-    
+
     nodeThreads[1] = new NodeThread( server.getBarrierID(), ++port, 5, 1500 );
     nodeThreads[1]->start();
-    
+
     nodeThreads[2] = new NodeThread( server.getBarrierID(), ++port, 5, 2000 );
     nodeThreads[2]->start();
-    
+
     nodeThreads[3] = new NodeThread( server.getBarrierID(), ++port, 5, 2500 );
     nodeThreads[3]->start();
 
     nodeThreads[4] = new NodeThread( server.getBarrierID(), ++port, 5, 3000 );
     nodeThreads[4]->start();
-    
+
     TEST( server.join() );
 
     TEST( nodeThreads[0]->join() );
@@ -275,7 +272,7 @@ bool testSleep()
     TEST( nodeThreads[2]->join() );
     TEST( nodeThreads[3]->join() );
     TEST( nodeThreads[4]->join() );
-    
+
     // Bug: if the first nodeThread is deleted before the the second nodeThread,
     // the barrier send unblock will fail because it is trying to send to an
     // unexisting connection node. Can this happen in Collage ?
@@ -284,6 +281,6 @@ bool testSleep()
     delete nodeThreads[2];
     delete nodeThreads[3];
     delete nodeThreads[4];
-    
+
     return true;
 }
