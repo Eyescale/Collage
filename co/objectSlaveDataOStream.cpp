@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder  <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -44,12 +44,11 @@ void ObjectSlaveDataOStream::enableSlaveCommit( NodePtr node )
     _enable();
 }
 
-void ObjectSlaveDataOStream::sendData( const void* buffer, const uint64_t size,
+void ObjectSlaveDataOStream::sendData( const void* data, const uint64_t size,
                                        const bool last )
 {
-    ObjectDataOStream::send( CMD_OBJECT_SLAVE_DELTA, COMMANDTYPE_OBJECT,
-                             _cm->getObject()->getMasterInstanceID(), size,
-                             last ) << _commit;
+    send( CMD_OBJECT_SLAVE_DELTA, COMMANDTYPE_OBJECT,
+          _cm->getObject()->getMasterInstanceID(), data, size, last ) <<_commit;
 
     if( last )
         _commit = UUID( true /* generate */ );

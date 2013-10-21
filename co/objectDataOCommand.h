@@ -53,7 +53,8 @@ public:
      * @param instanceID the instance of the object to dispatch the command to.
      * @param version the version of the object data.
      * @param sequence the index in a sequence of a set commands.
-     * @param dataSize the size of the packed, uncompressed object data.
+     * @param data a pointer to the uncompressed object data.
+     * @param size the size of the uncompressed object data.
      * @param isLast true if this is the last command for one object
      * @param stream the stream containing the (possible) compressed object data
      */
@@ -62,7 +63,8 @@ public:
                                const UUID& id, const uint32_t instanceID,
                                const uint128_t& version,
                                const uint32_t sequence,
-                               const uint64_t dataSize, const bool isLast,
+                               const void* data, const uint64_t size,
+                               const bool isLast,
                                DataOStream* stream );
 
     /** @internal */

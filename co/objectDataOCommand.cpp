@@ -33,24 +33,28 @@ namespace detail
 class ObjectDataOCommand
 {
 public:
-    ObjectDataOCommand( co::DataOStream* stream_, const uint64_t dataSize_ )
-        : dataSize( 0 )
+    ObjectDataOCommand( co::DataOStream* stream_, const void* data_,
+                        const uint64_t size_ )
+        : data( data_ )
+        , size( 0 )
         , stream( stream_ )
     {
         if( stream )
         {
-            dataSize = stream->getCompressedDataSize();
-            if( dataSize == 0 )
-                dataSize = dataSize_;
+            size = stream->getCompressedDataSize();
+            if( size == 0 )
+                size = size_;
         }
     }
 
     ObjectDataOCommand( const ObjectDataOCommand& rhs )
-        : dataSize( rhs.dataSize )
+        : data( rhs.data )
+        , size( rhs.size )
         , stream( rhs.stream )
     {}
 
-    uint64_t dataSize;
+    const void* const data;
+    uint64_t size;
     co::DataOStream* stream;
 };
 
@@ -62,13 +66,14 @@ ObjectDataOCommand::ObjectDataOCommand( const Connections& receivers,
                                         const uint32_t instanceID,
                                         const uint128_t& version,
                                         const uint32_t sequence,
-                                        const uint64_t dataSize,
+                                        const void* data,
+                                        const uint64_t size,
                                         const bool isLast,
                                         DataOStream* stream )
     : ObjectOCommand( receivers, cmd, type, id, instanceID )
-    , _impl( new detail::ObjectDataOCommand( stream, dataSize ))
+    , _impl( new detail::ObjectDataOCommand( stream, data, size ))
 {
-    _init( version, sequence, dataSize, isLast );
+    _init( version, sequence, size, isLast );
 }
 
 ObjectDataOCommand::ObjectDataOCommand( const ObjectDataOCommand& rhs )
@@ -79,9 +84,9 @@ ObjectDataOCommand::ObjectDataOCommand( const ObjectDataOCommand& rhs )
 
 void ObjectDataOCommand::_init( const uint128_t& version,
                                 const uint32_t sequence,
-                                const uint64_t dataSize, const bool isLast )
+                                const uint64_t size, const bool isLast )
 {
-    *this << version << dataSize << sequence << isLast;
+    *this << version << size << sequence << isLast;
 
     if( _impl->stream )
         _impl->stream->streamDataHeader( *this );
@@ -91,15 +96,15 @@ void ObjectDataOCommand::_init( const uint128_t& version,
 
 ObjectDataOCommand::~ObjectDataOCommand()
 {
-    if( _impl->stream && _impl->dataSize > 0 )
+    if( _impl->stream && _impl->size > 0 )
     {
-        sendHeader( _impl->dataSize );
+        sendHeader( _impl->size );
         const Connections& connections = getConnections();
         for( ConnectionsCIter i = connections.begin(); i != connections.end();
              ++i )
         {
             ConnectionPtr conn = *i;
-            _impl->stream->sendBody( conn, _impl->dataSize );
+            _impl->stream->sendBody( conn, _impl->data, _impl->size );
         }
     }
 

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder  <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -35,11 +35,11 @@ ObjectDeltaDataOStream::ObjectDeltaDataOStream( const ObjectCM* cm )
 ObjectDeltaDataOStream::~ObjectDeltaDataOStream()
 {}
 
-void ObjectDeltaDataOStream::sendData( const void* buffer, const uint64_t size,
+void ObjectDeltaDataOStream::sendData( const void* data, const uint64_t size,
                                        const bool last )
 {
-    ObjectDataOStream::send( CMD_OBJECT_DELTA, COMMANDTYPE_OBJECT,
-                             EQ_INSTANCE_ALL, size, last );
+    send( CMD_OBJECT_DELTA, COMMANDTYPE_OBJECT, EQ_INSTANCE_ALL, data, size,
+          last );
 }
 
 }

@@ -44,12 +44,13 @@ public:
     DataOStream() {}
 
 protected:
-    virtual void sendData( const void* buffer, const uint64_t size,
+    virtual void sendData( const void* data, const uint64_t size,
                            const bool last )
         {
             co::ObjectDataOCommand( getConnections(), co::CMD_OBJECT_DELTA,
                                     co::COMMANDTYPE_OBJECT, co::UUID(), 0,
-                                    co::uint128_t(), 0, size, last, this );
+                                    co::uint128_t(), 0, data, size, last,
+                                    this );
         }
 };
 

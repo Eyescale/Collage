@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2009-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -80,10 +80,10 @@ private:
 int main( int argc, char **argv )
 {
     co::init( argc, argv );
-
     co::ObjectDataOCommand out( co::Connections(), co::CMD_NODE_OBJECT_INSTANCE,
-                                co::COMMANDTYPE_NODE, co::UUID(), 0, 1, 0,
-                                COMMAND_SIZE, true, 0 );
+                                co::COMMANDTYPE_NODE, co::UUID(), 0,
+                                co::uint128_t( 1 ), 0, 0, COMMAND_SIZE, true,
+                                0 );
     co::LocalNodePtr node = new co::LocalNode;
     co::ObjectDataICommand in = out._getCommand( node );
     TESTINFO( in.isValid(), in );
