@@ -506,7 +506,7 @@ out:
     return newConnection;
 }
 
-void UDTConnection::readNB( void* buffer, const uint64_t bytes ) { /* NOP */ }
+void UDTConnection::readNB( void*, const uint64_t ) { /* NOP */ }
 
 // caller: application
 int64_t UDTConnection::readSync( void* buffer, const uint64_t bytes,

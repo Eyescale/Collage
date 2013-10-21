@@ -336,7 +336,7 @@ uint128_t Object::getVersion() const
     return impl_->cm->getVersion();
 }
 
-void Object::notifyNewHeadVersion( const uint128_t& version )
+void Object::notifyNewHeadVersion( const uint128_t& version LB_UNUSED )
 {
     LBASSERTINFO( getVersion() == VERSION_NONE ||
                   version < getVersion() + 100,
