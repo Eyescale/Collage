@@ -1110,11 +1110,10 @@ bool RSPConnection::_handleData( const size_t bytes )
     }
 
     uint16_t max = std::numeric_limits<uint16_t>::max();
-    if( connection->_sequence > sequence && 
-        max - connection->_sequence + sequence > _numBuffers
-        ||
-        connection->_sequence < sequence &&
-        sequence - connection->_sequence > _numBuffers )
+    if(( connection->_sequence > sequence && 
+         max - connection->_sequence + sequence > _numBuffers ) ||
+       ( connection->_sequence < sequence &&
+         sequence - connection->_sequence > _numBuffers ))
     {
         // ignore it if it's a repetition for another reader
         return true;
