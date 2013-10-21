@@ -38,8 +38,8 @@ lunchbox::SpinLock _lock;
 class Reader : public co::Dispatcher, public lunchbox::Thread
 {
 public:
-    bool _cmd( co::ICommand& command ) { return true; }
-    bool _cmdStop( co::ICommand& command ) { _running = false; return true; }
+    bool _cmd( co::ICommand& ) { return true; }
+    bool _cmdStop( co::ICommand& ) { _running = false; return true; }
 
     Reader() : index( 0 ), _running( false )
     {

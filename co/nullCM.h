@@ -50,7 +50,7 @@ namespace co
         uint32_t getMasterInstanceID() const override
             { LBDONTCALL; return CO_INSTANCE_INVALID; }
 
-        void addSlave( const MasterCMCommand& command ) override { LBDONTCALL; }
+        void addSlave( const MasterCMCommand& ) override { LBDONTCALL; }
         void removeSlaves( NodePtr ) override { LBDONTCALL; }
 
     private:

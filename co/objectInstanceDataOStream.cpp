@@ -139,7 +139,7 @@ void ObjectInstanceDataOStream::enableMap( const uint128_t& version,
     _enable();
 }
 
-void ObjectInstanceDataOStream::sendData( const void* buffer,
+void ObjectInstanceDataOStream::sendData( const void*,
                                           const uint64_t size, const bool last )
 {
     LBASSERT( _command );

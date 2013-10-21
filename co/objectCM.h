@@ -73,7 +73,7 @@ public:
      * @param incarnation the commit incarnation for auto obsoletion.
      * @return the new head version.
      */
-    virtual uint128_t commit( const uint32_t incarnation )
+    virtual uint128_t commit( const uint32_t incarnation LB_UNUSED )
         { LBUNIMPLEMENTED; return VERSION_NONE; }
 
     /**
@@ -82,7 +82,8 @@ public:
      * @param count the number of versions to retain, excluding the head
      *              version.
      */
-    virtual void setAutoObsolete( const uint32_t count ){ LBUNIMPLEMENTED; }
+    virtual void setAutoObsolete( const uint32_t count LB_UNUSED )
+        { LBUNIMPLEMENTED; }
 
     /** @return get the number of versions this object retains. */
     virtual uint32_t getAutoObsolete() const { LBUNIMPLEMENTED; return 0; }
@@ -94,7 +95,7 @@ public:
      *                current version.
      * @return the version of the object after the operation.
      */
-    virtual uint128_t sync( const uint128_t& version )
+    virtual uint128_t sync( const uint128_t& version LB_UNUSED )
         { LBUNIMPLEMENTED; return VERSION_FIRST; }
 
     /** @return the latest available (head) version. */
@@ -132,7 +133,8 @@ public:
      * @param node the slave node.
      * @param instanceID the slave's instance identifier.
      */
-    virtual void removeSlave( NodePtr node, const uint32_t instanceID )
+    virtual void removeSlave( NodePtr node LB_UNUSED,
+                              const uint32_t instanceID LB_UNUSED )
         { LBUNIMPLEMENTED; }
 
     /** Remove all subscribed slaves from the given node. */
@@ -142,7 +144,7 @@ public:
     virtual const Nodes getSlaveNodes() const { return Nodes(); }
 
     /** Apply the initial data after mapping. */
-    virtual void applyMapData( const uint128_t& version )
+    virtual void applyMapData( const uint128_t& version LB_UNUSED )
         { LBUNIMPLEMENTED; }
 
     /** Add existing instance data to the object (from local node cache) */
@@ -151,7 +153,7 @@ public:
         { LBDONTCALL; }
 
     /** Speculatively send instance data to all nodes. */
-    virtual void sendInstanceData( Nodes& nodes ){}
+    virtual void sendInstanceData( Nodes& ){}
 
     /** @internal @return the object. */
     const Object* getObject( ) const { return _object; }

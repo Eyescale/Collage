@@ -112,7 +112,7 @@ public:
         }
 };
 
-int main( int argc, char **argv )
+int main( int, char** )
 {
     co::BufferCache cache( 10 );
     co::LocalNodePtr node = new co::LocalNode;
