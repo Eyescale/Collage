@@ -1,7 +1,7 @@
 // -*- mode: c++ -*-
 /* Copyright (c) 2012, Computer Integration & Programming Solutions, Corp. and
  *                     United States Naval Research Laboratory
- *               2012, Stefan Eilemann <eile@eyescale.ch>
+ *               2012-2013, Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -499,7 +499,7 @@ out:
     return newConnection;
 }
 
-void RDMAConnection::readNB( void* buffer, const uint64_t bytes ) { /* NOP */ }
+void RDMAConnection::readNB( void*, const uint64_t ) { /* NOP */ }
 
 int64_t RDMAConnection::readSync( void* buffer, const uint64_t bytes,
         const bool block )

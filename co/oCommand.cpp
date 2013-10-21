@@ -152,8 +152,8 @@ void OCommand::_init( const uint32_t cmd, const uint32_t type )
     *this << 0ull /* size */ << type << cmd;
 }
 
-void OCommand::sendData( const void* buffer, const uint64_t size,
-                         const bool last )
+void OCommand::sendData( const void* buffer LB_UNUSED, const uint64_t size,
+                         const bool last LB_UNUSED )
 {
     LBASSERT( !_impl->dispatcher );
     LBASSERT( last );

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -48,10 +48,11 @@ StaticSlaveCM::~StaticSlaveCM()
     _currentIStream = 0;
 }
 
-void StaticSlaveCM::applyMapData( const uint128_t& version )
+void StaticSlaveCM::applyMapData( const uint128_t& version LB_UNUSED )
 {
     LBASSERT( _currentIStream );
-    LBASSERTINFO( version == VERSION_FIRST || version == VERSION_NONE, version );
+    LBASSERTINFO( version == VERSION_FIRST || version == VERSION_NONE,
+                  version );
     _currentIStream->waitReady();
 
     LBASSERT( _object );
