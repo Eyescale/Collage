@@ -1,7 +1,7 @@
 # Copyright (c) 2010 Daniel Pfeifer <daniel@pfeifer-mail.de>
 #               2013 Stefan.Eilemann@epfl.ch
 
-if(NOT COLLAGE_USE_TCLAP)
+if(NOT tclap_FOUND)
   message(STATUS "Missing TCLAP command line parser, tools not available")
   return()
 endif()
