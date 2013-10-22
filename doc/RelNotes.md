@@ -62,6 +62,11 @@ since the last release:
 
 ## Bug Fixes {#Fixes}
 
+Collage 1.0.1 includes various bugfixes over the 1.0 release:
+
+* [40](https://github.com/Eyescale/Collage/issues/40): Commit of
+  buffered objects with multiple chunks broken
+
 Collage 1.0 includes various bugfixes over the Equalizer 1.4 release,
 including the following:
 

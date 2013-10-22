@@ -11,8 +11,8 @@ include(revision)
 set(RELEASE_VERSION 1) # OFF or 'Mm0' ABI version
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "0")
-set(VERSION_PATCH "0")
-set(LAST_RELEASE 1.0.0)
+set(VERSION_PATCH "1")
+set(LAST_RELEASE 1.0.1)
 
 include(Common)
 include(GitTargets)
