@@ -28,9 +28,9 @@
 
 using co::uint128_t;
 
+#ifdef CO_USE_SERVUS
 int main( int argc, char **argv )
 {
-#ifdef CO_USE_SERVUS
     co::init( argc, argv );
 
     lunchbox::RNG rng;
@@ -93,6 +93,11 @@ int main( int argc, char **argv )
     server      = 0;
 
     co::exit();
-#endif
     return EXIT_SUCCESS;
 }
+#else
+int main( int argc, char **argv )
+{
+    return EXIT_SUCCESS;
+}
+#endif
