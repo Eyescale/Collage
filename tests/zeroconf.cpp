@@ -96,7 +96,7 @@ int main( int argc, char **argv )
     return EXIT_SUCCESS;
 }
 #else
-int main( int argc, char **argv )
+int main( int, char ** )
 {
     return EXIT_SUCCESS;
 }
