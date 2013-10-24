@@ -339,7 +339,8 @@ Object* ObjectMap::map( const UUID& identifier, Object* instance )
         return 0;
 
     const uint32_t req = _impl->handler.mapObjectNB( object, identifier,
-                                                     entry.version, 0 );
+                                                     entry.version,
+                                                     getMasterNode( ));
     if( !_impl->handler.mapObjectSync( req ))
     {
         if( !instance )
