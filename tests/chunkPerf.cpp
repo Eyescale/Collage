@@ -33,6 +33,7 @@
 namespace arg = boost::program_options;
 
 static const size_t maxBufferSize = LB_64MB;
+static const size_t minChunkSize  = 512;
 
 class Server : public lunchbox::Thread
 {
@@ -58,7 +59,7 @@ private:
         buffer.resize( maxBufferSize );
 
         co::ConnectionPtr client = connection_->acceptSync();
-        for( size_t size = 256; size <= maxBufferSize; size = size << 1 )
+        for( size_t size = minChunkSize; size <= maxBufferSize; size = size<<1 )
         {
             buffer.setSize( 0 );
             client->recvNB( &buffer, maxBufferSize );
@@ -95,7 +96,7 @@ public:
 
         lunchbox::Clock clock;
 
-        for( size_t size = 256; size <= maxBufferSize; size = size << 1 )
+        for( size_t size = minChunkSize; size <= maxBufferSize; size = size<<1 )
         {
             clock.reset();
             for( size_t i = 0; i < maxBufferSize; i += size )
@@ -164,17 +165,14 @@ int main( const int argc, char* argv[] )
 
     co::ConnectionDescriptionPtr description = new co::ConnectionDescription;
     if( isServer )
-        description->fromString( param );
+        TEST( description->fromString( param ));
     if( isClient )
-        description->fromString( param );
+        TEST( description->fromString( param ));
     TESTINFO( param.empty(), param );
 
     Server server( description );
     if( !isClient ) // start server thread
-    {
         TEST( server.start( ));
-        //description = server.getConnectionDescription();
-    }
 
     if( !isServer ) // run client code
     {
