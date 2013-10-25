@@ -119,6 +119,17 @@ OCommand::~OCommand()
     delete _impl;
 }
 
+void OCommand::_init( const uint32_t cmd, const uint32_t type )
+{
+#ifndef COLLAGE_BIGENDIAN
+    // big endian hosts swap handshake commands to little endian...
+    LBASSERTINFO( cmd < CMD_NODE_MAXIMUM, std::hex << "0x" << cmd << std::dec );
+#endif
+    enableSave();
+    _enable();
+    *this << 0ull /* size */ << type << cmd;
+}
+
 void OCommand::sendHeader( const uint64_t additionalSize )
 {
     LBASSERT( !_impl->dispatcher );
@@ -139,17 +150,6 @@ void OCommand::sendHeader( const uint64_t additionalSize )
 size_t OCommand::getSize()
 {
     return sizeof( uint64_t ) + sizeof( uint32_t ) + sizeof( uint32_t );
-}
-
-void OCommand::_init( const uint32_t cmd, const uint32_t type )
-{
-#ifndef COLLAGE_BIGENDIAN
-    // big endian hosts swap handshake commands to little endian...
-    LBASSERTINFO( cmd < CMD_NODE_MAXIMUM, std::hex << "0x" << cmd << std::dec );
-#endif
-    enableSave();
-    _enable();
-    *this << 0ull /* size */ << type << cmd;
 }
 
 void OCommand::sendData( const void* buffer LB_UNUSED, const uint64_t size,

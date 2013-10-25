@@ -1,7 +1,7 @@
 # Copyright (c) 2010 Daniel Pfeifer
 #               2010-2013, Stefan Eilemann <eile@eyescale.ch>
 #
-# Change this number when adding tests to force a CMake run: 3
+# Change this number when adding tests to force a CMake run: 4
 
 include(InstallFiles)
 
