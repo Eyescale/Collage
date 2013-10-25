@@ -56,39 +56,38 @@ public:
     virtual ~Receiver() {}
 
     bool readPacket()
-        {
-            co::BufferPtr buffer;
-            if( !_connection->recvSync( buffer ))
-                return false;
+    {
+        co::BufferPtr buffer;
+        if( !_connection->recvSync( buffer ))
+            return false;
 
-            LBASSERT( buffer == &_buffer );
-            LBASSERTINFO( _lastPacket == 0 || _lastPacket - 1 ==
-                          _buffer[ SEQUENCE ],
-                          static_cast< int >( _lastPacket ) << ", " <<
-                          static_cast< int >( _buffer[ SEQUENCE ] ));
-            _lastPacket = _buffer[SEQUENCE];
+        LBASSERT( buffer == &_buffer );
+        LBASSERTINFO( _lastPacket == 0 || _lastPacket - 1 == _buffer[SEQUENCE],
+                      static_cast< int >( _lastPacket ) << ", " <<
+                      static_cast< int >( _buffer[ SEQUENCE ] ));
+        _lastPacket = _buffer[SEQUENCE];
 
-            _buffer.setSize( 0 );
-            _connection->recvNB( &_buffer, _buffer.getMaxSize( ));
-            const float time = _clock.getTimef();
-            ++_nSamples;
+        _buffer.setSize( 0 );
+        _connection->recvNB( &_buffer, _buffer.getMaxSize( ));
+        const float time = _clock.getTimef();
+        ++_nSamples;
 
-            if( _delay > 0 )
-                lunchbox::sleep( _delay );
+        if( _delay > 0 )
+            lunchbox::sleep( _delay );
 
-            if( time < 1000.f )
-                return true;
-
-            _clock.reset();
-            co::ConstConnectionDescriptionPtr desc =
-                _connection->getDescription();
-            const lunchbox::ScopedMutex<> mutex( _mutexPrint );
-            std::cerr << "Recv perf: " << _mBytesSec / time * _nSamples
-                      << "MB/s (" << _nSamples / time * 1000.f  << "pps) from "
-                      << desc->toString() << std::endl;
-            _nSamples = 0;
+        if( time < 1000.f )
             return true;
-        }
+
+        _clock.reset();
+        co::ConstConnectionDescriptionPtr desc =
+            _connection->getDescription();
+        const lunchbox::ScopedMutex<> mutex( _mutexPrint );
+        std::cerr << "Recv perf: " << _mBytesSec / time * _nSamples
+                  << "MB/s (" << _nSamples / time * 1000.f  << "pps) from "
+                  << desc->toString() << std::endl;
+        _nSamples = 0;
+        return true;
+    }
 
     void executeReceive()
         {
@@ -172,123 +171,123 @@ public:
         }
 
     void run() override
+    {
+        co::ConnectionPtr resultConn;
+        co::ConnectionPtr newConn;
+        const bool multicast = _connection->getDescription()->type >=
+                               co::CONNECTIONTYPE_MULTICAST;
+
+        while( _nClients > 0 )
         {
-            co::ConnectionPtr resultConn;
-            co::ConnectionPtr newConn;
-            const bool multicast = _connection->getDescription()->type >=
-                                   co::CONNECTIONTYPE_MULTICAST;
-
-            while( _nClients > 0 )
+            switch( _connectionSet.select( )) // ...get next request
             {
-                switch( _connectionSet.select( )) // ...get next request
+                case co::ConnectionSet::EVENT_CONNECT: // new client
+
+                    resultConn = _connectionSet.getConnection();
+                    newConn = resultConn->acceptSync();
+                    resultConn->acceptNB();
+
+                    LBASSERT( newConn.isValid( ));
+
+                    _receivers.push_back(
+                        RecvConn( new Receiver( _packetSize, newConn ),
+                                  newConn ));
+                    if( _useThreads )
+                        _receivers.back().first->start();
+
+                    _connectionSet.addConnection( newConn );
+                    std::cerr << ++_nClients << " clients" << std::endl;
+                    break;
+
+                case co::ConnectionSet::EVENT_DATA:  // new data
                 {
-                    case co::ConnectionSet::EVENT_CONNECT: // new client
-
-                        resultConn = _connectionSet.getConnection();
-                        newConn = resultConn->acceptSync();
-                        resultConn->acceptNB();
-
-                        LBASSERT( newConn.isValid( ));
-
-                        _receivers.push_back(
-                            RecvConn( new Receiver( _packetSize, newConn ),
-                                      newConn ));
-                        if( _useThreads )
-                            _receivers.back().first->start();
-
-                        _connectionSet.addConnection( newConn );
-                        std::cerr << ++_nClients << " clients" << std::endl;
-                        break;
-
-                    case co::ConnectionSet::EVENT_DATA:  // new data
+                    resultConn = _connectionSet.getConnection();
+                    if( resultConn == _connection )
                     {
-                        resultConn = _connectionSet.getConnection();
-                        if( resultConn == _connection )
-                        {
-                            // really a close event of the listener
-                            LBASSERT( resultConn->isClosed( ));
-                            _connectionSet.removeConnection( resultConn );
-                            std::cerr << "listener closed" << std::endl;
-                            break;
-                        }
-
-                        Receiver* receiver = 0;
-                        std::vector< RecvConn >::iterator i;
-                        for( i = _receivers.begin(); i != _receivers.end(); ++i)
-                        {
-                            const RecvConn& candidate = *i;
-                            if( candidate.second == resultConn )
-                            {
-                                receiver = candidate.first;
-                                break;
-                            }
-                        }
-                        LBASSERT( receiver );
-
-                        if( _useThreads )
-                        {
-                            _connectionSet.removeConnection( resultConn );
-                            receiver->executeReceive();
-                        }
-                        else if( !receiver->readPacket())
-                        {
-                            // Connection dead?
-                            _connectionSet.removeConnection( resultConn );
-                            delete receiver;
-                            _receivers.erase( i );
-
-                            if( multicast )
-                                _connection->close();
-                            std::cerr << --_nClients << " clients" << std::endl;
-                        }
+                        // really a close event of the listener
+                        LBASSERT( resultConn->isClosed( ));
+                        _connectionSet.removeConnection( resultConn );
+                        std::cerr << "listener closed" << std::endl;
                         break;
                     }
-                    case co::ConnectionSet::EVENT_DISCONNECT:
-                    case co::ConnectionSet::EVENT_INVALID_HANDLE: // client done
-                        resultConn = _connectionSet.getConnection();
-                        _connectionSet.removeConnection( resultConn );
 
-                        for( std::vector< RecvConn >::iterator i =
-                                 _receivers.begin(); i !=_receivers.end(); ++i )
+                    Receiver* receiver = 0;
+                    RecvConns::iterator i;
+                    for( i = _receivers.begin(); i != _receivers.end(); ++i)
+                    {
+                        const RecvConn& candidate = *i;
+                        if( candidate.second == resultConn )
                         {
-                            const RecvConn& candidate = *i;
-                            if( candidate.second == resultConn )
-                            {
-                                Receiver* receiver = candidate.first;
-                                _receivers.erase( i );
-                                if( _useThreads )
-                                {
-                                    receiver->stop();
-                                    receiver->join();
-                                }
-                                delete receiver;
-                                break;
-                            }
+                            receiver = candidate.first;
+                            break;
                         }
+                    }
+                    LBASSERT( receiver );
+
+                    if( _useThreads )
+                    {
+                        _connectionSet.removeConnection( resultConn );
+                        receiver->executeReceive();
+                    }
+                    else if( !receiver->readPacket())
+                    {
+                        // Connection dead?
+                        _connectionSet.removeConnection( resultConn );
+                        delete receiver;
+                        _receivers.erase( i );
 
                         if( multicast )
                             _connection->close();
                         std::cerr << --_nClients << " clients" << std::endl;
-                        break;
-
-                    case co::ConnectionSet::EVENT_INTERRUPT:
-                        break;
-
-                    default:
-                        LBASSERTINFO( false, "Not reachable" );
+                    }
+                    break;
                 }
+                case co::ConnectionSet::EVENT_DISCONNECT:
+                case co::ConnectionSet::EVENT_INVALID_HANDLE: // client done
+                    resultConn = _connectionSet.getConnection();
+                    _connectionSet.removeConnection( resultConn );
+
+                    for( RecvConns::iterator i = _receivers.begin();
+                         i !=_receivers.end(); ++i )
+                    {
+                        const RecvConn& candidate = *i;
+                        if( candidate.second == resultConn )
+                        {
+                            Receiver* receiver = candidate.first;
+                            _receivers.erase( i );
+                            if( _useThreads )
+                            {
+                                receiver->stop();
+                                receiver->join();
+                            }
+                            delete receiver;
+                            break;
+                        }
+                    }
+
+                    if( multicast )
+                        _connection->close();
+                    std::cerr << --_nClients << " clients" << std::endl;
+                    break;
+
+                case co::ConnectionSet::EVENT_INTERRUPT:
+                    break;
+
+                default:
+                    LBASSERTINFO( false, "Not reachable" );
             }
-            LBASSERTINFO( _receivers.empty(), _receivers.size() );
-            LBASSERTINFO( _connectionSet.getSize() <= 1,
-                          _connectionSet.getSize( ));
         }
+        LBASSERTINFO( _receivers.empty(), _receivers.size() );
+        LBASSERTINFO( _connectionSet.getSize() <= 1, _connectionSet.getSize( ));
+    }
 
 private:
     typedef std::pair< Receiver*, co::ConnectionPtr > RecvConn;
+    typedef std::vector< RecvConn > RecvConns;
     co::ConnectionPtr    _connection;
-    std::vector< RecvConn > _receivers;
-    size_t _packetSize;
-    bool _useThreads;
+    RecvConns _receivers;
+    const size_t _packetSize;
+    const bool _useThreads;
 };
 
 }

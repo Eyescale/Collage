@@ -17,11 +17,13 @@ before_install:
  - sudo apt-get install -qq autoconf || /bin/true
  - sudo apt-get install -qq automake || /bin/true
  - sudo apt-get install -qq cmake || /bin/true
+ - sudo apt-get install -qq doxygen || /bin/true
  - sudo apt-get install -qq git || /bin/true
  - sudo apt-get install -qq git-review || /bin/true
  - sudo apt-get install -qq git-svn || /bin/true
  - sudo apt-get install -qq libavahi-compat-libdnssd-dev || /bin/true
  - sudo apt-get install -qq libboost-date-time-dev || /bin/true
+ - sudo apt-get install -qq libboost-program-options-dev || /bin/true
  - sudo apt-get install -qq libboost-regex-dev || /bin/true
  - sudo apt-get install -qq libboost-serialization-dev || /bin/true
  - sudo apt-get install -qq libboost-system-dev || /bin/true
