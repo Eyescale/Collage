@@ -88,18 +88,18 @@ public:
 
         co::Buffer buffer;
         buffer.resize( maxBufferSize );
+
+        co::Buffer input;
+        input.resize( maxBufferSize );
+        input.setZero();
+
         lunchbox::Clock clock;
 
         for( size_t size = 256; size <= maxBufferSize; size = size << 1 )
         {
             clock.reset();
-            co::Buffer input;
-
-            input.resize( size );
-            input.setZero();
-
             for( size_t i = 0; i < maxBufferSize; i += size )
-                memcpy( buffer.getData() + i, input.getData(), size );
+                memcpy( buffer.getData() + i, input.getData() + i, size );
 
             TEST( connection->send( buffer.getData(), buffer.getSize( )));
             const float aggTime = clock.resetTimef();
