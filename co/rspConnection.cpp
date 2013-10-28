@@ -768,8 +768,8 @@ void RSPConnection::_repeatData()
 
         if ( distance == 0 )
         {
-            LBWARN << "received invalid nack (" << request.start
-                   << ".." << request.end << "), ignoring..." << std::endl;
+            LBWARN << "ignoring invalid nack (" << request.start
+                   << ".." << request.end << ")" << std::endl;
             _repeatQueue.pop_front();
             continue;
         }
@@ -1109,8 +1109,8 @@ bool RSPConnection::_handleData( const size_t bytes )
         return true;
     }
 
-    uint16_t max = std::numeric_limits<uint16_t>::max();
-    if(( connection->_sequence > sequence && 
+    const uint16_t max = std::numeric_limits< uint16_t >::max();
+    if(( connection->_sequence > sequence &&
          max - connection->_sequence + sequence > _numBuffers ) ||
        ( connection->_sequence < sequence &&
          sequence - connection->_sequence > _numBuffers ))
@@ -1155,7 +1155,7 @@ bool RSPConnection::_handleData( const size_t bytes )
         const Buffer* lastBuffer = i>=0 ? connection->_recvBuffers[i] : 0;
         if( lastBuffer )
         {
-            nack.start = connection->_sequence + i; 
+            nack.start = connection->_sequence + i;
         }
     }
 
