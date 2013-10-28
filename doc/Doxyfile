@@ -1518,7 +1518,8 @@ PREDEFINED             = CO_GCC_4_1_OR_LATER= \
                          CO_USE_BOOST= \
                          CO_DLLIMPORT= \
                          CO_API= \
-                         CO_USE_BOOST_SERIALIZATION=
+                         CO_USE_BOOST_SERIALIZATION= \
+                         LB_UNUSED=
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then
 # this tag can be used to specify a list of macro names that should be expanded.

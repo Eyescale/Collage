@@ -1311,14 +1311,13 @@ BufferPtr LocalNode::_readHead( ConnectionPtr connection )
         return 0;
     }
 
-    if( !gotSize ) // Some systems signal data on dead connections.
-    {
-        buffer->setSize( 0 );
-        connection->recvNB( buffer, COMMAND_MINSIZE );
-        return 0;
-    }
+    if( gotSize )
+        return buffer;
 
-    return buffer;
+    // Some systems signal data on dead connections.
+    buffer->setSize( 0 );
+    connection->recvNB( buffer, COMMAND_MINSIZE );
+    return 0;
 }
 
 ICommand LocalNode::_setupCommand( ConnectionPtr connection,
@@ -1341,38 +1340,39 @@ ICommand LocalNode::_setupCommand( ConnectionPtr connection,
     ICommand command( this, node, buffer, swapping );
 
     if( node )
-        node->_setLastReceive( getTime64( ));
-    else
     {
-        uint32_t cmd = command.getCommand();
-#ifdef COLLAGE_BIGENDIAN
-        lunchbox::byteswap( cmd ); // pre-node commands are sent little endian
-#endif
-        switch( cmd )
-        {
-          case CMD_NODE_CONNECT:
-          case CMD_NODE_CONNECT_REPLY:
-          case CMD_NODE_ID:
-#ifdef COLLAGE_BIGENDIAN
-              command = ICommand( this, node, buffer, true );
-#endif
-              break;
-
-          case CMD_NODE_CONNECT_BE:
-          case CMD_NODE_CONNECT_REPLY_BE:
-          case CMD_NODE_ID_BE:
-#ifndef COLLAGE_BIGENDIAN
-              command = ICommand( this, node, buffer, true );
-#endif
-              break;
-
-          default:
-              LBUNIMPLEMENTED;
-              return ICommand();
-        }
-        command.setCommand( cmd ); // reset correctly swapped version
+        node->_setLastReceive( getTime64( ));
+        return command;
     }
 
+    uint32_t cmd = command.getCommand();
+#ifdef COLLAGE_BIGENDIAN
+    lunchbox::byteswap( cmd ); // pre-node commands are sent little endian
+#endif
+    switch( cmd )
+    {
+    case CMD_NODE_CONNECT:
+    case CMD_NODE_CONNECT_REPLY:
+    case CMD_NODE_ID:
+#ifdef COLLAGE_BIGENDIAN
+        command = ICommand( this, node, buffer, true );
+#endif
+        break;
+
+    case CMD_NODE_CONNECT_BE:
+    case CMD_NODE_CONNECT_REPLY_BE:
+    case CMD_NODE_ID_BE:
+#ifndef COLLAGE_BIGENDIAN
+        command = ICommand( this, node, buffer, true );
+#endif
+        break;
+
+    default:
+        LBUNIMPLEMENTED;
+        return ICommand();
+    }
+
+    command.setCommand( cmd ); // reset correctly swapped version
     return command;
 }
 
