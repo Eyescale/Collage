@@ -25,27 +25,32 @@
 
 namespace co
 {
-    enum CommandType
-    {
-        COMMANDTYPE_NODE, //!< A Node/LocalNode command
-        COMMANDTYPE_OBJECT, //!< An Object command
-        COMMANDTYPE_CUSTOM = 1<<7, // !< Application-specific command
-        COMMANDTYPE_INVALID = 0xFFFFFFFFu //!< @internal
-    };
 
-    enum Commands
-    {
-        CMD_NODE_CUSTOM = 50,  //!< Commands for Node subclasses start here
-        CMD_NODE_MAXIMUM = 0xFFFFFFu, //!< Highest allowed node command (2^24-1)
-        CMD_OBJECT_CUSTOM = 10, //!< Commands for Object subclasses start here
-        CMD_INVALID = 0xFFFFFFFFu //!< @internal
-    };
+/**
+ * The type of a Command.
+ * Applications can define their own types starting at COMMANDTYPE_CUSTOM.
+ */
+enum CommandType
+{
+    COMMANDTYPE_NODE, //!< A Node/LocalNode command
+    COMMANDTYPE_OBJECT, //!< An Object command
+    COMMANDTYPE_CUSTOM = 1<<7, // !< Application-specific command
+    COMMANDTYPE_INVALID = 0xFFFFFFFFu //!< @internal
+};
 
-    /** @internal Minimal packet size sent by DataOStream / read by LocalNode */
-    static const size_t COMMAND_MINSIZE = 256;
+enum Commands
+{
+    CMD_NODE_CUSTOM = 50,  //!< Commands for Node subclasses start here
+    CMD_NODE_MAXIMUM = 0xFFFFFFu, //!< Highest allowed node command (2^24-1)
+    CMD_OBJECT_CUSTOM = 10, //!< Commands for Object subclasses start here
+    CMD_INVALID = 0xFFFFFFFFu //!< @internal
+};
 
-    /** @internal Minimal allocation size of a packet. */
-    static const size_t COMMAND_ALLOCSIZE = 4096; // Bigger than minSize!
+/** @internal Minimal packet size sent by DataOStream / read by LocalNode */
+static const size_t COMMAND_MINSIZE = 256;
+
+/** @internal Minimal allocation size of a packet. */
+static const size_t COMMAND_ALLOCSIZE = 4096; // Bigger than minSize!
 }
 
 namespace lunchbox
