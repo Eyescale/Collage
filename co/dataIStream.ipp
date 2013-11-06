@@ -24,8 +24,7 @@ namespace co
 /** @name Specialized input operators */
 //@{
 /** Read a std::string. */
-template<>
-inline DataIStream& DataIStream::operator >> ( std::string& str )
+template<> inline DataIStream& DataIStream::operator >> ( std::string& str )
 {
     uint64_t nElems = 0;
     *this >> nElems;
