@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -28,6 +28,7 @@
 #include <lunchbox/nonCopyable.h> // base class
 #include <lunchbox/stdExt.h>
 
+#include <boost/type_traits.hpp>
 #include <map>
 #include <set>
 #include <vector>
@@ -80,8 +81,8 @@ namespace DataStreamTest { class Sender; }
             { _write( &value, sizeof( value )); return *this; }
 
         /** Write a C array. @version 1.0 */
-        template< class T > DataOStream& operator << ( Array< T > array )
-            { _write( array.data, array.getNumBytes( )); return *this; }
+        template< class T > DataOStream& operator << ( const Array< T > array )
+            { _writeArray( array, boost::is_pod<T>( )); return *this; }
 
         /** Write a lunchbox::Buffer. @version 1.0 */
         template< class T >
@@ -195,6 +196,20 @@ namespace DataStreamTest { class Sender; }
                 _write( &value.front(), nElems * sizeof( T ));
             return *this;
         }
+
+        /** Write an Array of POD data */
+        template< class T >
+        void _writeArray( const Array< T > array, const boost::true_type& )
+            { _write( array.data, array.getNumBytes( )); }
+
+        /** Write an Array of non-POD data */
+        template< class T >
+        void _writeArray( const Array< T > array, const boost::false_type& )
+        {
+            for( size_t i = 0; i < array.num; ++i )
+                *this << array.data[ i ];
+        }
+
         /** Send the trailing data (command) to the receivers */
         void _sendFooter( const void* buffer, const uint64_t size );
     };
