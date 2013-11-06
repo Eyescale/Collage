@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *               2009-2010, Cedric Stalder <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -25,9 +25,9 @@
 #include <co/api.h>
 #include <co/array.h> // used inline
 #include <co/types.h>
-
 #include <lunchbox/stdExt.h>
 
+#include <boost/type_traits.hpp>
 #include <map>
 #include <set>
 #include <vector>
@@ -59,7 +59,8 @@ public:
         { _read( &value, sizeof( value )); _swap( value ); return *this; }
 
     /** Read a C array. @version 1.0 */
-    template< class T > DataIStream& operator >> ( Array< T > array );
+    template< class T > DataIStream& operator >> ( Array< T > array )
+        { _readArray( array, boost::is_pod<T>( )); return *this; }
 
     /** Read a lunchbox::Buffer. @version 1.0 */
     template< class T > DataIStream& operator >> ( lunchbox::Buffer< T >& );
@@ -180,30 +181,36 @@ private:
     /** Read a vector of trivial data. */
     template< class T >
     DataIStream& _readFlatVector ( std::vector< T >& value )
-        {
-            uint64_t nElems = 0;
-            *this >> nElems;
-            LBASSERTINFO( nElems < LB_BIT48,
-                          "Out-of-sync co::DataIStream: " << nElems << " elements?" );
-            value.resize( size_t( nElems ));
-            if( nElems > 0 )
-                *this >> Array< T >( &value.front(), nElems );
-            return *this;
-        }
+    {
+        uint64_t nElems = 0;
+        *this >> nElems;
+        LBASSERTINFO( nElems < LB_BIT48,
+                      "Out-of-sync DataIStream: " << nElems << " elements?" );
+        value.resize( size_t( nElems ));
+        if( nElems > 0 )
+            *this >> Array< T >( &value.front(), nElems );
+        return *this;
+    }
 
     /** Byte-swap a plain data item. @version 1.0 */
     template< class T > void _swap( T& value ) const
         { if( isSwapping( )) swap( value ); }
 
+    /** Read an Array of POD data */
+    template< class T > void _readArray( Array< T >, const boost::true_type& );
+
+    /** Read an Array of non-POD data */
+    template< class T > void _readArray( Array< T >, const boost::false_type&);
+
     /** Byte-swap a C array. @version 1.0 */
     template< class T > void _swap( Array< T > array ) const
-        {
-            if( !isSwapping( ))
-                return;
+    {
+        if( !isSwapping( ))
+            return;
 #pragma omp parallel for
-            for( ssize_t i = 0; i < ssize_t( array.num ); ++i )
-                swap( array.data[i] );
-        }
+        for( ssize_t i = 0; i < ssize_t( array.num ); ++i )
+            swap( array.data[i] );
+    }
 };
 }
 
