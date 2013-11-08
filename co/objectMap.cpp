@@ -247,11 +247,19 @@ void ObjectMap::deserialize( DataIStream& is, const uint64_t dirtyBits )
             LBASSERT( _impl->map.find( ov.identifier ) != _impl->map.end( ));
 
             Entry& entry = _impl->map[ ov.identifier ];
-            entry.version = ov.version;
-            LBASSERT( !entry.instance || entry.instance->isAttached( ));
+            if( !entry.instance || entry.instance->isMaster( ))
+            {
+                LBERROR << "Empty or master instance for object "
+                        << ov.identifier << " in slave object map" << std::endl;
+                continue;
+            }
 
-            if( entry.instance && !entry.instance->isMaster( ))
-                entry.instance->sync( ov.version );
+            if( ov.version < entry.instance->getVersion( ))
+                LBWARN << "Cannot sync " << entry.instance
+                       << " to older version " << ov.version << ", got "
+                       << entry.instance->getVersion() << std::endl;
+            else
+                entry.version = entry.instance->sync( ov.version );
         }
     }
 }
@@ -348,7 +356,11 @@ Object* ObjectMap::map( const UUID& identifier, Object* instance )
         return 0;
     }
 
-    LBASSERT( object->getVersion() == entry.version );
+    if( object->getVersion() != entry.version )
+        LBWARN << "Object " << *object << " could not be mapped to desired "
+               << "version, should be " << entry.version << ", but is "
+               << object->getVersion() << std::endl;
+
     entry.instance = object;
     entry.own = !instance;
     return object;
