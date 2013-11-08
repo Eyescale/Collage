@@ -191,7 +191,7 @@ public:
 }
 
 DataOStream::DataOStream()
-        : _impl( new detail::DataOStream )
+    : _impl( new detail::DataOStream )
 {}
 
 DataOStream::DataOStream( DataOStream& rhs )

@@ -81,14 +81,14 @@ namespace co
         /** Cached input streams (+decompressor) */
         lunchbox::Pool< ObjectDataIStream, true > _iStreamCache;
 
-        /** The instance identifier of the master object. */
-        uint32_t _masterInstanceID;
-
         /** The output stream for slave object commits. */
         ObjectSlaveDataOStream _ostream;
 
         /** The node holding the master object. */
         NodePtr _master;
+
+        /** The instance identifier of the master object. */
+        uint32_t _masterInstanceID;
 
         void _syncToHead();
         void _releaseStream( ObjectDataIStream* stream );
