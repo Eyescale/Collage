@@ -87,12 +87,12 @@ public:
      * Map and return an object.
      *
      * The object is either created via its type specified upon registering or
-     * an already created instance is used if passed to this function.  Passed
+     * an already created instance is used if passed to this function. Passed
      * instances will not be considered for deletion during explicit unmap(),
      * implicit unmap caused by deregister(), or destruction of this object map.
      *
-     * The object will be mapped to the version that was current on
-     * registration time.
+     * The object will be mapped to the version that was current on registration
+     * time.
      *
      * @param identifier unique object identifier used for map operation
      * @param instance already created instance to skip factory creation
