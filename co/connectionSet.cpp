@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -27,7 +27,6 @@
 #include <lunchbox/buffer.h>
 #include <lunchbox/os.h>
 #include <lunchbox/scopedMutex.h>
-#include <lunchbox/stdExt.h>
 #include <lunchbox/thread.h>
 
 #include <algorithm>
@@ -285,7 +284,7 @@ bool ConnectionSet::removeConnection( ConnectionPtr connection )
 {
     {
         lunchbox::ScopedWrite mutex( _impl->lock );
-        ConnectionsIter i = stde::find( _impl->allConnections, connection );
+        ConnectionsIter i = lunchbox::find( _impl->allConnections, connection );
         if( i == _impl->allConnections.end( ))
             return false;
 
@@ -293,7 +292,7 @@ bool ConnectionSet::removeConnection( ConnectionPtr connection )
             _impl->connection = 0;
 
 #ifdef _WIN32
-        ConnectionsIter j = stde::find( _impl->connections, connection );
+        ConnectionsIter j = lunchbox::find( _impl->connections, connection );
         if( j == _impl->connections.end( ))
         {
             Threads::iterator k = _impl->threads.begin();

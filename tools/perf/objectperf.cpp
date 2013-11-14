@@ -580,7 +580,7 @@ int main( int argc, char **argv )
                 }
                 else
                 {
-                    NodesIter i = stde::find( nodes, node );
+                    NodesIter i = lunchbox::find( nodes, node );
                     if( i != nodes.end( ))
                         nodes.erase( i );
                 }

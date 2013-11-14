@@ -193,7 +193,7 @@ DataIStream::deserializeChildren( O* object, const std::vector< C* >& old_,
         }
 
         typename std::vector< C* >::iterator j =
-            stde::find_if( old, ObjectFinder( version.identifier ));
+            lunchbox::find_if( old, ObjectFinder( version.identifier ));
 
         if( j == old.end( )) // previously unknown child
         {
