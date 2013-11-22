@@ -46,6 +46,9 @@ int main( int argc, char **argv )
     if( zeroconf.getInstances().empty() && getenv( "TRAVIS" ))
     {
         std::cerr << "Bailing, got no hosts on a Travis CI setup" << std::endl;
+        client->close();
+        server->close();
+        co::exit();
         return EXIT_SUCCESS;
     }
 
