@@ -675,7 +675,8 @@ bool SocketConnection::listen()
 
     if( !listening )
     {
-        LBWARN << "Could not listen on socket: " << lunchbox::sysError << std::endl;
+        LBWARN << "Could not listen on socket: " << lunchbox::sysError
+               << std::endl;
         close();
         return false;
     }
