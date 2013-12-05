@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2010-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -119,7 +119,7 @@ void VersionedMasterCM::addSlave( MasterCMCommand command )
     _updateMaxVersion();
 
     _slaves->push_back( data.node );
-    stde::usort( *_slaves );
+    lunchbox::usort( *_slaves );
 
     ObjectCM::_addSlave( command, _version );
 }
@@ -133,7 +133,7 @@ void VersionedMasterCM::removeSlave( NodePtr node, const uint32_t instanceID )
     SlaveData data;
     data.node = node;
     data.instanceID = instanceID;
-    SlaveDatasIter i = stde::find( _slaveData, data );
+    SlaveDatasIter i = lunchbox::find( _slaveData, data );
     LBASSERTINFO( i != _slaveData.end(), lunchbox::className( _object ));
     if( i == _slaveData.end( ))
         return;
@@ -144,7 +144,7 @@ void VersionedMasterCM::removeSlave( NodePtr node, const uint32_t instanceID )
     _slaves->clear();
     for( i = _slaveData.begin(); i != _slaveData.end(); ++i )
         _slaves->push_back( i->node );
-    stde::usort( *_slaves );
+    lunchbox::usort( *_slaves );
     _updateMaxVersion();
 }
 
@@ -154,7 +154,7 @@ void VersionedMasterCM::removeSlaves( NodePtr node )
 
     Mutex mutex( _slaves );
 
-    NodesIter i = stde::find( *_slaves, node );
+    NodesIter i = lunchbox::find( *_slaves, node );
     if( i == _slaves->end( ))
         return;
     _slaves->erase( i );
@@ -211,7 +211,7 @@ bool VersionedMasterCM::_cmdMaxVersion( ICommand& cmd )
     SlaveData data;
     data.node = command.getNode();
     data.instanceID = slaveID;
-    SlaveDatasIter i = stde::find( _slaveData, data );
+    SlaveDatasIter i = lunchbox::find( _slaveData, data );
     if( i == _slaveData.end( ))
     {
         LBWARN << "Got max version from unmapped slave" << std::endl;

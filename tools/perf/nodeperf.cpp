@@ -268,7 +268,7 @@ int main( int argc, char **argv )
                 for( co::NodesCIter i = nodes_->begin(); i != nodes_->end();++i)
                 {
                     co::NodePtr node = *i;
-                    co::NodesCIter j = stde::find( nodes, node );
+                    co::NodesCIter j = lunchbox::find( nodes, node );
                     if( j == nodes.end( ))
                     {
                         // new node, map perf object
