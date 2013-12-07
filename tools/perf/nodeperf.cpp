@@ -25,7 +25,9 @@
 #ifndef MIN
 #  define MIN LB_MIN
 #endif
-#include <tclap/CmdLine.h>
+
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
 
 namespace
 {
@@ -154,56 +156,60 @@ int main( int argc, char **argv )
 
     try // command line parsing
     {
-        TCLAP::CmdLine command(
-            "nodeperf - Collage node-to-node network benchmark tool", ' ',
-            co::Version::getString( ));
-        TCLAP::ValueArg< std::string > remoteArg( "c", "connect",
-                            "connect to remote node, implies --disableZeroconf",
-                                                  false, "",
-                                                  "IP[:port][:protocol]",
-                                                  command );
-        TCLAP::SwitchArg zcArg( "d", "disableZeroconf",
-                                "Disable automatic connect using zeroconf",
-                                command, false );
-        TCLAP::SwitchArg objectsArg( "o", "object",
-                   "Benchmark object-object instead of node-node communication",
-                                     command, false );
-        TCLAP::ValueArg<size_t> sizeArg( "p", "packetSize", "packet size",
-                                         false, packetSize, "unsigned",
-                                         command );
-        TCLAP::ValueArg<size_t> packetsArg( "n", "numPackets",
-                                            "number of packets to send",
-                                            false, nPackets, "unsigned",
-                                            command );
-        TCLAP::ValueArg<uint32_t> waitArg( "w", "wait",
-                                           "wait time (ms) between sends",
-                                           false, 0, "unsigned", command );
-        command.parse( argc, argv );
+		po::options_description programDescription("nodeperf - Collage node-to-node network benchmark tool " 
+			+ co::Version::getString( ));
 
-        if( remoteArg.isSet( ))
-        {
-            remote = new co::ConnectionDescription;
-            remote->port = 4242;
-            remote->fromString( remoteArg.getValue( ));
-        }
-        useZeroconf = !zcArg.isSet();
-        useObjects = objectsArg.isSet();
+		std::string remoteString("");
+		bool showHelp(false);
+		bool disableZeroconf(false);
 
-        if( sizeArg.isSet( ))
-            packetSize = sizeArg.getValue();
-        if( packetsArg.isSet( ))
-            nPackets = uint32_t( packetsArg.getValue( ));
-        if( waitArg.isSet( ))
-            waitTime = waitArg.getValue();
-    }
-    catch( TCLAP::ArgException& exception )
-    {
-        LBERROR << "Command line parse error: " << exception.error()
-                << " for argument " << exception.argId() << std::endl;
+		programDescription.add_options()
+			( "help,h",            po::bool_switch(&showHelp)->default_value(false), 
+				"produce help message" )
+			( "connect,c",         po::value<std::string>(&remoteString), 
+				"connect to remote node, implies --disableZeroconf. Format IP[:port][:protocol]" )
+			( "disableZeroconf,d", po::bool_switch(&disableZeroconf)->default_value(false),
+				"Disable automatic connect using zeroconf" )
+			( "object,o",          po::bool_switch(&useObjects)->default_value(false), 
+				"Benchmark object-object instead of node-node communication" )
+			( "packetSize,p",      po::value<std::size_t>(&packetSize),
+				"packet size" )
+			( "numPackets,n",      po::value<uint32_t>(&nPackets),
+				"number of packets to send" )
+			( "wait,w",            po::value<uint32_t>(&waitTime),
+				"wait time (ms) between sends" )
+			;
 
-        co::exit();
-        return EXIT_FAILURE;
-    }
+		// parse program options
+		po::variables_map variableMap;
+		po::store(po::parse_command_line(argc, argv, programDescription), variableMap);
+		po::notify(variableMap);
+
+		// evaluate pared arguments
+		if( showHelp )
+		{
+			LBINFO << programDescription << std::endl;
+			co::exit();
+			return EXIT_SUCCESS;
+		}
+
+		if( variableMap.count("connect") == 1)
+		{
+			remote = new co::ConnectionDescription;
+			remote->port = 4242;
+			remote->fromString( remoteString );
+		}
+
+		if( disableZeroconf )
+			useZeroconf = false;
+	}
+	catch( std::exception& exception )
+	{
+		LBERROR << "Command line parse error: " << exception.what() 
+			<< std::endl;
+		co::exit();
+		return EXIT_FAILURE;
+	}
 
     // Set up local node
     co::LocalNodePtr localNode = new PerfNode;

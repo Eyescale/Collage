@@ -26,7 +26,9 @@
 #ifndef MIN
 #  define MIN LB_MIN
 #endif
-#include <tclap/CmdLine.h>
+
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
 
 static uint64_t objectSize = 0;
 static uint64_t nObjects = 0;
@@ -450,53 +452,59 @@ int main( int argc, char **argv )
     co::ConnectionDescriptionPtr remote;
     bool useZeroconf = true;
 
-    try // command line parsing
-    {
-        TCLAP::CmdLine command(
-            "objectperf - Collage object data distribution benchmark tool", ' ',
-            co::Version::getString( ));
-        TCLAP::ValueArg< std::string > remoteArg( "c", "connect",
-                            "connect to remote node, implies --disableZeroconf",
-                                                  false, "",
-                                                  "IP[:port][:protocol]",
-                                                  command );
-        TCLAP::SwitchArg zcArg( "d", "disableZeroconf",
-                                "Disable automatic connect using zeroconf",
-                                command, false );
-        TCLAP::ValueArg<size_t> sizeArg( "o", "objectSize", "object size",
-                                         false, objectSize, "unsigned",
-                                         command );
-        TCLAP::ValueArg<size_t> numArg( "n", "numObjects", "number of objects",
-                                        false, nObjects, "unsigned", command );
-        TCLAP::UnlabeledMultiArg< std::string >
-            ignoreArgs( "ignore", "Ignored unlabeled arguments", false, "any",
-                        command );
-#ifdef TCPLAP_HAS_IGNOREUNMATCHED
-        command.ignoreUnmatched( true );
-#endif
-        command.parse( argc, argv );
+	try // command line parsing
+	{
+		po::options_description programDescription("objectperf - Collage object data distribution benchmark tool " 
+			+ co::Version::getString( ));
 
-        if( remoteArg.isSet( ))
-        {
-            remote = new co::ConnectionDescription;
-            remote->port = 4242;
-            remote->fromString( remoteArg.getValue( ));
-        }
-        useZeroconf = !zcArg.isSet();
+		std::string remoteString("");
+		bool showHelp(false);
+		bool disableZeroconf(false);
 
-        if( sizeArg.isSet( ))
-            objectSize = sizeArg.getValue();
-        if( numArg.isSet( ))
-            nObjects = numArg.getValue();
-    }
-    catch( TCLAP::ArgException& exception )
-    {
-        LBERROR << "Command line parse error: " << exception.error()
-                << " for argument " << exception.argId() << std::endl;
+		programDescription.add_options()
+			( "help,h",            po::bool_switch(&showHelp)->default_value(false), 
+				"produce help message" )
+			( "connect,c",         po::value<std::string>(&remoteString), 
+				"connect to remote node, implies --disableZeroconf. Format IP[:port][:protocol]" )
+			( "disableZeroconf,d", po::bool_switch(&disableZeroconf)->default_value(false),
+				"Disable automatic connect using zeroconf" )
+			( "objectSize,o",      po::value<uint64_t>(&objectSize),
+				"object size" )
+			( "numObjects,n",      po::value<uint64_t>(&nObjects),
+				"number of objects" )
+			;
 
-        co::exit();
-        return EXIT_FAILURE;
-    }
+		// parse program options
+		po::variables_map variableMap;
+		po::store(po::parse_command_line(argc, argv, programDescription), variableMap);
+		po::notify(variableMap);
+
+		// evaluate pared arguments
+		if( showHelp )
+		{
+			LBINFO << programDescription << std::endl;
+			co::exit();
+			return EXIT_SUCCESS;
+		}
+
+		if( variableMap.count("connect") == 1)
+		{
+			remote = new co::ConnectionDescription;
+			remote->port = 4242;
+			remote->fromString( remoteString );
+		}
+
+		if( disableZeroconf )
+			useZeroconf = false;
+	}
+	catch( std::exception& exception )
+	{
+		LBERROR << "Command line parse error: " << exception.what() 
+			<< std::endl;
+		co::exit();
+		return EXIT_FAILURE;
+	}
+
 
     // Set up local node
     const uint64_t size = objectSize;
