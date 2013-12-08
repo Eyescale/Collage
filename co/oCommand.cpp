@@ -75,11 +75,10 @@ OCommand::~OCommand()
     {
         LBASSERT( _impl->size > 0 );
         const uint64_t size = _impl->size + getBuffer().getSize();
-        const size_t minSize = COMMAND_MINSIZE;
         const Connections& connections = getConnections();
-        if( size < minSize ) // Fill send to minimal size
+        if( size < COMMAND_MINSIZE ) // Fill send to minimal size
         {
-            const size_t delta = minSize - size;
+            const size_t delta = COMMAND_MINSIZE - size;
             void* padding = alloca( delta );
             for( ConnectionsCIter i = connections.begin();
                  i != connections.end(); ++i )

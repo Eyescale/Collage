@@ -188,7 +188,7 @@ bool SocketConnection::connect()
 
 void SocketConnection::_close()
 {
-    if( isClosed() )
+    if( isClosed( ))
         return;
 
     if( isListening( ))
@@ -313,7 +313,7 @@ void SocketConnection::acceptNB()
 ConnectionPtr SocketConnection::acceptSync()
 {
     LB_TS_THREAD( _recvThread );
-    if( !isListening() )
+    if( !isListening( ))
         return 0;
 
     LBASSERT( _overlappedAcceptData );
@@ -344,7 +344,7 @@ ConnectionPtr SocketConnection::acceptSync()
     _tuneSocket( _overlappedSocket );
 
     ConstConnectionDescriptionPtr description = getDescription();
-    SocketConnection* newConnection = new SocketConnection(description->type );
+    SocketConnection* newConnection = new SocketConnection( description->type );
     ConnectionPtr connection( newConnection ); // to keep ref-counting correct
 
     newConnection->_readFD  = _overlappedSocket;
@@ -374,7 +374,7 @@ void SocketConnection::acceptNB(){ /* NOP */ }
 
 ConnectionPtr SocketConnection::acceptSync()
 {
-    if( !isListening() )
+    if( !isListening( ))
         return 0;
 
     sockaddr_in newAddress;
@@ -395,7 +395,7 @@ ConnectionPtr SocketConnection::acceptSync()
     _tuneSocket( fd );
 
     ConstConnectionDescriptionPtr description = getDescription();
-    SocketConnection* newConnection = new SocketConnection( description->type);
+    SocketConnection* newConnection = new SocketConnection( description->type );
 
     newConnection->_readFD      = fd;
     newConnection->_writeFD     = fd;
