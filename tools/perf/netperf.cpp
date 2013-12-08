@@ -21,14 +21,14 @@
 #define LB_RELEASE_ASSERT
 
 #include <co/co.h>
+#include <boost/program_options.hpp>
+#include <iostream>
 
 #ifndef MIN
 #  define MIN LB_MIN
 #endif
-#include <boost/program_options.hpp>
-namespace po = boost::program_options;
 
-#include <iostream>
+namespace po = boost::program_options;
 
 namespace
 {
@@ -309,61 +309,57 @@ int main( int argc, char **argv )
 
     try // command line parsing
     {
-		po::options_description programDescription("netperf - Collage network benchmark tool " 
-			+ co::Version::getString( ));
+        po::options_description options(
+            "netperf - Collage network benchmark tool "
+            + co::Version::getString( ));
 
-		std::string clientString("");
-		std::string serverString("");
-		bool showHelp(false);
+        std::string clientString("");
+        std::string serverString("");
+        bool showHelp(false);
 
-		programDescription.add_options()
-			( "help,h",         po::bool_switch(&showHelp)->default_value(false),
-				"produce help message" )
-			( "client,c",       po::value<std::string>(&clientString),
-				"run as client, format IP[:port][:protocol]" )
-			( "server,s",       po::value<std::string>(&serverString),
-				"run as server, format IP[:port][:protocol]" )
-			( "threaded,t",     po::bool_switch(&useThreads)->default_value(false), 
-				"Run each receive in a separate thread (server only)" )
-			( "packetSize,p",   po::value<std::size_t>(&packetSize), 
-				"packet size" )
-			( "numPackets,n",   po::value<std::size_t>(&nPackets), 
-				"number of packets to send, unsigned int" )
-			( "wait,w",         po::value<uint32_t>(&waitTime), 
-				"wait time (ms) between sends (client only)" )
-			( "delay,d",        po::value<uint32_t>(&_delay), 
-				"wait time (ms) between receives (server only" )
-			;
+        options.add_options()
+            ( "help,h",       po::bool_switch(&showHelp)->default_value(false),
+              "show help message" )
+            ( "client,c",     po::value<std::string>(&clientString),
+              "run as client, format IP[:port][:protocol]" )
+            ( "server,s",     po::value<std::string>(&serverString),
+              "run as server, format IP[:port][:protocol]" )
+            ( "threaded,t",  po::bool_switch(&useThreads)->default_value(false),
+              "Run each receive in a separate thread (server only)" )
+            ( "packetSize,p", po::value<std::size_t>(&packetSize),
+              "packet size" )
+            ( "numPackets,n", po::value<std::size_t>(&nPackets),
+              "number of packets to send, unsigned int" )
+            ( "wait,w",       po::value<uint32_t>(&waitTime),
+              "wait time (ms) between sends (client only)" )
+            ( "delay,d",      po::value<uint32_t>(&_delay),
+              "wait time (ms) between receives (server only" );
 
-		// parse program options
-		po::variables_map variableMap;
-		po::store(po::parse_command_line(argc, argv, programDescription), variableMap);
-		po::notify(variableMap);
+        // parse program options
+        po::variables_map variableMap;
+        po::store( po::parse_command_line( argc, argv, options ), variableMap );
+        po::notify( variableMap );
 
-		// evaluate pared arguments
-		if( showHelp )
-		{
-			LBINFO << programDescription << std::endl;
-			co::exit();
-			return EXIT_SUCCESS;
-		}
+        // evaluate pared arguments
+        if( showHelp )
+        {
+            LBINFO << options << std::endl;
+            co::exit();
+            return EXIT_SUCCESS;
+        }
 
-		std::size_t numClientServerArgs = variableMap.count("client") + variableMap.count("server");
-		if( numClientServerArgs != 1 )
-			throw std::runtime_error("It must be either a client arg exclusive or a server arg set!");
-
-		if( variableMap.count("client") == 1 ) 
-			description->fromString(clientString);
-		else
-		{
-			isClient = false;
-			description->fromString(serverString);
-		}
+        if( variableMap.count( "client" ) == 1 )
+            description->fromString(clientString);
+        else if( variableMap.count( "server" ) == 1 )
+        {
+            isClient = false;
+            description->fromString(serverString);
+        }
     }
     catch( std::exception& exception )
     {
-        LBERROR << "Command line parse error: " << exception.what() 
-				<< std::endl;
+        LBERROR << "Command line parse error: " << exception.what()
+                << std::endl;
         co::exit();
         return EXIT_FAILURE;
     }
