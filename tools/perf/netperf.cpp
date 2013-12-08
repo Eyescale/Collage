@@ -335,9 +335,12 @@ int main( int argc, char **argv )
 				"wait time (ms) between receives (server only" )
 			;
 
-		// parse program options
+		// parse program options, ignore all non related options instead of throwing error
 		po::variables_map variableMap;
-		po::store(po::parse_command_line(argc, argv, programDescription), variableMap);
+		po::store(
+			po::command_line_parser(argc,argv).options(programDescription).allow_unregistered().run(),
+			variableMap
+			);
 		po::notify(variableMap);
 
 		// evaluate pared arguments
