@@ -183,7 +183,8 @@ int main( int argc, char **argv )
 
         // parse program options
         po::variables_map variableMap;
-        po::store( po::parse_command_line( argc, argv, options ), variableMap );
+        po::store( po::command_line_parser( argc, argv ).options(
+                       options ).allow_unregistered().run(), variableMap );
         po::notify( variableMap );
 
         // evaluate pared arguments
