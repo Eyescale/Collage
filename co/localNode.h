@@ -487,7 +487,7 @@ public:
      */
     CO_API SendToken acquireSendToken( NodePtr toNode );
 
-    /** Release the given send token. */
+    /** @deprecated Token will auto-release when leaving scope. */
     CO_API void releaseSendToken( SendToken token );
 
     /** @return a Zeroconf communicator handle for this node. @version 1.0*/
