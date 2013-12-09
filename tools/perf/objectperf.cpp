@@ -21,7 +21,9 @@
 #include <co/co.h>
 #include <co/connections.h>
 #include <boost/foreach.hpp>
+#pragma warning( disable: 4275 )
 #include <boost/program_options.hpp>
+#pragma warning( default: 4275 )
 #include <iostream>
 
 #ifndef MIN
