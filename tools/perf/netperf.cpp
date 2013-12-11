@@ -21,7 +21,9 @@
 #define LB_RELEASE_ASSERT
 
 #include <co/co.h>
+#pragma warning( disable: 4275 )
 #include <boost/program_options.hpp>
+#pragma warning( default: 4275 )
 #include <iostream>
 
 #ifndef MIN
