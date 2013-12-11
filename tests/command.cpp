@@ -18,6 +18,8 @@
 #include <co/co.h>
 #include <test.h>
 
+#define NCOMMANDS 10000
+
 enum Commands
 {
     CMD_ASYNC = co::CMD_NODE_CUSTOM,
@@ -83,19 +85,39 @@ int main( int argc, char **argv )
     TEST( client->listen( ));
     TEST( client->connect( serverProxy ));
 
-    const uint32_t request = client->registerRequest();
-
+    uint32_t request = client->registerRequest();
     serverProxy->send( CMD_ASYNC );
-    lunchbox::sleep( 5 /*ms*/ ); // get first one processed for sure
+    serverProxy->send( CMD_SYNC ) << request;
+    client->waitRequest( request );
 
     lunchbox::Clock clock;
-    serverProxy->send( CMD_SYNC ) << request;
-    const float asyncTime = clock.resetTimef();
-
-    client->waitRequest( request );
+    for( size_t i = 0; i < NCOMMANDS; ++i )
+    {
+        request = client->registerRequest();
+        serverProxy->send( CMD_SYNC ) << request;
+        client->waitRequest( request );
+    }
     const float syncTime = clock.resetTimef();
 
-    std::cout << "Async command: " << asyncTime << " ms, sync: " << syncTime
+    for( size_t i = 0; i < NCOMMANDS; ++i )
+    {
+        lunchbox::RequestFuture<void> future = client->registerRequest<void>();
+        serverProxy->send( CMD_SYNC ) << future.getID();
+    }
+    const float syncTimeFuture = clock.resetTimef();
+
+    for( size_t i = 0; i < NCOMMANDS; ++i )
+    {
+        serverProxy->send( CMD_ASYNC );
+        client->waitRequest( request );
+    }
+    serverProxy->send( CMD_SYNC ) << request;
+    client->waitRequest( request );
+    const float asyncTime = clock.resetTimef();
+
+    std::cout << "Async command: " << asyncTime/float(NCOMMANDS)
+              << " ms, sync: " << syncTime/float(NCOMMANDS)
+              << " ms, using future: " << syncTimeFuture/float(NCOMMANDS+1)
               << " ms" << std::endl;
 
     TEST( client->disconnect( serverProxy ));
