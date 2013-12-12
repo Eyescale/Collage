@@ -23,8 +23,12 @@
 enum Commands
 {
     CMD_ASYNC = co::CMD_NODE_CUSTOM,
-    CMD_SYNC
+    CMD_SYNC,
+    CMD_DATA,
+    CMD_DATA_REPLY
 };
+
+static const std::string payload( "Hi! I am your payload" );
 
 class LocalNode : public co::LocalNode
 {
@@ -33,14 +37,19 @@ class LocalNode : public co::LocalNode
 public:
     LocalNode()
         : gotAsync_( false )
+        , counter_( 0 )
     {
         co::CommandQueue* q = getCommandThreadQueue();
         registerCommand( CMD_ASYNC, CmdFunc( this, &LocalNode::_cmdAsync ), q );
         registerCommand( CMD_SYNC, CmdFunc( this, &LocalNode::_cmdSync ), q );
+        registerCommand( CMD_DATA, CmdFunc( this, &LocalNode::_cmdData ), q );
+        registerCommand( CMD_DATA_REPLY,
+                         CmdFunc( this, &LocalNode::_cmdDataReply ), q );
     }
 
 private:
     bool gotAsync_;
+    uint32_t counter_;
 
     bool _cmdAsync( co::ICommand& )
     {
@@ -52,6 +61,25 @@ private:
     {
         TEST( gotAsync_ );
         ackRequest( command.getNode(), command.get< uint32_t >( ));
+        return true;
+    }
+
+    bool _cmdData( co::ICommand& command )
+    {
+        TEST( gotAsync_ );
+        command.getNode()->send( CMD_DATA_REPLY )
+            << command.get< uint32_t >() << ++counter_;
+        TEST( command.get< std::string >() == payload );
+        return true;
+    }
+
+    bool _cmdDataReply( co::ICommand& command )
+    {
+        TEST( !gotAsync_ );
+        const uint32_t request = command.get< uint32_t >();
+        const uint32_t result = command.get< uint32_t >();
+        TEST( result == ++counter_ );
+        serveRequest( request, result );
         return true;
     }
 };
@@ -108,6 +136,15 @@ int main( int argc, char **argv )
 
     for( size_t i = 0; i < NCOMMANDS; ++i )
     {
+        lunchbox::RequestFuture< uint32_t > future =
+            client->registerRequest< uint32_t >();
+        serverProxy->send( CMD_SYNC ) << future.getID();
+        TESTINFO( future == i+1, future << " != " << i+1 );
+    }
+    const float syncTimePayload = clock.resetTimef();
+
+    for( size_t i = 0; i < NCOMMANDS; ++i )
+    {
         serverProxy->send( CMD_ASYNC );
         client->waitRequest( request );
     }
@@ -118,7 +155,8 @@ int main( int argc, char **argv )
     std::cout << "Async command: " << asyncTime/float(NCOMMANDS)
               << " ms, sync: " << syncTime/float(NCOMMANDS)
               << " ms, using future: " << syncTimeFuture/float(NCOMMANDS+1)
-              << " ms" << std::endl;
+              << " ms, with payload: " << syncTimePayload/float(NCOMMANDS+1)
+              << std::endl;
 
     TEST( client->disconnect( serverProxy ));
     TEST( client->close( ));
