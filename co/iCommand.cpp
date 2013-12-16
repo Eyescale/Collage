@@ -79,10 +79,13 @@ ICommand::ICommand( LocalNodePtr local, NodePtr remote, ConstBufferPtr buffer,
     : DataIStream( swap_ )
     , _impl( new detail::ICommand( local, remote, buffer ))
 {
-    LBASSERT( buffer->getSize() >= sizeof( _impl->size ) +
-              sizeof( _impl->type ) + sizeof( _impl->cmd ));
     if( _impl->buffer )
+    {
+        LBASSERT( buffer->getSize() >= sizeof( _impl->size ) +
+                  sizeof( _impl->type ) + sizeof( _impl->cmd ));
+
         *this >> _impl->size >> _impl->type >> _impl->cmd;
+    }
 }
 
 ICommand::ICommand( const ICommand& rhs )
