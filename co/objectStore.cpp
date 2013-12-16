@@ -21,7 +21,6 @@
 
 #include "objectStore.h"
 
-#include "barrier.h"
 #include "connection.h"
 #include "connectionDescription.h"
 #include "global.h"

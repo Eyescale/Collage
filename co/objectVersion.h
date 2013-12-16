@@ -49,7 +49,7 @@ struct ObjectVersion
     CO_API ObjectVersion();
 
     /** Construct a new object version. @version 1.0 */
-    CO_API ObjectVersion( const UUID& identifier, const uint128_t& version);
+    CO_API ObjectVersion( const uint128_t& identifier, const uint128_t& version );
 
     /** Construct a new object version. @version 1.0 */
     CO_API ObjectVersion( const Object* object );
@@ -87,7 +87,7 @@ struct ObjectVersion
                    ( identifier == rhs.identifier && version > rhs.version );
         }
 
-    UUID identifier; //!< the object identifier
+    uint128_t identifier; //!< the object identifier
     uint128_t version; //!< the object version
 };
 
