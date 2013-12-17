@@ -8,6 +8,7 @@ update_file(${CMAKE_CURRENT_SOURCE_DIR}/version.in.h
 
 set(CO_PUBLIC_HEADERS
   ${OUTPUT_INCLUDE_DIR}/co/version.h
+  ${DEFINES_FILE}
   api.h
   array.h
   barrier.h

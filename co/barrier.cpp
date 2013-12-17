@@ -59,14 +59,13 @@ class Barrier
 {
 public:
     Barrier() : height( 0 ) {}
-    Barrier( NodePtr m, const uint32_t h )
-        : masterID( m ? m->getNodeID() : NodeID( ))
-        , height( h )
-        , master( m )
+    Barrier( const uint128_t& masterID_, const uint32_t height_ )
+        : masterID( masterID_ )
+        , height( height_ )
     {}
 
     /** The master barrier node. */
-    NodeID   masterID;
+    NodeID masterID;
 
     /** The height of the barrier, only set on the master. */
     uint32_t height;
@@ -84,12 +83,34 @@ public:
 
 typedef CommandFunc<Barrier> CmdFunc;
 
+#ifdef COLLAGE_V1_API
 Barrier::Barrier( NodePtr master, const uint32_t height )
-        : _impl( new detail::Barrier( master, height ))
+    : _impl( new detail::Barrier( master ? master->getNodeID() : NodeID(),
+                                  height ))
 {}
+#endif
+
+Barrier::Barrier( LocalNodePtr localNode, const uint128_t& masterNodeID,
+                  const uint32_t height )
+    : _impl( new detail::Barrier( masterNodeID.isUUID() ?
+                                  masterNodeID : localNode->getNodeID(),
+                                  height ))
+{
+    localNode->registerObject( this );
+}
+
+Barrier::Barrier( LocalNodePtr localNode, const ObjectVersion& id )
+    : _impl( new detail::Barrier )
+{
+    localNode->mapObject( this, id );
+}
 
 Barrier::~Barrier()
 {
+    LocalNodePtr localNode = getLocalNode();
+    if( localNode )
+        localNode->releaseObject( this );
+
     delete _impl;
 }
 
@@ -149,8 +170,12 @@ void Barrier::attach( const UUID& id, const uint32_t instanceID )
     registerCommand( CMD_BARRIER_ENTER_REPLY,
                      CmdFunc( this, &Barrier::_cmdEnterReply ), queue );
 
+#ifdef COLLAGE_V1_API
     if( _impl->masterID == NodeID( ))
         _impl->masterID = node->getNodeID();
+#else
+    LBASSERT( _impl->masterID == NodeID( ));
+#endif
 }
 
 void Barrier::enter( const uint32_t timeout )

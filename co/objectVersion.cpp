@@ -27,7 +27,7 @@ ObjectVersion::ObjectVersion()
         : version( VERSION_NONE )
 {}
 
-ObjectVersion::ObjectVersion( const UUID& id_, const uint128_t& version_ )
+ObjectVersion::ObjectVersion( const uint128_t& id_, const uint128_t& version_ )
         : identifier( id_ ), version( version_ )
 {}
 

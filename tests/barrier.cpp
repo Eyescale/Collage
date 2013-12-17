@@ -1,15 +1,15 @@
 
-/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com> 
+/* Copyright (c) 2006-2012, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
  * by the Free Software Foundation.
- *  
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -36,49 +36,66 @@ public:
     NodeThread( const bool master ) : _master(master) {}
 
     virtual void run()
+    {
+        co::ConnectionDescriptionPtr description =
+            new co::ConnectionDescription;
+        description->type = co::CONNECTIONTYPE_TCPIP;
+        description->port = _master ? _port : _port+1;
+
+        co::LocalNodePtr node = new co::LocalNode;
+        node->addConnectionDescription( description );
+        TEST( node->listen( ));
+
+        if( _master )
         {
-            co::ConnectionDescriptionPtr description = 
-                new co::ConnectionDescription;
-            description->type = co::CONNECTIONTYPE_TCPIP;
-            description->port = _master ? _port : _port+1;
+            co::Barrier barrier( node, node->getNodeID(), 3 );
+            TEST( barrier.isAttached( ));
+            TEST( barrier.getVersion() == co::VERSION_FIRST );
+            TEST( barrier.getHeight() ==  3 );
 
-            co::LocalNodePtr node = new co::LocalNode;
-            node->addConnectionDescription( description );
-            TEST( node->listen( ));
+            _barrier = &barrier;
+            barrier.enter();
 
-            if( _master )
-            {
-                co::Barrier barrier( node, 2 );
-                node->registerObject( &barrier );
-                TEST( barrier.isAttached( ));
+            barrier.setHeight( 2 );
+            barrier.commit();
+            TEST( barrier.getVersion() == co::VERSION_FIRST + 1 );
 
-                _barrier = &barrier;
-                barrier.enter();
-
-                _barrier.waitEQ( 0 ); // wait for slave to unmap session
-                node->deregisterObject( &barrier );
-            }
-            else
-            {
-                _barrier.waitNE( 0 );
-
-                co::NodePtr server = new co::Node;
-                co::ConnectionDescriptionPtr serverDesc = 
-                    new co::ConnectionDescription;
-                serverDesc->port = _port;
-                server->addConnectionDescription( serverDesc );
-                TEST( node->connect( server ));
-
-                std::cerr << "Slave enter" << std::endl;
-                _barrier->enter();
-                std::cerr << "Slave left" << std::endl;
-
-                _barrier = 0;
-            }
-
-            node->close();
+            barrier.enter();
+            _barrier.waitEQ( 0 ); // wait for slave thread finish
+            node->deregisterObject( &barrier );
         }
-            
+        else
+        {
+            co::NodePtr server = new co::Node;
+            co::ConnectionDescriptionPtr serverDesc =
+                new co::ConnectionDescription;
+            serverDesc->port = _port;
+            server->addConnectionDescription( serverDesc );
+
+            _barrier.waitNE( 0 );
+            TEST( node->connect( server ));
+
+            co::Barrier barrier( node, _barrier.get( ));
+            TEST( barrier.isGood( ));
+            TEST( barrier.getVersion() == co::VERSION_FIRST );
+
+            std::cerr << "Slave enter" << std::endl;
+            barrier.enter();
+            std::cerr << "Slave left" << std::endl;
+
+            barrier.sync( co::VERSION_FIRST + 1 );
+            TEST( barrier.getVersion() == co::VERSION_FIRST + 1 );
+
+            std::cerr << "Slave enter" << std::endl;
+            barrier.enter();
+            std::cerr << "Slave left" << std::endl;
+
+            node->unmapObject( &barrier );
+        }
+
+        node->close();
+    }
+
 private:
     bool _master;
 };
@@ -94,8 +111,17 @@ int main( int argc, char **argv )
 
     server.start();
     node.start();
-    server.join();
+
+    _barrier.waitNE( 0 );
+    std::cerr << "Main enter" << std::endl;
+    _barrier->enter();
+    std::cerr << "Main left" << std::endl;
+    _barrier = 0;
+
     node.join();
+    _barrier = 0;
+
+    server.join();
 
     co::exit();
     return EXIT_SUCCESS;
