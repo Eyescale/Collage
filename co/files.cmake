@@ -3,7 +3,11 @@
 #               2011-2013 Stefan Eilemann <eile@eyescale.ch>
 #                    2012 Daniel Nachbaur <danielnachbaur@gmail.com>
 
+update_file(${CMAKE_CURRENT_SOURCE_DIR}/version.in.h
+            ${OUTPUT_INCLUDE_DIR}/co/version.h)
+
 set(CO_PUBLIC_HEADERS
+  ${OUTPUT_INCLUDE_DIR}/co/version.h
   api.h
   array.h
   barrier.h

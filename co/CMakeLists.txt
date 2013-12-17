@@ -1,9 +1,8 @@
 
 # Copyright (c) 2010 Daniel Pfeifer <daniel@pfeifer-mail.de>
-#               2010-2012 Stefan Eilemann <eile@eyescale.ch>
+#               2010-2013 Stefan Eilemann <eile@eyescale.ch>
 #               2010 Cedric Stalder <cedric.stalder@gmail.ch>
 
-include(configure.cmake)
 include(files.cmake)
 
 option(COLLAGE_AGGRESSIVE_CACHING "Disable to reduce memory consumption" ON)
@@ -25,7 +24,6 @@ if(LINUX)
 endif()
 
 if(OFED_FOUND)
-  include_directories(SYSTEM ${OFED_INCLUDE_DIRS})
   list(APPEND CO_ADD_LINKLIB ${OFED_LIBRARIES})
   if(WIN32)
     list(APPEND CO_ADD_LINKLIB DelayImp.lib)
@@ -33,7 +31,6 @@ if(OFED_FOUND)
 endif()
 
 if(UDT_FOUND)
-  include_directories(SYSTEM ${UDT_INCLUDE_DIRS})
   list(APPEND CO_ADD_LINKLIB ${UDT_LIBRARIES})
 endif()
 
@@ -48,8 +45,10 @@ set_target_properties(Collage
 install(FILES ${CO_PUBLIC_HEADERS} DESTINATION include/co COMPONENT dev)
 
 if (MSVC)
-  install(FILES ${CMAKE_BINARY_DIR}/bin/Debug/Collage.pdb DESTINATION bin COMPONENT lib CONFIGURATIONS Debug)
-  install(FILES ${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/Collage.pdb DESTINATION bin COMPONENT lib CONFIGURATIONS RelWithDebInfo)
+  install(FILES ${CMAKE_BINARY_DIR}/bin/Debug/Collage.pdb
+    DESTINATION bin COMPONENT lib CONFIGURATIONS Debug)
+  install(FILES ${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/Collage.pdb
+    DESTINATION bin COMPONENT lib CONFIGURATIONS RelWithDebInfo)
 endif()
 
 install(TARGETS Collage
@@ -58,7 +57,8 @@ install(TARGETS Collage
         LIBRARY DESTINATION lib COMPONENT lib)
 
 if(OFED_FOUND AND WIN32)
-  set_target_properties(Collage PROPERTIES LINK_FLAGS "/DELAYLOAD:librdmacm.dll /DELAYLOAD:libibverbs.dll")
+  set_target_properties(Collage PROPERTIES
+    LINK_FLAGS "/DELAYLOAD:librdmacm.dll /DELAYLOAD:libibverbs.dll")
 endif()
 
 install(FILES ${OPTIONS_CMAKE} DESTINATION ${CMAKE_MODULE_INSTALL_PATH}

@@ -34,10 +34,10 @@
 
 #include <co/exception.h>
 
-#ifdef CO_USE_OFED
+#ifdef COLLAGE_USE_OFED
 #  include "rdmaConnection.h"
 #endif
-#ifdef CO_USE_UDT
+#ifdef COLLAGE_USE_UDT
 #  include "udtConnection.h"
 #endif
 
@@ -163,12 +163,12 @@ ConnectionPtr Connection::create( ConnectionDescriptionPtr description )
             connection = new RSPConnection;
             break;
 
-#ifdef CO_USE_OFED
+#ifdef COLLAGE_USE_OFED
         case CONNECTIONTYPE_RDMA:
             connection = new RDMAConnection;
             break;
 #endif
-#ifdef CO_USE_UDT
+#ifdef COLLAGE_USE_UDT
         case CONNECTIONTYPE_UDT:
             connection = new UDTConnection;
             break;

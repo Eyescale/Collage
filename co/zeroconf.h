@@ -30,7 +30,7 @@ namespace detail { class Zeroconf; }
 /**
  * A zeroconf communicator.
  *
- * When Collage is compiled with Servus support (CO_USE_SERVUS), it uses the
+ * When Collage is compiled with Servus support (COLLAGE_USE_SERVUS), it uses the
  * ZeroConf service "_collage._tcp" to announce the presence of a listening
  * LocalNode using the zeroconf protocol, unless the LocalNode has no listening
  * connections. This class may be used to add additional key/value pairs to this

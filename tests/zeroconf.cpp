@@ -27,7 +27,7 @@
 
 using co::uint128_t;
 
-#ifdef CO_USE_SERVUS
+#ifdef COLLAGE_USE_SERVUS
 int main( int argc, char **argv )
 {
     co::init( argc, argv );
