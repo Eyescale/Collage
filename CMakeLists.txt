@@ -11,6 +11,10 @@ if(BUILDYARD_STOP)
   return()
 endif()
 
+set(PROJECT_INCLUDE_NAME co)
+option(COLLAGE_BUILD_V2_API
+  "Enable for pure 2.0 API (breaks compatibility with 1.x API)" OFF)
+
 set(RELEASE_VERSION OFF) # OFF or 'Mm0' ABI version
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "1")

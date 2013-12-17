@@ -1513,12 +1513,8 @@ INCLUDE_FILE_PATTERNS  =
 # undefined via #undef or recursively expanded use the := operator
 # instead of the = operator.
 
-PREDEFINED             = CO_GCC_4_1_OR_LATER= \
-                         CO_GCC_4_2_OR_LATER= \
-                         CO_USE_BOOST= \
-                         CO_DLLIMPORT= \
+PREDEFINED             = CO_DLLIMPORT= \
                          CO_API= \
-                         CO_USE_BOOST_SERIALIZATION= \
                          LB_UNUSED=
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then
