@@ -1,6 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2012-2013, Stefan.Eilemann@epfl.ch
+ *               2012-2014, Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -50,7 +50,9 @@ public:
     CO_API virtual ~Buffer();
 
     /** @return true if the buffer is no longer in use. @version 1.0 */
-    bool isFree() const { return getRefCount() == 0; }
+    CO_API bool isFree() const;
+
+    void setUsed(); //!< @internal
 
 private:
     detail::Buffer* const _impl;
