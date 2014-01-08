@@ -102,29 +102,37 @@ int main( int argc, char **argv )
 
         switch( desc->type ) // different connections, different semantics...
         {
-            case co::CONNECTIONTYPE_PIPE:
-                writer = listener;
-                TEST( writer->connect( ));
-                reader = writer->acceptSync();
-                break;
+        case co::CONNECTIONTYPE_PIPE:
+            writer = listener;
+            TEST( writer->connect( ));
+            reader = writer->acceptSync();
+            break;
 
-            case co::CONNECTIONTYPE_RSP:
-                TESTINFO( listener->listen(), desc );
-                listener->acceptNB();
+        case co::CONNECTIONTYPE_RSP:
+            TESTINFO( listener->listen(), desc );
+            listener->acceptNB();
 
-                writer = listener;
-                reader = listener->acceptSync();
-                break;
-            default:
-                TESTINFO( listener->listen(), desc );
-                listener->acceptNB();
+            writer = listener;
+            reader = listener->acceptSync();
+            break;
 
-                writer = co::Connection::create( desc );
-                TEST( writer->connect( ));
+        default:
+        {
+            const bool listening = listener->listen();
+            if( !listening && desc->type == co::CONNECTIONTYPE_RDMA )
+                continue; // No local IB adapter up
 
-                reader = listener->acceptSync();
-                break;
+            TESTINFO( listening, desc );
+            listener->acceptNB();
+
+            writer = co::Connection::create( desc );
+            TEST( writer->connect( ));
+
+            reader = listener->acceptSync();
+            break;
         }
+        }
+
         TEST( writer );
         TEST( reader );
 
