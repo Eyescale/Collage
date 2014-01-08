@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -128,6 +128,7 @@ public:
                 }
 #endif
                 --_free;
+                buffer->setUsed();
                 return buffer;
             }
         }
@@ -145,6 +146,7 @@ public:
         ++_misses;
         _allocs += add;
 #endif
+        _cache.back()->setUsed();
         return _cache.back();
     }
 
@@ -157,14 +159,14 @@ public:
         LBASSERT( target > 0 );
         for( Data::iterator i = _cache.begin(); i != _cache.end(); )
         {
-            const co::Buffer* cmd = *i;
-            if( cmd->isFree( ))
+            const co::Buffer* buffer = *i;
+            if( buffer->isFree( ))
             {
 #  ifdef PROFILE
                 ++_frees;
 #  endif
                 i = _cache.erase( i );
-                delete cmd;
+                delete buffer;
 
                 LBASSERT( _free > 0 );
                 if( --_free <= target )
