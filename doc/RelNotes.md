@@ -62,6 +62,11 @@ since the last release:
 
 ## Bug Fixes {#Fixes}
 
+Collage 1.0.2 includes various bugfixes over the 1.0.1 release:
+
+* [71](https://github.com/Eyescale/Collage/issues/71): BufferCache race
+  may lead to segmentation fault
+
 Collage 1.0.1 includes various bugfixes over the 1.0 release:
 
 * [40](https://github.com/Eyescale/Collage/issues/40): Commit of
