@@ -1,6 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2012-2013, Stefan.Eilemann@epfl.ch
+ *               2012-2014, Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -29,10 +29,12 @@ class Buffer
 {
 public:
     Buffer( BufferListener* listener_ )
-            : listener( listener_ )
+        : listener( listener_ )
+        , free( true )
     {}
 
     BufferListener* const listener;
+    bool free;
 };
 }
 
@@ -52,6 +54,17 @@ void Buffer::notifyFree()
 {
     if( _impl->listener )
         _impl->listener->notifyFree( this );
+    _impl->free = true;
+}
+
+bool Buffer::isFree() const
+{
+    return _impl->free;
+}
+
+void Buffer::setUsed()
+{
+    _impl->free = false;
 }
 
 std::ostream& operator << ( std::ostream& os, const Buffer& buffer )
