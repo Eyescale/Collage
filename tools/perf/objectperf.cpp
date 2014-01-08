@@ -482,10 +482,10 @@ int main( int argc, char **argv )
                        options ).allow_unregistered().run(), variableMap );
         po::notify( variableMap );
 
-        // evaluate pared arguments
+        // evaluate parsed arguments
         if( showHelp )
         {
-            LBINFO << options << std::endl;
+            std::cout << options << std::endl;
             co::exit();
             return EXIT_SUCCESS;
         }
@@ -502,8 +502,8 @@ int main( int argc, char **argv )
     }
     catch( std::exception& exception )
     {
-        LBERROR << "Command line parse error: " << exception.what()
-            << std::endl;
+        std::cerr << "Command line parse error: " << exception.what()
+                  << std::endl;
         co::exit();
         return EXIT_FAILURE;
     }
