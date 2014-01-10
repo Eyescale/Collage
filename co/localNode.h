@@ -58,9 +58,6 @@ public:
     /** Construct a new local node of the given type. @version 1.0 */
     CO_API LocalNode( const uint32_t type = co::NODETYPE_NODE );
 
-    /** Destruct this local node. @version 1.0 */
-    CO_API virtual ~LocalNode();
-
     /**
      * @name State Changes
      *
@@ -514,6 +511,9 @@ public:
     CO_API void setAffinity( const int32_t affinity );
 
 protected:
+    /** Destruct this local node. @version 1.0 */
+    CO_API virtual ~LocalNode();
+
     /** @internal
      * Connect a node proxy to this node.
      *
