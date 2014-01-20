@@ -331,7 +331,8 @@ bool UDTConnection::connect( )
 
     if( UDT::ERROR == UDT::connect( _udt, &address, sizeof( address )))
     {
-        LBERROR << UDTLASTERROR( "UDT::connect" ) << std::endl;
+        LBERROR << UDTLASTERROR( "UDT::connect" ) << " to " << description
+                << std::endl;
         goto err;
     }
 
@@ -361,50 +362,53 @@ err:
 }
 
 // caller: application
-bool UDTConnection::listen( )
+bool UDTConnection::listen()
 {
-    struct sockaddr address;
-
-    ConstConnectionDescriptionPtr description = getDescription();
+    ConnectionDescriptionPtr description = _getDescription();
     LBASSERT( CONNECTIONTYPE_UDT == description->type );
     if( !isClosed( ))
         return false;
 
     _setState( STATE_CONNECTING );
 
+    struct sockaddr address;
     if( !_parseAddress( description, address, true ))
-        goto err;
+        return false;
 
     LBASSERT( UDT::INVALID_SOCK == _udt );
     _udt = UDT::socket( AF_INET, SOCK_STREAM, 0 );
     if( UDT::INVALID_SOCK == _udt )
     {
         LBERROR << UDTLASTERROR( "UDT::socket" ) << std::endl;
-        goto err;
+        return false;
     }
 
     if( !tuneSocket( ))
-        goto err;
+        return false;
 
     if( UDT::ERROR == UDT::bind( _udt, &address, sizeof( address )))
     {
         LBERROR << UDTLASTERROR( "UDT::bind" ) << std::endl;
-        goto err;
+        return false;
     }
+
+    // get socket parameters
+    sockaddr_in inaddr;
+    int used = sizeof( inaddr );
+    UDT::getsockname( _udt, (struct sockaddr *) &inaddr, &used );
+    description->port = ntohs( inaddr.sin_port );
 
     if( UDT::ERROR == UDT::listen( _udt, SOMAXCONN ))
     {
         LBERROR << UDTLASTERROR( "UDT::listen" ) << std::endl;
-        goto err;
+        return false;
     }
 
-    if( initialize( ))
-    {
-        _setState( STATE_LISTENING );
-        return true;
-    }
-err:
-    return false;
+    if( !initialize( ))
+        return false;
+
+    _setState( STATE_LISTENING );
+    return true;
 }
 
 // caller: application
@@ -521,7 +525,7 @@ int64_t UDTConnection::readSync( void* buffer, const uint64_t bytes,
             return 0LL;
 
         LBWARN << UDTLASTERROR( "UDT::recv" ) << std::endl;
-        close( );
+        close();
         return -1LL;
     }
 
@@ -540,7 +544,6 @@ int64_t UDTConnection::readSync( void* buffer, const uint64_t bytes,
     {
         // Let the event thread continue polling
         lunchbox::ScopedMutex<> mutex( _app_mutex );
-
         _app_block.set( true );
     }
 
@@ -732,7 +735,7 @@ out:
 }
 
 // caller: UDTConnectionThread
-void UDTConnection::UDTConnectionThread::run( )
+void UDTConnection::UDTConnectionThread::run()
 {
     while( _running )
     {

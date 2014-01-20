@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2010-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -38,7 +38,7 @@ static co::ConnectionType types[] =
     co::CONNECTIONTYPE_NAMEDPIPE,
     co::CONNECTIONTYPE_RSP,
     co::CONNECTIONTYPE_RDMA,
-    co::CONNECTIONTYPE_UDT,
+//    co::CONNECTIONTYPE_UDT,
     co::CONNECTIONTYPE_NONE // must be last
 };
 
