@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -45,7 +45,7 @@
 
 namespace co
 {
-typedef CommandFunc<ObjectStore> CmdFunc;
+typedef CommandFunc< ObjectStore > CmdFunc;
 
 ObjectStore::ObjectStore( LocalNode* localNode, a_ssize_t* counters )
         : _localNode( localNode )
@@ -62,23 +62,23 @@ ObjectStore::ObjectStore( LocalNode* localNode, a_ssize_t* counters )
     localNode->_registerCommand( CMD_NODE_FIND_MASTER_NODE_ID_REPLY,
         CmdFunc( this, &ObjectStore::_cmdFindMasterNodeIDReply ), 0 );
     localNode->_registerCommand( CMD_NODE_ATTACH_OBJECT,
-        CmdFunc( this, &ObjectStore::_cmdAttachObject ), 0 );
+        CmdFunc( this, &ObjectStore::_cmdAttach ), 0 );
     localNode->_registerCommand( CMD_NODE_DETACH_OBJECT,
-        CmdFunc( this, &ObjectStore::_cmdDetachObject ), 0 );
+        CmdFunc( this, &ObjectStore::_cmdDetach ), 0 );
     localNode->_registerCommand( CMD_NODE_REGISTER_OBJECT,
-        CmdFunc( this, &ObjectStore::_cmdRegisterObject ), queue );
+        CmdFunc( this, &ObjectStore::_cmdRegister ), queue );
     localNode->_registerCommand( CMD_NODE_DEREGISTER_OBJECT,
-        CmdFunc( this, &ObjectStore::_cmdDeregisterObject ), queue );
+        CmdFunc( this, &ObjectStore::_cmdDeregister ), queue );
     localNode->_registerCommand( CMD_NODE_MAP_OBJECT,
-        CmdFunc( this, &ObjectStore::_cmdMapObject ), queue );
+        CmdFunc( this, &ObjectStore::_cmdMap ), queue );
     localNode->_registerCommand( CMD_NODE_MAP_OBJECT_SUCCESS,
-        CmdFunc( this, &ObjectStore::_cmdMapObjectSuccess ), 0 );
+        CmdFunc( this, &ObjectStore::_cmdMapSuccess ), 0 );
     localNode->_registerCommand( CMD_NODE_MAP_OBJECT_REPLY,
-        CmdFunc( this, &ObjectStore::_cmdMapObjectReply ), 0 );
+        CmdFunc( this, &ObjectStore::_cmdMapReply ), 0 );
     localNode->_registerCommand( CMD_NODE_UNMAP_OBJECT,
-        CmdFunc( this, &ObjectStore::_cmdUnmapObject ), 0 );
+        CmdFunc( this, &ObjectStore::_cmdUnmap ), 0 );
     localNode->_registerCommand( CMD_NODE_UNSUBSCRIBE_OBJECT,
-        CmdFunc( this, &ObjectStore::_cmdUnsubscribeObject ), queue );
+        CmdFunc( this, &ObjectStore::_cmdUnsubscribe ), queue );
     localNode->_registerCommand( CMD_NODE_OBJECT_INSTANCE,
         CmdFunc( this, &ObjectStore::_cmdInstance ), 0 );
     localNode->_registerCommand( CMD_NODE_OBJECT_INSTANCE_MAP,
@@ -94,11 +94,11 @@ ObjectStore::ObjectStore( LocalNode* localNode, a_ssize_t* counters )
     localNode->_registerCommand( CMD_NODE_REMOVE_NODE,
         CmdFunc( this, &ObjectStore::_cmdRemoveNode ), queue );
     localNode->_registerCommand( CMD_NODE_OBJECT_PUSH,
-        CmdFunc( this, &ObjectStore::_cmdObjectPush ), queue );
+        CmdFunc( this, &ObjectStore::_cmdPush ), queue );
     localNode->_registerCommand( CMD_NODE_SYNC_OBJECT,
-        CmdFunc( this, &ObjectStore::_cmdSyncObject ), queue );
+        CmdFunc( this, &ObjectStore::_cmdSync ), queue );
     localNode->_registerCommand( CMD_NODE_SYNC_OBJECT_REPLY,
-        CmdFunc( this, &ObjectStore::_cmdSyncObjectReply ), 0 );
+        CmdFunc( this, &ObjectStore::_cmdSyncReply ), 0 );
 }
 
 ObjectStore::~ObjectStore()
@@ -218,8 +218,8 @@ NodeID ObjectStore::findMasterNodeID( const UUID& identifier )
 //---------------------------------------------------------------------------
 // object mapping
 //---------------------------------------------------------------------------
-void ObjectStore::attachObject( Object* object, const UUID& id,
-                                const uint32_t instanceID )
+void ObjectStore::attach( Object* object, const UUID& id,
+                          const uint32_t instanceID )
 {
     LBASSERT( object );
     LB_TS_NOT_THREAD( _receiverThread );
@@ -246,8 +246,8 @@ uint32_t _genNextID( lunchbox::a_int32_t& val )
 }
 }
 
-void ObjectStore::_attachObject( Object* object, const UUID& id,
-                                 const uint32_t inInstanceID )
+void ObjectStore::_attach( Object* object, const UUID& id,
+                           const uint32_t inInstanceID )
 {
     LBASSERT( object );
     LB_TS_THREAD( _receiverThread );
@@ -275,7 +275,7 @@ void ObjectStore::_attachObject( Object* object, const UUID& id,
                          << static_cast< void* >( object ) << std::endl;
 }
 
-void ObjectStore::detachObject( Object* object )
+void ObjectStore::detach( Object* object )
 {
     LBASSERT( object );
     LB_TS_NOT_THREAD( _receiverThread );
@@ -286,7 +286,7 @@ void ObjectStore::detachObject( Object* object )
     _localNode->waitRequest( requestID );
 }
 
-void ObjectStore::swapObject( Object* oldObject, Object* newObject )
+void ObjectStore::swap( Object* oldObject, Object* newObject )
 {
     LBASSERT( newObject );
     LBASSERT( oldObject );
@@ -316,7 +316,7 @@ void ObjectStore::swapObject( Object* oldObject, Object* newObject )
     *j = newObject;
 }
 
-void ObjectStore::_detachObject( Object* object )
+void ObjectStore::_detach( Object* object )
 {
     // check also _cmdUnmapObject when modifying!
     LBASSERT( object );
@@ -346,8 +346,8 @@ void ObjectStore::_detachObject( Object* object )
     return;
 }
 
-uint32_t ObjectStore::mapObjectNB( Object* object, const UUID& id,
-                                   const uint128_t& version, NodePtr master )
+uint32_t ObjectStore::mapNB( Object* object, const UUID& id,
+                             const uint128_t& version, NodePtr master )
 {
     LB_TS_NOT_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS )
@@ -418,7 +418,7 @@ bool ObjectStore::_checkInstanceCache( const UUID& id, uint128_t& from,
     return true;
 }
 
-bool ObjectStore::mapObjectSync( const uint32_t requestID )
+bool ObjectStore::mapSync( const uint32_t requestID )
 {
     if( requestID == LB_UNDEFINED_UINT32 )
         return false;
@@ -441,8 +441,8 @@ bool ObjectStore::mapObjectSync( const uint32_t requestID )
     return mapped;
 }
 
-uint32_t ObjectStore::syncObjectNB( Object* object, NodePtr master,
-                                    const UUID& id, const uint32_t instanceID )
+uint32_t ObjectStore::syncNB( Object* object, NodePtr master, const UUID& id,
+                              const uint32_t instanceID )
 {
     LB_TS_NOT_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS )
@@ -499,7 +499,7 @@ uint32_t ObjectStore::syncObjectNB( Object* object, NodePtr master,
     return requestID;
 }
 
-bool ObjectStore::syncObjectSync( const uint32_t requestID, Object* object )
+bool ObjectStore::syncSync( const uint32_t requestID, Object* object )
 {
     if( requestID == LB_UNDEFINED_UINT32 )
         return false;
@@ -528,7 +528,7 @@ bool ObjectStore::syncObjectSync( const uint32_t requestID, Object* object )
     return true;
 }
 
-void ObjectStore::unmapObject( Object* object )
+void ObjectStore::unmap( Object* object )
 {
     LBASSERT( object );
     if( !object->isAttached( )) // not registered
@@ -565,12 +565,12 @@ void ObjectStore::unmapObject( Object* object )
     }
 
     // no unsubscribe sent: Detach directly
-    detachObject( object );
+    detach( object );
     object->setupChangeManager( Object::NONE, false, 0, CO_INSTANCE_INVALID );
     object->notifyDetached();
 }
 
-bool ObjectStore::registerObject( Object* object )
+bool ObjectStore::register_( Object* object )
 {
     LBASSERT( object );
     LBASSERT( !object->isAttached( ));
@@ -581,7 +581,7 @@ bool ObjectStore::registerObject( Object* object )
     object->notifyAttach();
     object->setupChangeManager( object->getChangeType(), true, _localNode,
                                 CO_INSTANCE_INVALID );
-    attachObject( object, id, CO_INSTANCE_INVALID );
+    attach( object, id, CO_INSTANCE_INVALID );
 
     if( Global::getIAttribute( Global::IATTR_NODE_SEND_QUEUE_SIZE ) > 0 )
         _localNode->send( CMD_NODE_REGISTER_OBJECT ) << object;
@@ -592,7 +592,7 @@ bool ObjectStore::registerObject( Object* object )
     return true;
 }
 
-void ObjectStore::deregisterObject( Object* object )
+void ObjectStore::deregister( Object* object )
 {
     LBASSERT( object );
     if( !object->isAttached( )) // not registered
@@ -612,7 +612,7 @@ void ObjectStore::deregisterObject( Object* object )
     }
 
     const UUID id = object->getID();
-    detachObject( object );
+    detach( object );
     object->setupChangeManager( Object::NONE, true, 0, CO_INSTANCE_INVALID );
     if( _instanceCache )
         _instanceCache->erase( id );
@@ -748,7 +748,7 @@ bool ObjectStore::_cmdFindMasterNodeIDReply( ICommand& command )
     return true;
 }
 
-bool ObjectStore::_cmdAttachObject( ICommand& command )
+bool ObjectStore::_cmdAttach( ICommand& command )
 {
     LB_TS_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS ) << "Cmd attach object " << command << std::endl;
@@ -759,12 +759,12 @@ bool ObjectStore::_cmdAttachObject( ICommand& command )
 
     Object* object = static_cast< Object* >( _localNode->getRequestData(
                                                  requestID ));
-    _attachObject( object, objectID, instanceID );
+    _attach( object, objectID, instanceID );
     _localNode->serveRequest( requestID );
     return true;
 }
 
-bool ObjectStore::_cmdDetachObject( ICommand& command )
+bool ObjectStore::_cmdDetach( ICommand& command )
 {
     LB_TS_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS ) << "Cmd detach object " << command << std::endl;
@@ -784,7 +784,7 @@ bool ObjectStore::_cmdDetachObject( ICommand& command )
             Object* object = *j;
             if( object->getInstanceID() == instanceID )
             {
-                _detachObject( object );
+                _detach( object );
                 break;
             }
         }
@@ -795,7 +795,7 @@ bool ObjectStore::_cmdDetachObject( ICommand& command )
     return true;
 }
 
-bool ObjectStore::_cmdRegisterObject( ICommand& command )
+bool ObjectStore::_cmdRegister( ICommand& command )
 {
     LB_TS_THREAD( _commandThread );
     if( _sendOnRegister <= 0 )
@@ -821,7 +821,7 @@ bool ObjectStore::_cmdRegisterObject( ICommand& command )
     return true;
 }
 
-bool ObjectStore::_cmdDeregisterObject( ICommand& command )
+bool ObjectStore::_cmdDeregister( ICommand& command )
 {
     LB_TS_THREAD( _commandThread );
     LBLOG( LOG_OBJECTS ) << "Cmd deregister object " << command << std::endl;
@@ -843,7 +843,7 @@ bool ObjectStore::_cmdDeregisterObject( ICommand& command )
     return true;
 }
 
-bool ObjectStore::_cmdMapObject( ICommand& cmd )
+bool ObjectStore::_cmdMap( ICommand& cmd )
 {
     LB_TS_THREAD( _commandThread );
 
@@ -889,7 +889,7 @@ bool ObjectStore::_cmdMapObject( ICommand& cmd )
     return true;
 }
 
-bool ObjectStore::_cmdMapObjectSuccess( ICommand& command )
+bool ObjectStore::_cmdMapSuccess( ICommand& command )
 {
     LB_TS_THREAD( _receiverThread );
 
@@ -917,11 +917,11 @@ bool ObjectStore::_cmdMapObjectSuccess( ICommand& command )
 
     object->setupChangeManager( Object::ChangeType( changeType ), false,
                                 _localNode, masterInstanceID );
-    _attachObject( object, objectID, instanceID );
+    _attach( object, objectID, instanceID );
     return true;
 }
 
-bool ObjectStore::_cmdMapObjectReply( ICommand& command )
+bool ObjectStore::_cmdMapReply( ICommand& command )
 {
     LB_TS_THREAD( _receiverThread );
 
@@ -981,7 +981,7 @@ bool ObjectStore::_cmdMapObjectReply( ICommand& command )
     return true;
 }
 
-bool ObjectStore::_cmdUnsubscribeObject( ICommand& command )
+bool ObjectStore::_cmdUnsubscribe( ICommand& command )
 {
     LB_TS_THREAD( _commandThread );
     LBLOG( LOG_OBJECTS ) << "Cmd unsubscribe object  " << command << std::endl;
@@ -1016,7 +1016,7 @@ bool ObjectStore::_cmdUnsubscribeObject( ICommand& command )
     return true;
 }
 
-bool ObjectStore::_cmdUnmapObject( ICommand& command )
+bool ObjectStore::_cmdUnmap( ICommand& command )
 {
     LB_TS_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS ) << "Cmd unmap object " << command << std::endl;
@@ -1045,7 +1045,7 @@ bool ObjectStore::_cmdUnmapObject( ICommand& command )
     return true;
 }
 
-bool ObjectStore::_cmdSyncObject( ICommand& cmd )
+bool ObjectStore::_cmdSync( ICommand& cmd )
 {
     LB_TS_THREAD( _commandThread );
     MasterCMCommand command( cmd );
@@ -1104,7 +1104,7 @@ bool ObjectStore::_cmdSyncObject( ICommand& cmd )
     return true;
 }
 
-bool ObjectStore::_cmdSyncObjectReply( ICommand& command )
+bool ObjectStore::_cmdSyncReply( ICommand& command )
 {
     LB_TS_THREAD( _receiverThread );
 
@@ -1278,7 +1278,7 @@ bool ObjectStore::_cmdRemoveNode( ICommand& command )
     return true;
 }
 
-bool ObjectStore::_cmdObjectPush( ICommand& command )
+bool ObjectStore::_cmdPush( ICommand& command )
 {
     LB_TS_THREAD( _commandThread );
 
