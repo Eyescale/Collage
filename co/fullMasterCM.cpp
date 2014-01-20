@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -164,7 +164,7 @@ void FullMasterCM::_obsolete()
     _checkConsistency();
 }
 
-void FullMasterCM::_initSlave( const MasterCMCommand& command,
+bool FullMasterCM::_initSlave( const MasterCMCommand& command,
                                const uint128_t& /*replyVersion*/,
                                bool replyUseCache )
 {
@@ -254,6 +254,7 @@ void FullMasterCM::_initSlave( const MasterCMCommand& command,
         LBINFO << "Cached " << _hit << "/" << _hit + _miss
                << " instance data transmissions" << std::endl;
 #endif
+    return true;
 }
 
 void FullMasterCM::_checkConsistency() const
@@ -379,7 +380,7 @@ void FullMasterCM::push( const uint128_t& groupID, const uint128_t& typeID,
     instanceData->os.push( nodes, _object->getID(), groupID, typeID );
 }
 
-void FullMasterCM::sendSync( const MasterCMCommand& command )
+bool FullMasterCM::sendSync( const MasterCMCommand& command )
 {
     //const uint128_t& version = command.getRequestedVersion();
     const uint128_t& maxCachedVersion = command.getMaxCachedVersion();
@@ -399,6 +400,7 @@ void FullMasterCM::sendSync( const MasterCMCommand& command )
     node->send( CMD_NODE_SYNC_OBJECT_REPLY, useCache /*preferMulticast*/ )
         << node->getNodeID() << command.getObjectID() << command.getRequestID()
         << true << command.useCache() << useCache;
+    return true;
 }
 
 }

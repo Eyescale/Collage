@@ -874,9 +874,7 @@ bool ObjectStore::_cmdMap( ICommand& cmd )
         }
     }
 
-    if( masterCM )
-        masterCM->addSlave( command );
-    else
+    if( !masterCM || !masterCM->addSlave( command ))
     {
         LBWARN << "Can't find master object to map " << id << std::endl;
         NodePtr node = command.getNode();
@@ -1092,9 +1090,7 @@ bool ObjectStore::_cmdSync( ICommand& cmd )
             LBWARN << "Can't find object to sync " << id
                    << ", no object with identifier" << std::endl;
     }
-    if( cm )
-        cm->sendSync( command );
-    else
+    if( !cm || !cm->sendSync( command ))
     {
         NodePtr node = command.getNode();
         node->send( CMD_NODE_SYNC_OBJECT_REPLY )

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -45,7 +45,7 @@ namespace co
         uint128_t commit( const uint32_t incarnation ) override;
         void push( const uint128_t& groupID, const uint128_t& typeID,
                    const Nodes& nodes ) override;
-        void sendSync( const MasterCMCommand& command ) override;
+        bool sendSync( const MasterCMCommand& command ) override;
 
         /** @name Versioning */
         //@{
@@ -66,9 +66,8 @@ namespace co
             uint32_t commitCount;
         };
 
-        void _initSlave( const MasterCMCommand& command,
-                         const uint128_t& replyVersion,
-                         bool replyUseCache ) override;
+        bool _initSlave( const MasterCMCommand&, const uint128_t&,
+                         bool ) override;
 
         InstanceData* _newInstanceData();
         void _addInstanceData( InstanceData* data );
