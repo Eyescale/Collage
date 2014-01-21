@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -85,8 +85,8 @@ Object::~Object()
 
     if( impl_->localNode )
         impl_->localNode->releaseObject( this );
-    impl_->localNode = 0;
 
+    impl_->localNode = 0;
     impl_->cm = 0;
     delete impl_;
 }

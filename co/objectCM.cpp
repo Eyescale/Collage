@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -42,9 +42,7 @@ ObjectCM::ObjectCM( Object* object )
 {}
 
 ObjectCM::~ObjectCM()
-{
-    LBASSERT( !_object );
-}
+{}
 
 void ObjectCM::exit()
 {
