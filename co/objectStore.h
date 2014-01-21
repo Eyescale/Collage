@@ -216,7 +216,7 @@ private:
     uint32_t _startSync( Object* object, NodePtr master, const UUID& id,
                          const uint32_t instanceID );
 
-    /** Finalize the synchronizatin of a distributed object. */
+    /** Finalize the synchronization of a distributed object. */
     bool _finishSync( const uint32_t requestID, Object* object );
 
     bool _checkInstanceCache( const UUID& id, uint128_t& from,
