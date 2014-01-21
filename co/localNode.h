@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -295,7 +295,7 @@ public:
      */
     CO_API f_bool_t syncObject( Object* object, NodePtr master,
                                 const UUID& id,
-                                const uint32_t instanceID=CO_INSTANCE_ALL );
+                                const uint32_t instanceID = CO_INSTANCE_ALL );
     /**
      * Unmap a mapped object.
      *

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -85,8 +85,8 @@ Object::~Object()
 
     if( impl_->localNode )
         impl_->localNode->releaseObject( this );
-    impl_->localNode = 0;
 
+    impl_->localNode = 0;
     impl_->cm = 0;
     delete impl_;
 }
@@ -181,11 +181,11 @@ void Object::_setChangeManager( ObjectCMPtr cm )
             << lunchbox::className( cm ) << std::endl;
     }
 
+    impl_->cm->exit();
     impl_->cm = cm;
     cm->init();
-    LBLOG( LOG_OBJECTS ) << "set new change manager " << lunchbox::className( cm )
-                         << " for " << lunchbox::className( this )
-                         << std::endl;
+    LBLOG( LOG_OBJECTS ) << "set " << lunchbox::className( cm ) << " for "
+                         << lunchbox::className( this ) << std::endl;
 }
 
 ObjectCMPtr Object::_getChangeManager()
@@ -222,7 +222,7 @@ void Object::setupChangeManager( const Object::ChangeType type,
     switch( type )
     {
         case Object::NONE:
-            LBASSERT( !impl_->localNode );
+            LBASSERT( !localNode );
             _setChangeManager( ObjectCM::ZERO );
             break;
 

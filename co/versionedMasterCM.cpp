@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2010-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -101,10 +101,13 @@ uint128_t VersionedMasterCM::_apply( ObjectDataIStream* is )
     return version;
 }
 
-void VersionedMasterCM::addSlave( const MasterCMCommand& command )
+bool VersionedMasterCM::addSlave( const MasterCMCommand& command )
 {
     LB_TS_THREAD( _cmdThread );
     Mutex mutex( _slaves );
+
+    if( !ObjectCM::_addSlave( command, _version ))
+        return false;
 
     SlaveData data;
     data.node = command.getNode();
@@ -120,8 +123,7 @@ void VersionedMasterCM::addSlave( const MasterCMCommand& command )
 
     _slaves->push_back( data.node );
     lunchbox::usort( *_slaves );
-
-    ObjectCM::_addSlave( command, _version );
+    return true;
 }
 
 void VersionedMasterCM::removeSlave( NodePtr node, const uint32_t instanceID )

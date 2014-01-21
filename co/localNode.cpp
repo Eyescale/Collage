@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -659,20 +659,20 @@ void LocalNode::disableSendOnRegister()
 
 bool LocalNode::registerObject( Object* object )
 {
-    return _impl->objectStore->registerObject( object );
+    return _impl->objectStore->register_( object );
 }
 
 void LocalNode::deregisterObject( Object* object )
 {
-    _impl->objectStore->deregisterObject( object );
+    _impl->objectStore->deregister( object );
 }
 
 f_bool_t LocalNode::mapObject( Object* object, const UUID& id, NodePtr master,
                               const uint128_t& version )
 {
-    const uint32_t request = _impl->objectStore->mapObjectNB( object, id,
-                                                              version, master );
-    const FuturebImpl::Func& func = boost::bind( &ObjectStore::mapObjectSync,
+    const uint32_t request = _impl->objectStore->mapNB( object, id, version,
+                                                        master );
+    const FuturebImpl::Func& func = boost::bind( &ObjectStore::mapSync,
                                                  _impl->objectStore, request );
     return f_bool_t( new FuturebImpl( func ));
 }
@@ -680,40 +680,35 @@ f_bool_t LocalNode::mapObject( Object* object, const UUID& id, NodePtr master,
 uint32_t LocalNode::mapObjectNB( Object* object, const UUID& id,
                                  const uint128_t& version )
 {
-    return _impl->objectStore->mapObjectNB( object, id, version, 0 );
+    return _impl->objectStore->mapNB( object, id, version, 0 );
 }
 
 uint32_t LocalNode::mapObjectNB( Object* object, const UUID& id,
                                  const uint128_t& version, NodePtr master )
 {
-    return _impl->objectStore->mapObjectNB( object, id, version, master );
+    return _impl->objectStore->mapNB( object, id, version, master );
 }
 
 
 bool LocalNode::mapObjectSync( const uint32_t requestID )
 {
-    return _impl->objectStore->mapObjectSync( requestID );
+    return _impl->objectStore->mapSync( requestID );
 }
 
 f_bool_t LocalNode::syncObject( Object* object, NodePtr master, const UUID& id,
                                const uint32_t instanceID )
 {
-    const uint32_t request = _impl->objectStore->syncObjectNB( object, master,
-                                                               id, instanceID );
-    const FuturebImpl::Func& func = boost::bind( &ObjectStore::syncObjectSync,
-                                                 _impl->objectStore, request,
-                                                 object );
-    return f_bool_t( new FuturebImpl( func ));
+    return _impl->objectStore->sync( object, master, id, instanceID );
 }
 
 void LocalNode::unmapObject( Object* object )
 {
-    _impl->objectStore->unmapObject( object );
+    _impl->objectStore->unmap( object );
 }
 
 void LocalNode::swapObject( Object* oldObject, Object* newObject )
 {
-    _impl->objectStore->swapObject( oldObject, newObject );
+    _impl->objectStore->swap( oldObject, newObject );
 }
 
 void LocalNode::objectPush( const uint128_t& groupID,

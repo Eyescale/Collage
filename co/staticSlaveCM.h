@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -50,7 +50,8 @@ namespace co
         uint32_t getMasterInstanceID() const override
             { return CO_INSTANCE_INVALID; }
 
-        void addSlave( const MasterCMCommand& ) override { LBDONTCALL; }
+        bool addSlave( const MasterCMCommand& ) override
+            { LBDONTCALL; return false; }
         void removeSlaves( NodePtr ) override {}
 
         void applyMapData( const uint128_t& version ) override;

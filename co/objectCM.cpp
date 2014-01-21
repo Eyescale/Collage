@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -41,6 +41,15 @@ ObjectCM::ObjectCM( Object* object )
         : _object( object )
 {}
 
+ObjectCM::~ObjectCM()
+{}
+
+void ObjectCM::exit()
+{
+    lunchbox::ScopedFastWrite mutex( _lock );
+    _object = 0;
+}
+
 void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
                      const Nodes& nodes )
 {
@@ -63,9 +72,15 @@ void ObjectCM::push( const uint128_t& groupID, const uint128_t& typeID,
     os.disable(); // handled by remote recv thread
 }
 
-void ObjectCM::sendSync( const MasterCMCommand& command )
+bool ObjectCM::sendSync( const MasterCMCommand& command )
 {
-    LBASSERT( _object );
+    lunchbox::ScopedFastWrite mutex( _lock );
+    if( !_object )
+    {
+        LBWARN << "Sync from detached object requested" << std::endl;
+        return false;
+    }
+
     const uint128_t& maxCachedVersion = command.getMaxCachedVersion();
     const bool useCache =
         command.useCache() &&
@@ -83,10 +98,10 @@ void ObjectCM::sendSync( const MasterCMCommand& command )
     node->send( CMD_NODE_SYNC_OBJECT_REPLY, useCache /*preferMulticast*/ )
         << node->getNodeID() << command.getObjectID() << command.getRequestID()
         << true << command.useCache() << useCache;
-
+    return true;
 }
 
-void ObjectCM::_addSlave( const MasterCMCommand& command,
+bool ObjectCM::_addSlave( const MasterCMCommand& command,
                           const uint128_t& version )
 {
     LBASSERT( version != VERSION_NONE );
@@ -100,15 +115,15 @@ void ObjectCM::_addSlave( const MasterCMCommand& command,
         _sendMapSuccess( command, false /* mc */ );
         _sendEmptyVersion( command, VERSION_NONE, false /* mc */ );
         _sendMapReply( command, VERSION_NONE, true, false, false /* mc */ );
-        return;
+        return true;
     }
 
     const bool replyUseCache = command.useCache() &&
                    (command.getMasterInstanceID() == _object->getInstanceID( ));
-    _initSlave( command, version, replyUseCache );
+    return _initSlave( command, version, replyUseCache );
 }
 
-void ObjectCM::_initSlave( const MasterCMCommand& command,
+bool ObjectCM::_initSlave( const MasterCMCommand& command,
                            const uint128_t& replyVersion, bool replyUseCache )
 {
 #if 0
@@ -133,7 +148,14 @@ void ObjectCM::_initSlave( const MasterCMCommand& command,
 #endif
         _sendMapSuccess( command, false );
         _sendMapReply( command, replyVersion, true, replyUseCache, false );
-        return;
+        return true;
+    }
+
+    lunchbox::ScopedFastWrite mutex( _lock );
+    if( !_object )
+    {
+        LBWARN << "Map to detached object requested" << std::endl;
+        return false;
     }
 
 #ifdef CO_INSTRUMENT_MULTICAST
@@ -154,6 +176,7 @@ void ObjectCM::_initSlave( const MasterCMCommand& command,
         _sendEmptyVersion( command, replyVersion, true /* mc */ );
 
     _sendMapReply( command, replyVersion, true, replyUseCache, true );
+    return true;
 }
 
 void ObjectCM::_sendMapSuccess( const MasterCMCommand& command,

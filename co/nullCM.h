@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -41,7 +41,8 @@ namespace co
 
         void push( const uint128_t&, const uint128_t&,
                    const Nodes& ) override { LBDONTCALL; }
-        void sendSync( const MasterCMCommand& ) override { LBDONTCALL; }
+        bool sendSync( const MasterCMCommand& ) override
+            { LBDONTCALL; return false; }
 
         uint128_t getHeadVersion() const override
             { return VERSION_NONE; }
@@ -50,7 +51,8 @@ namespace co
         uint32_t getMasterInstanceID() const override
             { LBDONTCALL; return CO_INSTANCE_INVALID; }
 
-        void addSlave( const MasterCMCommand& ) override { LBDONTCALL; }
+        bool addSlave( const MasterCMCommand& ) override
+            { LBDONTCALL; return false; }
         void removeSlaves( NodePtr ) override { LBDONTCALL; }
 
     private:

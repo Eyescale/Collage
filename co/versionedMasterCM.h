@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2010-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -61,7 +61,7 @@ namespace co
         uint32_t getMasterInstanceID() const override
             { LBDONTCALL; return CO_INSTANCE_INVALID; }
 
-        void addSlave( const MasterCMCommand& command ) override;
+        bool addSlave( const MasterCMCommand& command ) override;
         void removeSlave( NodePtr node, const uint32_t instanceID ) override;
         void removeSlaves( NodePtr node ) override;
         const Nodes getSlaveNodes() const override

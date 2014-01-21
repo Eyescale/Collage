@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -49,10 +49,15 @@ class ObjectCM : public Dispatcher, public lunchbox::Referenced
 public:
     /** Construct a new change manager. */
     ObjectCM( Object* object );
-    virtual ~ObjectCM() {}
+
+    /** Destruct this change manager. */
+    virtual ~ObjectCM();
 
     /** Initialize the change manager. */
     virtual void init() = 0;
+
+    /** Deinitialize the change manager. */
+    virtual void exit();
 
     /** @name Versioning */
     //@{
@@ -64,8 +69,9 @@ public:
      * Synchronize an instance to the managed object.
      *
      * @param command the command initiating the sync.
+     * @return true if handled, false otherwise.
      */
-    virtual void sendSync( const MasterCMCommand& command );
+    virtual bool sendSync( const MasterCMCommand& command );
 
     /**
      * Commit a new version.
@@ -124,8 +130,9 @@ public:
      * Add a subscribed slave to the managed object.
      *
      * @param command the subscribe command initiating the add.
+     * @return true if handled, false otherwise.
      */
-    virtual void addSlave( const MasterCMCommand& command ) = 0;
+    virtual bool addSlave( const MasterCMCommand& command ) = 0;
 
     /**
      * Remove a subscribed slave.
@@ -166,16 +173,16 @@ public:
     static ObjectCMPtr ZERO;
 
 protected:
-    /** The managed object. */
-    Object* _object;
+    Object* _object;  //!< The managed object.
+    lunchbox::SpinLock _lock; //!< Protects unbuffered operations on _object
 
 #ifdef CO_INSTRUMENT_MULTICAST
     static lunchbox::a_int32_t _hit;
     static lunchbox::a_int32_t _miss;
 #endif
 
-    void _addSlave( const MasterCMCommand& command, const uint128_t& version );
-    virtual void _initSlave( const MasterCMCommand& command,
+    bool _addSlave( const MasterCMCommand& command, const uint128_t& version );
+    virtual bool _initSlave( const MasterCMCommand& command,
                              const uint128_t& replyVersion,
                              bool replyUseCache );
     void _sendMapSuccess( const MasterCMCommand& command,

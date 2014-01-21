@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -85,35 +85,31 @@ public:
      * @param object the object instance.
      * @return true if the object was registered, false otherwise.
      */
-    bool registerObject( Object* object );
+    bool register_( Object* object );
 
     /**
      * Deregister a distributed object.
      *
      * @param object the object instance.
      */
-    virtual void deregisterObject( Object* object );
+    void deregister( Object* object );
 
     /** Start mapping a distributed object. */
-    uint32_t mapObjectNB( Object* object, const UUID& id,
-                          const uint128_t& version, NodePtr master );
+    uint32_t mapNB( Object* object, const UUID& id, const uint128_t& version,
+                    NodePtr master );
 
     /** Finalize the mapping of a distributed object. */
-    bool mapObjectSync( const uint32_t requestID );
+    bool mapSync( const uint32_t requestID );
 
-    /** Start synchronizing an object. */
-    uint32_t syncObjectNB( Object* object, NodePtr master, const UUID& id,
-                           const uint32_t instanceID );
-
-    /** Finalize the synchronizatin of a distributed object. */
-    bool syncObjectSync( const uint32_t requestID, Object* object );
-
+    /** Synchronize an object. */
+    f_bool_t sync( Object* object, NodePtr master, const UUID& id,
+                   const uint32_t instanceID );
     /**
      * Unmap a mapped object.
      *
      * @param object the mapped object.
      */
-    void unmapObject( Object* object );
+    void unmap( Object* object );
 
     /**
      * Attach an object to an identifier.
@@ -127,19 +123,18 @@ public:
      * @param instanceID the node-local instance identifier, or
      *               CO_INSTANCE_INVALID if this method should generate one.
      */
-    void attachObject( Object* object, const UUID& id,
-                       const uint32_t instanceID );
+    void attach( Object* object, const UUID& id, const uint32_t instanceID );
 
     /**
      * Detach an object.
      *
      * @param object the attached object.
      */
-    void detachObject( Object* object );
+    void detach( Object* object );
 
     /** @internal swap the existing object by a new object and keep
         the cm, id and instanceID. */
-    void swapObject( Object* oldObject, Object* newObject );
+    void swap( Object* oldObject, Object* newObject );
     //@}
 
     /** @name Instance Cache. */
@@ -213,9 +208,16 @@ private:
     DataIStreamQueue _pushData;    //!< Object::push() queue
     a_ssize_t* const _counters; // LocalNode performance counters
 
-    void _attachObject( Object* object, const UUID& id,
-                        const uint32_t instanceID );
-    void _detachObject( Object* object );
+    void _attach( Object* object, const UUID& id, const uint32_t instanceID );
+    void _detach( Object* object );
+
+
+    /** Start synchronizing an object. */
+    uint32_t _startSync( Object* object, NodePtr master, const UUID& id,
+                         const uint32_t instanceID );
+
+    /** Finalize the synchronization of a distributed object. */
+    bool _finishSync( const uint32_t requestID, Object* object );
 
     bool _checkInstanceCache( const UUID& id, uint128_t& from,
                               uint128_t& to, uint32_t& instanceID );
@@ -223,21 +225,21 @@ private:
     /** The command handler functions. */
     bool _cmdFindMasterNodeID( ICommand& command );
     bool _cmdFindMasterNodeIDReply( ICommand& command );
-    bool _cmdAttachObject( ICommand& command );
-    bool _cmdDetachObject( ICommand& command );
-    bool _cmdMapObject( ICommand& command );
-    bool _cmdMapObjectSuccess( ICommand& command );
-    bool _cmdMapObjectReply( ICommand& command );
-    bool _cmdSyncObject( ICommand& command );
-    bool _cmdSyncObjectReply( ICommand& command );
-    bool _cmdUnmapObject( ICommand& command );
-    bool _cmdUnsubscribeObject( ICommand& command );
+    bool _cmdAttach( ICommand& command );
+    bool _cmdDetach( ICommand& command );
+    bool _cmdMap( ICommand& command );
+    bool _cmdMapSuccess( ICommand& command );
+    bool _cmdMapReply( ICommand& command );
+    bool _cmdSync( ICommand& command );
+    bool _cmdSyncReply( ICommand& command );
+    bool _cmdUnmap( ICommand& command );
+    bool _cmdUnsubscribe( ICommand& command );
     bool _cmdInstance( ICommand& command );
-    bool _cmdRegisterObject( ICommand& command );
-    bool _cmdDeregisterObject( ICommand& command );
+    bool _cmdRegister( ICommand& command );
+    bool _cmdDeregister( ICommand& command );
     bool _cmdDisableSendOnRegister( ICommand& command );
     bool _cmdRemoveNode( ICommand& command );
-    bool _cmdObjectPush( ICommand& command );
+    bool _cmdPush( ICommand& command );
 
     LB_TS_VAR( _receiverThread );
     LB_TS_VAR( _commandThread );
