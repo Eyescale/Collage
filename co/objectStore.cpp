@@ -46,6 +46,7 @@
 namespace co
 {
 typedef CommandFunc< ObjectStore > CmdFunc;
+typedef lunchbox::FutureFunction< bool > FuturebImpl;
 
 ObjectStore::ObjectStore( LocalNode* localNode, a_ssize_t* counters )
         : _localNode( localNode )
@@ -441,8 +442,18 @@ bool ObjectStore::mapSync( const uint32_t requestID )
     return mapped;
 }
 
-uint32_t ObjectStore::syncNB( Object* object, NodePtr master, const UUID& id,
-                              const uint32_t instanceID )
+
+f_bool_t ObjectStore::sync( Object* object, NodePtr master, const UUID& id,
+                            const uint32_t instanceID )
+{
+    const uint32_t request = _startSync( object, master, id, instanceID );
+    const FuturebImpl::Func& func = boost::bind( &ObjectStore::_finishSync,
+                                                 this, request, object );
+    return f_bool_t( new FuturebImpl( func ));
+}
+
+uint32_t ObjectStore::_startSync( Object* object, NodePtr master,
+                                  const UUID& id, const uint32_t instanceID )
 {
     LB_TS_NOT_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS )
@@ -499,7 +510,7 @@ uint32_t ObjectStore::syncNB( Object* object, NodePtr master, const UUID& id,
     return requestID;
 }
 
-bool ObjectStore::syncSync( const uint32_t requestID, Object* object )
+bool ObjectStore::_finishSync( const uint32_t requestID, Object* object )
 {
     if( requestID == LB_UNDEFINED_UINT32 )
         return false;

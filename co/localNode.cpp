@@ -698,12 +698,7 @@ bool LocalNode::mapObjectSync( const uint32_t requestID )
 f_bool_t LocalNode::syncObject( Object* object, NodePtr master, const UUID& id,
                                const uint32_t instanceID )
 {
-    const uint32_t request = _impl->objectStore->syncNB( object, master, id,
-                                                         instanceID );
-    const FuturebImpl::Func& func = boost::bind( &ObjectStore::syncSync,
-                                                 _impl->objectStore, request,
-                                                 object );
-    return f_bool_t( new FuturebImpl( func ));
+    return _impl->objectStore->sync( object, master, id, instanceID );
 }
 
 void LocalNode::unmapObject( Object* object )

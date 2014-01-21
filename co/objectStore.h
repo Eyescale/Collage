@@ -101,13 +101,9 @@ public:
     /** Finalize the mapping of a distributed object. */
     bool mapSync( const uint32_t requestID );
 
-    /** Start synchronizing an object. */
-    uint32_t syncNB( Object* object, NodePtr master, const UUID& id,
-                     const uint32_t instanceID );
-
-    /** Finalize the synchronizatin of a distributed object. */
-    bool syncSync( const uint32_t requestID, Object* object );
-
+    /** Synchronize an object. */
+    f_bool_t sync( Object* object, NodePtr master, const UUID& id,
+                   const uint32_t instanceID );
     /**
      * Unmap a mapped object.
      *
@@ -214,6 +210,14 @@ private:
 
     void _attach( Object* object, const UUID& id, const uint32_t instanceID );
     void _detach( Object* object );
+
+
+    /** Start synchronizing an object. */
+    uint32_t _startSync( Object* object, NodePtr master, const UUID& id,
+                         const uint32_t instanceID );
+
+    /** Finalize the synchronizatin of a distributed object. */
+    bool _finishSync( const uint32_t requestID, Object* object );
 
     bool _checkInstanceCache( const UUID& id, uint128_t& from,
                               uint128_t& to, uint32_t& instanceID );
