@@ -106,7 +106,7 @@ bool VersionedMasterCM::addSlave( const MasterCMCommand& command )
     LB_TS_THREAD( _cmdThread );
     Mutex mutex( _slaves );
 
-    if( !_addSlave( command, _version ))
+    if( !ObjectCM::_addSlave( command, _version ))
         return false;
 
     SlaveData data;

@@ -57,7 +57,7 @@ namespace co
             { LBDONTCALL; return CO_INSTANCE_INVALID; }
 
         bool addSlave( const MasterCMCommand& command ) override
-            { return _addSlave( command, VERSION_FIRST ); }
+            { return ObjectCM::_addSlave( command, VERSION_FIRST ); }
         void removeSlaves( NodePtr ) override { /* NOP */}
     };
 }

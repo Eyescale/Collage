@@ -69,7 +69,7 @@ public:
      * Synchronize an instance to the managed object.
      *
      * @param command the command initiating the sync.
-     * @return true on success, false otherwise.
+     * @return true if handled, false otherwise.
      */
     virtual bool sendSync( const MasterCMCommand& command );
 
@@ -130,6 +130,7 @@ public:
      * Add a subscribed slave to the managed object.
      *
      * @param command the subscribe command initiating the add.
+     * @return true if handled, false otherwise.
      */
     virtual bool addSlave( const MasterCMCommand& command ) = 0;
 
