@@ -43,6 +43,11 @@ ObjectCM::ObjectCM( Object* object )
 
 ObjectCM::~ObjectCM()
 {
+    LBASSERT( !_object );
+}
+
+void ObjectCM::exit()
+{
     lunchbox::ScopedFastWrite mutex( _lock );
     _object = 0;
 }

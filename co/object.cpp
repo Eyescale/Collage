@@ -181,11 +181,11 @@ void Object::_setChangeManager( ObjectCMPtr cm )
             << lunchbox::className( cm ) << std::endl;
     }
 
+    impl_->cm->exit();
     impl_->cm = cm;
     cm->init();
-    LBLOG( LOG_OBJECTS ) << "set new change manager " << lunchbox::className( cm )
-                         << " for " << lunchbox::className( this )
-                         << std::endl;
+    LBLOG( LOG_OBJECTS ) << "set " << lunchbox::className( cm ) << " for "
+                         << lunchbox::className( this ) << std::endl;
 }
 
 ObjectCMPtr Object::_getChangeManager()
@@ -222,7 +222,7 @@ void Object::setupChangeManager( const Object::ChangeType type,
     switch( type )
     {
         case Object::NONE:
-            LBASSERT( !impl_->localNode );
+            LBASSERT( !localNode );
             _setChangeManager( ObjectCM::ZERO );
             break;
 

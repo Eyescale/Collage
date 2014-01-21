@@ -56,6 +56,9 @@ public:
     /** Initialize the change manager. */
     virtual void init() = 0;
 
+    /** Deinitialize the change manager. */
+    virtual void exit();
+
     /** @name Versioning */
     //@{
     /** @sa Object::push() */
