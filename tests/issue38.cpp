@@ -41,10 +41,10 @@ public:
         : runtime( 0.f )
     {}
 
-    void start( co::ConnectionPtr connection )
+    void startSend( co::ConnectionPtr connection )
     {
         connection_ = connection;
-        TEST( lunchbox::Thread::start( ));
+        TEST( start( ));
     }
 
     void run() override
@@ -89,7 +89,7 @@ int main( int argc, char **argv )
         TEST( reader );
 
         set.addConnection( reader );
-        threads[i].start( writers[i] );
+        threads[i].startSend( writers[i] );
     }
 
     co::Buffer buffer;
@@ -109,11 +109,12 @@ int main( int argc, char **argv )
     }
 
     const float runtime = threads[0].runtime;
+    const float delta = runtime / 10.f;
     for( size_t i = 0; i < NCONNECTIONS; ++i )
     {
         threads[i].join();
         writers[i]->close();
-        TESTINFO( std::abs( threads[i].runtime - runtime ) < 10.f ,
+        TESTINFO( std::abs( threads[i].runtime - runtime ) < delta ,
                   threads[i].runtime << " != " << runtime );
     }
 
