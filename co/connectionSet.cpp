@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -367,6 +367,7 @@ void ConnectionSet::_clear()
 ConnectionSet::Event ConnectionSet::select( const uint32_t timeout )
 {
     LB_TS_SCOPED( _selectThread );
+
     while( true )
     {
         _impl->connection = 0;
@@ -376,6 +377,13 @@ ConnectionSet::Event ConnectionSet::select( const uint32_t timeout )
         {
             _impl->thread->event = EVENT_NONE; // unblock previous thread
             _impl->thread = 0;
+        }
+#else
+        if( !_impl->dirty ) // #38: check results from previous poll()
+        {
+            const Event event = _getSelectResult( 0 );
+            if( event != EVENT_NONE )
+                return event;
         }
 #endif
 
@@ -421,22 +429,22 @@ ConnectionSet::Event ConnectionSet::select( const uint32_t timeout )
                 return EVENT_SELECT_ERROR;
 
             default: // SUCCESS
+            {
+                const Event event = _getSelectResult( ret );
+
+                if( event == EVENT_NONE )
+                     break;
+
+                if( _impl->connection == _impl->selfConnection.get( ))
                 {
-                    Event event = _getSelectResult( ret );
-
-                    if( event == EVENT_NONE )
-                         break;
-
-                    if( _impl->connection == _impl->selfConnection.get( ))
-                    {
-                        _impl->connection = 0;
-                        _impl->selfConnection->reset();
-                        return EVENT_INTERRUPT;
-                    }
-                    if( event == EVENT_DATA && _impl->connection->isListening())
-                        event = EVENT_CONNECT;
-                    return event;
+                    _impl->connection = 0;
+                    _impl->selfConnection->reset();
+                    return EVENT_INTERRUPT;
                 }
+                if( event == EVENT_DATA && _impl->connection->isListening( ))
+                    return EVENT_CONNECT;
+                return event;
+            }
         }
     }
 }
@@ -476,7 +484,7 @@ ConnectionSet::Event ConnectionSet::_getSelectResult( const uint32_t )
 {
     for( size_t i = 0; i < _impl->fdSet.getSize(); ++i )
     {
-        const pollfd& pollFD = _impl->fdSet[i];
+        pollfd& pollFD = _impl->fdSet[i];
         if( pollFD.revents == 0 )
             continue;
 
@@ -484,7 +492,8 @@ ConnectionSet::Event ConnectionSet::_getSelectResult( const uint32_t )
         LBASSERT( pollFD.fd > 0 );
 
         _impl->connection = _impl->fdSetResult[i].connection;
-        LBASSERT( _impl->connection.isValid( ));
+        pollFD.revents = 0;
+        LBASSERT( _impl->connection );
 
         LBVERB << "Got event on connection @" << (void*)_impl->connection.get()
                << std::endl;
