@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -42,7 +42,7 @@ namespace detail { class Dispatcher; }
         typedef CommandFunc< Dispatcher > Func;
 
         /** @internal NOP assignment operator. */
-        const Dispatcher& operator = ( const Dispatcher& ) { return *this; }
+        Dispatcher& operator = ( const Dispatcher& ) { return *this; }
 
         /**
          * Register a command member function for a command.
