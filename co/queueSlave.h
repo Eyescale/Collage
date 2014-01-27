@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2014, Stefan Eilemann <eile@eyescale.ch>
  *                    2011, Carsten Rohn <carsten.rohn@rtt.ag>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -73,15 +73,15 @@ public:
      */
     CO_API ObjectICommand pop( const uint32_t timeout = LB_TIMEOUT_INDEFINITE );
 
-private:
-    detail::QueueSlave* const _impl;
-
-    CO_API void attach( const UUID& id,
-                                const uint32_t instanceID ) override;
-
+protected:
     ChangeType getChangeType() const override { return STATIC; }
     void getInstanceData( co::DataOStream& ) override { LBDONTCALL }
     void applyInstanceData( co::DataIStream& is ) override;
+
+private:
+    detail::QueueSlave* const _impl;
+
+    CO_API void attach( const UUID& id, const uint32_t instanceID ) override;
 };
 
 } // co

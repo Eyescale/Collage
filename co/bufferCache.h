@@ -34,8 +34,8 @@ namespace detail { class BufferCache; }
 /**
  * The buffer cache handles the reuse of allocated buffers for a node.
  *
- * Buffers are retained and released whenever they are not directly
- * processed, e.g., when pushed to another thread using a CommandQueue.
+ * Buffers are retained and released whenever they are not directly processed,
+ * e.g., when pushed to another thread using a CommandQueue.
  */
 class BufferCache : public boost::noncopyable
 {

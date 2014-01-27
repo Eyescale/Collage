@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -28,40 +28,38 @@ namespace co
 #  error FDConnection not used nor supported on Windows
 #endif
 
-    /** A generic file descriptor-based connection, to be subclassed. */
-    class FDConnection : public Connection
-    {
-    public:
-        virtual Notifier getNotifier() const { return _readFD; }
+/** A generic file descriptor-based connection, to be subclassed. */
+class FDConnection : public Connection
+{
+public:
+    virtual Notifier getNotifier() const { return _readFD; }
 
-    protected:
-        FDConnection();
-        virtual ~FDConnection() {}
+protected:
+    FDConnection();
+    virtual ~FDConnection() {}
 
-        void readNB( void*, const uint64_t ) override { /* NOP */ }
-        int64_t readSync( void* buffer, const uint64_t bytes,
-                                  const bool ignored ) override;
-        int64_t write( const void* buffer,
-                               const uint64_t bytes ) override;
+    void readNB( void*, const uint64_t ) override { /* NOP */ }
+    int64_t readSync( void* buffer, const uint64_t bytes,
+                      const bool ignored ) override;
+    int64_t write( const void* buffer,
+                   const uint64_t bytes ) override;
 
-        int   _readFD;     //!< The read file descriptor.
-        int   _writeFD;    //!< The write file descriptor.
+    int   _readFD;     //!< The read file descriptor.
+    int   _writeFD;    //!< The write file descriptor.
 
-        friend inline std::ostream& operator << ( std::ostream& os,
-                                               const FDConnection* connection );
+    friend inline std::ostream& operator << ( std::ostream& os,
+                                              const FDConnection* connection );
+private:
+    int _getTimeOut();
 
-    private:
-        int _getTimeOut();
+};
 
-    };
-
-    inline std::ostream& operator << ( std::ostream& os,
-                                       const FDConnection* connection )
-    {
-        os << (Connection*)connection << " readFD " << connection->_readFD
-           << " writeFD " << connection->_writeFD;
-        return os;
-    }
+inline std::ostream& operator << ( std::ostream& os,
+                                   const FDConnection* connection )
+{
+    return os << static_cast< const Connection* >( connection ) << " readFD "
+              << connection->_readFD << " writeFD " << connection->_writeFD;
+}
 }
 
 #endif //CO_FDCONNECTION_H
