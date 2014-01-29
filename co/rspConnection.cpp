@@ -1,6 +1,6 @@
 
 /* Copyright (c)      2009, Cedric Stalder <cedric.stalder@gmail.com>
- *               2009-2013, Stefan Eilemann <eile@equalizergraphics.com>
+ *               2009-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -1199,9 +1199,11 @@ RSPConnection::Buffer* RSPConnection::_newDataBuffer( Buffer& inBuffer )
 void RSPConnection::_pushDataBuffer( Buffer* buffer )
 {
     LBASSERT( _parent );
-    LBASSERTINFO( ((DatagramData*)buffer->getData( ))->sequence == _sequence,
-                  ((DatagramData*)buffer->getData( ))->sequence << " != " <<
-                  _sequence );
+#ifndef NDEBUG
+    DatagramData* dgram = reinterpret_cast< DatagramData* >(buffer->getData( ));
+    LBASSERTINFO( dgram->sequence == _sequence,
+                  dgram->sequence << " != " << _sequence );
+#endif
 
     if( (( _sequence + _parent->_id ) % _ackFreq ) == 0 )
         _parent->_sendAck( _id, _sequence );

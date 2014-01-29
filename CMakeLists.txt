@@ -1,6 +1,6 @@
 
 # Copyright (c) 2010 Daniel Pfeifer <daniel@pfeifer-mail.de>
-#               2010-2013 Stefan Eilemann <eile@eyescale.ch>
+#               2010-2014 Stefan Eilemann <eile@eyescale.ch>
 
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(Collage)
@@ -28,8 +28,9 @@ include(Common)
 include(GitTargets)
 include(Revision)
 include(UpdateFile)
-
 include(FindPackages)
+
+list(APPEND CPPCHECK_EXTRA_ARGS -DCO_API=)
 set(COLLAGE_DEPENDENT_LIBRARIES Lunchbox)
 
 include_directories(BEFORE ${CMAKE_SOURCE_DIR})

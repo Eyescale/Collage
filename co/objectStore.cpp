@@ -841,7 +841,7 @@ bool ObjectStore::_cmdDeregister( ICommand& command )
 
     const void* object = _localNode->getRequestData( requestID );
 
-    for( SendQueue::iterator i = _sendQueue.begin(); i < _sendQueue.end(); ++i )
+    for( SendQueueIter i = _sendQueue.begin(); i != _sendQueue.end(); ++i )
     {
         if( i->object == object )
         {

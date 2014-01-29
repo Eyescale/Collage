@@ -202,6 +202,7 @@ private:
     };
 
     typedef std::deque< SendQueueItem > SendQueue;
+    typedef SendQueue::iterator SendQueueIter;
 
     SendQueue _sendQueue;          //!< Object data to broadcast when idle
     InstanceCache* _instanceCache; //!< cached object mapping data

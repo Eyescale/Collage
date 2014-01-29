@@ -1,5 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2014, Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -29,11 +30,9 @@ namespace detail
 class MasterCMCommand
 {
 public:
-    MasterCMCommand()
-    {}
+    MasterCMCommand() : useCache( false ) {}
 
-    MasterCMCommand( const MasterCMCommand& )
-    {}
+    MasterCMCommand( const MasterCMCommand& ) : useCache( false ) {}
 
     uint128_t requestedVersion;
     uint128_t minCachedVersion;

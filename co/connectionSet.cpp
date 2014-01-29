@@ -489,10 +489,10 @@ ConnectionSet::Event ConnectionSet::_getSelectResult( const uint32_t )
             continue;
 
         const int pollEvents = pollFD.revents;
+        pollFD.revents = 0;
         LBASSERT( pollFD.fd > 0 );
 
         _impl->connection = _impl->fdSetResult[i].connection;
-        pollFD.revents = 0;
         LBASSERT( _impl->connection );
 
         LBVERB << "Got event on connection @" << (void*)_impl->connection.get()
@@ -588,11 +588,11 @@ bool ConnectionSet::_setupFDSet()
 #else // _WIN32
     pollfd fd;
     fd.events = POLLIN; // | POLLPRI;
+    fd.revents = 0;
 
     // add self 'connection'
     fd.fd = _impl->selfConnection->getNotifier();
     LBASSERT( fd.fd > 0 );
-    fd.revents = 0;
     _impl->fdSet.append( fd );
 
     Result result;
@@ -619,7 +619,6 @@ bool ConnectionSet::_setupFDSet()
 
         LBVERB << "Listening on " << typeid( *connection.get( )).name()
                << " @" << (void*)connection.get() << std::endl;
-        fd.revents = 0;
 
         _impl->fdSet.append( fd );
 

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -430,11 +430,11 @@ protected:
     /** Construct a new distributed object. @version 1.0 */
     CO_API Object();
 
-    /** Copy construct a new, unattached object. @version 1.0 */
-    CO_API Object( const Object& );
-
     /** NOP assignment operator. @version 1.0 */
-    const Object& operator = ( const Object& ) { return *this; }
+    Object& operator = ( const Object& ) { return *this; }
+
+    /** Copy construct a new, unattached object. @version 1.0 */
+    CO_API Object( const Object& LB_UNUSED );
 
 private:
     detail::Object* const impl_;

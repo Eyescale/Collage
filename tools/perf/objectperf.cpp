@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2013, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2013-2014, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -106,11 +106,13 @@ public:
             child->unmap( local );
     }
 
+protected:
+    ChangeType getChangeType() const final { return INSTANCE; }
+
 private:
     Buffer buffer_;
     Objects children_;
 
-    ChangeType getChangeType() const final { return INSTANCE; }
     //uint32_t chooseCompressor() const final { return EQ_COMPRESSOR_NONE; }
 
     void serialize( co::DataOStream& os, const uint64_t ) override
@@ -141,6 +143,7 @@ public:
     MapLocalOp( co::LocalNodePtr node, const std::string& name )
         : OperationIF( name )
         , node_( node )
+        , last_( 0 )
     {}
     virtual ~MapLocalOp() {}
 

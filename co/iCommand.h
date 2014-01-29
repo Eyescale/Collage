@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -30,96 +30,97 @@ namespace co
 {
 namespace detail { class ICommand; }
 
-    /**
-     * A class managing received commands.
-     *
-     * This class is used by the LocalNode to pass received buffers to the
-     * Dispatcher and ultimately command handler functions. It is not intended
-     * to be instantiated by applications. The derivates of this ICommand have
-     * to be instaniated by the application if the command type requires it. The
-     * data retrieval is possible with the provided DataIStream methods or with
-     * the templated get() function.
-     */
-    class ICommand : public DataIStream
+/**
+ * A class managing received commands.
+ *
+ * This class is used by the LocalNode to pass received buffers to the
+ * Dispatcher and ultimately command handler functions. It is not intended to be
+ * instantiated by applications. The derivates of this ICommand have to be
+ * instaniated by the application if the command type requires it. The data
+ * retrieval is possible with the provided DataIStream methods or with the
+ * templated get() function.
+ */
+class ICommand : public DataIStream
+{
+public:
+    CO_API ICommand(); //!< @internal
+    CO_API ICommand( LocalNodePtr local, NodePtr remote,
+                     ConstBufferPtr buffer, const bool swap ); //!<@internal
+    CO_API ICommand( const ICommand& rhs ); //!< @internal
+
+    CO_API virtual ~ICommand(); //!< @internal
+
+    // cppcheck-suppress operatorEq
+    CO_API ICommand & operator = ( const ICommand& rhs ); //!< @internal
+
+    CO_API void clear(); //!< @internal
+
+    /** @name Data Access */
+    //@{
+    /** @return the command type. @version 1.0 */
+    CO_API uint32_t getType() const;
+
+    /** @return the command. @version 1.0 */
+    CO_API uint32_t getCommand() const;
+
+    /** @return the command payload size. @version 1.0 */
+    CO_API uint64_t getSize() const;
+
+    /** @return a value from the command. @version 1.0 */
+    template< typename T > T get()
     {
-    public:
-        CO_API ICommand(); //!< @internal
-        CO_API ICommand( LocalNodePtr local, NodePtr remote,
-                         ConstBufferPtr buffer, const bool swap ); //!<@internal
-        CO_API ICommand( const ICommand& rhs ); //!< @internal
+        T value;
+        *this >> value;
+        return value;
+    }
 
-        CO_API virtual ~ICommand(); //!< @internal
+    /** @deprecated use getRemoteNode() */
+    NodePtr getNode() const { return getRemoteNode(); }
 
-        CO_API ICommand& operator = ( const ICommand& rhs ); //!< @internal
+    /** @return the sending node proxy instance. @version 1.1.1 */
+    CO_API NodePtr getRemoteNode() const override;
 
-        CO_API void clear(); //!< @internal
+    /** @return the receiving node. @version 1.0 */
+    CO_API LocalNodePtr getLocalNode() const override;
 
-        /** @name Data Access */
-        //@{
-        /** @return the command type. @version 1.0 */
-        CO_API uint32_t getType() const;
+    /** @return true if the command has valid data. @version 1.0 */
+    CO_API bool isValid() const;
 
-        /** @return the command. @version 1.0 */
-        CO_API uint32_t getCommand() const;
+    /** @internal @return the buffer */
+    CO_API ConstBufferPtr getBuffer() const;
+    //@}
 
-        /** @return the command payload size. @version 1.0 */
-        CO_API uint64_t getSize() const;
+    /** @internal @name Command dispatch */
+    //@{
+    /** @internal Change the command type for subsequent dispatching. */
+    CO_API void setType( const CommandType type );
 
-        /** @return a value from the command. @version 1.0 */
-        template< typename T > T get()
-        {
-            T value;
-            *this >> value;
-            return value;
-        }
+    /** @internal Change the command for subsequent dispatching. */
+    CO_API void setCommand( const uint32_t cmd );
 
-        /** @deprecated use getRemoteNode() */
-        NodePtr getNode() const { return getRemoteNode(); }
+    /** @internal Set the function to which the command is dispatched. */
+    void setDispatchFunction( const Dispatcher::Func& func );
 
-        /** @return the sending node proxy instance. @version 1.1.1 */
-        CO_API NodePtr getRemoteNode() const override;
+    /** @internal Invoke and clear the command function. */
+    CO_API bool operator()();
+    //@}
 
-        /** @return the receiving node. @version 1.0 */
-        CO_API LocalNodePtr getLocalNode() const override;
+private:
+    detail::ICommand* const _impl;
 
-        /** @return true if the command has valid data. @version 1.0 */
-        CO_API bool isValid() const;
+    friend CO_API std::ostream& operator << (std::ostream&,const ICommand&);
 
-        /** @internal @return the buffer */
-        CO_API ConstBufferPtr getBuffer() const;
-        //@}
+    /** @internal @name DataIStream functions */
+    //@{
+    CO_API size_t nRemainingBuffers() const override;
+    CO_API uint128_t getVersion() const override;
+    CO_API bool getNextBuffer( uint32_t&, uint32_t&, const void**,
+                               uint64_t& ) override;
+    //@}
 
-        /** @internal @name Command dispatch */
-        //@{
-        /** @internal Change the command type for subsequent dispatching. */
-        CO_API void setType( const CommandType type );
+    void _skipHeader(); //!< @internal
+};
 
-        /** @internal Change the command for subsequent dispatching. */
-        CO_API void setCommand( const uint32_t cmd );
-
-        /** @internal Set the function to which the command is dispatched. */
-        void setDispatchFunction( const Dispatcher::Func& func );
-
-        /** @internal Invoke and clear the command function. */
-        CO_API bool operator()();
-        //@}
-
-    private:
-        detail::ICommand* const _impl;
-
-        friend CO_API std::ostream& operator << (std::ostream&,const ICommand&);
-
-        /** @internal @name DataIStream functions */
-        //@{
-        CO_API size_t nRemainingBuffers() const override;
-        CO_API uint128_t getVersion() const override;
-        CO_API bool getNextBuffer( uint32_t&, uint32_t&, const void**,
-                                           uint64_t& ) override;
-        //@}
-
-        void _skipHeader(); //!< @internal
-    };
-
-    CO_API std::ostream& operator << ( std::ostream& os, const ICommand& );
+CO_API std::ostream& operator << ( std::ostream& os, const ICommand& );
 }
 #endif // CO_ICOMMAND_H
