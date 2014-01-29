@@ -50,7 +50,6 @@ public:
 
     CO_API virtual ~ICommand(); //!< @internal
 
-    // cppcheck-suppress operatorEq
     CO_API ICommand & operator = ( const ICommand& rhs ); //!< @internal
 
     CO_API void clear(); //!< @internal
