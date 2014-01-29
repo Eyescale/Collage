@@ -31,7 +31,7 @@ namespace co
 {
 namespace detail { class BufferCache; }
 
-/**
+/** @internal
  * The buffer cache handles the reuse of allocated buffers for a node.
  *
  * Buffers are retained and released whenever they are not directly processed,
@@ -40,6 +40,11 @@ namespace detail { class BufferCache; }
 class BufferCache : public boost::noncopyable
 {
 public:
+    /**
+     * Construct a new buffer cache.
+     *
+     * @param minFree number of buffers that are always kept free.
+     */
     CO_API BufferCache( const int32_t minFree );
     CO_API ~BufferCache();
 

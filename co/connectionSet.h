@@ -61,7 +61,7 @@ public:
     /** Remove the connection from this set. Thread-safe. @version 1.0 */
     CO_API bool removeConnection( ConnectionPtr connection );
 
-    /** Remove all connections from this set. Thread-safe. @version 1.0 */
+    /** @return the number of managed connections. Thread-safe. @version 1.0 */
     CO_API size_t getSize() const;
 
     /**
