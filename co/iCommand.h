@@ -65,13 +65,8 @@ public:
     /** @return the command payload size. @version 1.0 */
     CO_API uint64_t getSize() const;
 
-    /** @return a value from the command. @version 1.0 */
-    template< typename T > T get()
-    {
-        T value;
-        *this >> value;
-        return value;
-    }
+    /** @deprecated use read() */
+    template< typename T > T get() { return read< T >(); }
 
     /** @deprecated use getRemoteNode() */
     NodePtr getNode() const { return getRemoteNode(); }

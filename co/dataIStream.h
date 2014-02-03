@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2009-2010, Cedric Stalder <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -54,6 +54,10 @@ public:
 
     /** @name Data input */
     //@{
+    /** @return a value from the stream. @version 1.0 */
+    template< typename T > T read()
+        { T value; *this >> value; return value; }
+
     /** Read a plain data item. @version 1.0 */
     template< class T > DataIStream& operator >> ( T& value )
         { _read( &value, sizeof( value )); _swap( value ); return *this; }
