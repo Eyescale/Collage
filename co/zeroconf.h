@@ -53,7 +53,6 @@ public:
     CO_API ~Zeroconf();
 
     /** Assign the data from another zeroconf communicator. @version 1.0 */
-    // cppcheck-suppress operatorEq
     CO_API Zeroconf& operator = ( const Zeroconf& rhs );
 
     /**
