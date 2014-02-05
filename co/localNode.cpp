@@ -342,11 +342,11 @@ bool LocalNode::listen()
         }
 
         _impl->connectionNodes[ connection ] = this;
-        _impl->incoming.addConnection( connection );
         if( connection->isMulticast( ))
             _addMulticast( this, connection );
 
         connection->acceptNB();
+        _impl->incoming.addConnection( connection );
 
         LBVERB << "Added node " << getNodeID() << " using " << connection
                << std::endl;
@@ -484,9 +484,9 @@ void LocalNode::_addConnection( ConnectionPtr connection )
         return;
     }
 
-    _impl->incoming.addConnection( connection );
     BufferPtr buffer = _impl->smallBuffers.alloc( COMMAND_ALLOCSIZE );
     connection->recvNB( buffer, COMMAND_MINSIZE );
+    _impl->incoming.addConnection( connection );
 }
 
 void LocalNode::_removeConnection( ConnectionPtr connection )
@@ -1911,11 +1911,12 @@ bool LocalNode::_cmdAddListener( ICommand& command )
     LBASSERT( connection );
 
     _impl->connectionNodes[ connection ] = this;
-    _impl->incoming.addConnection( connection );
     if( connection->isMulticast( ))
         _addMulticast( this, connection );
 
     connection->acceptNB();
+    _impl->incoming.addConnection( connection );
+
     _initService(); // update zeroconf
     return true;
 }
