@@ -64,6 +64,8 @@ since the last release:
 
 Collage 1.0.2 includes various bugfixes over the 1.0.1 release:
 
+* [79](https://github.com/Eyescale/Collage/issues/79): Node::connect
+  race condition
 * [71](https://github.com/Eyescale/Collage/issues/71): BufferCache race
   may lead to segmentation fault
 
