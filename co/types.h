@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -102,6 +102,9 @@ typedef std::vector< NodePtr >                   Nodes;
 typedef Nodes::iterator                          NodesIter;
 /** A const iterator for a vector of nodes. */
 typedef Nodes::const_iterator                    NodesCIter;
+
+/** A vector of NodeID's. */
+typedef std::vector< NodeID >                    NodeIDs;
 
 /** A vector of objects. */
 typedef std::vector< Object* >                   Objects;

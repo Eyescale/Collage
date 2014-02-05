@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -252,7 +252,8 @@ void Connection::recvNB( BufferPtr buffer, const uint64_t bytes )
 
 bool Connection::recvSync( BufferPtr& outBuffer, const bool block )
 {
-    LBASSERT( _impl->buffer );
+    LBASSERTINFO( _impl->buffer,
+                  "No pending receive on " << getDescription()->toString( ));
 
     // reset async IO data
     outBuffer = _impl->buffer;

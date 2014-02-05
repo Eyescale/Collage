@@ -64,6 +64,10 @@ protected:
     /** Destruct the serializable. @version 1.0 */
     CO_API virtual ~Serializable();
 
+    /** NOP assignment operator. @version 1.1.1 */
+    Serializable& operator = ( const Serializable& from )
+        { Object::operator = ( from ); return *this; }
+
     /**
      * Worker for pack() and getInstanceData().
      *
@@ -114,7 +118,6 @@ protected:
     /** @sa Object::notifyAttached() */
     CO_API void notifyAttached() override;
 
-protected:
     void getInstanceData( co::DataOStream& os ) final
         { serialize( os, DIRTY_ALL ); }
 

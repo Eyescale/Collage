@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2012-2014, Stefan Eilemann <eile@eyescale.ch>
  *               2010, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -43,8 +43,8 @@ Serializable::Serializable()
 {}
 
 Serializable::Serializable( const Serializable& )
-        : co::Object()
-        , _impl( new detail::Serializable )
+    : co::Object()
+    , _impl( new detail::Serializable )
 {}
 
 Serializable::~Serializable()
