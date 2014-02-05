@@ -30,74 +30,76 @@
 lunchbox::Monitor< co::Barrier* > _barrier( 0 );
 static uint16_t _port = 0;
 
-class NodeThread : public lunchbox::Thread
+class MasterThread : public lunchbox::Thread
 {
 public:
-    NodeThread( const bool master ) : _master(master) {}
-
     void run() override
     {
-        co::ConnectionDescriptionPtr description =
-            new co::ConnectionDescription;
-        description->type = co::CONNECTIONTYPE_TCPIP;
-        description->port = _master ? _port : _port+1;
+        co::ConnectionDescriptionPtr desc = new co::ConnectionDescription;
+        desc->port = _port;
 
         co::LocalNodePtr node = new co::LocalNode;
-        node->addConnectionDescription( description );
+        node->addConnectionDescription( desc );
         TEST( node->listen( ));
 
-        if( _master )
-        {
-            co::Barrier barrier( node, node->getNodeID(), 3 );
-            TEST( barrier.isAttached( ));
-            TEST( barrier.getVersion() == co::VERSION_FIRST );
-            TEST( barrier.getHeight() ==  3 );
+        co::Barrier barrier( node, node->getNodeID(), 3 );
+        TEST( barrier.isAttached( ));
+        TEST( barrier.getVersion() == co::VERSION_FIRST );
+        TEST( barrier.getHeight() ==  3 );
 
-            _barrier = &barrier;
-            barrier.enter();
+        _barrier = &barrier;
+        barrier.enter();
 
-            barrier.setHeight( 2 );
-            barrier.commit();
-            TEST( barrier.getVersion() == co::VERSION_FIRST + 1 );
+        barrier.setHeight( 2 );
+        barrier.commit();
+        TEST( barrier.getVersion() == co::VERSION_FIRST + 1 );
 
-            barrier.enter();
-            _barrier.waitEQ( 0 ); // wait for slave thread finish
-            node->deregisterObject( &barrier );
-        }
-        else
-        {
-            co::NodePtr server = new co::Node;
-            co::ConnectionDescriptionPtr serverDesc =
-                new co::ConnectionDescription;
-            serverDesc->port = _port;
-            server->addConnectionDescription( serverDesc );
-
-            _barrier.waitNE( 0 );
-            TEST( node->connect( server ));
-
-            co::Barrier barrier( node, _barrier.get( ));
-            TEST( barrier.isGood( ));
-            TEST( barrier.getVersion() == co::VERSION_FIRST );
-
-            std::cerr << "Slave enter" << std::endl;
-            barrier.enter();
-            std::cerr << "Slave left" << std::endl;
-
-            barrier.sync( co::VERSION_FIRST + 1 );
-            TEST( barrier.getVersion() == co::VERSION_FIRST + 1 );
-
-            std::cerr << "Slave enter" << std::endl;
-            barrier.enter();
-            std::cerr << "Slave left" << std::endl;
-
-            node->unmapObject( &barrier );
-        }
-
+        barrier.enter();
+        _barrier.waitEQ( 0 ); // wait for slave thread finish
+        node->deregisterObject( &barrier );
         node->close();
     }
+};
 
-private:
-    bool _master;
+class SlaveThread : public lunchbox::Thread
+{
+public:
+    void run() override
+    {
+        co::ConnectionDescriptionPtr desc = new co::ConnectionDescription;
+        desc->port = _port + 1;
+
+        co::LocalNodePtr node = new co::LocalNode;
+        node->addConnectionDescription( desc );
+        TEST( node->listen( ));
+
+        co::NodePtr server = new co::Node;
+        co::ConnectionDescriptionPtr serverDesc =
+            new co::ConnectionDescription;
+        serverDesc->port = _port;
+        server->addConnectionDescription( serverDesc );
+
+        _barrier.waitNE( 0 );
+        TEST( node->connect( server ));
+
+        co::Barrier barrier( node, _barrier.get( ));
+        TEST( barrier.isGood( ));
+        TEST( barrier.getVersion() == co::VERSION_FIRST );
+
+        std::cerr << "Slave enter" << std::endl;
+        barrier.enter();
+        std::cerr << "Slave left" << std::endl;
+
+        barrier.sync( co::VERSION_FIRST + 1 );
+        TEST( barrier.getVersion() == co::VERSION_FIRST + 1 );
+
+        std::cerr << "Slave enter" << std::endl;
+        barrier.enter();
+        std::cerr << "Slave left" << std::endl;
+
+        node->unmapObject( &barrier );
+        node->close();
+    }
 };
 
 int main( int argc, char **argv )
@@ -106,11 +108,11 @@ int main( int argc, char **argv )
     lunchbox::RNG rng;
     _port =(rng.get<uint16_t>() % 60000) + 1024;
 
-    NodeThread server( true );
-    NodeThread node( false );
+    MasterThread master;
+    SlaveThread slave;
 
-    server.start();
-    node.start();
+    master.start();
+    slave.start();
 
     _barrier.waitNE( 0 );
     std::cerr << "Main enter" << std::endl;
@@ -118,10 +120,10 @@ int main( int argc, char **argv )
     std::cerr << "Main left" << std::endl;
     _barrier = 0;
 
-    node.join();
+    slave.join();
     _barrier = 0;
 
-    server.join();
+    master.join();
 
     co::exit();
     return EXIT_SUCCESS;
