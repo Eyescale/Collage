@@ -63,11 +63,7 @@ function(GIT_EXTERNAL DIR REPO TAG)
   endif()
 endfunction()
 
-set(GIT_EXTERNALS ${GIT_EXTERNALS_FILE})
-if(NOT GIT_EXTERNALS)
-  set(GIT_EXTERNALS "${CMAKE_CURRENT_SOURCE_DIR}/.gitexternals")
-endif()
-
+set(GIT_EXTERNALS "${CMAKE_CURRENT_SOURCE_DIR}/.gitexternals")
 if(EXISTS ${GIT_EXTERNALS})
   file(READ ${GIT_EXTERNALS} GIT_EXTERNAL_FILE)
   string(REGEX REPLACE "\n" ";" GIT_EXTERNAL_FILE "${GIT_EXTERNAL_FILE}")
@@ -84,60 +80,49 @@ if(EXISTS ${GIT_EXTERNALS})
         list(GET DATA 1 REPO)
         list(GET DATA 2 TAG)
 
-        # Create a unique, flat name
-        string(REPLACE "/" "_" GIT_EXTERNAL_NAME ${DIR})
+        # pull in identified external
+        git_external(${DIR} ${REPO} ${TAG})
 
-        if(NOT TARGET update_git_external_${GIT_EXTERNAL_NAME}) # not done
-          # pull in identified external
-          git_external(${DIR} ${REPO} ${TAG})
-
-          # Create update script and target to bump external spec
-          if(NOT TARGET update)
-            add_custom_target(update)
-          endif()
-          if(NOT TARGET update_git_external)
-            add_custom_target(update_git_external)
-            add_dependencies(update update_git_external)
-          endif()
-
-          # Create a unique, flat name
-          file(RELATIVE_PATH GIT_EXTERNALS_BASE ${CMAKE_SOURCE_DIR}
-            ${GIT_EXTERNALS})
-          string(REPLACE "/" "_" GIT_EXTERNAL_TARGET ${GIT_EXTERNALS_BASE})
-
-          set(GIT_EXTERNAL_TARGET update_git_external_${GIT_EXTERNAL_TARGET})
-          if(NOT TARGET ${GIT_EXTERNAL_TARGET})
-            set(GIT_EXTERNAL_SCRIPT
-              "${CMAKE_CURRENT_BINARY_DIR}/${GIT_EXTERNAL_TARGET}.cmake")
-            file(WRITE "${GIT_EXTERNAL_SCRIPT}"
-              "file(WRITE ${GIT_EXTERNALS} \"# -*- mode: cmake -*-\n\")\n")
-            add_custom_target(${GIT_EXTERNAL_TARGET}
-              COMMAND ${CMAKE_COMMAND} -P ${GIT_EXTERNAL_SCRIPT}
-              COMMENT "Recreate ${GIT_EXTERNALS_BASE}"
-              WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-          endif()
-
+        # Create update script and target to bump external spec
+        if(NOT TARGET update)
+          add_custom_target(update)
+        endif()
+        if(NOT TARGET update_git_external)
+          add_custom_target(update_git_external)
+          add_dependencies(update update_git_external)
+        endif()
+        if(NOT TARGET update_git_external_header)
           set(GIT_EXTERNAL_SCRIPT
-            "${CMAKE_CURRENT_BINARY_DIR}/gitupdate${GIT_EXTERNAL_NAME}.cmake")
-          file(WRITE "${GIT_EXTERNAL_SCRIPT}" "
+            "${CMAKE_CURRENT_BINARY_DIR}/gitupdateexternal.cmake")
+          file(WRITE "${GIT_EXTERNAL_SCRIPT}"
+            "file(WRITE ${GIT_EXTERNALS} \"# -*- mode: cmake -*-\n\")\n")
+          add_custom_target(update_git_external_header
+            COMMAND ${CMAKE_COMMAND} -P ${GIT_EXTERNAL_SCRIPT}
+            COMMENT "Recreate ${GIT_EXTERNALS}"
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+        endif()
+
+        string(REPLACE "/" "_" GIT_EXTERNAL_NAME ${DIR}) # unique, flat name
+        set(GIT_EXTERNAL_SCRIPT
+          "${CMAKE_CURRENT_BINARY_DIR}/gitupdate${GIT_EXTERNAL_NAME}.cmake")
+        file(WRITE "${GIT_EXTERNAL_SCRIPT}" "
 execute_process(COMMAND ${GIT_EXECUTABLE} fetch --all -q
   WORKING_DIRECTORY ${DIR})
 execute_process(
   COMMAND ${GIT_EXECUTABLE} show-ref --hash=7 refs/remotes/origin/master
   OUTPUT_VARIABLE newref WORKING_DIRECTORY ${DIR})
 if(newref)
-  file(APPEND ${GIT_EXTERNALS} \"# ${DIR} ${REPO} \${newref}\")
+  file(APPEND ${GIT_EXTERNALS} \"# ${DIR} ${REPO} \${newref}\n\")
 else()
   file(APPEND ${GIT_EXTERNALS} \"# ${DIR} ${REPO} ${TAG}\n\")
 endif()")
-          add_custom_target(update_git_external_${GIT_EXTERNAL_NAME}
-            COMMAND ${CMAKE_COMMAND} -P ${GIT_EXTERNAL_SCRIPT}
-            COMMENT "Update ${REPO} in ${GIT_EXTERNALS_BASE}"
-            DEPENDS ${GIT_EXTERNAL_TARGET}
-            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-          add_dependencies(update_git_external
-            update_git_external_${GIT_EXTERNAL_NAME})
-        endif()
+        add_custom_target(update_git_external_${GIT_EXTERNAL_NAME}
+          COMMAND ${CMAKE_COMMAND} -P ${GIT_EXTERNAL_SCRIPT}
+          COMMENT "Update ${REPO} in ${GIT_EXTERNALS}"
+          DEPENDS update_git_external_header
+          WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+        add_dependencies(update_git_external
+          update_git_external_${GIT_EXTERNAL_NAME})
       endif()
     endif()
   endforeach()
