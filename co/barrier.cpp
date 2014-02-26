@@ -1,7 +1,7 @@
 
 /* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2011, Cedric Stalder <cedric.stalder@gmail.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -62,6 +62,7 @@ public:
     Barrier( const uint128_t& masterID_, const uint32_t height_ )
         : masterID( masterID_ )
         , height( height_ )
+        , left( 0 )
     {}
 
     /** The master barrier node. */
@@ -138,7 +139,6 @@ void Barrier::unpack( DataIStream& is )
     is >> _impl->height;
 }
 
-//---------------------------------------------------------------------------
 void Barrier::setHeight( const uint32_t height )
 {
     _impl->height = height;
@@ -209,6 +209,14 @@ void Barrier::enter( const uint32_t timeout )
         _impl->incarnation.waitEQ( leaveVal );
     else if( !_impl->incarnation.timedWaitEQ( leaveVal, timeout ))
         throw Exception( Exception::TIMEOUT_BARRIER );
+
+    // #82: reset the monitor after all threads left the barrier
+    ++_impl->left;
+    if( _impl->left == _impl->height )
+    {
+        _impl->leaveNotify = 0;
+        _impl->left = 0;
+    }
 
     LBLOG( LOG_BARRIER ) << "left barrier " << getID() << " v" << getVersion()
                          << ", height " << _impl->height << std::endl;
@@ -285,14 +293,13 @@ bool Barrier::_cmdEnter( ICommand& cmd )
         return true;
     }
 
-    LBASSERT( version == getVersion( ));
-
     Nodes& nodes = request.nodes;
     if( nodes.size() < _impl->height )
         return true;
 
     LBASSERT( nodes.size() == _impl->height );
-    LBLOG( LOG_BARRIER ) << "Barrier reached" << std::endl;
+    LBLOG( LOG_BARRIER ) << "Barrier reached " << getID() << " v" << version
+                         << std::endl;
 
     stde::usort( nodes );
 
