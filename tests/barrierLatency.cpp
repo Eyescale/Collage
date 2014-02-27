@@ -32,13 +32,23 @@ const size_t _numIterations( 100 );
 class ServerThread : public lunchbox::Thread
 {
 public:
-    co::LocalNodePtr _node;
-    ServerThread( co::LocalNodePtr node ) : _node( node ) {}
+    ServerThread( co::LocalNodePtr server )
+        : _node( new co::LocalNode )
+        , _server( server )
+    {
+        TEST( _node->listen( ));
+
+        co::NodePtr node = new co::Node;
+        co::ConnectionDescriptionPtr description =
+            server->getConnectionDescriptions().front();
+        node->addConnectionDescription( description );
+        TEST( _node->connect( node ));
+    }
 
     void run() override
     {
         setName( "MasterThread" );
-        co::Barrier barrier( _node, _node->getNodeID(), _numThreads );
+        co::Barrier barrier( _node, _server->getNodeID(), _numThreads );
         barrier.setAutoObsolete( _latency + 1 );
         _barrierID = co::ObjectVersion( &barrier );
         _registered = true;
@@ -54,9 +64,10 @@ public:
             for( size_t i = 0; i < _numThreads; ++i )
                 _versions.push( version );
         }
-
-        _node->releaseObject( &barrier );
     }
+private:
+    co::LocalNodePtr _node;
+    co::LocalNodePtr _server;
 };
 
 
@@ -91,7 +102,6 @@ public:
             {
                 static lunchbox::SpinLock lock;
                 lunchbox::ScopedFastWrite mutex( lock );
-                LBINFO << "Sync barrier to v" << version << std::endl;
                 _barrier->sync( version );
             }
 
