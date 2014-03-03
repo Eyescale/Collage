@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2011, Cedric Stalder <cedric.stalder@gmail.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -77,7 +77,7 @@ public:
     RequestMap enteredNodes;
 
     /** The monitor used for barrier leave notification. */
-    lunchbox::Monitor< uint32_t > leaveNotify;
+    lunchbox::Monitor< uint32_t > incarnation;
 };
 }
 
@@ -121,28 +121,24 @@ void Barrier::getInstanceData( DataOStream& os )
 {
     LBASSERT( _impl->masterID != NodeID( ));
     os << _impl->height << _impl->masterID;
-    _impl->leaveNotify = 0;
 }
 
 void Barrier::applyInstanceData( DataIStream& is )
 {
     is >> _impl->height >> _impl->masterID;
-    _impl->leaveNotify = 0;
 }
 
 void Barrier::pack( DataOStream& os )
 {
     os << _impl->height;
-    _impl->leaveNotify = 0;
 }
 
 void Barrier::unpack( DataIStream& is )
 {
     is >> _impl->height;
-    _impl->leaveNotify = 0;
 }
-
 //---------------------------------------------------------------------------
+
 void Barrier::setHeight( const uint32_t height )
 {
     _impl->height = height;
@@ -204,14 +200,14 @@ void Barrier::enter( const uint32_t timeout )
     LBLOG( LOG_BARRIER ) << "enter barrier " << getID() << " v" << getVersion()
                          << ", height " << _impl->height << std::endl;
 
-    const uint32_t leaveVal = _impl->leaveNotify.get() + 1;
+    const uint32_t leaveVal = _impl->incarnation.get() + 1;
 
     send( _impl->master, CMD_BARRIER_ENTER )
-        << getVersion() << _impl->leaveNotify.get() << timeout;
+        << getVersion() << leaveVal - 1 << timeout;
 
     if( timeout == LB_TIMEOUT_INDEFINITE )
-        _impl->leaveNotify.waitEQ( leaveVal );
-    else if( !_impl->leaveNotify.timedWaitEQ( leaveVal, timeout ))
+        _impl->incarnation.waitEQ( leaveVal );
+    else if( !_impl->incarnation.timedWaitEQ( leaveVal, timeout ))
         throw Exception( Exception::TIMEOUT_BARRIER );
 
     LBLOG( LOG_BARRIER ) << "left barrier " << getID() << " v" << getVersion()
@@ -242,7 +238,7 @@ bool Barrier::_cmdEnter( ICommand& cmd )
     request.time = getLocalNode()->getTime64();
 
     // It's the first call to enter barrier
-    if( request.nodes.empty() )
+    if( request.nodes.empty( ))
     {
         request.incarnation = incarnation;
         request.timeout = timeout;
@@ -256,8 +252,9 @@ bool Barrier::_cmdEnter( ICommand& cmd )
             _sendNotify( version, command.getNode( ));
             return true;
         }
-        // the previous enter had a timeout, start a newsynchronization
-        else if( request.incarnation != incarnation )
+        // the previous enter had a timeout, start a new synchronization
+        //  (same version means same group -> no member can run ahead)
+        else if( request.incarnation > incarnation )
         {
             request.nodes.clear();
             request.incarnation = incarnation;
@@ -279,8 +276,8 @@ bool Barrier::_cmdEnter( ICommand& cmd )
     if( version > getVersion( ))
         return true;
 
-    // if it's an older version a timeout has been handled
-    // for performance, send directly the order to unblock the caller.
+    // If it's an older version a timeout has been handled.
+    // For performance, send directly the order to unblock the caller.
     if( timeout != LB_TIMEOUT_INDEFINITE && version < getVersion( ))
     {
         LBASSERT( incarnation == 0 );
@@ -288,14 +285,17 @@ bool Barrier::_cmdEnter( ICommand& cmd )
         return true;
     }
 
-    LBASSERT( version == getVersion( ));
+    LBASSERTINFO( version == getVersion(),
+                  "Barrier master updated to new version while in barrier " <<
+                  getID() << " (" << version << " != " << getVersion() << ")" );
 
     Nodes& nodes = request.nodes;
     if( nodes.size() < _impl->height )
         return true;
 
     LBASSERT( nodes.size() == _impl->height );
-    LBLOG( LOG_BARRIER ) << "Barrier reached" << std::endl;
+    LBLOG( LOG_BARRIER ) << "Barrier reached " << getID() << " v" << version
+                         << std::endl;
 
     stde::usort( nodes );
 
@@ -321,7 +321,7 @@ void Barrier::_sendNotify( const uint128_t& version, NodePtr node )
         // the case where we receive a different version of the barrier meant
         // that previosly we have detect a timeout true negative
         if( version == getVersion() )
-            ++_impl->leaveNotify;
+            ++_impl->incarnation;
     }
     else
     {
@@ -367,7 +367,7 @@ bool Barrier::_cmdEnterReply( ICommand& cmd )
     const uint128_t version = command.get< uint128_t >();
 
     if( version == getVersion( ))
-        ++_impl->leaveNotify;
+        ++_impl->incarnation;
 
     return true;
 }

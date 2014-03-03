@@ -31,7 +31,9 @@ namespace detail { class Barrier; }
 /**
  * A networked, versioned barrier.
  *
- * Not intended to be subclassed.
+ * On a given LocalNode only one instance of a given barrier can be mapped,
+ * i.e., multiple instances of the same barrier are currently not supported by
+ * the implementation. Not intended to be subclassed.
  */
 class Barrier : public Object
 {
