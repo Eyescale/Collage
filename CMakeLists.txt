@@ -15,7 +15,6 @@ if(BUILDYARD_STOP)
   return()
 endif()
 
-set(PROJECT_INCLUDE_NAME co)
 option(COLLAGE_BUILD_V2_API
   "Enable for pure 2.0 API (breaks compatibility with 1.x API)" OFF)
 
@@ -25,10 +24,11 @@ set(VERSION_MINOR "1")
 set(VERSION_PATCH "0")
 set(LAST_RELEASE 1.0.0)
 
+set(PROJECT_INCLUDE_NAME co)
+set(COMMON_PROJECT_DOMAIN ch.eyescale)
+set(COLLAGE_DESCRIPTION "High-performance C++ library for developing object-oriented distributed applications.")
+
 include(Common)
-include(GitTargets)
-include(Revision)
-include(UpdateFile)
 include(FindPackages)
 
 list(APPEND CPPCHECK_EXTRA_ARGS -DCO_API=)

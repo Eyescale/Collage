@@ -25,6 +25,7 @@
 #include <co/api.h>
 #include <co/array.h> // used inline
 #include <co/types.h>
+#include <lunchbox/bitOperation.h>
 #include <lunchbox/stdExt.h>
 
 #include <boost/type_traits.hpp>

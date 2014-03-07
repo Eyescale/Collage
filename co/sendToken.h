@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2013, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2013-2014, Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -23,10 +23,13 @@
 #include <co/api.h>
 #include <co/types.h>
 
+#include <lunchbox/referenced.h> // base class
+#include <boost/noncopyable.hpp>
+
 namespace co
 {
 /** @internal */
-class SendToken : public lunchbox::Referenced, public lunchbox::NonCopyable
+class SendToken : public lunchbox::Referenced, public boost::noncopyable
 {
 public:
     ~SendToken() { release(); }

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2013, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2013-2014, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -24,6 +24,7 @@
 #include <co/connectionDescription.h>
 #include <co/init.h>
 #include <co/version.h>
+#include <lunchbox/clock.h>
 
 #pragma warning( disable: 4275 )
 #include <boost/program_options/options_description.hpp>

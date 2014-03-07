@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -26,6 +26,7 @@
 #include "oCommand.h"
 
 #include <lunchbox/scopedMutex.h>
+#include <lunchbox/spinLock.h>
 
 namespace co
 {
@@ -221,7 +222,7 @@ bool Node::deserialize( std::string& data )
     LBASSERT( _impl->state == STATE_CLOSED );
 
     // version check
-    uint32_t major = 0;
+    int32_t major = 0;
     size_t nextPos = data.find( CO_SEPARATOR );
     if( nextPos == std::string::npos || nextPos == 0 )
     {
@@ -233,7 +234,7 @@ bool Node::deserialize( std::string& data )
     data = data.substr( nextPos + 1 );
     is >> major;
 
-    uint32_t minor = 0;
+    int32_t minor = 0;
     nextPos = data.find( CO_SEPARATOR );
     if( nextPos == std::string::npos || nextPos == 0 )
     {

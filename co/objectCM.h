@@ -30,6 +30,7 @@
 #ifdef CO_INSTRUMENT_MULTICAST
 #  include <lunchbox/atomic.h>
 #endif
+#include <lunchbox/spinLock.h> // member
 
 namespace co
 {
