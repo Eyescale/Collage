@@ -23,6 +23,7 @@
 #include <co/api.h>          // CO_API definition
 #include <co/types.h>
 #include <lunchbox/thread.h>  // base class
+#include <limits.h>
 
 #ifndef CO_WORKER_API
 #  define CO_WORKER_API CO_API

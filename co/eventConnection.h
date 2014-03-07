@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2010-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -24,6 +24,8 @@
 
 #include "buffer.h"
 #include "pipeConnection.h"
+
+#include <lunchbox/lock.h>
 
 namespace co
 {

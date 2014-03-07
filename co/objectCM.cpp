@@ -28,6 +28,8 @@
 #include "objectInstanceDataOStream.h"
 #include "objectDataOCommand.h"
 
+#include <lunchbox/scopedMutex.h>
+
 co::ObjectCMPtr co::ObjectCM::ZERO = new co::NullCM;
 
 #ifdef CO_INSTRUMENT_MULTICAST

@@ -23,6 +23,7 @@
 #include <co/connectionSet.h>
 #include <co/init.h>
 
+#include <lunchbox/clock.h>
 #include <lunchbox/monitor.h>
 #include <iostream>
 

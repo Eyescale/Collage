@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2009-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2009-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -22,6 +22,7 @@
 
 #include <co/api.h>
 #include <co/types.h>
+#include <lunchbox/bitOperation.h>
 #include <lunchbox/stdExt.h>
 #include <iostream>
 

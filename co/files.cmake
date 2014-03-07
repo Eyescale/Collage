@@ -3,13 +3,8 @@
 #               2011-2013 Stefan Eilemann <eile@eyescale.ch>
 #                    2012 Daniel Nachbaur <danielnachbaur@gmail.com>
 
-update_file(${CMAKE_CURRENT_SOURCE_DIR}/version.in.h
-            ${OUTPUT_INCLUDE_DIR}/co/version.h)
-
 set(CO_PUBLIC_HEADERS
-  ${OUTPUT_INCLUDE_DIR}/co/version.h
-  ${DEFINES_FILE}
-  api.h
+  ${COMMON_INCLUDES}
   array.h
   barrier.h
   buffer.h
@@ -34,7 +29,6 @@ set(CO_PUBLIC_HEADERS
   dataOStreamArchive.h
   dataOStreamArchive.ipp
   dataStreamArchiveException.h
-  defines.h
   dispatcher.h
   exception.h
   global.h
@@ -97,6 +91,7 @@ set(CO_HEADERS
   )
 
 set(CO_SOURCES
+  ${COMMON_SOURCES}
   barrier.cpp
   buffer.cpp
   bufferCache.cpp
@@ -149,7 +144,6 @@ set(CO_SOURCES
   socketConnection.cpp
   staticSlaveCM.cpp
   unbufferedMasterCM.cpp
-  version.cpp
   versionedMasterCM.cpp
   versionedSlaveCM.cpp
   worker.cpp

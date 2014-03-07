@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2014, Stefan Eilemann <eile@eyescale.ch>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -25,7 +25,10 @@
 #include <co/iCommand.h>
 #include <co/init.h>
 #include <co/oCommand.h>
+
 #include <lunchbox/clock.h>
+#include <lunchbox/scopedMutex.h>
+#include <lunchbox/spinLock.h>
 
 // Tests the functionality of the network command buffer cache
 

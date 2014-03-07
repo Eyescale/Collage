@@ -1,6 +1,6 @@
 
 /* Copyright (c) 2012-2013, Daniel Nachbaur <danielnachbaur@googlemail.com>
- *               2012-2013, Stefan Eilemann <eile@eyescale.ch>
+ *               2012-2014, Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -25,6 +25,7 @@
 #include "objectFactory.h"
 
 #include <lunchbox/scopedMutex.h>
+#include <lunchbox/spinLock.h>
 
 namespace co
 {

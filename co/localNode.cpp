@@ -41,7 +41,13 @@
 #include "worker.h"
 #include "zeroconf.h"
 
+#include <lunchbox/clock.h>
 #include <lunchbox/hash.h>
+#include <lunchbox/lockable.h>
+#include <lunchbox/rng.h>
+#include <lunchbox/servus.h>
+#include <lunchbox/sleep.h>
+
 #include <boost/bind.hpp>
 #include <list>
 

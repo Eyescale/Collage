@@ -24,6 +24,7 @@
 #include "connectionListener.h"
 #include "eventConnection.h"
 
+#include <lunchbox/algorithm.h>
 #include <lunchbox/buffer.h>
 #include <lunchbox/os.h>
 #include <lunchbox/scopedMutex.h>

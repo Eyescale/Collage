@@ -26,6 +26,7 @@
 
 #include <lunchbox/buffer.h>        // base class
 #include <lunchbox/referenced.h>    // base class
+#include <lunchbox/thread.h>        // LB_TS_VAR macro
 
 
 namespace co

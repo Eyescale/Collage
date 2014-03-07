@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2012, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2014, Stefan Eilemann <eile@eyescale.ch>
  *                    2011, Carsten Rohn <carsten.rohn@rtt.ag>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -27,6 +27,7 @@
 #include "queueCommand.h"
 #include "queueItem.h"
 
+#include <lunchbox/buffer.h>
 #include <lunchbox/mtQueue.h>
 
 namespace co
