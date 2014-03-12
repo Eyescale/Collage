@@ -405,9 +405,7 @@ ConnectionPtr SocketConnection::acceptSync()
     newDescription->port = ntohs( newAddress.sin_port );
     newDescription->setHostname( inet_ntoa( newAddress.sin_addr ));
 
-    LBVERB << "accepted connection from " << inet_ntoa(newAddress.sin_addr)
-           << ":" << ntohs( newAddress.sin_port ) << std::endl;
-
+    LBINFO << "Accepted " << newDescription->toString() << std::endl;
     return newConnection;
 }
 

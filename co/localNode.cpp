@@ -1235,12 +1235,10 @@ void LocalNode::_handleConnect()
     ConnectionPtr newConn = connection->acceptSync();
     connection->acceptNB();
 
-    if( !newConn )
-    {
+    if( newConn )
+        _addConnection( newConn );
+    else
         LBINFO << "Received connect event, but accept() failed" << std::endl;
-        return;
-    }
-    _addConnection( newConn );
 }
 
 void LocalNode::_handleDisconnect()
