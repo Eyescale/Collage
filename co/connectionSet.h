@@ -116,6 +116,7 @@ private:
     bool _buildFDSet();
 
     Event _getSelectResult( const uint32_t index );
+    Event   _parseSelect( const uint32_t index );
     LB_TS_VAR( _selectThread );
 };
 

@@ -432,26 +432,32 @@ ConnectionSet::Event ConnectionSet::select( const uint32_t timeout )
             default: // SUCCESS
             {
                 const Event event = _getSelectResult( ret );
-
                 if( event == EVENT_NONE )
                      break;
-
-                if( _impl->connection == _impl->selfConnection.get( ))
-                {
-                    _impl->connection = 0;
-                    _impl->selfConnection->reset();
-                    return EVENT_INTERRUPT;
-                }
-                if( event == EVENT_DATA && _impl->connection->isListening( ))
-                    return EVENT_CONNECT;
                 return event;
             }
         }
     }
 }
 
-#ifdef _WIN32
+
 ConnectionSet::Event ConnectionSet::_getSelectResult( const uint32_t index )
+{
+    const Event event = _parseSelect( index );
+    if( _impl->connection == _impl->selfConnection.get( ))
+    {
+        _impl->connection = 0;
+        _impl->selfConnection->reset();
+        return EVENT_INTERRUPT;
+    }
+    if( event == EVENT_DATA && _impl->connection->isListening( ))
+        return EVENT_CONNECT;
+
+    return event;
+}
+
+#ifdef _WIN32
+ConnectionSet::Event ConnectionSet::_parseSelect( const uint32_t index )
 {
     const uint32_t i = index - WAIT_OBJECT_0;
     LBASSERT( i < MAXIMUM_WAIT_OBJECTS );
@@ -481,7 +487,7 @@ ConnectionSet::Event ConnectionSet::_getSelectResult( const uint32_t index )
     return EVENT_DATA;
 }
 #else // _WIN32
-ConnectionSet::Event ConnectionSet::_getSelectResult( const uint32_t )
+ConnectionSet::Event ConnectionSet::_parseSelect( const uint32_t )
 {
     for( size_t i = 0; i < _impl->fdSet.getSize(); ++i )
     {
