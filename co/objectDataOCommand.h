@@ -31,7 +31,6 @@ int testMain( int, char ** );
 
 namespace co
 {
-
 namespace detail { class ObjectDataOCommand; }
 
 /**

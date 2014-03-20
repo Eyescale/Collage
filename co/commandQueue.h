@@ -30,7 +30,7 @@ namespace co
 namespace detail { class CommandQueue; }
 
 /** A thread-safe, blocking queue for ICommand buffers. */
-class CommandQueue : public lunchbox::NonCopyable
+class CommandQueue : public boost::noncopyable
 {
 public:
     /**

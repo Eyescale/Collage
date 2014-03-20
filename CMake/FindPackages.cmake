@@ -116,7 +116,7 @@ if(Lunchbox_name)
   endif()
 endif()
 
-set(COLLAGE_BUILD_DEBS autoconf;automake;cmake;cppcheck;doxygen;git;git-review;git-svn;lcov;libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-filesystem-dev;libboost-program-options-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libhwloc-dev;libibverbs-dev;libjpeg-turbo8-dev;librdmacm-dev;libturbojpeg;libudt-dev;ninja-build;pkg-config;subversion)
+set(COLLAGE_BUILD_DEBS autoconf;automake;cmake;doxygen;git;git-review;libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-filesystem-dev;libboost-program-options-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libhwloc-dev;libibverbs-dev;libjpeg-turbo8-dev;librdmacm-dev;libturbojpeg;libudt-dev;pkg-config;subversion)
 
 set(COLLAGE_DEPENDS OFED;UDT;Boost;Lunchbox)
 
@@ -156,13 +156,30 @@ file(APPEND ${DEFINES_FILE_IN}
   "\n#endif\n")
 
 include(UpdateFile)
-update_file(${DEFINES_FILE_IN} ${DEFINES_FILE})
+configure_file(${DEFINES_FILE_IN} ${DEFINES_FILE} COPYONLY)
 if(Boost_FOUND) # another WAR for broken boost stuff...
   set(Boost_VERSION ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION})
 endif()
 if(CUDA_FOUND)
   string(REPLACE "-std=c++11" "" CUDA_HOST_FLAGS "${CUDA_HOST_FLAGS}")
   string(REPLACE "-std=c++0x" "" CUDA_HOST_FLAGS "${CUDA_HOST_FLAGS}")
+endif()
+if(QT4_FOUND)
+  if(WIN32)
+    set(QT_USE_QTMAIN TRUE)
+  endif()
+  # Configure a copy of the 'UseQt4.cmake' system file.
+  if(NOT EXISTS ${QT_USE_FILE})
+    message(WARNING "Can't find QT_USE_FILE!")
+  else()
+    set(_customUseQt4File "${CMAKE_BINARY_DIR}/UseQt4.cmake")
+    file(READ ${QT_USE_FILE} content)
+    # Change all include_directories() to use the SYSTEM option
+    string(REPLACE "include_directories(" "include_directories(SYSTEM " content ${content})
+    file(WRITE ${_customUseQt4File} ${content})
+    set(QT_USE_FILE ${_customUseQt4File})
+    include(${QT_USE_FILE})
+  endif()
 endif()
 if(FIND_PACKAGES_FOUND)
   if(MSVC)
