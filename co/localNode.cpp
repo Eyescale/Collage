@@ -49,12 +49,15 @@
 #include <lunchbox/sleep.h>
 
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 #include <list>
 
 namespace co
 {
 namespace
 {
+lunchbox::a_int32_t _threadIDs;
+
 typedef CommandFunc< LocalNode > CmdFunc;
 typedef std::list< ICommand > CommandList;
 typedef lunchbox::RefPtrHash< Connection, NodePtr > ConnectionNodeHash;
@@ -76,11 +79,15 @@ class ReceiverThread : public lunchbox::Thread
 {
 public:
     ReceiverThread( co::LocalNode* localNode ) : _localNode( localNode ) {}
-    virtual bool init()
+    bool init() override
     {
-        return _localNode->_startCommandThread();
+        const int32_t threadID = ++_threadIDs - 1;
+        setName( std::string( "Rcv" ) +
+                 boost::lexical_cast< std::string >( threadID ));
+        return _localNode->_startCommandThread( threadID );
     }
-    virtual void run() { _localNode->_runReceiverThread(); }
+
+    void run() override { _localNode->_runReceiverThread(); }
 
 private:
     co::LocalNode* const _localNode;
@@ -91,15 +98,22 @@ class CommandThread : public Worker
 public:
     CommandThread( co::LocalNode* localNode )
         : Worker( Global::getCommandQueueLimit( ))
+        , threadID( 0 )
         , _localNode( localNode )
     {}
 
+    int32_t threadID;
+
 protected:
-    virtual bool stopRunning() { return _localNode->isClosed(); }
-    virtual bool notifyIdle()
+    bool init() override
     {
-        return _localNode->_notifyCommandThreadIdle();
+        setName( std::string( "Cmd" ) +
+                 boost::lexical_cast< std::string >( threadID ));
+        return true;
     }
+
+    bool stopRunning() override { return _localNode->isClosed(); }
+    bool notifyIdle() override { return _localNode->_notifyCommandThreadIdle();}
 
 private:
     co::LocalNode* const _localNode;
@@ -1511,8 +1525,9 @@ Zeroconf LocalNode::getZeroconf()
 //----------------------------------------------------------------------
 // command thread functions
 //----------------------------------------------------------------------
-bool LocalNode::_startCommandThread()
+bool LocalNode::_startCommandThread( const int32_t threadID )
 {
+    _impl->commandThread->threadID = threadID;
     return _impl->commandThread->start();
 }
 

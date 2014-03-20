@@ -549,7 +549,7 @@ private:
 
     bool _connectSelf();
 
-    bool _startCommandThread();
+    bool _startCommandThread( const int32_t threadID );
     bool _notifyCommandThreadIdle();
     friend class detail::ReceiverThread;
     friend class detail::CommandThread;
