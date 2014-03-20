@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2014, Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -45,13 +45,6 @@ public:
     Q* getWorkerQueue() { return &_commands; }
 
 protected:
-    /** @sa lunchbox::Thread::init() */
-     bool init() override
-    {
-        setName( lunchbox::className( this ));
-        return true;
-    }
-
     /** @sa lunchbox::Thread::run() */
     CO_WORKER_API void run() override;
 

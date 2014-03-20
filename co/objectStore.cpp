@@ -715,7 +715,7 @@ bool ObjectStore::_cmdFindMasterNodeID( ICommand& command )
 
     const UUID& id = command.get< UUID >();
     const uint32_t requestID = command.get< uint32_t >();
-    LBASSERT( id.isUUID() );
+    LBASSERT( id.isUUID( ));
 
     NodeID masterNodeID;
     {

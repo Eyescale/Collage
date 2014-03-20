@@ -33,6 +33,8 @@
 #include <lunchbox/compressor.h>
 #include <lunchbox/plugins/compressor.h>
 
+#include  <boost/foreach.hpp>
+
 namespace co
 {
 namespace
@@ -91,13 +93,13 @@ public:
     bool save;
 
     DataOStream()
-            : state( STATE_UNCOMPRESSED )
-            , bufferStart( 0 )
-            , dataSize( 0 )
-            , enabled( false )
-            , dataSent( false )
-            , save( false )
-        {}
+        : state( STATE_UNCOMPRESSED )
+        , bufferStart( 0 )
+        , dataSize( 0 )
+        , enabled( false )
+        , dataSent( false )
+        , save( false )
+    {}
 
     DataOStream( const DataOStream& rhs )
         : state( rhs.state )

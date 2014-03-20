@@ -19,7 +19,6 @@
 
 #include "dataIStreamArchive.h"
 
-#include "array.h"
 #include "dataIStream.h"
 #include "dataStreamArchive.h"
 

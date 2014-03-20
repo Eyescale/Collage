@@ -49,12 +49,15 @@
 #include <lunchbox/sleep.h>
 
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 #include <list>
 
 namespace co
 {
 namespace
 {
+lunchbox::a_int32_t _threadIDs;
+
 typedef CommandFunc< LocalNode > CmdFunc;
 typedef std::list< ICommand > CommandList;
 typedef lunchbox::RefPtrHash< Connection, NodePtr > ConnectionNodeHash;
@@ -76,12 +79,15 @@ class ReceiverThread : public lunchbox::Thread
 {
 public:
     ReceiverThread( co::LocalNode* localNode ) : _localNode( localNode ) {}
-    virtual bool init()
-        {
-            setName( std::string("R ") + lunchbox::className(_localNode));
-            return _localNode->_startCommandThread();
-        }
-    virtual void run() { _localNode->_runReceiverThread(); }
+    bool init() override
+    {
+        const int32_t threadID = ++_threadIDs - 1;
+        setName( std::string( "Rcv" ) +
+                 boost::lexical_cast< std::string >( threadID ));
+        return _localNode->_startCommandThread( threadID );
+    }
+
+    void run() override { _localNode->_runReceiverThread(); }
 
 private:
     co::LocalNode* const _localNode;
@@ -92,21 +98,22 @@ class CommandThread : public Worker
 public:
     CommandThread( co::LocalNode* localNode )
         : Worker( Global::getCommandQueueLimit( ))
+        , threadID( 0 )
         , _localNode( localNode )
     {}
 
-protected:
-    virtual bool init()
-        {
-            setName( std::string( "C " ) + lunchbox::className( _localNode ));
-            return true;
-        }
+    int32_t threadID;
 
-    virtual bool stopRunning() { return _localNode->isClosed(); }
-    virtual bool notifyIdle()
-        {
-            return _localNode->_notifyCommandThreadIdle();
-        }
+protected:
+    bool init() override
+    {
+        setName( std::string( "Cmd" ) +
+                 boost::lexical_cast< std::string >( threadID ));
+        return true;
+    }
+
+    bool stopRunning() override { return _localNode->isClosed(); }
+    bool notifyIdle() override { return _localNode->_notifyCommandThreadIdle();}
 
 private:
     co::LocalNode* const _localNode;
@@ -1385,6 +1392,8 @@ bool LocalNode::_readTail( ICommand& command, BufferPtr buffer,
     if( needed > buffer->getMaxSize( ))
     {
         LBASSERT( needed > COMMAND_ALLOCSIZE );
+        LBASSERTINFO( needed < LB_BIT48,
+                      "Out-of-sync network stream: " << command << "?" );
         // not enough space for remaining data, alloc and copy to new buffer
         BufferPtr newBuffer = _impl->bigBuffers.alloc( needed );
         newBuffer->replace( *buffer );
@@ -1516,8 +1525,9 @@ Zeroconf LocalNode::getZeroconf()
 //----------------------------------------------------------------------
 // command thread functions
 //----------------------------------------------------------------------
-bool LocalNode::_startCommandThread()
+bool LocalNode::_startCommandThread( const int32_t threadID )
 {
+    _impl->commandThread->threadID = threadID;
     return _impl->commandThread->start();
 }
 

@@ -325,20 +325,7 @@ bool Connection::recvSync( BufferPtr& outBuffer, const bool block )
         if( bytes <= 1024 && ( lunchbox::Log::topics & LOG_PACKETS ))
         {
             ptr -= (bytes - bytesLeft); // rewind
-            LBINFO << "recv:" << std::hex << lunchbox::disableFlush
-                   << lunchbox::disableHeader;
-            for( size_t i = 0; i < bytes; ++i )
-            {
-                if( (i % 16) == 0 )
-                    LBINFO << std::endl;
-                if( (i % 4) == 0 )
-                    LBINFO << " 0x";
-                LBINFO << std::setfill( '0' ) << std::setw(2)
-                       << static_cast< unsigned >( *ptr );
-                ++ptr;
-            }
-            LBINFO << std::dec << lunchbox::enableFlush
-                   << std::endl << lunchbox::enableHeader;
+            LBINFO << "recv:" << lunchbox::format( ptr, bytes ) << std::endl;
         }
 #endif
         return true;
@@ -378,21 +365,7 @@ bool Connection::send( const void* buffer, const uint64_t bytes,
 
 #ifndef NDEBUG
     if( bytes <= 1024 && ( lunchbox::Log::topics & LOG_PACKETS ))
-    {
-        LBINFO << "send:" << std::hex << lunchbox::disableFlush
-               << lunchbox::disableHeader << std::endl;
-        for( size_t i = 0; i < bytes; ++i )
-        {
-            if( (i % 16) == 0 )
-                LBINFO << std::endl;
-            if( (i % 4) == 0 )
-                LBINFO << " 0x";
-            LBINFO << std::setfill( '0' ) << std::setw(2)
-                   << static_cast< unsigned >( ptr[ i ] );
-        }
-        LBINFO << std::dec << lunchbox::enableFlush << std::endl
-               << lunchbox::enableHeader;
-    }
+        LBINFO << "send:" << lunchbox::format( ptr, bytes ) << std::endl;
 #endif
 
     uint64_t bytesLeft = bytes;

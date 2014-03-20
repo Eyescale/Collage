@@ -35,6 +35,7 @@ class MasterThread : public lunchbox::Thread
 public:
     void run() override
     {
+        setName( "Master" );
         co::ConnectionDescriptionPtr desc = new co::ConnectionDescription;
         desc->port = _port;
 
@@ -66,6 +67,7 @@ class SlaveThread : public lunchbox::Thread
 public:
     void run() override
     {
+        setName( "Slave" );
         co::ConnectionDescriptionPtr desc = new co::ConnectionDescription;
         desc->port = _port + 1;
 
