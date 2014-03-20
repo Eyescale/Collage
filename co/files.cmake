@@ -1,11 +1,10 @@
 
 # Copyright (c)      2010 Cedric Stalder <cedric.stalder@gmail.ch>
-#               2011-2013 Stefan Eilemann <eile@eyescale.ch>
+#               2011-2014 Stefan Eilemann <eile@eyescale.ch>
 #                    2012 Daniel Nachbaur <danielnachbaur@gmail.com>
 
 set(CO_PUBLIC_HEADERS
   ${COMMON_INCLUDES}
-  array.h
   barrier.h
   buffer.h
   bufferConnection.h

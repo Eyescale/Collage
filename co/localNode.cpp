@@ -77,10 +77,9 @@ class ReceiverThread : public lunchbox::Thread
 public:
     ReceiverThread( co::LocalNode* localNode ) : _localNode( localNode ) {}
     virtual bool init()
-        {
-            setName( std::string("R ") + lunchbox::className(_localNode));
-            return _localNode->_startCommandThread();
-        }
+    {
+        return _localNode->_startCommandThread();
+    }
     virtual void run() { _localNode->_runReceiverThread(); }
 
 private:
@@ -96,17 +95,11 @@ public:
     {}
 
 protected:
-    virtual bool init()
-        {
-            setName( std::string( "C " ) + lunchbox::className( _localNode ));
-            return true;
-        }
-
     virtual bool stopRunning() { return _localNode->isClosed(); }
     virtual bool notifyIdle()
-        {
-            return _localNode->_notifyCommandThreadIdle();
-        }
+    {
+        return _localNode->_notifyCommandThreadIdle();
+    }
 
 private:
     co::LocalNode* const _localNode;
@@ -1385,6 +1378,8 @@ bool LocalNode::_readTail( ICommand& command, BufferPtr buffer,
     if( needed > buffer->getMaxSize( ))
     {
         LBASSERT( needed > COMMAND_ALLOCSIZE );
+        LBASSERTINFO( needed < LB_BIT48,
+                      "Out-of-sync network stream: " << command << "?" );
         // not enough space for remaining data, alloc and copy to new buffer
         BufferPtr newBuffer = _impl->bigBuffers.alloc( needed );
         newBuffer->replace( *buffer );

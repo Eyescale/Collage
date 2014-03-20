@@ -75,7 +75,7 @@ ICommand::ICommand()
 }
 
 ICommand::ICommand( LocalNodePtr local, NodePtr remote, ConstBufferPtr buffer,
-                  const bool swap_ )
+                    const bool swap_ )
     : DataIStream( swap_ )
     , _impl( new detail::ICommand( local, remote, buffer ))
 {

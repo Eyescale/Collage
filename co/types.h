@@ -69,6 +69,8 @@ class Zeroconf;
 template< class Q > class WorkerThread;
 struct ObjectVersion;
 
+
+using lunchbox::Array;
 using lunchbox::Strings;
 using lunchbox::StringsCIter;
 using lunchbox::UUID;

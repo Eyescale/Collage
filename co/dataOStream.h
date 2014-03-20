@@ -23,8 +23,9 @@
 #define CO_DATAOSTREAM_H
 
 #include <co/api.h>
-#include <co/array.h> // used inline
 #include <co/types.h>
+
+#include <lunchbox/array.h> // used inline
 #include <lunchbox/nonCopyable.h> // base class
 #include <lunchbox/stdExt.h>
 

@@ -23,8 +23,8 @@
 #define CO_DATAISTREAM_H
 
 #include <co/api.h>
-#include <co/array.h> // used inline
 #include <co/types.h>
+#include <lunchbox/array.h> // used inline
 #include <lunchbox/bitOperation.h>
 #include <lunchbox/stdExt.h>
 
