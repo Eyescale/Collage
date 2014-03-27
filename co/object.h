@@ -434,7 +434,7 @@ protected:
     Object& operator = ( const Object& ) { return *this; }
 
     /** Copy construct a new, unattached object. @version 1.0 */
-    CO_API Object( const Object& LB_UNUSED );
+    CO_API Object( const Object& );
 
 private:
     detail::Object* const impl_;
@@ -450,7 +450,7 @@ private:
 CO_API std::ostream& operator << ( std::ostream&, const Object& );
 
 /** Output object change type in human-readably form. @version 1.0 */
-CO_API std::ostream& operator << ( std::ostream&,const Object::ChangeType&);
+CO_API std::ostream& operator << ( std::ostream&, const Object::ChangeType& );
 }
 
 namespace lunchbox
