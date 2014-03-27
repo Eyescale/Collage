@@ -141,7 +141,7 @@ static void acknowledge( co::Connection::Notifier n )
 class CTCP: public CCC
 {
 public:
-    virtual void init( )
+    void init( ) override
     {
         LBINFO << "UDT CCC: CTCP" << std::endl;
 
@@ -155,7 +155,7 @@ public:
         setRTO( 1000000 );
     }
 
-    virtual void onACK( const int32_t &ack )
+    void onACK( int32_t ack ) override
     {
         if( ack == m_iLastACK )
         {
@@ -178,7 +178,7 @@ public:
         }
     }
 
-    virtual void onTimeout( )
+    void onTimeout( ) override
     {
         m_issthresh = getPerfInfo( )->pktFlightSize / 2;
         if( m_issthresh < 2 )
@@ -188,7 +188,7 @@ public:
         m_dCWndSize = 2.0;
     }
 protected:
-    virtual void ACKAction( )
+    void ACKAction( )
     {
         if( m_bSlowStart )
         {
@@ -201,7 +201,7 @@ protected:
             m_dCWndSize += 1.0/m_dCWndSize;
     }
 
-    virtual void DupACKAction( )
+    void DupACKAction( )
     {
         m_bSlowStart = false;
 
