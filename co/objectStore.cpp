@@ -34,6 +34,7 @@
 #include "objectDataICommand.h"
 #include "objectICommand.h"
 
+#include <lunchbox/futureFunction.h>
 #include <lunchbox/scopedMutex.h>
 
 #include <limits>

@@ -42,8 +42,10 @@
 #include "zeroconf.h"
 
 #include <lunchbox/clock.h>
+#include <lunchbox/futureFunction.h>
 #include <lunchbox/hash.h>
 #include <lunchbox/lockable.h>
+#include <lunchbox/request.h>
 #include <lunchbox/rng.h>
 #include <lunchbox/servus.h>
 #include <lunchbox/sleep.h>
@@ -451,7 +453,7 @@ void LocalNode::addListener( ConnectionPtr connection )
 
 void LocalNode::removeListeners( const Connections& connections )
 {
-    std::vector< lunchbox::RequestFuture< void > > requests;
+    std::vector< lunchbox::Request< void > > requests;
     for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )
     {
         ConnectionPtr connection = *i;
@@ -459,13 +461,13 @@ void LocalNode::removeListeners( const Connections& connections )
     }
 }
 
-lunchbox::RequestFuture< void > LocalNode::_removeListener( ConnectionPtr conn )
+lunchbox::Request< void > LocalNode::_removeListener( ConnectionPtr conn )
 {
     LBASSERT( isListening( ));
     LBASSERTINFO( !conn->isConnected(), conn );
 
     conn->ref( this );
-    const lunchbox::RequestFuture< void > request = registerRequest< void >();
+    const lunchbox::Request< void > request = registerRequest< void >();
     Nodes nodes;
     getNodes( nodes );
 
@@ -600,7 +602,7 @@ bool LocalNode::disconnect( NodePtr node )
         return true;
 
     LBASSERT( !inCommandThread( ));
-    lunchbox::RequestFuture<void> request = registerRequest<void>( node.get( ));
+    lunchbox::Request<void> request = registerRequest<void>( node.get( ));
     send( CMD_NODE_DISCONNECT ) << request;
 
     request.wait();
@@ -874,7 +876,7 @@ NodePtr LocalNode::_connect( const NodeID& nodeID, NodePtr peer )
     }
     LBASSERT( getNodeID() != nodeID );
 
-    lunchbox::RequestFuture< void* > request = registerRequest< void* >();
+    lunchbox::Request< void* > request = registerRequest< void* >();
     peer->send( CMD_NODE_GET_NODE_DATA ) << nodeID << request;
     Dispatcher* result = static_cast< Dispatcher* >( request.get( ));
 
