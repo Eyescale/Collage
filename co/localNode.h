@@ -561,7 +561,7 @@ private:
 
     NodePtr _connect( const NodeID& nodeID, NodePtr peer );
     NodePtr _connectFromZeroconf( const NodeID& nodeID );
-    lunchbox::RequestFuture< void > _removeListener( ConnectionPtr connection );
+    lunchbox::Request< void > _removeListener( ConnectionPtr connection );
     uint32_t _connect( NodePtr node );
     uint32_t _connect( NodePtr node, ConnectionPtr connection );
 

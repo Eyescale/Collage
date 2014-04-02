@@ -129,14 +129,14 @@ int main( int argc, char **argv )
 
     for( size_t i = 0; i < NCOMMANDS; ++i )
     {
-        lunchbox::RequestFuture<void> future = client->registerRequest<void>();
+        lunchbox::Request< void > future = client->registerRequest< void >();
         serverProxy->send( CMD_SYNC ) << future.getID();
     }
     const float syncTimeFuture = clock.resetTimef();
 
     for( size_t i = 0; i < NCOMMANDS; ++i )
     {
-        lunchbox::RequestFuture< uint32_t > future =
+        lunchbox::Request< uint32_t > future =
             client->registerRequest< uint32_t >();
         serverProxy->send( CMD_SYNC ) << future.getID();
         TESTINFO( future == i+1, future << " != " << i+1 );
