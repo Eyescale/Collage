@@ -3,13 +3,12 @@
 #               2011-2014 Stefan Eilemann <eile@eyescale.ch>
 #                    2012 Daniel Nachbaur <danielnachbaur@gmail.com>
 
-set(CO_PUBLIC_HEADERS
+set(COLLAGE_PUBLIC_HEADERS
   ${COMMON_INCLUDES}
   barrier.h
   buffer.h
   bufferConnection.h
   bufferListener.h
-  co.h
   commandFunc.h
   commandQueue.h
   commands.h
@@ -56,7 +55,7 @@ set(CO_PUBLIC_HEADERS
   zeroconf.h
   )
 
-set(CO_HEADERS
+set(COLLAGE_HEADERS
   barrierCommand.h
   bufferCache.h
   connectionListener.h
@@ -89,7 +88,7 @@ set(CO_HEADERS
   versionedSlaveCM.h
   )
 
-set(CO_SOURCES
+set(COLLAGE_SOURCES
   ${COMMON_SOURCES}
   barrier.cpp
   buffer.cpp
@@ -150,22 +149,22 @@ set(CO_SOURCES
   )
 
 if(WIN32)
-  list(APPEND CO_HEADERS namedPipeConnection.h)
-  list(APPEND CO_SOURCES namedPipeConnection.cpp)
+  list(APPEND COLLAGE_HEADERS namedPipeConnection.h)
+  list(APPEND COLLAGE_SOURCES namedPipeConnection.cpp)
 else()
-  list(APPEND CO_HEADERS fdConnection.h)
-  list(APPEND CO_SOURCES fdConnection.cpp)
+  list(APPEND COLLAGE_HEADERS fdConnection.h)
+  list(APPEND COLLAGE_SOURCES fdConnection.cpp)
 endif()
 
 if(OFED_FOUND)
-  list(APPEND CO_HEADERS rdmaConnection.h)
-  list(APPEND CO_SOURCES rdmaConnection.cpp)
+  list(APPEND COLLAGE_HEADERS rdmaConnection.h)
+  list(APPEND COLLAGE_SOURCES rdmaConnection.cpp)
 endif()
 
 if(UDT_FOUND)
-  list(APPEND CO_HEADERS udtConnection.h)
-  list(APPEND CO_SOURCES udtConnection.cpp)
+  list(APPEND COLLAGE_HEADERS udtConnection.h)
+  list(APPEND COLLAGE_SOURCES udtConnection.cpp)
 endif()
 
-list(SORT CO_HEADERS)
-list(SORT CO_SOURCES)
+list(SORT COLLAGE_HEADERS)
+list(SORT COLLAGE_SOURCES)
