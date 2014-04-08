@@ -18,6 +18,9 @@
 #include <test.h>
 
 #include <co/co.h>
+#include <lunchbox/monitor.h>
+#include <lunchbox/mtQueue.h>
+#include <lunchbox/spinLock.h>
 
 lunchbox::Monitorb _registered( false );
 lunchbox::Monitorb _mapped( false );

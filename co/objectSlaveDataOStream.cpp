@@ -27,19 +27,32 @@
 #include "objectDataIStream.h"
 #include "objectDataOCommand.h"
 
+#include <lunchbox/rng.h>
+
+namespace
+{
+    void generate_uint128_t(lunchbox::uint128_t &x)
+    {
+        lunchbox::RNG rng;
+        x.high() = rng.get< uint64_t >();
+        x.low() = rng.get< uint64_t >();
+    }
+}
+
 namespace co
 {
 ObjectSlaveDataOStream::ObjectSlaveDataOStream( const ObjectCM* cm )
-        : ObjectDataOStream( cm )
-        , _commit( true )
-{}
+    : ObjectDataOStream( cm )
+{
+    generate_uint128_t(_commit);
+}
 
 ObjectSlaveDataOStream::~ObjectSlaveDataOStream()
 {}
 
 void ObjectSlaveDataOStream::enableSlaveCommit( NodePtr node )
 {
-    _version = UUID( true );
+    generate_uint128_t(_version);
     _setupConnection( node, false /* useMulticast */ );
     _enable();
 }
@@ -52,7 +65,7 @@ void ObjectSlaveDataOStream::sendData( const void*, const uint64_t size,
                              last ) << _commit;
 
     if( last )
-        _commit = UUID( true /* generate */ );
+        generate_uint128_t(_commit);
 }
 
 }

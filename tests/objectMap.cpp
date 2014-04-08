@@ -19,7 +19,7 @@
 #include <test.h>
 
 #include <co/co.h>
-
+#include <lunchbox/rng.h>
 
 namespace
 {

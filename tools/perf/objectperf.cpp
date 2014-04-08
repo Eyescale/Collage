@@ -20,6 +20,10 @@
 
 #include <co/co.h>
 #include <co/connections.h>
+#include <lunchbox/clock.h>
+#include <lunchbox/lock.h>
+#include <lunchbox/monitor.h>
+#include <lunchbox/mtQueue.h>
 #include <boost/foreach.hpp>
 #pragma warning( disable: 4275 )
 #include <boost/program_options.hpp>
@@ -38,7 +42,6 @@ static const size_t treeWidth = 10;
 
 typedef lunchbox::Buffer< uint8_t > Buffer;
 
-lunchbox::Lock print_;
 static const uint64_t _objectID( 0xa9188163b433428dull );
 co::NodePtr master;
 

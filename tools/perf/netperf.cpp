@@ -21,16 +21,24 @@
 #define LB_RELEASE_ASSERT
 
 #include <co/co.h>
+#include <lunchbox/clock.h>
+#include <lunchbox/lock.h>
+#include <lunchbox/monitor.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #pragma warning( disable: 4275 )
 #include <boost/program_options.hpp>
 #pragma warning( default: 4275 )
+#include <boost/thread/thread.hpp>
 #include <iostream>
 
 #ifndef MIN
 #  define MIN LB_MIN
 #endif
 
+
 namespace po = boost::program_options;
+namespace bp = boost::posix_time;
+
 
 namespace
 {
@@ -48,13 +56,14 @@ class Receiver : public lunchbox::Thread
 {
 public:
     Receiver( const size_t packetSize, co::ConnectionPtr connection )
-            : _connection( connection )
-            , _mBytesSec( packetSize / 1024.f / 1024.f * 1000.f )
-            , _nSamples( 0 )
-            , _lastPacket( 0 )
-        {
-            connection->recvNB( &_buffer, packetSize );
-        }
+        : _connection( connection )
+        , _mBytesSec( packetSize / 1024.f / 1024.f * 1000.f )
+        , _nSamples( 0 )
+        , _lastPacket( 0 )
+    {
+        connection->recvNB( &_buffer, packetSize );
+
+    }
 
     virtual ~Receiver() {}
 
@@ -76,7 +85,7 @@ public:
         ++_nSamples;
 
         if( _delay > 0 )
-            lunchbox::sleep( _delay );
+            boost::this_thread::sleep( bp::milliseconds( _delay ));
 
         if( time < 1000.f )
             return true;
@@ -93,17 +102,17 @@ public:
     }
 
     void executeReceive()
-        {
-            LBASSERT( _hasConnection == false );
-            _hasConnection = true;
-        }
+    {
+        LBASSERT( _hasConnection == false );
+        _hasConnection = true;
+    }
 
     void stop()
-        {
-            LBASSERT( _hasConnection == false );
-            _connection = 0;
-            _hasConnection = true;
-        }
+    {
+        LBASSERT( _hasConnection == false );
+        _connection = 0;
+        _hasConnection = true;
+    }
 
     void run() override
         {
@@ -126,7 +135,6 @@ public:
 
 private:
     lunchbox::Clock _clock;
-    lunchbox::RNG _rng;
 
     co::Buffer _buffer;
     lunchbox::Monitor< bool > _hasConnection;
@@ -414,7 +422,7 @@ int main( int argc, char **argv )
                 clock.reset();
             }
             if( waitTime > 0 )
-                lunchbox::sleep( waitTime );
+                boost::this_thread::sleep( bp::milliseconds( waitTime ));
         }
         const float time = clock.getTimef();
         const size_t nSamples = lastOutput - nPackets;

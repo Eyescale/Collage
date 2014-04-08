@@ -15,8 +15,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define TEST_NO_WATCHDOG
 #include <co/co.h>
 #include <test.h>
+#include <lunchbox/clock.h>
+#include <lunchbox/rng.h>
 
 #define NCOMMANDS 10000
 
@@ -113,20 +116,12 @@ int main( int argc, char **argv )
     TEST( client->listen( ));
     TEST( client->connect( serverProxy ));
 
-    uint32_t request = client->registerRequest();
+    lunchbox::Request< void > request = client->registerRequest< void >();
     serverProxy->send( CMD_ASYNC );
-    serverProxy->send( CMD_SYNC ) << request;
-    client->waitRequest( request );
+    serverProxy->send( CMD_SYNC ) << request.getID();
+    request.wait();
 
     lunchbox::Clock clock;
-    for( size_t i = 0; i < NCOMMANDS; ++i )
-    {
-        request = client->registerRequest();
-        serverProxy->send( CMD_SYNC ) << request;
-        client->waitRequest( request );
-    }
-    const float syncTime = clock.resetTimef();
-
     for( size_t i = 0; i < NCOMMANDS; ++i )
     {
         lunchbox::Request< void > future = client->registerRequest< void >();
@@ -140,21 +135,14 @@ int main( int argc, char **argv )
             client->registerRequest< uint32_t >();
         serverProxy->send( CMD_SYNC ) << future.getID();
     }
-    const float syncTimePayload = clock.resetTimef();
+    const float syncTime = clock.resetTimef();
 
-    for( size_t i = 0; i < NCOMMANDS; ++i )
-    {
-        serverProxy->send( CMD_ASYNC );
-        client->waitRequest( request );
-    }
     serverProxy->send( CMD_SYNC ) << request;
-    client->waitRequest( request );
+    client->waitRequest( request.getID() );
     const float asyncTime = clock.resetTimef();
 
     std::cout << "Async command: " << asyncTime/float(NCOMMANDS)
               << " ms, sync: " << syncTime/float(NCOMMANDS)
-              << " ms, using future: " << syncTimeFuture/float(NCOMMANDS+1)
-              << " ms, with payload: " << syncTimePayload/float(NCOMMANDS+1)
               << std::endl;
 
     TEST( client->disconnect( serverProxy ));

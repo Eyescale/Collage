@@ -1,4 +1,5 @@
 
+
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@googlemail.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -23,6 +24,7 @@
 #pragma warning( disable: 4308 )
 
 #include <co/co.h>
+#include <lunchbox/rng.h>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 
