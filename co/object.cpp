@@ -37,7 +37,6 @@
 #include "versionedSlaveCM.h"
 
 #include <lunchbox/compressor.h>
-#include <lunchbox/rng.h>
 #include <lunchbox/scopedMutex.h>
 #include <lunchbox/plugins/compressor.h>
 #include <iostream>
@@ -50,13 +49,10 @@ class Object
 {
 public:
     Object()
-        : instanceID( CO_INSTANCE_INVALID )
+        : id( lunchbox::make_UUID( ))
+        , instanceID( CO_INSTANCE_INVALID )
         , cm( ObjectCM::ZERO )
-    {
-        lunchbox::RNG rng;
-        id.high() = rng.get< uint64_t >();
-        id.low() = rng.get< uint64_t >();
-    }
+        {}
 
     /** The session-unique object identifier. */
     UUID id;

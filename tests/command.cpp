@@ -15,7 +15,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#define TEST_NO_WATCHDOG
 #include <co/co.h>
 #include <test.h>
 #include <lunchbox/clock.h>
@@ -125,14 +124,6 @@ int main( int argc, char **argv )
     for( size_t i = 0; i < NCOMMANDS; ++i )
     {
         lunchbox::Request< void > future = client->registerRequest< void >();
-        serverProxy->send( CMD_SYNC ) << future.getID();
-    }
-    const float syncTimeFuture = clock.resetTimef();
-
-    for( size_t i = 0; i < NCOMMANDS; ++i )
-    {
-        lunchbox::Request< uint32_t > future =
-            client->registerRequest< uint32_t >();
         serverProxy->send( CMD_SYNC ) << future.getID();
     }
     const float syncTime = clock.resetTimef();

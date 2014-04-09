@@ -35,9 +35,9 @@ if(UDT_FOUND)
 endif()
 
 if (MPI_FOUND)
-	list(APPEND CMAKE_C_FLAGS ${MPI_C_COMPILE_FLAGS})
-	list(APPEND CMAKE_CXX_FLAGS ${MPI_CXX_COMPILE_FLAGS})
-	list(APPEND COLLAGE_LINK_LIBRARIES ${MPI_LIBRARIES} )
+  list(APPEND CMAKE_C_FLAGS ${MPI_C_COMPILE_FLAGS})
+  list(APPEND CMAKE_CXX_FLAGS ${MPI_CXX_COMPILE_FLAGS})
+  list(APPEND COLLAGE_LINK_LIBRARIES ${MPI_LIBRARIES})
 endif()
 
 common_library(Collage)
@@ -45,12 +45,12 @@ common_library(Collage)
 source_group(\\ FILES CMakeLists.txt)
 source_group(collage FILES ${CO_PUBLIC_HEADERS} ${CO_HEADERS} ${CO_SOURCES} )
 
-if(OFED_FOUND AND WIN32)
-  set_target_properties(Collage PROPERTIES
-    LINK_FLAGS "/DELAYLOAD:librdmacm.dll /DELAYLOAD:libibverbs.dll")
-endif()
-
 if (MSVC)
+  if(OFED_FOUND)
+    set_target_properties(Collage PROPERTIES
+      LINK_FLAGS "/DELAYLOAD:librdmacm.dll /DELAYLOAD:libibverbs.dll")
+  endif()
+
   install(FILES ${CMAKE_BINARY_DIR}/bin/Debug/Collage.pdb
     DESTINATION bin COMPONENT lib CONFIGURATIONS Debug)
   install(FILES ${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/Collage.pdb

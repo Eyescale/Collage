@@ -27,7 +27,6 @@
 
 #include <lunchbox/scopedMutex.h>
 #include <lunchbox/spinLock.h>
-#include <lunchbox/rng.h>
 
 namespace co
 {
@@ -89,17 +88,16 @@ public:
     bool bigEndian;
 
     Node( const uint32_t type_ )
-        : type( type_ ), state( STATE_CLOSED ), lastReceive ( 0 )
+        : id( lunchbox::make_UUID( ))
+        , type( type_ )
+        , state( STATE_CLOSED )
+        , lastReceive ( 0 )
 #ifdef COLLAGE_BIGENDIAN
         , bigEndian( true )
 #else
         , bigEndian( false )
 #endif
-    {
-        lunchbox::RNG rng;
-        id.high() = rng.get< uint64_t >();
-        id.low() = rng.get< uint64_t >();
-    }
+        {}
 
     ~Node()
     {
