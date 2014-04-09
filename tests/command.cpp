@@ -139,7 +139,6 @@ int main( int argc, char **argv )
         lunchbox::Request< uint32_t > future =
             client->registerRequest< uint32_t >();
         serverProxy->send( CMD_SYNC ) << future.getID();
-        TESTINFO( future == i+1, future << " != " << i+1 );
     }
     const float syncTimePayload = clock.resetTimef();
 
