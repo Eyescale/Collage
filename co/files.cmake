@@ -29,6 +29,7 @@ set(COLLAGE_PUBLIC_HEADERS
   dataStreamArchiveException.h
   dispatcher.h
   exception.h
+  features.h
   global.h
   iCommand.h
   init.h
