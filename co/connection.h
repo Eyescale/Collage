@@ -150,7 +150,8 @@ public:
      *
      * This method returns immediately. The Notifier will signal a new
      * connection request, upon which acceptSync() should be used to finish the
-     * accept operation.
+     * accept operation. Only one accept operation might be outstanding, that
+     * is, acceptSync() has to be called before the next acceptNB().
      *
      * @sa acceptSync()
      * @version 1.0
@@ -173,7 +174,9 @@ public:
      *
      * This function returns immediately. The Notifier will signal data
      * availability, upon which recvSync() should be used to finish the
-     * operation. The data will be appended to the given buffer.
+     * operation. The data will be appended to the given buffer. Only one read
+     * operation might be outstanding, that is, readSync() has to be called
+     * before the next readNB().
      *
      * @param buffer the buffer receiving the data.
      * @param bytes the number of bytes to read.
