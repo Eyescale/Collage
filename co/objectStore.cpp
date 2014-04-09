@@ -36,7 +36,7 @@
 
 #include <lunchbox/futureFunction.h>
 #include <lunchbox/scopedMutex.h>
-
+#include <boost/bind.hpp>
 #include <limits>
 
 //#define DEBUG_DISPATCH

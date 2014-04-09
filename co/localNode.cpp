@@ -878,7 +878,7 @@ NodePtr LocalNode::_connect( const NodeID& nodeID, NodePtr peer )
 
     lunchbox::Request< void* > request = registerRequest< void* >();
     peer->send( CMD_NODE_GET_NODE_DATA ) << nodeID << request;
-    Dispatcher* result = static_cast< Dispatcher* >( request.get( ));
+    Dispatcher* result = static_cast< Dispatcher* >( request.wait( ));
 
     if( !result )
     {
