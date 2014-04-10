@@ -48,11 +48,15 @@
 #include <lunchbox/request.h>
 #include <lunchbox/rng.h>
 #include <lunchbox/servus.h>
-#include <lunchbox/sleep.h>
 
 #include <boost/bind.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
+
 #include <list>
+
+namespace bp = boost::posix_time;
 
 namespace co
 {
@@ -910,7 +914,9 @@ NodePtr LocalNode::_connect( const NodeID& nodeID, NodePtr peer )
           case CONNECT_TRY_AGAIN:
           {
               lunchbox::RNG rng;
-              lunchbox::sleep( rng.get< uint8_t >( )); // collision avoidance
+              // collision avoidance
+              boost::this_thread::sleep(
+                  bp::milliseconds( rng.get< uint8_t >( )));
               break;
           }
           case CONNECT_BAD_STATE:

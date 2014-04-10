@@ -29,9 +29,13 @@
 #include <lunchbox/rng.h>
 #include <lunchbox/thread.h>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread.hpp>
+
 #include <iostream>
 
 using co::uint128_t;
+namespace bp = boost::posix_time;
 
 namespace
 {
@@ -64,7 +68,7 @@ public:
 
     virtual void run()
         {
-            lunchbox::sleep( 110 );
+            boost::this_thread::sleep( bp::milliseconds( 110 ));
             _object.sync( uint128_t(3) );
             TESTINFO( _object.getVersion() == 3, _object.getVersion( ));
         }
