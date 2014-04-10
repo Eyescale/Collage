@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2013, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2013-2014, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -130,7 +130,7 @@ int main( int argc, char **argv )
     for( size_t i = 0; i < NCOMMANDS; ++i )
     {
         lunchbox::Request< void > future = client->registerRequest< void >();
-        serverProxy->send( CMD_SYNC ) << future.getID();
+        serverProxy->send( CMD_SYNC ) << future;
     }
     const float syncTimeFuture = clock.resetTimef();
 
@@ -138,7 +138,7 @@ int main( int argc, char **argv )
     {
         lunchbox::Request< uint32_t > future =
             client->registerRequest< uint32_t >();
-        serverProxy->send( CMD_SYNC ) << future.getID();
+        serverProxy->send( CMD_SYNC ) << future;
     }
     const float syncTimePayload = clock.resetTimef();
 
