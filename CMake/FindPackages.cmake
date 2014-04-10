@@ -24,15 +24,15 @@ else()
 endif()
 
 if(PKG_CONFIG_EXECUTABLE)
-  find_package(Boost 1.41.0 COMPONENTS system regex date_time serialization program_options)
+  find_package(Boost 1.41.0 COMPONENTS system regex date_time serialization program_options thread)
   if((NOT Boost_FOUND) AND (NOT BOOST_FOUND))
     pkg_check_modules(Boost Boost>=1.41.0)
   endif()
   if((NOT Boost_FOUND) AND (NOT BOOST_FOUND))
-    message(FATAL_ERROR "Could not find Boost")
+    message(FATAL_ERROR "Could not find Boost COMPONENTS system regex date_time serialization program_options thread")
   endif()
 else()
-  find_package(Boost 1.41.0  REQUIRED system regex date_time serialization program_options)
+  find_package(Boost 1.41.0  REQUIRED system regex date_time serialization program_options thread)
 endif()
 
 if(PKG_CONFIG_EXECUTABLE)
@@ -116,7 +116,7 @@ if(Lunchbox_name)
   endif()
 endif()
 
-set(COLLAGE_BUILD_DEBS autoconf;automake;cmake;doxygen;git;git-review;libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-filesystem-dev;libboost-program-options-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libhwloc-dev;libibverbs-dev;libjpeg-turbo8-dev;librdmacm-dev;libturbojpeg;libudt-dev;pkg-config;subversion)
+set(COLLAGE_BUILD_DEBS autoconf;automake;cmake;doxygen;git;git-review;libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-filesystem-dev;libboost-program-options-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libboost-thread-dev;libhwloc-dev;libibverbs-dev;libjpeg-turbo8-dev;librdmacm-dev;libturbojpeg;libudt-dev;pkg-config;subversion)
 
 set(COLLAGE_DEPENDS OFED;UDT;Boost;Lunchbox)
 
