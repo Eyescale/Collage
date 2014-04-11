@@ -27,14 +27,12 @@ set(LAST_RELEASE 1.0.0)
 set(PROJECT_INCLUDE_NAME co)
 set(COMMON_PROJECT_DOMAIN ch.eyescale)
 set(COLLAGE_DESCRIPTION "High-performance C++ library for developing object-oriented distributed applications.")
+set(COLLAGE_DEPENDENT_LIBRARIES Lunchbox)
 
 include(Common)
 include(FindPackages)
 
 list(APPEND CPPCHECK_EXTRA_ARGS -DCO_API=)
-set(COLLAGE_DEPENDENT_LIBRARIES Lunchbox)
-
-include_directories(BEFORE ${CMAKE_SOURCE_DIR})
 
 if(LUNCHBOX_USE_OPENMP)
   find_package(OpenMP REQUIRED)
@@ -60,10 +58,3 @@ add_subdirectory(doc)
 
 include(CPackConfig)
 include(DoxygenRule)
-
-set(CTEST_CUSTOM_WARNING_EXCEPTION ${CTEST_CUSTOM_WARNING_EXCEPTION}
-  # http://public.kitware.com/Bug/view.php?id=10179
-  "ld: warning: duplicate dylib")
-include(CTest)
-
-include(PackageConfig)

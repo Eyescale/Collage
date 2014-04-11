@@ -28,9 +28,10 @@
 
 #include <lunchbox/rng.h>
 #include <lunchbox/scopedMutex.h>
-#include <lunchbox/sleep.h>
 
 #include <boost/bind.hpp>
+#include <boost/thread.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 //#define CO_INSTRUMENT_RSP
 #define CO_RSP_MERGE_WRITES
@@ -45,6 +46,7 @@
 // Note: Do not use version > 255, endianness detection magic relies on this.
 const uint16_t CO_RSP_PROTOCOL_VERSION = 0;
 
+namespace bp = boost::posix_time;
 namespace ip = boost::asio::ip;
 
 namespace co
@@ -136,7 +138,7 @@ void RSPConnection::_close()
         _parent->close();
 
     while( !_parent && _isWriting( ))
-        lunchbox::sleep( 10 );
+        boost::this_thread::sleep( bp::milliseconds( 10 ));
 
     if( isClosed( ))
         return;

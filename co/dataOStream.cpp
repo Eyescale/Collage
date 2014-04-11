@@ -31,6 +31,7 @@
 #include "types.h"
 
 #include <lunchbox/compressor.h>
+#include <lunchbox/compressorResult.h>
 #include <lunchbox/plugins/compressor.h>
 
 #include  <boost/foreach.hpp>
@@ -121,7 +122,7 @@ public:
     {
         if( state == STATE_UNCOMPRESSED || state == STATE_UNCOMPRESSIBLE )
             return 1;
-        return compressor.getNumResults();
+        return compressor.getResult().getSize();
     }
 
 
@@ -152,18 +153,11 @@ public:
         compressionTime += uint32_t( clock.getTimef() * 1000.f );
 #endif
 
-        const uint32_t nChunks = compressor.getNumResults();
-        compressedDataSize = 0;
-        LBASSERT( nChunks > 0 );
+        const lunchbox::CompressorResult &compressorResult =
+            compressor.getResult();
+        LBASSERT( !compressorResult.chunks.empty() );
+        compressedDataSize = compressorResult.getSize();
 
-        for( uint32_t i = 0; i < nChunks; ++i )
-        {
-            void* chunk;
-            uint64_t chunkSize;
-
-            compressor.getResult( i, &chunk, &chunkSize );
-            compressedDataSize += chunkSize;
-        }
 #ifdef CO_INSTRUMENT_DATAOSTREAM
         nBytesOut += compressedDataSize;
 #endif
@@ -398,18 +392,18 @@ uint64_t DataOStream::_getCompressedData( void** chunks, uint64_t* chunkSizes )
     LBASSERT( _impl->state != STATE_UNCOMPRESSED &&
               _impl->state != STATE_UNCOMPRESSIBLE );
 
-    const uint32_t nChunks = _impl->compressor.getNumResults( );
-    LBASSERT( nChunks > 0 );
-
-    uint64_t dataSize = 0;
-    for ( uint32_t i = 0; i < nChunks; i++ )
+    const lunchbox::CompressorResult &result = _impl->compressor.getResult();
+    LBASSERT( !result.chunks.empty() );
+    size_t totalDataSize = 0;
+    for( size_t i = 0; i != result.chunks.size(); ++i )
     {
-        _impl->compressor.getResult( i, &chunks[i], &chunkSizes[i] );
-        dataSize += chunkSizes[i];
-        LBASSERTINFO( chunkSizes[i] != 0, i );
+        chunks[i] = result.chunks[i].data;
+        const size_t dataSize = result.chunks[i].getNumBytes();
+        chunkSizes[i] = dataSize;
+        totalDataSize += dataSize;
     }
 
-    return dataSize;
+    return totalDataSize;
 }
 
 lunchbox::Bufferb& DataOStream::getBuffer()
@@ -437,8 +431,8 @@ void DataOStream::sendBody( ConnectionPtr connection, const uint64_t dataSize )
 #ifdef CO_INSTRUMENT_DATAOSTREAM
     nBytesSent += _impl->buffer.getSize();
 #endif
-    const uint32_t nChunks = _impl->compressor.getNumResults();
-    uint64_t* chunkSizes =static_cast< uint64_t* >
+    const uint32_t nChunks = _impl->compressor.getResult().getSize();
+    uint64_t* chunkSizes = static_cast< uint64_t* >
                                ( alloca (nChunks * sizeof( uint64_t )));
     void** chunks = static_cast< void ** >
                                   ( alloca( nChunks * sizeof( void* )));

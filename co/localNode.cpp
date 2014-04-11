@@ -48,11 +48,15 @@
 #include <lunchbox/request.h>
 #include <lunchbox/rng.h>
 #include <lunchbox/servus.h>
-#include <lunchbox/sleep.h>
 
 #include <boost/bind.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
+
 #include <list>
+
+namespace bp = boost::posix_time;
 
 namespace co
 {
@@ -602,7 +606,7 @@ bool LocalNode::disconnect( NodePtr node )
         return true;
 
     LBASSERT( !inCommandThread( ));
-    lunchbox::Request<void> request = registerRequest<void>( node.get( ));
+    lunchbox::Request< void > request = registerRequest< void >( node.get( ));
     send( CMD_NODE_DISCONNECT ) << request;
 
     request.wait();
@@ -772,15 +776,21 @@ LocalNode::SendToken LocalNode::acquireSendToken( NodePtr node )
     LBASSERT( !inCommandThread( ));
     LBASSERT( !_impl->inReceiverThread( ));
 
-    const uint32_t requestID = registerRequest();
-    node->send( CMD_NODE_ACQUIRE_SEND_TOKEN ) << requestID;
+    lunchbox::Request< void > request = registerRequest< void >();
+    node->send( CMD_NODE_ACQUIRE_SEND_TOKEN ) << request;
 
-    bool ret = false;
-    if( waitRequest( requestID, ret, Global::getTimeout( )))
-        return new co::SendToken( node );
-
-    LBERROR << "Timeout while acquiring send token " << requestID << std::endl;
-    return 0;
+    try
+    {
+        request.wait(  Global::getTimeout() );
+    }
+    catch ( lunchbox::FutureTimeout& )
+    {
+        LBERROR << "Timeout while acquiring send token " << request.getID()
+                << std::endl;
+        request.relinquish();
+        return 0;
+    }
+    return new co::SendToken( node );
 }
 
 void LocalNode::releaseSendToken( SendToken token )
@@ -904,7 +914,9 @@ NodePtr LocalNode::_connect( const NodeID& nodeID, NodePtr peer )
           case CONNECT_TRY_AGAIN:
           {
               lunchbox::RNG rng;
-              lunchbox::sleep( rng.get< uint8_t >( )); // collision avoidance
+              // collision avoidance
+              boost::this_thread::sleep(
+                  bp::milliseconds( rng.get< uint8_t >( )));
               break;
           }
           case CONNECT_BAD_STATE:
@@ -1035,7 +1047,7 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
     _addConnection( connection );
 
     // send connect command to peer
-    const uint32_t requestID = registerRequest( node.get( ));
+    lunchbox::Request< void* > request = registerRequest< void* >( node.get( ));
 #ifdef COLLAGE_BIGENDIAN
     uint32_t cmd = CMD_NODE_CONNECT_BE;
     lunchbox::byteswap( cmd );
@@ -1043,15 +1055,21 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
     const uint32_t cmd = CMD_NODE_CONNECT;
 #endif
     OCommand( Connections( 1, connection ), cmd )
-        << getNodeID() << requestID << getType() << serialize();
+        << getNodeID() << request << getType() << serialize();
 
     bool connected = false;
-    if( !waitRequest( requestID, connected, 10000 /*ms*/ ))
+    try
+    {
+        connected = request.wait( 10000 /*ms*/ );
+    }
+    catch( lunchbox::FutureTimeout& )
     {
         LBWARN << "Node connection handshake timeout - " << node
                << " not a Collage node?" << std::endl;
+        request.relinquish();
         return CONNECT_TIMEOUT;
     }
+
     if( !connected )
         return CONNECT_TRY_AGAIN;
 

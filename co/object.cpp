@@ -49,7 +49,7 @@ class Object
 {
 public:
     Object()
-        : id( true )
+        : id( lunchbox::make_UUID( ))
         , instanceID( CO_INSTANCE_INVALID )
         , cm( ObjectCM::ZERO )
         {}

@@ -36,7 +36,9 @@
 
 #include <lunchbox/futureFunction.h>
 #include <lunchbox/scopedMutex.h>
+
 #include <boost/bind.hpp>
+
 #include <limits>
 
 //#define DEBUG_DISPATCH
@@ -174,9 +176,9 @@ void ObjectStore::disableSendOnRegister()
 {
     if( Global::getIAttribute( Global::IATTR_NODE_SEND_QUEUE_SIZE ) > 0 )
     {
-        const uint32_t requestID = _localNode->registerRequest();
-        _localNode->send( CMD_NODE_DISABLE_SEND_ON_REGISTER ) << requestID;
-        _localNode->waitRequest( requestID );
+        lunchbox::Request< void > request =
+            _localNode->registerRequest< void >();
+        _localNode->send( CMD_NODE_DISABLE_SEND_ON_REGISTER ) << request;
     }
     else // OPT
         --_sendOnRegister;
@@ -197,14 +199,14 @@ NodeID ObjectStore::findMasterNodeID( const UUID& identifier )
     for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
     {
         NodePtr node = *i;
-        const uint32_t requestID = _localNode->registerRequest();
+        lunchbox::Request< NodeID > request =
+            _localNode->registerRequest< NodeID >();
 
         LBLOG( LOG_OBJECTS ) << "Finding " << identifier << " on " << node
-                             << " req " << requestID << std::endl;
-        node->send( CMD_NODE_FIND_MASTER_NODE_ID ) << identifier << requestID;
+                             << " req " << request.getID() << std::endl;
+        node->send( CMD_NODE_FIND_MASTER_NODE_ID ) << identifier << request;
 
-        NodeID masterNodeID;
-        _localNode->waitRequest( requestID, masterNodeID );
+        const NodeID& masterNodeID = request.wait();
 
         if( masterNodeID != 0 )
         {
@@ -226,9 +228,9 @@ void ObjectStore::attach( Object* object, const UUID& id,
     LBASSERT( object );
     LB_TS_NOT_THREAD( _receiverThread );
 
-    const uint32_t requestID = _localNode->registerRequest( object );
-    _localNode->send( CMD_NODE_ATTACH_OBJECT ) << id << instanceID << requestID;
-    _localNode->waitRequest( requestID );
+    lunchbox::Request< void > request =
+        _localNode->registerRequest< void >( object );
+    _localNode->send( CMD_NODE_ATTACH_OBJECT ) << id << instanceID << request;
 }
 
 namespace
@@ -282,10 +284,9 @@ void ObjectStore::detach( Object* object )
     LBASSERT( object );
     LB_TS_NOT_THREAD( _receiverThread );
 
-    const uint32_t requestID = _localNode->registerRequest();
+    lunchbox::Request< void > request = _localNode->registerRequest< void >();
     _localNode->send( CMD_NODE_DETACH_OBJECT )
-        << object->getID() << object->getInstanceID() << requestID;
-    _localNode->waitRequest( requestID );
+        << object->getID() << object->getInstanceID() << request;
 }
 
 void ObjectStore::swap( Object* oldObject, Object* newObject )
@@ -385,7 +386,8 @@ uint32_t ObjectStore::mapNB( Object* object, const UUID& id,
         return LB_UNDEFINED_UINT32;
     }
 
-    const uint32_t requestID = _localNode->registerRequest( object );
+    lunchbox::Request< void > request =
+        _localNode->registerRequest< void >( object );
     uint128_t minCachedVersion = VERSION_HEAD;
     uint128_t maxCachedVersion = VERSION_NONE;
     uint32_t masterInstanceID = 0;
@@ -395,9 +397,10 @@ uint32_t ObjectStore::mapNB( Object* object, const UUID& id,
     object->notifyAttach();
     master->send( CMD_NODE_MAP_OBJECT )
         << version << minCachedVersion << maxCachedVersion << id
-        << object->getMaxVersions() << requestID << _genNextID( _instanceIDs )
+        << object->getMaxVersions() << request << _genNextID( _instanceIDs )
         << masterInstanceID << useCache;
-    return requestID;
+    request.relinquish();
+    return request.getID();
 }
 
 bool ObjectStore::_checkInstanceCache( const UUID& id, uint128_t& from,
@@ -479,8 +482,8 @@ uint32_t ObjectStore::_startSync( Object* object, NodePtr master,
         return LB_UNDEFINED_UINT32;
     }
 
-    const uint32_t requestID =
-        _localNode->registerRequest( new ObjectDataIStream );
+    lunchbox::Request< void > request =
+        _localNode->registerRequest< void >( new ObjectDataIStream );
     uint128_t minCachedVersion = VERSION_HEAD;
     uint128_t maxCachedVersion = VERSION_NONE;
     uint32_t cacheInstanceID = 0;
@@ -506,9 +509,10 @@ uint32_t ObjectStore::_startSync( Object* object, NodePtr master,
     // Use stream expected by MasterCMCommand
     master->send( CMD_NODE_SYNC_OBJECT )
         << VERSION_NEWEST << minCachedVersion << maxCachedVersion << id
-        << uint64_t(0) /* maxVersions */ << requestID << instanceID
+        << uint64_t(0) /* maxVersions */ << request << instanceID
         << cacheInstanceID << useCache;
-    return requestID;
+    request.relinquish();
+    return request.getID();
 }
 
 bool ObjectStore::_finishSync( const uint32_t requestID, Object* object )
@@ -564,11 +568,11 @@ void ObjectStore::unmap( Object* object )
 
         if( master && master->isReachable( ))
         {
-            const uint32_t requestID = _localNode->registerRequest();
-            master->send( CMD_NODE_UNSUBSCRIBE_OBJECT )  << id << requestID
-                                 << masterInstanceID << object->getInstanceID();
-
-            _localNode->waitRequest( requestID );
+            lunchbox::Request< void > request =
+                _localNode->registerRequest< void >();
+            master->send( CMD_NODE_UNSUBSCRIBE_OBJECT )
+                << id << request << masterInstanceID << object->getInstanceID();
+            request.wait();
             object->notifyDetached();
             return;
         }
@@ -618,9 +622,9 @@ void ObjectStore::deregister( Object* object )
     if( Global::getIAttribute( Global::IATTR_NODE_SEND_QUEUE_SIZE ) > 0  )
     {
         // remove from send queue
-        const uint32_t requestID = _localNode->registerRequest( object );
-        _localNode->send( CMD_NODE_DEREGISTER_OBJECT ) << requestID;
-        _localNode->waitRequest( requestID );
+        lunchbox::Request< void > request =
+            _localNode->registerRequest< void >();
+        _localNode->send( CMD_NODE_DEREGISTER_OBJECT ) << request;
     }
 
     const UUID id = object->getID();
@@ -658,9 +662,8 @@ bool ObjectStore::notifyCommandThreadIdle()
 
 void ObjectStore::removeNode( NodePtr node )
 {
-    const uint32_t requestID = _localNode->registerRequest();
-    _localNode->send( CMD_NODE_REMOVE_NODE ) << node.get() << requestID;
-    _localNode->waitRequest( requestID );
+    lunchbox::Request< void > request = _localNode->registerRequest< void >();
+    _localNode->send( CMD_NODE_REMOVE_NODE ) << node.get() << request;
 }
 
 //===========================================================================
@@ -920,8 +923,8 @@ bool ObjectStore::_cmdMapSuccess( ICommand& command )
                          << " req " << requestID << std::endl;
 
     // set up change manager and attach object to dispatch table
-    Object* object = static_cast<Object*>( _localNode->getRequestData(
-                                                                   requestID ));
+    Object* object = static_cast< Object* >(
+        _localNode->getRequestData( requestID ));
     LBASSERT( object );
     LBASSERT( !object->isMaster( ));
 

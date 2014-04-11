@@ -88,7 +88,10 @@ public:
     bool bigEndian;
 
     Node( const uint32_t type_ )
-        : id( true ), type( type_ ), state( STATE_CLOSED ), lastReceive ( 0 )
+        : id( lunchbox::make_UUID( ))
+        , type( type_ )
+        , state( STATE_CLOSED )
+        , lastReceive ( 0 )
 #ifdef COLLAGE_BIGENDIAN
         , bigEndian( true )
 #else

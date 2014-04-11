@@ -25,7 +25,6 @@
 #include "global.h"
 
 #include <lunchbox/clock.h>
-#include <lunchbox/sleep.h>
 
 #ifdef _WIN32
 #  pragma warning( disable : 4018 )
