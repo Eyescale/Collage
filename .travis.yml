@@ -34,6 +34,7 @@ before_install:
  - sudo apt-get install -qq libboost-regex-dev || /bin/true
  - sudo apt-get install -qq libboost-serialization-dev || /bin/true
  - sudo apt-get install -qq libboost-system-dev || /bin/true
+ - sudo apt-get install -qq libboost-thread-dev || /bin/true
  - sudo apt-get install -qq libhwloc-dev || /bin/true
  - sudo apt-get install -qq libibverbs-dev || /bin/true
  - sudo apt-get install -qq libjpeg-turbo8-dev || /bin/true
