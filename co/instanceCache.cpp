@@ -190,7 +190,7 @@ void InstanceCache::remove( const NodeID& nodeID )
 {
     std::vector< lunchbox::uint128_t > keys;
 
-    lunchbox::ScopedMutex<> mutex( _items );
+    lunchbox::ScopedWrite mutex( _items );
     for( ItemHash::iterator i = _items->begin(); i != _items->end(); ++i )
     {
         Item& item = i->second;
@@ -218,7 +218,7 @@ const InstanceCache::Data& InstanceCache::operator[]( const UUID& id )
     ++nRead;
 #endif
 
-    lunchbox::ScopedMutex<> mutex( _items );
+    lunchbox::ScopedWrite mutex( _items );
     ItemHash::iterator i = _items->find( id );
     if( i == _items->end( ))
         return Data::NONE;
@@ -236,7 +236,7 @@ const InstanceCache::Data& InstanceCache::operator[]( const UUID& id )
 
 bool InstanceCache::release( const UUID& id, const uint32_t count )
 {
-    lunchbox::ScopedMutex<> mutex( _items );
+    lunchbox::ScopedWrite mutex( _items );
     ItemHash::iterator i = _items->find( id );
     if( i == _items->end( ))
         return false;
@@ -252,7 +252,7 @@ bool InstanceCache::release( const UUID& id, const uint32_t count )
 
 bool InstanceCache::erase( const UUID& id )
 {
-    lunchbox::ScopedMutex<> mutex( _items );
+    lunchbox::ScopedWrite mutex( _items );
     ItemHash::iterator i = _items->find( id );
     if( i == _items->end( ))
         return false;
@@ -274,7 +274,7 @@ void InstanceCache::expire( const int64_t timeout )
 
     std::vector< lunchbox::uint128_t > keys;
 
-    lunchbox::ScopedMutex<> mutex( _items );
+    lunchbox::ScopedWrite mutex( _items );
     for( ItemHash::iterator i = _items->begin(); i != _items->end(); ++i )
     {
         Item& item = i->second;

@@ -24,12 +24,16 @@
 #include <co/global.h>
 #include <co/init.h>
 #include <co/node.h>
-#include <lunchbox/sleep.h>
 #include <lunchbox/rng.h>
+
+#include <boost/thread.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <iostream>
 #define CO_TEST_RUNTIME 6000
 #define NSLAVES  10
+
+namespace bp = boost::posix_time;
 
 void testNormal();
 void testException();
@@ -147,7 +151,8 @@ protected:
     {
         for( uint32_t i = 0; i < _nOps; ++i )
         {
-            lunchbox::sleep( _timeToSleep );
+            boost::this_thread::sleep( bp::milliseconds( _timeToSleep ));
+
             const uint32_t timeout = co::Global::getIAttribute(
                      co::Global::IATTR_TIMEOUT_DEFAULT );
             try

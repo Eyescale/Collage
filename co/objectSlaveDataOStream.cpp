@@ -30,16 +30,17 @@
 namespace co
 {
 ObjectSlaveDataOStream::ObjectSlaveDataOStream( const ObjectCM* cm )
-        : ObjectDataOStream( cm )
-        , _commit( true )
-{}
+    : ObjectDataOStream( cm )
+    ,  _commit( lunchbox::make_UUID( ))
+{
+}
 
 ObjectSlaveDataOStream::~ObjectSlaveDataOStream()
 {}
 
 void ObjectSlaveDataOStream::enableSlaveCommit( NodePtr node )
 {
-    _version = UUID( true );
+    _version = lunchbox::make_UUID();
     _setupConnection( node, false /* useMulticast */ );
     _enable();
 }
@@ -52,7 +53,7 @@ void ObjectSlaveDataOStream::sendData( const void*, const uint64_t size,
                              last ) << _commit;
 
     if( last )
-        _commit = UUID( true /* generate */ );
+        _commit = lunchbox::make_UUID();
 }
 
 }

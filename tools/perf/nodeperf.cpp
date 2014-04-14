@@ -19,10 +19,15 @@
 // Usage: see 'coNodeperf -h'
 
 #include <co/co.h>
+#include <lunchbox/clock.h>
+#include <lunchbox/spinLock.h>
+#include <lunchbox/scopedMutex.h>
 #include <boost/foreach.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #pragma warning( disable: 4275 )
 #include <boost/program_options.hpp>
 #pragma warning( default: 4275 )
+#include <boost/thread/thread.hpp>
 #include <iostream>
 
 #ifndef MIN
@@ -30,6 +35,7 @@
 #endif
 
 namespace po = boost::program_options;
+namespace bp = boost::posix_time;
 
 namespace
 {
@@ -324,7 +330,7 @@ int main( int argc, char **argv )
             ++sentPackets;
 
             if( waitTime > 0 )
-                lunchbox::sleep( waitTime );
+                boost::this_thread::sleep( bp::milliseconds( waitTime ));
         }
 
         const float time = clock.getTimef();

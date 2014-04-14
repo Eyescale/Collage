@@ -19,7 +19,8 @@
 #include <test.h>
 
 #include <co/co.h>
-
+#include <lunchbox/monitor.h>
+#include <lunchbox/rng.h>
 #include <boost/bind.hpp>
 
 const co::uint128_t cmdID1( lunchbox::make_uint128( "ch.eyescale.collage.test.c1" ));

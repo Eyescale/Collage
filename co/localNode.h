@@ -51,7 +51,7 @@ public:
      */
     enum Counter
     {
-        COUNTER_MAP_OBJECT_REMOTE, //!< #of mapObjects served for other nodes
+        COUNTER_MAP_OBJECT_REMOTE, //!< Num of mapObjects served for other nodes
         COUNTER_ALL // must be last
     };
 
