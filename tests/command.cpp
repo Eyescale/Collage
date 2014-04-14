@@ -118,14 +118,18 @@ int main( int argc, char **argv )
     lunchbox::Clock clock;
     for( size_t i = 0; i < NCOMMANDS; ++i )
         serverProxy->send( CMD_ASYNC );
+LB_PUSH_DEPRECATED
     uint32_t request = client->registerRequest();
+LB_POP_DEPRECATED
     serverProxy->send( CMD_SYNC ) << request;
     client->waitRequest( request );
     const float asyncTime = clock.resetTimef();
 
     for( size_t i = 0; i < NCOMMANDS; ++i )
     {
+LB_PUSH_DEPRECATED
         request = client->registerRequest();
+LB_POP_DEPRECATED
         serverProxy->send( CMD_SYNC ) << request;
         client->waitRequest( request );
     }
