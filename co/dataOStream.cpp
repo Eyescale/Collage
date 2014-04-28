@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -191,7 +191,7 @@ DataOStream::DataOStream()
 {}
 
 DataOStream::DataOStream( DataOStream& rhs )
-    : lunchbox::NonCopyable()
+    : boost::noncopyable()
     , _impl( new detail::DataOStream( *rhs._impl ))
 {
     _setupConnections( rhs.getConnections( ));
