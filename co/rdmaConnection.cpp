@@ -112,8 +112,10 @@ static const uint64_t MAX_BS = (( 2 << ( 28 - 1 )) - 1 );
 // We send a max of four bits worth of fc counts per RDMA write.
 static const uint16_t MAX_FC = (( 2 << ( 4 - 1 )) - 1 );
 
+#ifdef _WIN32
 static const uint32_t RINGBUFFER_ALLOC_RETRIES = 8;
 static const uint32_t WINDOWS_CONNECTION_BACKLOG = 1024;
+#endif
 static const uint32_t FC_MESSAGE_FREQUENCY = 12;
 }
 
