@@ -1047,7 +1047,7 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
     _addConnection( connection );
 
     // send connect command to peer
-    lunchbox::Request< void* > request = registerRequest< void* >( node.get( ));
+    lunchbox::Request< bool > request = registerRequest< bool >( node.get( ));
 #ifdef COLLAGE_BIGENDIAN
     uint32_t cmd = CMD_NODE_CONNECT_BE;
     lunchbox::byteswap( cmd );
