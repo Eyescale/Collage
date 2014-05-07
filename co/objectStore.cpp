@@ -206,7 +206,7 @@ NodeID ObjectStore::findMasterNodeID( const UUID& identifier )
                              << " req " << request.getID() << std::endl;
         node->send( CMD_NODE_FIND_MASTER_NODE_ID ) << identifier << request;
 
-        const NodeID& masterNodeID = request.wait();
+        const NodeID& masterNodeID = request.wait( Global::getTimeout( ));
 
         if( masterNodeID != 0 )
         {

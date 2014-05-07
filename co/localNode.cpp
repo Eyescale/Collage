@@ -1116,9 +1116,8 @@ NodePtr LocalNode::getNode( const NodeID& id ) const
 {
     lunchbox::ScopedFastRead mutex( _impl->nodes );
     NodeHash::const_iterator i = _impl->nodes->find( id );
-    if( i == _impl->nodes->end( ))
+    if( i == _impl->nodes->end() || !i->second->isReachable( ))
         return 0;
-    LBASSERT( i->second->isReachable( ));
     return i->second;
 }
 
@@ -1128,7 +1127,6 @@ void LocalNode::getNodes( Nodes& nodes, const bool addSelf ) const
     for( NodeHashCIter i = _impl->nodes->begin(); i != _impl->nodes->end(); ++i)
     {
         NodePtr node = i->second;
-        LBASSERTINFO( node->isReachable(), node );
         if( node->isReachable() && ( addSelf || node != this ))
             nodes.push_back( i->second );
     }
@@ -1290,7 +1288,7 @@ void LocalNode::_handleDisconnect()
 
         if( node->getConnection() == connection )
             _closeNode( node );
-        else
+        else if( connection->isMulticast( ))
             node->_removeMulticast( connection );
     }
 
@@ -1356,9 +1354,6 @@ ICommand LocalNode::_setupCommand( ConnectionPtr connection,
     ConnectionNodeHashCIter i = _impl->connectionNodes.find( connection );
     if( i != _impl->connectionNodes.end( ))
         node = i->second;
-    LBASSERTINFO( !node || // unconnected node
-                  *(node->getConnection()) == *connection || // correct UC conn
-                  connection->isMulticast(), lunchbox::className( node ));
     LBVERB << "Handle data from " << node << std::endl;
 
 #ifdef COLLAGE_BIGENDIAN
@@ -1671,7 +1666,6 @@ bool LocalNode::_cmdConnect( ICommand& command )
                   peer->getNodeID() << "!=" << nodeID );
     LBASSERT( peer->getType() == nodeType );
 
-    peer->_connect( connection );
     _impl->connectionNodes[ connection ] = peer;
     {
         lunchbox::ScopedFastWrite mutex( _impl->nodes );
@@ -1683,7 +1677,6 @@ bool LocalNode::_cmdConnect( ICommand& command )
     OCommand( Connections( 1, connection ), cmd )
         << getNodeID() << requestID << getType() << serialize();
 
-    notifyConnect( peer );
     return true;
 }
 
@@ -1785,7 +1778,9 @@ bool LocalNode::_cmdConnectAck( ICommand& command )
     LBASSERT( _impl->inReceiverThread( ));
     LBVERB << "handle connect ack" << std::endl;
 
+    node->_connect( _impl->incoming.getConnection( ));
     _connectMulticast( node );
+    notifyConnect( node );
     return true;
 }
 
