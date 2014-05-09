@@ -27,8 +27,8 @@
 #include <lunchbox/monitor.h>
 #include <iostream>
 
-#define PACKETSIZE (12345)
-#define NPACKETS   (23456)
+#define PACKETSIZE (123456)
+#define RUNTIME (1000) // ms
 
 namespace
 {
@@ -55,13 +55,18 @@ public:
     {
         co::Buffer buffer;
         co::BufferPtr syncBuffer;
+        buffer.reserve( PACKETSIZE );
+        uint64_t& sequence = *reinterpret_cast< uint64_t* >( buffer.getData( ));
+        sequence = 0;
+        uint64_t i = 0;
 
-        for( size_t i = 0; i < NPACKETS; ++i )
+        while( sequence != 0xdeadbeef )
         {
             connection_->recvNB( &buffer, PACKETSIZE );
             TEST( connection_->recvSync( syncBuffer ));
             TEST( syncBuffer == &buffer );
             TEST( buffer.getSize() == PACKETSIZE );
+            TEST( sequence == ++i || sequence == 0xdeadbeef );
             buffer.setSize( 0 );
         }
 
@@ -79,6 +84,7 @@ private:
 
 int main( int argc, char **argv )
 {
+    TEST(( PACKETSIZE % 8 ) == 0 );
     co::init( argc, argv );
 
     for( size_t i = 0; types[i] != co::CONNECTIONTYPE_NONE; ++i )
@@ -138,18 +144,26 @@ int main( int argc, char **argv )
         TEST( reader );
 
         Reader readThread( reader );
-        uint8_t out[ PACKETSIZE ];
+        uint64_t out[ PACKETSIZE / 8 ];
 
         lunchbox::Clock clock;
-        for( size_t j = 0; j < NPACKETS; ++j )
+        uint64_t sequence = 0;
+
+        while( clock.getTime64() < RUNTIME )
+        {
+            out[0] = ++sequence;
             TEST( writer->send( out, PACKETSIZE ));
+        }
+
+        out[0] = 0xdeadbeef;
+        TEST( writer->send( out, PACKETSIZE ));
 
         writer->close();
         readThread.join();
         const float time = clock.getTimef();
 
         std::cout << desc->type << ": "
-                  << NPACKETS * PACKETSIZE / 1024.f / 1024.f * 1000.f / time
+                  << (sequence+1) * PACKETSIZE / 1024.f / 1024.f * 1000.f / time
                   << " MB/s" << std::endl;
 
         if( listener == writer )
@@ -157,9 +171,9 @@ int main( int argc, char **argv )
         if( reader == writer )
             reader = 0;
 
-        if( listener.isValid( ))
+        if( listener )
             TEST( listener->getRefCount() == 1 );
-        if( reader.isValid( ))
+        if( reader )
             TEST( reader->getRefCount() == 1 );
         TEST( writer->getRefCount() == 1 );
     }
