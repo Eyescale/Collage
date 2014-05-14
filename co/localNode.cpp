@@ -877,26 +877,20 @@ NodePtr LocalNode::_connect( const NodeID& nodeID, NodePtr peer )
             node = i->second;
     }
 
-    if( node )
-    {
-        LBASSERT( node->isReachable( ));
-        if( !node->isReachable( ))
-            _connect( node );
-        return node->isReachable() ? node : 0;
-    }
     LBASSERT( getNodeID() != nodeID );
-
-    lunchbox::Request< void* > request = registerRequest< void* >();
-    peer->send( CMD_NODE_GET_NODE_DATA ) << nodeID << request;
-    node = reinterpret_cast< Node* >( request.wait( ));
     if( !node )
     {
-        LBINFO << "Node " << nodeID << " not found on " << peer->getNodeID()
-               << std::endl;
-        return 0;
+        lunchbox::Request< void* > request = registerRequest< void* >();
+        peer->send( CMD_NODE_GET_NODE_DATA ) << nodeID << request;
+        node = reinterpret_cast< Node* >( request.wait( ));
+        if( !node )
+        {
+            LBINFO << "Node " << nodeID << " not found on " << peer->getNodeID()
+                   << std::endl;
+            return 0;
+        }
+        node->unref( this ); // ref'd before serveRequest()
     }
-
-    node->unref( this ); // ref'd before serveRequest()
 
     if( node->isReachable( ))
         return node;
@@ -1750,18 +1744,20 @@ bool LocalNode::_cmdConnectReply( ICommand& command )
     LBASSERT( data.empty( ));
     LBASSERT( peer->getNodeID() == nodeID );
 
+    // send ACK to peer
+    OCommand( Connections( 1, connection ), CMD_NODE_CONNECT_ACK );
+
     peer->_connect( connection );
     _impl->connectionNodes[ connection ] = peer;
     {
         lunchbox::ScopedFastWrite mutex( _impl->nodes );
         _impl->nodes.data[ peer->getNodeID() ] = peer;
     }
+    _connectMulticast( peer );
     LBVERB << "Added node " << nodeID << std::endl;
 
     serveRequest( requestID, true );
 
-    peer->send( CMD_NODE_CONNECT_ACK );
-    _connectMulticast( peer );
     notifyConnect( peer );
     return true;
 }
