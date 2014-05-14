@@ -1,7 +1,7 @@
 
 /* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -84,6 +84,13 @@ public:
     /** Write a C array. @version 1.0 */
     template< class T > DataOStream& operator << ( const Array< T > array )
     { _writeArray( array, boost::is_pod<T>( )); return *this; }
+
+    /**
+     * Write a lunchbox::RefPtr. Refcount has to managed by caller.
+     * @version 1.1
+     */
+    template< class T >
+    DataOStream& operator << ( const lunchbox::RefPtr< T >& ptr );
 
     /** Write a lunchbox::Buffer. @version 1.0 */
     template< class T >

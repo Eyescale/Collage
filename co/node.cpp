@@ -326,7 +326,7 @@ ConnectionPtr Node::getConnection( const bool preferMulticast )
 ConnectionPtr Node::_getConnection( const bool preferMulticast )
 {
     ConnectionPtr multicast = preferMulticast ? getMulticast() : 0;
-    if( _impl->state != STATE_CLOSED )
+    if( !isClosed( ))
         return multicast ? multicast : _impl->outgoing;
     LBUNREACHABLE;
     return 0;

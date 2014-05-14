@@ -1,7 +1,7 @@
 
 /* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -56,7 +56,7 @@ public:
     };
 
     /** Construct a new local node of the given type. @version 1.0 */
-    CO_API LocalNode( const uint32_t type = co::NODETYPE_NODE );
+    CO_API explicit LocalNode( const uint32_t type = co::NODETYPE_NODE );
 
     /**
      * @name State Changes
@@ -189,7 +189,7 @@ public:
      * @return true if the object was registered, false otherwise.
      * @version 1.0
      */
-    CO_API virtual bool registerObject( Object* object );
+    CO_API bool registerObject( Object* object ) override;
 
     /**
      * Deregister a distributed object.
@@ -200,7 +200,7 @@ public:
      * @param object the object instance.
      * @version 1.0
      */
-    CO_API virtual void deregisterObject( Object* object );
+    CO_API void deregisterObject( Object* object ) override;
 
     /**
      * Map a distributed object.
@@ -258,20 +258,20 @@ public:
 
     /** @deprecated */
     f_bool_t mapObject( Object* object, const UUID& id,
-                       const uint128_t& version = VERSION_OLDEST )
+                        const uint128_t& version = VERSION_OLDEST )
         { return mapObject( object, id, 0, version ); }
 
     /** @deprecated use mapObject() */
     CO_API uint32_t mapObjectNB( Object* object, const UUID& id,
-                                 const uint128_t& version = VERSION_OLDEST);
+                                 const uint128_t& version = VERSION_OLDEST );
 
     /** @deprecated use mapObject() */
-    CO_API virtual uint32_t mapObjectNB( Object* object, const UUID& id,
-                                         const uint128_t& version,
-                                         NodePtr master );
+    CO_API uint32_t mapObjectNB( Object* object, const UUID& id,
+                                 const uint128_t& version,
+                                 NodePtr master ) override;
 
     /** @deprecated use mapObject() */
-    CO_API virtual bool mapObjectSync( const uint32_t requestID );
+    CO_API bool mapObjectSync( const uint32_t requestID ) override;
 
     /**
      * Synchronize the local object with a remote object.
@@ -302,7 +302,7 @@ public:
      * @param object the mapped object.
      * @version 1.0
      */
-    CO_API virtual void unmapObject( Object* object );
+    CO_API void unmapObject( Object* object ) override;
 
     /** Disable the instance cache of a stopped local node. @version 1.0 */
     CO_API void disableInstanceCache();
@@ -468,7 +468,7 @@ public:
      * @sa ICommand::invoke
      * @version 1.0
      */
-    CO_API virtual bool dispatchCommand( ICommand& command );
+    CO_API bool dispatchCommand( ICommand& command ) override;
 
 
     /** A handle for a send token acquired by acquireSendToken(). */
@@ -512,7 +512,7 @@ public:
 
 protected:
     /** Destruct this local node. @version 1.0 */
-    CO_API virtual ~LocalNode();
+    CO_API ~LocalNode() override;
 
     /** @internal
      * Connect a node proxy to this node.
@@ -547,44 +547,46 @@ protected:
 private:
     detail::LocalNode* const _impl;
 
-    bool _connectSelf();
-
-    bool _startCommandThread( const int32_t threadID );
-    bool _notifyCommandThreadIdle();
     friend class detail::ReceiverThread;
+    bool _startCommandThread( const int32_t threadID );
+    void _runReceiverThread();
+
     friend class detail::CommandThread;
+    bool _notifyCommandThreadIdle();
 
     void _cleanup();
     void _closeNode( NodePtr node );
-    CO_API void _addConnection( ConnectionPtr connection );
+    void _addConnection( ConnectionPtr connection );
     void _removeConnection( ConnectionPtr connection );
 
+    lunchbox::Request< void > _removeListener( ConnectionPtr connection );
+
+    uint32_t _connect( NodePtr node );
+    NodePtr _connect( const NodeID& nodeID );
+    uint32_t _connect( NodePtr node, ConnectionPtr connection );
     NodePtr _connect( const NodeID& nodeID, NodePtr peer );
     NodePtr _connectFromZeroconf( const NodeID& nodeID );
-    lunchbox::Request< void > _removeListener( ConnectionPtr connection );
-    uint32_t _connect( NodePtr node );
-    uint32_t _connect( NodePtr node, ConnectionPtr connection );
+    bool _connectSelf();
 
-    void _runReceiverThread();
-    void   _handleConnect();
-    void   _handleDisconnect();
-    bool   _handleData();
+    void _handleConnect();
+    void _handleDisconnect();
+    bool _handleData();
     BufferPtr _readHead( ConnectionPtr connection );
-    ICommand   _setupCommand( ConnectionPtr, ConstBufferPtr );
-    bool      _readTail( ICommand&, BufferPtr, ConnectionPtr );
-    void   _initService();
-    void   _exitService();
+    ICommand _setupCommand( ConnectionPtr, ConstBufferPtr );
+    bool _readTail( ICommand&, BufferPtr, ConnectionPtr );
+    void _initService();
+    void _exitService();
 
     friend class ObjectStore;
-    template< typename T > void
-    _registerCommand( const uint32_t command, const CommandFunc< T >& func,
-                      CommandQueue* destinationQueue )
-        {
-            registerCommand( command, func, destinationQueue );
-        }
+    template< typename T >
+    void _registerCommand( const uint32_t command, const CommandFunc< T >& func,
+                           CommandQueue* destinationQueue )
+    {
+        registerCommand( command, func, destinationQueue );
+    }
 
     void _dispatchCommand( ICommand& command );
-    void   _redispatchCommands();
+    void _redispatchCommands();
 
     /** The command functions. */
     bool _cmdAckRequest( ICommand& command );
@@ -610,8 +612,8 @@ private:
     bool _cmdDiscard( ICommand& ) { return true; }
     //@}
 
-    LB_TS_VAR( _cmdThread );
-    LB_TS_VAR( _rcvThread );
+    LB_TS_VAR( _cmdThread )
+    LB_TS_VAR( _rcvThread )
 };
 
 inline std::ostream& operator << ( std::ostream& os, const LocalNode& node )

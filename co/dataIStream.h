@@ -1,7 +1,7 @@
 
 /* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2009-2010, Cedric Stalder <cedric.stalder@gmail.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -66,6 +66,12 @@ public:
     /** Read a C array. @version 1.0 */
     template< class T > DataIStream& operator >> ( Array< T > array )
         { _readArray( array, boost::is_pod<T>( )); return *this; }
+
+    /**
+     * Read a lunchbox::RefPtr. Refcount has to managed by caller.
+     * @version 1.1
+     */
+    template< class T > DataIStream& operator >> ( lunchbox::RefPtr< T >& );
 
     /** Read a lunchbox::Buffer. @version 1.0 */
     template< class T > DataIStream& operator >> ( lunchbox::Buffer< T >& );

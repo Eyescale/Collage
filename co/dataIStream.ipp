@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2013, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *                    2013, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -64,10 +64,19 @@ void DataIStream::_readArray( Array< T > array, const boost::true_type& )
 
 /** Read an Array of non-POD data */
 template< class T >
-void DataIStream::_readArray( Array< T > array, const boost::false_type&)
+void DataIStream::_readArray( Array< T > array, const boost::false_type& )
 {
     for( size_t i = 0; i < array.num; ++i )
         *this >> array.data[ i ];
+}
+
+template< class T > inline DataIStream&
+DataIStream::operator >> ( lunchbox::RefPtr< T >& ptr )
+{
+    T* object;
+    *this >> object;
+    ptr = object;
+    return *this;
 }
 
 template< class T > inline DataIStream&
