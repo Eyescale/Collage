@@ -1,7 +1,7 @@
 
 /* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -48,7 +48,7 @@ namespace detail { class Node; }
          * @param type the type of the node, used during connect().
          * @version 1.0
          */
-        CO_API Node( const uint32_t type = co::NODETYPE_NODE );
+        CO_API explicit Node( const uint32_t type = co::NODETYPE_NODE );
 
         /** @name Data Access */
         //@{
@@ -223,6 +223,7 @@ namespace detail { class Node; }
 namespace lunchbox
 {
 template<> inline void byteswap( co::Node*& ) { /*NOP*/ }
+template<> inline void byteswap( co::NodePtr& ) { /*NOP*/ }
 }
 
 #endif // CO_NODE_H

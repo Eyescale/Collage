@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2013, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *                    2013, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -45,6 +45,12 @@ DataOStream& DataOStream::operator << ( const Object* const& object )
 }
 
 /** @cond IGNORE */
+template< class T > inline
+DataOStream& DataOStream::operator << ( const lunchbox::RefPtr< T >& ptr )
+{
+    return *this << ptr.get();
+}
+
 template< class T > inline
 DataOStream& DataOStream::operator << ( const lunchbox::Buffer< T >& buffer )
 {
