@@ -65,10 +65,12 @@ void EventConnection::_close()
         CloseHandle( _event );
     _event = 0;
 #else
-    if( _connection.isValid( ))
-        _connection->close();
+    ConnectionPtr connection = _connection;
     _connection = 0;
     _set = false;
+
+    if( connection )
+        connection->close();
 #endif
 
     _setState( STATE_CLOSED );
