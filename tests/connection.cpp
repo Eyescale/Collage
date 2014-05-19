@@ -47,9 +47,7 @@ class Reader : public lunchbox::Thread
 {
 public:
     Reader( co::ConnectionPtr connection ) : connection_( connection )
-    {
-        TEST( start( ));
-    }
+        { TEST( start( )); }
 
     void run() override
     {
@@ -80,6 +78,89 @@ private:
     co::ConnectionPtr connection_;
 };
 
+class Latency : public lunchbox::Thread
+{
+public:
+    Latency( co::ConnectionPtr connection ) : connection_( connection )
+        { TEST( start( )); }
+
+    void run() override
+    {
+        co::Buffer buffer;
+        co::BufferPtr syncBuffer;
+        buffer.reserve( sizeof( uint64_t ));
+        uint64_t& sequence = *reinterpret_cast< uint64_t* >( buffer.getData( ));
+        sequence = 0;
+
+        while( sequence != 0xC0FFEE )
+        {
+            connection_->recvNB( &buffer, sizeof( uint64_t ));
+            TEST( connection_->recvSync( syncBuffer ));
+            buffer.setSize( 0 );
+        }
+
+        connection_->recvNB( &buffer, sizeof( uint64_t ));
+        TEST( !connection_->recvSync( syncBuffer ));
+        TEST( connection_->isClosed( ));
+        connection_ = 0;
+    }
+
+private:
+    co::ConnectionPtr connection_;
+};
+
+bool _initialize( co::ConnectionDescriptionPtr desc, co::ConnectionPtr& reader,
+                  co::ConnectionPtr& writer )
+{
+    if( desc->type >= co::CONNECTIONTYPE_MULTICAST )
+        desc->setHostname( "239.255.12.34" );
+    else
+        desc->setHostname( "127.0.0.1" );
+
+    co::ConnectionPtr listener = co::Connection::create( desc );
+    if( !listener )
+    {
+        std::cout << desc->type << ": not supported" << std::endl;
+        return false;
+    }
+
+    switch( desc->type ) // different connections, different semantics...
+    {
+    case co::CONNECTIONTYPE_PIPE:
+        writer = listener;
+        TEST( writer->connect( ));
+        reader = writer->acceptSync();
+        break;
+
+    case co::CONNECTIONTYPE_RSP:
+        TESTINFO( listener->listen(), desc );
+        listener->acceptNB();
+
+        writer = listener;
+        reader = listener->acceptSync();
+        break;
+
+    default:
+    {
+        const bool listening = listener->listen();
+        if( !listening && desc->type == co::CONNECTIONTYPE_RDMA )
+            return false; // No local IB adapter up
+
+        TESTINFO( listening, desc );
+        listener->acceptNB();
+
+        writer = co::Connection::create( desc );
+        TEST( writer->connect( ));
+
+        reader = listener->acceptSync();
+        break;
+    }
+    }
+
+    TEST( writer );
+    TEST( reader );
+    return true;
+}
 }
 
 int main( int argc, char **argv )
@@ -92,56 +173,11 @@ int main( int argc, char **argv )
         co::ConnectionDescriptionPtr desc = new co::ConnectionDescription;
         desc->type = types[i];
 
-        if( desc->type >= co::CONNECTIONTYPE_MULTICAST )
-            desc->setHostname( "239.255.12.34" );
-        else
-            desc->setHostname( "127.0.0.1" );
-
-        co::ConnectionPtr listener = co::Connection::create( desc );
-        if( !listener )
-        {
-            std::cout << desc->type << ": not supported" << std::endl;
-            continue;
-        }
-
         co::ConnectionPtr writer;
         co::ConnectionPtr reader;
 
-        switch( desc->type ) // different connections, different semantics...
-        {
-        case co::CONNECTIONTYPE_PIPE:
-            writer = listener;
-            TEST( writer->connect( ));
-            reader = writer->acceptSync();
-            break;
-
-        case co::CONNECTIONTYPE_RSP:
-            TESTINFO( listener->listen(), desc );
-            listener->acceptNB();
-
-            writer = listener;
-            reader = listener->acceptSync();
-            break;
-
-        default:
-        {
-            const bool listening = listener->listen();
-            if( !listening && desc->type == co::CONNECTIONTYPE_RDMA )
-                continue; // No local IB adapter up
-
-            TESTINFO( listening, desc );
-            listener->acceptNB();
-
-            writer = co::Connection::create( desc );
-            TEST( writer->connect( ));
-
-            reader = listener->acceptSync();
-            break;
-        }
-        }
-
-        TEST( writer );
-        TEST( reader );
+        if( !_initialize( desc, reader, writer ))
+            continue;
 
         Reader readThread( reader );
         uint64_t out[ PACKETSIZE / 8 ];
@@ -160,21 +196,37 @@ int main( int argc, char **argv )
 
         writer->close();
         readThread.join();
-        const float time = clock.getTimef();
+        const float bwTime = clock.getTimef();
+        const uint64_t numBW = sequence;
+
+        TEST( _initialize( desc, reader, writer ));
+        Latency latency( reader );
+        sequence = 0;
+        clock.reset();
+
+        while( clock.getTime64() < RUNTIME )
+        {
+            ++sequence;
+            TEST( writer->send( &sequence, sizeof( uint64_t )));
+        }
+
+        sequence = 0xC0FFEE;
+        TEST( writer->send( &sequence, sizeof( uint64_t )));
+
+        writer->close();
+        latency.join();
+        const float latencyTime = clock.getTimef();
+        const float mFactor = 1024.f / 1024.f * 1000.f;
 
         std::cout << desc->type << ": "
-                  << (sequence+1) * PACKETSIZE / 1024.f / 1024.f * 1000.f / time
-                  << " MB/s" << std::endl;
+                  << (numBW+1) * PACKETSIZE / mFactor / bwTime
+                  << " MBps, " << (sequence+1) / mFactor / latencyTime
+                  << " Mpps" << std::endl;
 
-        if( listener == writer )
-            listener = 0;
         if( reader == writer )
             reader = 0;
 
-        if( listener )
-            TEST( listener->getRefCount() == 1 );
-        if( reader )
-            TEST( reader->getRefCount() == 1 );
+        TESTINFO( !reader || reader->getRefCount() == 1, reader->getRefCount());
         TEST( writer->getRefCount() == 1 );
     }
 
