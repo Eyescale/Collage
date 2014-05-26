@@ -77,7 +77,9 @@ public:
         s_done = true;
         connection_->recvNB( &buffer, PACKETSIZE );
         TEST( !connection_->recvSync( syncBuffer ));
+#ifndef _WIN32
         TEST( connection_->isClosed( ));
+#endif
         connection_ = 0;
     }
 
@@ -112,7 +114,9 @@ public:
         s_done = true;
         connection_->recvNB( &buffer, sizeof( uint64_t ));
         TEST( !connection_->recvSync( syncBuffer ));
+#ifndef _WIN32
         TEST( connection_->isClosed( ));
+#endif
         connection_ = 0;
     }
 
