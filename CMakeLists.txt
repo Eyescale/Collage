@@ -22,7 +22,7 @@ set(RELEASE_VERSION OFF) # OFF or 'Mm0' ABI version
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "1")
 set(VERSION_PATCH "0")
-set(LAST_RELEASE 1.0.0)
+set(LAST_RELEASE 1.0.1)
 
 set(PROJECT_INCLUDE_NAME co)
 set(COMMON_PROJECT_DOMAIN ch.eyescale)
@@ -34,12 +34,6 @@ include(FindPackages)
 
 list(APPEND CPPCHECK_EXTRA_ARGS -DCO_API=)
 
-if(LUNCHBOX_USE_OPENMP)
-  find_package(OpenMP REQUIRED)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
-
 if(NOT MSVC)
   set(PTHREAD_LIBRARIES pthread)
 endif()
@@ -48,8 +42,6 @@ if(APPLE)
   add_definitions(-DDarwin)
 endif(APPLE)
 
-add_definitions(-DCO_BUILD_DIR="${CMAKE_BINARY_DIR}/")
-
 add_subdirectory(tools)
 add_subdirectory(tests)
 
@@ -57,4 +49,6 @@ add_subdirectory(co)
 add_subdirectory(doc)
 
 include(CPackConfig)
+
+set(DOXYGEN_EXTRA_INPUT @CMAKE_BINARY_DIR@/doc/RelNotes.md)
 include(DoxygenRule)

@@ -46,7 +46,7 @@ namespace co
         };
 
         /** Construct a new Exception. @version 1.0 */
-        Exception( const uint32_t type ) : _type( type ) {}
+        explicit Exception( const uint32_t type ) : _type( type ) {}
 
         /** Destruct this exception. @version 1.0 */
         virtual ~Exception() throw() {}
