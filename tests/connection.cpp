@@ -30,6 +30,8 @@
 #define PACKETSIZE (123456)
 #define RUNTIME (1000) // ms
 
+lunchbox::Monitor< bool > s_done( false );
+
 namespace
 {
 static co::ConnectionType types[] =
@@ -51,12 +53,16 @@ public:
 
     void run() override
     {
+        if( connection_->getDescription()->type == co::CONNECTIONTYPE_RDMA )
+            connection_ = connection_->acceptSync();
         co::Buffer buffer;
         co::BufferPtr syncBuffer;
         buffer.reserve( PACKETSIZE );
         uint64_t& sequence = *reinterpret_cast< uint64_t* >( buffer.getData( ));
         sequence = 0;
         uint64_t i = 0;
+
+        s_done = false;
 
         while( sequence != 0xdeadbeef )
         {
@@ -68,6 +74,7 @@ public:
             buffer.setSize( 0 );
         }
 
+        s_done = true;
         connection_->recvNB( &buffer, PACKETSIZE );
         TEST( !connection_->recvSync( syncBuffer ));
         TEST( connection_->isClosed( ));
@@ -86,11 +93,14 @@ public:
 
     void run() override
     {
+        if( connection_->getDescription()->type == co::CONNECTIONTYPE_RDMA )
+            connection_ = connection_->acceptSync();
         co::Buffer buffer;
         co::BufferPtr syncBuffer;
         buffer.reserve( sizeof( uint64_t ));
         uint64_t& sequence = *reinterpret_cast< uint64_t* >( buffer.getData( ));
         sequence = 0;
+        s_done = false;
 
         while( sequence != 0xC0FFEE )
         {
@@ -99,6 +109,7 @@ public:
             buffer.setSize( 0 );
         }
 
+        s_done = true;
         connection_->recvNB( &buffer, sizeof( uint64_t ));
         TEST( !connection_->recvSync( syncBuffer ));
         TEST( connection_->isClosed( ));
@@ -140,11 +151,24 @@ bool _initialize( co::ConnectionDescriptionPtr desc, co::ConnectionPtr& reader,
         reader = listener->acceptSync();
         break;
 
+    case co::CONNECTIONTYPE_RDMA:
+    {
+        const bool listening = listener->listen();
+        if( !listening )
+            return false; // No local IB adapter up
+
+        TESTINFO( listening, desc );
+        listener->acceptNB();
+
+        writer = co::Connection::create( desc );
+
+        reader = listener;
+        break;
+    }
+
     default:
     {
         const bool listening = listener->listen();
-        if( !listening && desc->type == co::CONNECTIONTYPE_RDMA )
-            return false; // No local IB adapter up
 
         TESTINFO( listening, desc );
         listener->acceptNB();
@@ -152,6 +176,7 @@ bool _initialize( co::ConnectionDescriptionPtr desc, co::ConnectionPtr& reader,
         writer = co::Connection::create( desc );
         TEST( writer->connect( ));
 
+        reader = listener;
         reader = listener->acceptSync();
         break;
     }
@@ -180,6 +205,9 @@ int main( int argc, char **argv )
             continue;
 
         Reader readThread( reader );
+        if( desc->type == co::CONNECTIONTYPE_RDMA )
+            writer->connect();
+
         uint64_t out[ PACKETSIZE / 8 ];
 
         lunchbox::Clock clock;
@@ -194,13 +222,17 @@ int main( int argc, char **argv )
         out[0] = 0xdeadbeef;
         TEST( writer->send( out, PACKETSIZE ));
 
+        s_done.waitEQ( true );
         writer->close();
         readThread.join();
+        reader->close();
         const float bwTime = clock.getTimef();
         const uint64_t numBW = sequence;
 
         TEST( _initialize( desc, reader, writer ));
         Latency latency( reader );
+        if( desc->type == co::CONNECTIONTYPE_RDMA )
+            writer->connect();
         sequence = 0;
         clock.reset();
 
@@ -213,8 +245,11 @@ int main( int argc, char **argv )
         sequence = 0xC0FFEE;
         TEST( writer->send( &sequence, sizeof( uint64_t )));
 
+        s_done.waitEQ( true );
         writer->close();
         latency.join();
+        reader->close();
+
         const float latencyTime = clock.getTimef();
         const float mFactor = 1024.f / 1024.f * 1000.f;
 
