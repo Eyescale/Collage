@@ -43,7 +43,8 @@ namespace co
 
     protected:
         ObjectDataOCommand send( const uint32_t cmd, const uint32_t type,
-                                 const uint32_t instanceID, const uint64_t size,
+                                 const uint32_t instanceID,
+                                 const void* data, const uint64_t size,
                                  const bool last );
 
         const ObjectCM* _cm;

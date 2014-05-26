@@ -209,7 +209,7 @@ void ObjectCM::_sendEmptyVersion( const MasterCMCommand& command,
 
     ObjectDataOCommand( Connections( 1, connection ), CMD_OBJECT_INSTANCE,
                         COMMANDTYPE_OBJECT, _object->getID(),
-                        command.getInstanceID(), version, 0, 0, true, 0 )
+                        command.getInstanceID(), version, 0, 0, 0, true, 0 )
             << NodeID() << _object->getInstanceID();
 }
 

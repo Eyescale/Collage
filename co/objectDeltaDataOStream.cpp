@@ -35,11 +35,11 @@ ObjectDeltaDataOStream::ObjectDeltaDataOStream( const ObjectCM* cm )
 ObjectDeltaDataOStream::~ObjectDeltaDataOStream()
 {}
 
-void ObjectDeltaDataOStream::sendData( const void*, const uint64_t size,
+void ObjectDeltaDataOStream::sendData( const void* data, const uint64_t size,
                                        const bool last )
 {
     ObjectDataOStream::send( CMD_OBJECT_DELTA, COMMANDTYPE_OBJECT,
-                             CO_INSTANCE_ALL, size, last );
+                             CO_INSTANCE_ALL, data, size, last );
 }
 
 }

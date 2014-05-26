@@ -45,12 +45,12 @@ public:
     DataOStream() {}
 
 protected:
-    void sendData( const void* /*data*/, const uint64_t size, const bool last )
+    void sendData( const void* data, const uint64_t size, const bool last )
         override
     {
         co::ObjectDataOCommand( getConnections(), co::CMD_OBJECT_DELTA,
                                 co::COMMANDTYPE_OBJECT, co::UUID(), 0,
-                                co::uint128_t(), 0, size, last, this );
+                                co::uint128_t(), 0, data, size, last, this );
     }
 };
 

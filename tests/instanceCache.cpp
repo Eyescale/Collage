@@ -80,10 +80,9 @@ private:
 int main( int argc, char **argv )
 {
     co::init( argc, argv );
-
     co::ObjectDataOCommand out( co::Connections(), co::CMD_NODE_OBJECT_INSTANCE,
                                 co::COMMANDTYPE_NODE, co::UUID(), 0,
-                                co::uint128_t(1), 0, COMMAND_SIZE, true, 0 );
+                                co::uint128_t(1), 0, 0, COMMAND_SIZE, true, 0 );
     co::LocalNodePtr node = new co::LocalNode;
     co::ObjectDataICommand in = out._getCommand( node );
     TESTINFO( in.isValid(), in );

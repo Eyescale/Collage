@@ -139,11 +139,11 @@ void ObjectInstanceDataOStream::enableMap( const uint128_t& version,
     _enable();
 }
 
-void ObjectInstanceDataOStream::sendData( const void*,
+void ObjectInstanceDataOStream::sendData( const void* data,
                                           const uint64_t size, const bool last )
 {
     LBASSERT( _command );
-    send( _command, COMMANDTYPE_NODE, _instanceID, size, last )
+    send( _command, COMMANDTYPE_NODE, _instanceID, data, size, last )
         << _nodeID << _cm->getObject()->getInstanceID();
 }
 
