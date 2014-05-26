@@ -39,7 +39,7 @@ public:
      * @param maxSize the maximum number of enqueued commands.
      * @version 1.0
      */
-    CO_API CommandQueue( const size_t maxSize = ULONG_MAX );
+    CO_API explicit CommandQueue( const size_t maxSize = ULONG_MAX );
 
     /** Destruct a new command queue. @version 1.0 */
     CO_API virtual ~CommandQueue();

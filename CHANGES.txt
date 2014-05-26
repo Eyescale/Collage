@@ -1,6 +1,10 @@
 
 This file lists all changes in the public Collage API, latest on top:
 
+-------------------------------Collage 1.1 ---------------------------------
+
+-------------------------------Collage 1.0 ---------------------------------
+
 07/Mar/2013
   PluginRegistry, Plugin and compressors are moved to Lunchbox.
   co::Global still maintains the global Collage plugin registry.

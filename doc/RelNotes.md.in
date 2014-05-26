@@ -1,0 +1,145 @@
+Release Notes {#mainpage}
+============
+
+[TOC]
+
+# Introduction {#Introduction}
+
+Welcome to Collage, a high-performance C++ library for developing
+object-oriented distributed applications.
+
+Collage @VERSION_MAJOR@.@VERSION_MINOR@ is a preview release for an upcoming
+stable 1.2 release which has over eight years of development and decades of
+experience into a high-performance and mature C++ library. It is intended for
+all C++ developers creating distributed applications with high-level
+abstractions. Collage @VERSION_MAJOR@.@VERSION_MINOR@ can be retrieved by
+downloading the source code or one of the precompiled packages.
+
+## Features {#Features}
+
+Collage provides different levels of abstraction to facilitate the
+development distributed applications:
+
+* Network Connections: stream-oriented point-to-point and reliable multicast
+  connections for TCP/IP, SDP, InfiniBand RDMA, UDT, events, named and anonymous
+  pipes, memory buffers and reliable multicast over UDP.
+* Peer-to-Peer Messaging: Endian-safe node-to-node message communication with
+  thread-aware message dispatch.
+* Synchronization: Distributed barriers and synchronous messaging.
+* Object data distribution: high-performance, object-oriented, versioned data
+  distribution for C++ objects based on delta serialization.
+
+# New in this release {#New}
+
+Collage @VERSION_MAJOR@.@VERSION_MINOR@ contains the following features,
+enhancements, bug fixes and documentation changes over the Collage
+@LAST_RELEASE@ release:
+
+## New Features {#NewFeatures}
+
+* [54](https://github.com/Eyescale/Collage/pull/54): Enable serialization of
+  std::string Arrays
+
+## Enhancements {#Enhancements}
+
+* [37](https://github.com/Eyescale/Collage/issues/37): Make CommandQueue maximum
+  size configurable
+* [55](https://github.com/Eyescale/Collage/pull/55): Robustness for late join
+* [69](https://github.com/Eyescale/Collage/pull/69): Refactor Barrier API for
+  robustness, deprecate old API
+
+## Optimizations {#Optimizations}
+
+* [27](https://github.com/Eyescale/Collage/issues/27): Add LocalNode::syncObject
+* [28](https://github.com/Eyescale/Collage/issues/28): BufferCache::compact too
+  expensive
+* [38](https://github.com/Eyescale/Collage/issues/38): Make ConnectionSet
+  processing round-robin on Unix
+
+## Tools {#Tools}
+
+* No new tools
+
+## Documentation {#Documentation}
+
+The following documentation has been added or substantially improved since the
+last release:
+
+* README.md gives more initial information, build instructions and links to
+  released versions
+* [API documentation](http://eyescale.github.io/Collage-1.1/index.html) of the
+  public Collage API
+
+## Bug Fixes {#Fixes}
+
+Collage @VERSION_MAJOR@.@VERSION_MINOR@ includes various bugfixes over the
+Collage @LAST_RELEASE@ release, including the following:
+
+* [29](https://github.com/Eyescale/Collage/issues/29): Change managers may
+  access dangling objects
+* [32](https://github.com/Eyescale/Collage/pull/32): Default port is priviledged
+  for high UIDs
+* [34](https://github.com/Eyescale/Collage/issues/34): ICommand behaves
+  incorrect once all data is consumed
+* [50](https://github.com/Eyescale/Collage/pull/50): Use correct master node for
+  mapping objects
+* [52](https://github.com/Eyescale/Collage/issues/52): RSP: Protocol bug for
+  very late and early packet delivery.
+* [71](https://github.com/Eyescale/Collage/issues/71): BufferCache race may lead
+  to segmentation fault
+* [79](https://github.com/Eyescale/Collage/issues/79): Node::connect race
+  condition
+* [82](https://github.com/Eyescale/Collage/issues/82): Barrier races and
+  deadlocks with sync()
+* [88](https://github.com/Eyescale/Collage/issues/88): LocalNode::handleData()
+  asserts handling non-pending receive
+* [112](https://github.com/Eyescale/Collage/pull/112): Fix racy connection
+  handshake
+* [113](https://github.com/Eyescale/Collage/pull/113): De-race
+  EventConnection::close to fix Travis
+
+## Known Bugs {#Bugs}
+
+The following bugs were known at release time. Please file a [Bug Report]
+(https://github.com/Eyescale/Collage/issues) if you find any other issue with
+this release.
+
+* [57](https://github.com/Eyescale/Collage/issues/57): Windows: Larger number of
+  concurrent receives causes intermittent blocking
+* [16](https://github.com/Eyescale/Collage/issues/16): RSP Interface not
+  bound on Linux
+* [15](https://github.com/Eyescale/Collage/issues/15): RDMAConnection
+  not endian-safe
+* [14](https://github.com/Eyescale/Collage/issues/14): coNetperf server
+  occasionally crashes on client disconnect
+* [2](https://github.com/Eyescale/Collage/issues/2): Multiple dispatcher
+  inheritance not working with xlC
+
+# About {#About}
+
+Collage is a cross-platform library, designed to run on any modern operating
+system, including all Unix variants and the Windows operating system. Collage
+uses CMake and [Buildyard](https://github.com/Eyescale/Buildyard) to create a
+platform-specific build environment. The following platforms and build
+environments are tested for version @VERSION_MAJOR@.@VERSION_MINOR@:
+
+* Linux: Ubuntu 14.04, RHEL 6.5 (Makefile, i386, x64)
+* Windows: 7 (Visual Studio 2008, i386, x64)
+* Mac OS X: 10.8 (Makefile, XCode, i386, x64)
+
+The Equalizer Programming and User Guide covers the basics of Collage
+programming. The API documentation can be found on
+[github](http://eyescale.github.io/).
+
+As with any open source project, the available source code, in particular the
+shipped tools provide a reference for developing or porting applications.
+
+Technical questions can be posted to the eq-dev Mailing List, or
+directly to info@equalizergraphics.com.
+
+Commercial support, custom software development and porting services are
+available from [Eyescale](http://www.eyescale.ch). Please contact
+[info@eyescale.ch](mailto:info@eyescale.ch?subject=Collage%20support) for
+further information.
+
+# Errata

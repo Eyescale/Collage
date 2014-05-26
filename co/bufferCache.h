@@ -45,7 +45,7 @@ public:
      *
      * @param minFree number of buffers that are always kept free.
      */
-    CO_API BufferCache( const int32_t minFree );
+    CO_API explicit BufferCache( const int32_t minFree );
     CO_API ~BufferCache();
 
     /** @return a new buffer. */
