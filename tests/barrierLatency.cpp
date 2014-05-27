@@ -128,6 +128,7 @@ int main( int argc, char **argv )
 
     co::LocalNodePtr node = new co::LocalNode;
     co::ConnectionDescriptionPtr desc = new co::ConnectionDescription;
+    desc->hostname = "localhost";
     node->addConnectionDescription( desc );
     TEST( node->listen( ));
 
