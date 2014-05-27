@@ -88,8 +88,10 @@ private:
 
 typedef lunchbox::RefPtr< LocalNode > LocalNodePtr;
 
-_Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
-_Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+#ifndef _WIN32
+#  pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
+#  pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+#endif
 
 int main( int argc, char **argv )
 {

@@ -30,6 +30,8 @@
 #define PACKETSIZE (123456)
 #define RUNTIME (1000) // ms
 
+lunchbox::Monitor< bool > s_done( false );
+
 namespace
 {
 static co::ConnectionType types[] =
@@ -51,12 +53,18 @@ public:
 
     void run() override
     {
+        co::ConnectionPtr listener = connection_;
+        connection_ = listener->acceptSync();
+        TESTINFO( connection_, listener->getDescription( ));
+
         co::Buffer buffer;
         co::BufferPtr syncBuffer;
         buffer.reserve( PACKETSIZE );
         uint64_t& sequence = *reinterpret_cast< uint64_t* >( buffer.getData( ));
         sequence = 0;
         uint64_t i = 0;
+
+        s_done = false;
 
         while( sequence != 0xdeadbeef )
         {
@@ -68,9 +76,12 @@ public:
             buffer.setSize( 0 );
         }
 
+        s_done = true;
         connection_->recvNB( &buffer, PACKETSIZE );
         TEST( !connection_->recvSync( syncBuffer ));
+#ifndef _WIN32
         TEST( connection_->isClosed( ));
+#endif
         connection_ = 0;
     }
 
@@ -86,11 +97,13 @@ public:
 
     void run() override
     {
+        connection_ = connection_->acceptSync();
         co::Buffer buffer;
         co::BufferPtr syncBuffer;
         buffer.reserve( sizeof( uint64_t ));
         uint64_t& sequence = *reinterpret_cast< uint64_t* >( buffer.getData( ));
         sequence = 0;
+        s_done = false;
 
         while( sequence != 0xC0FFEE )
         {
@@ -99,9 +112,12 @@ public:
             buffer.setSize( 0 );
         }
 
+        s_done = true;
         connection_->recvNB( &buffer, sizeof( uint64_t ));
         TEST( !connection_->recvSync( syncBuffer ));
+#ifndef _WIN32
         TEST( connection_->isClosed( ));
+#endif
         connection_ = 0;
     }
 
@@ -109,7 +125,8 @@ private:
     co::ConnectionPtr connection_;
 };
 
-bool _initialize( co::ConnectionDescriptionPtr desc, co::ConnectionPtr& reader,
+bool _initialize( co::ConnectionDescriptionPtr desc,
+                  co::ConnectionPtr& listener,
                   co::ConnectionPtr& writer )
 {
     if( desc->type >= co::CONNECTIONTYPE_MULTICAST )
@@ -117,7 +134,7 @@ bool _initialize( co::ConnectionDescriptionPtr desc, co::ConnectionPtr& reader,
     else
         desc->setHostname( "127.0.0.1" );
 
-    co::ConnectionPtr listener = co::Connection::create( desc );
+    listener = co::Connection::create( desc );
     if( !listener )
     {
         std::cout << desc->type << ": not supported" << std::endl;
@@ -128,8 +145,6 @@ bool _initialize( co::ConnectionDescriptionPtr desc, co::ConnectionPtr& reader,
     {
     case co::CONNECTIONTYPE_PIPE:
         writer = listener;
-        TEST( writer->connect( ));
-        reader = writer->acceptSync();
         break;
 
     case co::CONNECTIONTYPE_RSP:
@@ -137,7 +152,6 @@ bool _initialize( co::ConnectionDescriptionPtr desc, co::ConnectionPtr& reader,
         listener->acceptNB();
 
         writer = listener;
-        reader = listener->acceptSync();
         break;
 
     default:
@@ -150,15 +164,12 @@ bool _initialize( co::ConnectionDescriptionPtr desc, co::ConnectionPtr& reader,
         listener->acceptNB();
 
         writer = co::Connection::create( desc );
-        TEST( writer->connect( ));
 
-        reader = listener->acceptSync();
         break;
     }
     }
 
     TEST( writer );
-    TEST( reader );
     return true;
 }
 }
@@ -174,12 +185,15 @@ int main( int argc, char **argv )
         desc->type = types[i];
 
         co::ConnectionPtr writer;
-        co::ConnectionPtr reader;
+        co::ConnectionPtr listener;
 
-        if( !_initialize( desc, reader, writer ))
+        if( !_initialize( desc, listener, writer ))
             continue;
 
-        Reader readThread( reader );
+        Reader readThread( listener );
+        if( desc->type != co::CONNECTIONTYPE_RSP )
+            TEST( writer->connect( ));
+
         uint64_t out[ PACKETSIZE / 8 ];
 
         lunchbox::Clock clock;
@@ -194,13 +208,17 @@ int main( int argc, char **argv )
         out[0] = 0xdeadbeef;
         TEST( writer->send( out, PACKETSIZE ));
 
+        s_done.waitEQ( true );
         writer->close();
         readThread.join();
+        listener->close();
         const float bwTime = clock.getTimef();
         const uint64_t numBW = sequence;
 
-        TEST( _initialize( desc, reader, writer ));
-        Latency latency( reader );
+        TEST( _initialize( desc, listener, writer ));
+        Latency latency( listener );
+        if( desc->type != co::CONNECTIONTYPE_RSP )
+            TEST( writer->connect( ));
         sequence = 0;
         clock.reset();
 
@@ -213,8 +231,11 @@ int main( int argc, char **argv )
         sequence = 0xC0FFEE;
         TEST( writer->send( &sequence, sizeof( uint64_t )));
 
+        s_done.waitEQ( true );
         writer->close();
         latency.join();
+        listener->close();
+
         const float latencyTime = clock.getTimef();
         const float mFactor = 1024.f / 1024.f * 1000.f;
 
@@ -223,10 +244,11 @@ int main( int argc, char **argv )
                   << " MBps, " << (sequence+1) / mFactor / latencyTime
                   << " Mpps" << std::endl;
 
-        if( reader == writer )
-            reader = 0;
+        if( listener == writer )
+            listener = 0;
 
-        TESTINFO( !reader || reader->getRefCount() == 1, reader->getRefCount());
+        TESTINFO( !listener || listener->getRefCount() == 1,
+                  listener->getRefCount());
         TEST( writer->getRefCount() == 1 );
     }
 
