@@ -580,7 +580,7 @@ bool LocalNode::_connectSelf()
         return false;
     }
 
-    Node::_connect( connection->acceptSync( ));
+    Node::_connect( connection->getSibling( ));
     _setClosed(); // reset state after _connect set it to connected
 
     // add to connection set
@@ -1224,7 +1224,7 @@ void LocalNode::_runReceiverThread()
 
     ConnectionPtr connection = getConnection();
     PipeConnectionPtr pipe = LBSAFECAST( PipeConnection*, connection.get( ));
-    connection = pipe->acceptSync();
+    connection = pipe->getSibling();
     _removeConnection( connection );
     _impl->connectionNodes.erase( connection );
     _disconnect();

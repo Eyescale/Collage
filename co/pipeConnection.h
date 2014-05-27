@@ -68,6 +68,9 @@ namespace co
         /** @return the sibling of this pipe connection. */
         ConnectionPtr acceptSync() override;
 
+        /** @return the sibling connection. */
+        PipeConnectionPtr getSibling() { return _sibling; }
+
     protected:
 #ifdef _WIN32
         void readNB( void* buffer, const uint64_t bytes ) override;
