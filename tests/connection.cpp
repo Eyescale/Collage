@@ -53,8 +53,10 @@ public:
 
     void run() override
     {
-        if( connection_->getDescription()->type == co::CONNECTIONTYPE_RDMA )
-            connection_ = connection_->acceptSync();
+        co::ConnectionPtr listener = connection_;
+        connection_ = listener->acceptSync();
+        TESTINFO( connection_, listener->getDescription( ));
+
         co::Buffer buffer;
         co::BufferPtr syncBuffer;
         buffer.reserve( PACKETSIZE );
@@ -95,8 +97,7 @@ public:
 
     void run() override
     {
-        if( connection_->getDescription()->type == co::CONNECTIONTYPE_RDMA )
-            connection_ = connection_->acceptSync();
+        connection_ = connection_->acceptSync();
         co::Buffer buffer;
         co::BufferPtr syncBuffer;
         buffer.reserve( sizeof( uint64_t ));
@@ -124,7 +125,8 @@ private:
     co::ConnectionPtr connection_;
 };
 
-bool _initialize( co::ConnectionDescriptionPtr desc, co::ConnectionPtr& reader,
+bool _initialize( co::ConnectionDescriptionPtr desc,
+                  co::ConnectionPtr& listener,
                   co::ConnectionPtr& writer )
 {
     if( desc->type >= co::CONNECTIONTYPE_MULTICAST )
@@ -132,7 +134,7 @@ bool _initialize( co::ConnectionDescriptionPtr desc, co::ConnectionPtr& reader,
     else
         desc->setHostname( "127.0.0.1" );
 
-    co::ConnectionPtr listener = co::Connection::create( desc );
+    listener = co::Connection::create( desc );
     if( !listener )
     {
         std::cout << desc->type << ": not supported" << std::endl;
@@ -143,8 +145,6 @@ bool _initialize( co::ConnectionDescriptionPtr desc, co::ConnectionPtr& reader,
     {
     case co::CONNECTIONTYPE_PIPE:
         writer = listener;
-        TEST( writer->connect( ));
-        reader = writer->acceptSync();
         break;
 
     case co::CONNECTIONTYPE_RSP:
@@ -152,13 +152,12 @@ bool _initialize( co::ConnectionDescriptionPtr desc, co::ConnectionPtr& reader,
         listener->acceptNB();
 
         writer = listener;
-        reader = listener->acceptSync();
         break;
 
-    case co::CONNECTIONTYPE_RDMA:
+    default:
     {
         const bool listening = listener->listen();
-        if( !listening )
+        if( !listening && desc->type == co::CONNECTIONTYPE_RDMA )
             return false; // No local IB adapter up
 
         TESTINFO( listening, desc );
@@ -166,28 +165,11 @@ bool _initialize( co::ConnectionDescriptionPtr desc, co::ConnectionPtr& reader,
 
         writer = co::Connection::create( desc );
 
-        reader = listener;
-        break;
-    }
-
-    default:
-    {
-        const bool listening = listener->listen();
-
-        TESTINFO( listening, desc );
-        listener->acceptNB();
-
-        writer = co::Connection::create( desc );
-        TEST( writer->connect( ));
-
-        reader = listener;
-        reader = listener->acceptSync();
         break;
     }
     }
 
     TEST( writer );
-    TEST( reader );
     return true;
 }
 }
@@ -203,14 +185,14 @@ int main( int argc, char **argv )
         desc->type = types[i];
 
         co::ConnectionPtr writer;
-        co::ConnectionPtr reader;
+        co::ConnectionPtr listener;
 
-        if( !_initialize( desc, reader, writer ))
+        if( !_initialize( desc, listener, writer ))
             continue;
 
-        Reader readThread( reader );
-        if( desc->type == co::CONNECTIONTYPE_RDMA )
-            writer->connect();
+        Reader readThread( listener );
+        if( desc->type != co::CONNECTIONTYPE_RSP )
+            TEST( writer->connect( ));
 
         uint64_t out[ PACKETSIZE / 8 ];
 
@@ -229,14 +211,14 @@ int main( int argc, char **argv )
         s_done.waitEQ( true );
         writer->close();
         readThread.join();
-        reader->close();
+        listener->close();
         const float bwTime = clock.getTimef();
         const uint64_t numBW = sequence;
 
-        TEST( _initialize( desc, reader, writer ));
-        Latency latency( reader );
-        if( desc->type == co::CONNECTIONTYPE_RDMA )
-            writer->connect();
+        TEST( _initialize( desc, listener, writer ));
+        Latency latency( listener );
+        if( desc->type != co::CONNECTIONTYPE_RSP )
+            TEST( writer->connect( ));
         sequence = 0;
         clock.reset();
 
@@ -252,7 +234,7 @@ int main( int argc, char **argv )
         s_done.waitEQ( true );
         writer->close();
         latency.join();
-        reader->close();
+        listener->close();
 
         const float latencyTime = clock.getTimef();
         const float mFactor = 1024.f / 1024.f * 1000.f;
@@ -262,10 +244,11 @@ int main( int argc, char **argv )
                   << " MBps, " << (sequence+1) / mFactor / latencyTime
                   << " Mpps" << std::endl;
 
-        if( reader == writer )
-            reader = 0;
+        if( listener == writer )
+            listener = 0;
 
-        TESTINFO( !reader || reader->getRefCount() == 1, reader->getRefCount());
+        TESTINFO( !listener || listener->getRefCount() == 1,
+                  listener->getRefCount());
         TEST( writer->getRefCount() == 1 );
     }
 
