@@ -171,6 +171,9 @@ int main( const int argc, char* argv[] )
         TEST( description->fromString( param ));
     TESTINFO( param.empty(), param );
 
+    if( description->hostname.empty( ))
+        description->hostname = "localhost";
+
     Server server( description );
     if( !isClient ) // start server thread
         TEST( server.start( ));
