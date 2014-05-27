@@ -26,6 +26,7 @@
 #  include "fdConnection.h"
 #endif
 
+#include <lunchbox/monitor.h>
 #include <lunchbox/thread.h>
 
 namespace co
@@ -65,7 +66,7 @@ namespace co
         void acceptNB() override { /* nop */ }
 
         /** @return the sibling of this pipe connection. */
-        ConnectionPtr acceptSync() override { return _sibling; }
+        ConnectionPtr acceptSync() override;
 
     protected:
 #ifdef _WIN32
@@ -78,6 +79,7 @@ namespace co
 
     private:
         PipeConnectionPtr _sibling;
+        lunchbox::Monitorb _connected;
 
 #ifdef _WIN32
         NamedPipeConnectionPtr _namedPipe;

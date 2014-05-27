@@ -68,6 +68,7 @@ bool PipeConnection::connect()
 
     _setState( STATE_CONNECTED );
     _sibling->_setState( STATE_CONNECTED );
+    _connected = true;
     return true;
 }
 
@@ -113,6 +114,7 @@ void PipeConnection::_close()
     if( isClosed( ))
         return;
 
+    _connected = false;
     _namedPipe->close();
     _namedPipe = 0;
     _sibling = 0;
@@ -191,9 +193,17 @@ void PipeConnection::_close()
         ::close( _readFD );
         _readFD  = 0;
     }
+
+    _connected = false;
     _setState( STATE_CLOSED );
     _sibling = 0;
 }
 #endif // else _WIN32
+
+ConnectionPtr PipeConnection::acceptSync()
+{
+    _connected.waitEQ( true );
+    return _sibling;
+}
 
 }
