@@ -163,7 +163,7 @@ public:
      * @sa registerObject(), connect()
      * @version 1.1.1
      */
-    CO_API NodePtr connectObjectMaster( const UUID& id );
+    CO_API NodePtr connectObjectMaster( const uint128_t& id );
 
     /**
      * Disconnect a connected node.
@@ -248,7 +248,7 @@ public:
      * @sa registerObject
      * @version 1.0
      */
-    CO_API f_bool_t mapObject( Object* object, const UUID& id,
+    CO_API f_bool_t mapObject( Object* object, const uint128_t& id,
                                NodePtr master,
                                const uint128_t& version = VERSION_OLDEST );
 
@@ -257,16 +257,16 @@ public:
         { return mapObject( object, v.identifier, 0, v.version ); }
 
     /** @deprecated */
-    f_bool_t mapObject( Object* object, const UUID& id,
+    f_bool_t mapObject( Object* object, const uint128_t& id,
                         const uint128_t& version = VERSION_OLDEST )
         { return mapObject( object, id, 0, version ); }
 
     /** @deprecated use mapObject() */
-    CO_API uint32_t mapObjectNB( Object* object, const UUID& id,
+    CO_API uint32_t mapObjectNB( Object* object, const uint128_t& id,
                                  const uint128_t& version = VERSION_OLDEST );
 
     /** @deprecated use mapObject() */
-    CO_API uint32_t mapObjectNB( Object* object, const UUID& id,
+    CO_API uint32_t mapObjectNB( Object* object, const uint128_t& id,
                                  const uint128_t& version,
                                  NodePtr master ) override;
 
@@ -294,8 +294,8 @@ public:
      * @version 1.1.1
      */
     CO_API f_bool_t syncObject( Object* object, NodePtr master,
-                                const UUID& id,
-                                const uint32_t instanceID = CO_INSTANCE_ALL );
+                                const uint128_t& id,
+                         const uint32_t instanceID = CO_INSTANCE_ALL ) override;
     /**
      * Unmap a mapped object.
      *
@@ -354,13 +354,13 @@ public:
      */
     CO_API virtual void objectPush( const uint128_t& groupID,
                                     const uint128_t& objectType,
-                                    const UUID& objectID,
+                                    const uint128_t& objectID,
                                     DataIStream& istream );
 
     /** Function signature for push handlers. @version 1.0 */
     typedef boost::function< void( const uint128_t&, //!< groupID
                                    const uint128_t&, //!< objectType
-                                   const UUID&, //!< objectID
+                                   const uint128_t&, //!< objectID
                                    DataIStream& ) > PushHandler;
     /**
      * Register a custom handler for Object::push operations
