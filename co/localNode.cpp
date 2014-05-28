@@ -686,8 +686,8 @@ void LocalNode::deregisterObject( Object* object )
     _impl->objectStore->deregister( object );
 }
 
-f_bool_t LocalNode::mapObject( Object* object, const UUID& id, NodePtr master,
-                              const uint128_t& version )
+f_bool_t LocalNode::mapObject( Object* object, const uint128_t& id,
+                               NodePtr master, const uint128_t& version )
 {
     const uint32_t request = _impl->objectStore->mapNB( object, id, version,
                                                         master );
@@ -696,13 +696,13 @@ f_bool_t LocalNode::mapObject( Object* object, const UUID& id, NodePtr master,
     return f_bool_t( new FuturebImpl( func ));
 }
 
-uint32_t LocalNode::mapObjectNB( Object* object, const UUID& id,
+uint32_t LocalNode::mapObjectNB( Object* object, const uint128_t& id,
                                  const uint128_t& version )
 {
     return _impl->objectStore->mapNB( object, id, version, 0 );
 }
 
-uint32_t LocalNode::mapObjectNB( Object* object, const UUID& id,
+uint32_t LocalNode::mapObjectNB( Object* object, const uint128_t& id,
                                  const uint128_t& version, NodePtr master )
 {
     return _impl->objectStore->mapNB( object, id, version, master );
@@ -714,7 +714,7 @@ bool LocalNode::mapObjectSync( const uint32_t requestID )
     return _impl->objectStore->mapSync( requestID );
 }
 
-f_bool_t LocalNode::syncObject( Object* object, NodePtr master, const UUID& id,
+f_bool_t LocalNode::syncObject( Object* object, NodePtr master, const uint128_t& id,
                                const uint32_t instanceID )
 {
     return _impl->objectStore->sync( object, master, id, instanceID );
@@ -732,7 +732,7 @@ void LocalNode::swapObject( Object* oldObject, Object* newObject )
 
 void LocalNode::objectPush( const uint128_t& groupID,
                             const uint128_t& objectType,
-                            const UUID& objectID, DataIStream& istream )
+                            const uint128_t& objectID, DataIStream& istream )
 {
     lunchbox::ScopedRead mutex( _impl->pushHandlers );
     HandlerHashCIter i = _impl->pushHandlers->find( groupID );
@@ -1073,7 +1073,7 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
     return CONNECT_OK;
 }
 
-NodePtr LocalNode::connectObjectMaster( const UUID& id )
+NodePtr LocalNode::connectObjectMaster( const uint128_t& id )
 {
     LBASSERTINFO( id.isUUID(), id );
     if( !id.isUUID( ))
