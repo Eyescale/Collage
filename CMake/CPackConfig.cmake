@@ -16,3 +16,4 @@ set(CPACK_MACPORTS_CATEGORY devel)
 set(CPACK_MACPORTS_DEPENDS boost Lunchbox)
 
 include(CommonCPack)
+include(OSSCPack)
