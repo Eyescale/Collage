@@ -374,6 +374,7 @@ private:
         { return !_threadBuffers.isEmpty() || !_writeBuffers.empty(); }
 };
 
+// cppcheck-suppress passedByValue
 std::ostream& operator << ( std::ostream&, const RSPConnection& );
 }
 
