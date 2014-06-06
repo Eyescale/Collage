@@ -17,8 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _WIN32
-
 #include "fdConnection.h"
 
 #include "connectionDescription.h"
@@ -143,4 +141,3 @@ int64_t FDConnection::write( const void* buffer, const uint64_t bytes )
     return bytesWritten;
 }
 }
-#endif

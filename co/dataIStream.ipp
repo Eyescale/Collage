@@ -73,7 +73,7 @@ void DataIStream::_readArray( Array< T > array, const boost::false_type& )
 template< class T > inline DataIStream&
 DataIStream::operator >> ( lunchbox::RefPtr< T >& ptr )
 {
-    T* object;
+    T* object = 0;
     *this >> object;
     ptr = object;
     return *this;

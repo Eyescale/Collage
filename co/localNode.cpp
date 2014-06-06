@@ -1745,6 +1745,7 @@ bool LocalNode::_cmdConnectReply( ICommand& command )
     LBASSERT( peer->getNodeID() == nodeID );
 
     // send ACK to peer
+    // cppcheck-suppress unusedScopedObject
     OCommand( Connections( 1, connection ), CMD_NODE_CONNECT_ACK );
 
     peer->_connect( connection );
