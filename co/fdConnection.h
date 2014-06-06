@@ -24,9 +24,6 @@
 
 namespace co
 {
-#ifdef _WIN32
-#  error FDConnection not used nor supported on Windows
-#endif
 
 /** A generic file descriptor-based connection, to be subclassed. */
 class FDConnection : public Connection

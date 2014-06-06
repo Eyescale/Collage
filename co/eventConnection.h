@@ -58,7 +58,7 @@ namespace co
             { LBDONTCALL; return -1; }
 
     private:
-#ifdef WIN32
+#ifdef _WIN32
         void* _event;
 #else
         PipeConnectionPtr _connection;
