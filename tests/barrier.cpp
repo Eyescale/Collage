@@ -120,7 +120,6 @@ int main( int argc, char **argv )
     std::cerr << "Main enter" << std::endl;
     _barrier->enter();
     std::cerr << "Main left" << std::endl;
-    _barrier = 0;
 
     slave.join();
     _barrier = 0;
