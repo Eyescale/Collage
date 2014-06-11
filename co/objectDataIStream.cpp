@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -21,6 +21,7 @@
 #include "objectDataIStream.h"
 
 #include "commands.h"
+#include "objectCommand.h"
 #include "objectDataICommand.h"
 
 namespace co

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -29,6 +29,7 @@
 
 #include <lunchbox/thread.h>
 
+#include <co/objectCommand.h>      // private header
 #include <co/objectDataOCommand.h> // private header
 #include <co/objectDataICommand.h> // private header
 

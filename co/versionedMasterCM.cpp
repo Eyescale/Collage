@@ -22,6 +22,7 @@
 
 #include "log.h"
 #include "object.h"
+#include "objectCommand.h"
 #include "objectDataICommand.h"
 #include "objectDataIStream.h"
 
