@@ -60,8 +60,8 @@ set(COLLAGE_HEADERS
   barrierCommand.h
   bufferCache.h
   connectionListener.h
-  dataStreamArchive.h
   dataIStreamQueue.h
+  dataStreamArchive.h
   deltaMasterCM.h
   eventConnection.h
   fullMasterCM.h
@@ -70,9 +70,10 @@ set(COLLAGE_HEADERS
   nodeCommand.h
   nullCM.h
   objectCM.h
+  objectCommand.h
   objectDataICommand.h
-  objectDataOCommand.h
   objectDataIStream.h
+  objectDataOCommand.h
   objectDataOStream.h
   objectDeltaDataOStream.h
   objectInstanceDataOStream.h

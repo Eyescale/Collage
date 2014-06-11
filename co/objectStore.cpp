@@ -30,9 +30,9 @@
 #include "nodeCommand.h"
 #include "oCommand.h"
 #include "objectCM.h"
-#include "objectDataIStream.h"
+#include "objectCommand.h"
 #include "objectDataICommand.h"
-#include "objectICommand.h"
+#include "objectDataIStream.h"
 
 #include <lunchbox/futureFunction.h>
 #include <lunchbox/scopedMutex.h>

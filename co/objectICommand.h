@@ -1,6 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2012-2013, Stefan.Eilemann@epfl.ch
+ *               2012-2014, Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -25,15 +25,6 @@
 
 namespace co
 {
-enum ObjectCommands
-{
-    CMD_OBJECT_INSTANCE,
-    CMD_OBJECT_DELTA,
-    CMD_OBJECT_SLAVE_DELTA,
-    CMD_OBJECT_MAX_VERSION
-    // check that not more then CMD_OBJECT_CUSTOM have been defined!
-};
-
 namespace detail { class ObjectICommand; }
 
 /** An input command specialization for objects. */

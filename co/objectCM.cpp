@@ -24,7 +24,7 @@
 #include "nullCM.h"
 #include "node.h"
 #include "object.h"
-#include "objectDataICommand.h"
+#include "objectCommand.h"
 #include "objectInstanceDataOStream.h"
 #include "objectDataOCommand.h"
 

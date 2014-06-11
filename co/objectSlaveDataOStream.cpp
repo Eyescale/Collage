@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder  <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -24,6 +24,7 @@
 #include "log.h"
 #include "versionedMasterCM.h"
 #include "object.h"
+#include "objectCommand.h"
 #include "objectDataIStream.h"
 #include "objectDataOCommand.h"
 
