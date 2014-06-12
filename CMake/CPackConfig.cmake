@@ -10,7 +10,7 @@ set(CPACK_RESOURCE_FILE_README ${CMAKE_BINARY_DIR}/doc/RelNotes.md)
 
 set(CPACK_DEBIAN_BUILD_DEPENDS
   ${COLLAGE_BUILD_DEBS} ${LUNCHBOX_DEB_DEV_DEPENDENCY})
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libstdc++6, libboost-system-dev, libboost-date-time-dev, libboost-regex-dev, libboost-serialization-dev, librdmacm-dev, libibverbs-dev, librdmacm-dev, libudt-dev, ${LUNCHBOX_DEB_DEV_DEPENDENCY}")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libstdc++6, libboost-system-dev, libboost-date-time-dev, libboost-regex-dev, libboost-serialization-dev, libboost-thread-dev, librdmacm-dev, libibverbs-dev, librdmacm-dev, libudt-dev, ${LUNCHBOX_DEB_DEV_DEPENDENCY}")
 
 set(CPACK_MACPORTS_CATEGORY devel)
 set(CPACK_MACPORTS_DEPENDS boost Lunchbox)
