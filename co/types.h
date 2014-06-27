@@ -73,12 +73,14 @@ struct ObjectVersion;
 using lunchbox::Array;
 using lunchbox::Strings;
 using lunchbox::StringsCIter;
-using lunchbox::UUID;
 using lunchbox::a_ssize_t;
 using lunchbox::f_bool_t;
 using lunchbox::uint128_t;
+#ifdef LUNCHBOX_USE_V1_API
+using lunchbox::UUID;
+#endif
 
-typedef UUID NodeID; //!< A unique identifier for nodes.
+typedef uint128_t NodeID; //!< A unique identifier for nodes.
 
 /** A reference pointer for Node pointers. */
 typedef lunchbox::RefPtr< Node >                  NodePtr;

@@ -313,7 +313,7 @@ bool ObjectMap::deregister( Object* object )
     return true;
 }
 
-Object* ObjectMap::map( const UUID& identifier, Object* instance )
+Object* ObjectMap::map( const uint128_t& identifier, Object* instance )
 {
     if( identifier == 0 )
         return 0;

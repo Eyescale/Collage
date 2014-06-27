@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2009-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -84,7 +84,7 @@ namespace co
          *         is cached for this object.
          */
 
-        CO_API const Data& operator[]( const UUID& id );
+        CO_API const Data& operator[]( const uint128_t& id );
 
         /**
          * Release the retrieved instance data of the given object.
@@ -94,7 +94,7 @@ namespace co
          * @return true if the element was unpinned, false if it is not in the
          *         instance cache.
          */
-        CO_API bool release( const UUID& id, const uint32_t count );
+        CO_API bool release( const uint128_t& id, const uint32_t count );
 
         /**
          * Erase all the data for the given object.
@@ -104,7 +104,7 @@ namespace co
          *
          * @return true if the element was erased, false otherwise.
          */
-        CO_API bool erase( const UUID& id );
+        CO_API bool erase( const uint128_t& id );
 
         /** @return the number of bytes used by the instance cache. */
         uint64_t getSize() const { return _size; }

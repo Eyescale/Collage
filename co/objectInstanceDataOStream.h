@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder  <cedric.stalder@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -46,7 +46,7 @@ namespace co
                          const MasterCMCommand& command );
 
         /** Push a stored instance data. */
-        void push( const Nodes& receivers, const UUID& objectID,
+        void push( const Nodes& receivers, const uint128_t& objectID,
                    const uint128_t& groupID, const uint128_t& typeID );
 
         /** Synchronize a stored instance data. */

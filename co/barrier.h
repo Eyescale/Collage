@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2011, Cedric Stalder <cedric.stalder@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -120,7 +120,7 @@ public:
 protected:
     /** @internal */
     //@{
-    void attach( const UUID& id, const uint32_t instanceID ) override;
+    void attach( const uint128_t& id, const uint32_t instanceID ) override;
     ChangeType getChangeType() const override { return DELTA; }
 
     void getInstanceData( DataOStream& os ) override;

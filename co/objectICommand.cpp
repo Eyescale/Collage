@@ -1,6 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2012-2013, Stefan.Eilemann@epfl.ch
+ *               2012-2014, Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -39,7 +39,7 @@ public:
         , instanceID( rhs.instanceID )
     {}
 
-    UUID objectID;
+    uint128_t objectID;
     uint32_t instanceID;
 };
 }
@@ -77,7 +77,7 @@ ObjectICommand::~ObjectICommand()
     delete _impl;
 }
 
-const UUID& ObjectICommand::getObjectID() const
+const uint128_t& ObjectICommand::getObjectID() const
 {
     return _impl->objectID;
 }

@@ -55,7 +55,7 @@ public:
      * @return the master node, or 0 if no master node is
      *         found for the identifier.
      */
-    NodeID findMasterNodeID( const UUID& id );
+    NodeID findMasterNodeID( const uint128_t& id );
 
     /** @name ICommand Dispatch */
     //@{
@@ -95,14 +95,14 @@ public:
     void deregister( Object* object );
 
     /** Start mapping a distributed object. */
-    uint32_t mapNB( Object* object, const UUID& id, const uint128_t& version,
-                    NodePtr master );
+    uint32_t mapNB( Object* object, const uint128_t& id,
+                    const uint128_t& version, NodePtr master );
 
     /** Finalize the mapping of a distributed object. */
     bool mapSync( const uint32_t requestID );
 
     /** Synchronize an object. */
-    f_bool_t sync( Object* object, NodePtr master, const UUID& id,
+    f_bool_t sync( Object* object, NodePtr master, const uint128_t& id,
                    const uint32_t instanceID );
     /**
      * Unmap a mapped object.
@@ -123,7 +123,8 @@ public:
      * @param instanceID the node-local instance identifier, or
      *               CO_INSTANCE_INVALID if this method should generate one.
      */
-    void attach( Object* object, const UUID& id, const uint32_t instanceID );
+    void attach( Object* object, const uint128_t& id,
+                 const uint32_t instanceID );
 
     /**
      * Detach an object.
@@ -209,18 +210,19 @@ private:
     DataIStreamQueue _pushData;    //!< Object::push() queue
     a_ssize_t* const _counters; // LocalNode performance counters
 
-    void _attach( Object* object, const UUID& id, const uint32_t instanceID );
+    void _attach( Object* object, const uint128_t& id,
+                  const uint32_t instanceID );
     void _detach( Object* object );
 
 
     /** Start synchronizing an object. */
-    uint32_t _startSync( Object* object, NodePtr master, const UUID& id,
+    uint32_t _startSync( Object* object, NodePtr master, const uint128_t& id,
                          const uint32_t instanceID );
 
     /** Finalize the synchronization of a distributed object. */
     bool _finishSync( const uint32_t requestID, Object* object );
 
-    bool _checkInstanceCache( const UUID& id, uint128_t& from,
+    bool _checkInstanceCache( const uint128_t& id, uint128_t& from,
                               uint128_t& to, uint32_t& instanceID );
 
     /** The command handler functions. */

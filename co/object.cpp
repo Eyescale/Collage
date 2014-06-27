@@ -55,7 +55,7 @@ public:
         {}
 
     /** The session-unique object identifier. */
-    UUID id;
+    uint128_t id;
 
     /** The node where this object is attached. */
     LocalNodePtr localNode;
@@ -101,14 +101,14 @@ LocalNodePtr Object::getLocalNode()
     return impl_->localNode;
 }
 
-void Object::setID( const UUID& identifier )
+void Object::setID( const uint128_t& identifier )
 {
     LBASSERT( !isAttached( ));
     LBASSERT( identifier.isUUID( ));
     impl_->id = identifier;
 }
 
-const UUID& Object::getID() const
+const uint128_t& Object::getID() const
 {
     return impl_->id;
 }
@@ -118,7 +118,7 @@ uint32_t Object::getInstanceID() const
     return impl_->instanceID;
 }
 
-void Object::attach( const UUID& id, const uint32_t instanceID )
+void Object::attach( const uint128_t& id, const uint32_t instanceID )
 {
     LBASSERT( !isAttached() );
     LBASSERT( impl_->localNode );

@@ -1,6 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2012, Stefan.Eilemann@epfl.ch
+ *               2012-2014, Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -59,7 +59,7 @@ public:
      */
     CO_API ObjectDataOCommand( const Connections& receivers,
                                const uint32_t cmd, const uint32_t type,
-                               const UUID& id, const uint32_t instanceID,
+                               const uint128_t& id, const uint32_t instanceID,
                                const uint128_t& version,
                                const uint32_t sequence,
                                const void* data, const uint64_t size,

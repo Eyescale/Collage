@@ -81,7 +81,8 @@ protected:
 private:
     detail::QueueSlave* const _impl;
 
-    CO_API void attach( const UUID& id, const uint32_t instanceID ) override;
+    CO_API void attach( const uint128_t& id,
+                        const uint32_t instanceID ) override;
 };
 
 } // co

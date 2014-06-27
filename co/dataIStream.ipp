@@ -1,6 +1,6 @@
 
 /* Copyright (c) 2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
- *                    2013, Stefan.Eilemann@epfl.ch
+ *               2013-2014, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -169,12 +169,12 @@ namespace
 class ObjectFinder
 {
 public:
-    ObjectFinder( const UUID& id ) : _id( id ) {}
+    ObjectFinder( const uint128_t& id ) : _id( id ) {}
     bool operator()( co::Object* candidate )
         { return candidate->getID() == _id; }
 
 private:
-    const UUID _id;
+    const uint128_t _id;
 };
 }
 
@@ -195,7 +195,7 @@ DataIStream::deserializeChildren( O* object, const std::vector< C* >& old_,
     {
         const ObjectVersion& version = *i;
 
-        if( version.identifier == UUID( ))
+        if( version.identifier == uint128_t( ))
         {
             result.push_back( 0 );
             continue;

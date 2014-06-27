@@ -45,7 +45,7 @@ public:
     CO_API virtual ~ObjectICommand();
 
     /** @internal @return the object adressed by this command. */
-    const UUID& getObjectID() const;
+    const uint128_t& getObjectID() const;
 
     /** @internal @return the object instance adressed by this command. */
     uint32_t getInstanceID() const;

@@ -79,10 +79,10 @@ public:
      * overwritten with the identifier of the master object.
      * @version 1.0
      */
-    CO_API void setID( const UUID& identifier );
+    CO_API void setID( const uint128_t& identifier );
 
     /** @return the object's unique identifier. @version 1.0 */
-    CO_API const UUID& getID() const;
+    CO_API const uint128_t& getID() const;
 
     /** @return the node-wide unique object instance identifier. @version 1.0 */
     CO_API uint32_t getInstanceID() const;
@@ -411,7 +411,7 @@ public:
                              const uint32_t masterInstanceID );
 
     /** @internal Called when object is attached from the receiver thread. */
-    CO_API virtual void attach( const UUID& id,
+    CO_API virtual void attach( const uint128_t& id,
                                 const uint32_t instanceID );
     /**
      * @internal Called when the object is detached from the local node from the

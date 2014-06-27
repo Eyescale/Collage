@@ -1,6 +1,6 @@
 
 /* Copyright (c) 2012-2013, Daniel Nachbaur <danielnachbaur@googlemail.com>
- *               2012-2013, Stefan Eilemann <eile@eyescale.ch>
+ *               2012-2014, Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -99,7 +99,7 @@ public:
      * @return 0 if not registered, the valid instance otherwise
      * @version 1.0
      */
-    CO_API Object* map( const UUID& identifier, Object* instance = 0 );
+    CO_API Object* map( const uint128_t& identifier, Object* instance = 0 );
 
     /**
      * Unmap an object from the object map.

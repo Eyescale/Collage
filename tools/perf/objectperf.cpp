@@ -62,7 +62,7 @@ public:
     {
         LBASSERT( nChildren < nObjects );
         LBASSERT( index < nObjects );
-        setID( co::UUID( _objectID, index ));
+        setID( co::uint128_t( _objectID, index ));
 
         buffer_.resize( objectSize );
         const uint8_t* from = reinterpret_cast< uint8_t* >( this );

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2009-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2009-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *               2010-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -212,7 +212,7 @@ void InstanceCache::remove( const NodeID& nodeID )
     }
 }
 
-const InstanceCache::Data& InstanceCache::operator[]( const UUID& id )
+const InstanceCache::Data& InstanceCache::operator[]( const uint128_t& id )
 {
 #ifdef CO_INSTRUMENT_CACHE
     ++nRead;
@@ -234,7 +234,7 @@ const InstanceCache::Data& InstanceCache::operator[]( const UUID& id )
     return item.data;
 }
 
-bool InstanceCache::release( const UUID& id, const uint32_t count )
+bool InstanceCache::release( const uint128_t& id, const uint32_t count )
 {
     lunchbox::ScopedWrite mutex( _items );
     ItemHash::iterator i = _items->find( id );
@@ -250,7 +250,7 @@ bool InstanceCache::release( const UUID& id, const uint32_t count )
     return true;
 }
 
-bool InstanceCache::erase( const UUID& id )
+bool InstanceCache::erase( const uint128_t& id )
 {
     lunchbox::ScopedWrite mutex( _items );
     ItemHash::iterator i = _items->find( id );
