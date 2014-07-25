@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -26,35 +26,37 @@
 
 namespace co
 {
-    /** @internal */
-    CO_API bool _init( const int argc, char** argv );
+/** @internal */
+CO_API bool _init( const int argc, char** argv );
 
-    /**
-     * Initialize the Collage network library.
-     *
-     * @param argc the command line argument count.
-     * @param argv the command line argument values.
-     * @return true if the library was successfully initialised, false otherwise
-     * @version 1.0
-     */
-    inline bool init( const int argc, char** argv )
-    {
-        if( CO_VERSION_ABI == Version::getABI( ))
-            return co::_init( argc, argv );
-        LBWARN << "Collage shared library v" << Version::getABI()
-               << " not binary compatible with application v" << CO_VERSION_ABI
-               << std::endl;
-        return false;
-    }
+/**
+ * Initialize the Collage network library.
+ *
+ * exit() should be called independent of the return value of this function.
+ *
+ * @param argc the command line argument count.
+ * @param argv the command line argument values.
+ * @return true if the library was successfully initialised, false otherwise
+ * @version 1.0
+ */
+inline bool init( const int argc, char** argv )
+{
+    if( CO_VERSION_ABI == Version::getABI( ))
+        return co::_init( argc, argv );
+    LBWARN << "Collage shared library v" << Version::getABI()
+           << " not binary compatible with application v" << CO_VERSION_ABI
+           << std::endl;
+    return false;
+}
 
-    /**
-     * De-initialize the Collage network library.
-     *
-     * @return true if the library was successfully de-initialised,
-     *         false otherwise.
-     * @version 1.0
-     */
-    CO_API bool exit();
+/**
+ * De-initialize the Collage network library.
+ *
+ * @return true if the library was successfully de-initialised,
+ *         false otherwise.
+ * @version 1.0
+ */
+CO_API bool exit();
 }
 
 #endif // CO_INIT_H
