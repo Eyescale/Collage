@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2013, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2012-2014, Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -61,7 +61,7 @@ public:
      * @return the request identifier for mapObjectSync().
      * @version 1.0
      */
-    virtual uint32_t mapObjectNB( Object* object, const UUID& id,
+    virtual uint32_t mapObjectNB( Object* object, const uint128_t& id,
                                   const uint128_t& version,
                                   NodePtr master ) = 0;
 

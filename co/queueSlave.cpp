@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2014, Stefan Eilemann <eile@eyescale.ch>
  *                    2011, Carsten Rohn <carsten.rohn@rtt.ag>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -66,7 +66,7 @@ QueueSlave::~QueueSlave()
     delete _impl;
 }
 
-void QueueSlave::attach( const UUID& id, const uint32_t instanceID )
+void QueueSlave::attach( const uint128_t& id, const uint32_t instanceID )
 {
     Object::attach(id, instanceID);
     registerCommand( CMD_QUEUE_ITEM, CommandFunc<Object>(0, 0), &_impl->queue );

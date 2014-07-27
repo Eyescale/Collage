@@ -154,7 +154,7 @@ uint32_t Barrier::getHeight() const
     return _impl->height;
 }
 
-void Barrier::attach( const UUID& id, const uint32_t instanceID )
+void Barrier::attach( const uint128_t& id, const uint32_t instanceID )
 {
     Object::attach( id, instanceID );
 

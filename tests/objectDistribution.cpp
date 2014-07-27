@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2014, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -80,7 +80,7 @@ public:
 
 protected:
     void objectPush( const uint128_t& /*groupID*/, const uint128_t& typeID,
-                     const co::UUID& /*objectID*/, co::DataIStream& is )
+                     const co::uint128_t& /*objectID*/, co::DataIStream& is )
         override
     {
         const co::Object::ChangeType type =

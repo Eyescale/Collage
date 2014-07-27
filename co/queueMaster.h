@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2014, Stefan Eilemann <eile@eyescale.ch>
  *                    2011, Carsten Rohn <carsten.rohn@rtt.ag>
  *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -63,8 +63,8 @@ public:
 private:
     detail::QueueMaster* const _impl;
 
-    CO_API void attach( const UUID& id,
-                                const uint32_t instanceID ) override;
+    CO_API void attach( const uint128_t& id,
+                        const uint32_t instanceID ) override;
 
     ChangeType getChangeType() const override { return STATIC; }
     void getInstanceData( co::DataOStream& os ) override;

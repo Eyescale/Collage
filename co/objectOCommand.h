@@ -1,6 +1,6 @@
 
 /* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2013, Stefan.Eilemann@epfl.ch
+ *               2013-2014, Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -45,7 +45,7 @@ public:
      * @param instanceID the instance of the object to dispatch the command to.
      */
     CO_API ObjectOCommand( const Connections& receivers, const uint32_t cmd,
-                           const uint32_t type, const UUID& id,
+                           const uint32_t type, const uint128_t& id,
                            const uint32_t instanceID );
 
     /** @internal
@@ -60,7 +60,7 @@ public:
      */
     CO_API ObjectOCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
                            const uint32_t cmd, const uint32_t type,
-                           const UUID& id, const uint32_t instanceID );
+                           const uint128_t& id, const uint32_t instanceID );
 
     /** @internal */
     CO_API ObjectOCommand( const ObjectOCommand& rhs );
@@ -73,7 +73,7 @@ private:
     ObjectOCommand& operator = ( const ObjectOCommand& );
     detail::ObjectOCommand* const _impl;
 
-    void _init( const UUID& id, const uint32_t instanceID );
+    void _init( const uint128_t& id, const uint32_t instanceID );
 };
 }
 

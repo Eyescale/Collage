@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2013, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2010-2014, Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -38,7 +38,7 @@ namespace co
                                const bool last ) override;
 
     private:
-        UUID _commit;
+        uint128_t _commit;
     };
 }
 #endif //CO_OBJECTSLAVEDATAOSTREAM_H

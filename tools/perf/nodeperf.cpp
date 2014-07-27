@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2013, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2012-2014, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -45,7 +45,7 @@ typedef lunchbox::Buffer< uint64_t > Buffer;
 
 ConnectedNodes nodes_;
 lunchbox::Lock print_;
-static co::UUID _objectID( 0x25625429A197D730ull, 0x79F60861189007D5ull );
+static co::uint128_t _objectID( 0x25625429A197D730ull, 0x79F60861189007D5ull );
 template< class C >
 bool commandHandler( C command, Buffer& buffer, const uint64_t seed );
 
@@ -54,7 +54,7 @@ class Object : public co::Serializable
 private:
     Buffer buffer_;
 
-    void attach( const co::UUID& id, const uint32_t instanceID ) override
+    void attach( const co::uint128_t& id, const uint32_t instanceID ) override
     {
         co::Serializable::attach( id, instanceID );
 
@@ -231,7 +231,7 @@ int main( int argc, char **argv )
     localNode->getZeroconf().set( "coNodeperf", co::Version::getString( ));
 
     Object object;
-    object.setID( co::UUID( _objectID + localNode->getNodeID( )));
+    object.setID( co::uint128_t( _objectID + localNode->getNodeID( )));
     LBCHECK( localNode->registerObject( &object ));
 
     // run
@@ -296,7 +296,8 @@ int main( int argc, char **argv )
                         PerfNodeProxyPtr peer =
                                     static_cast< PerfNodeProxy* >( node.get( ));
                         LBCHECK( localNode->mapObject( &peer->object,
-                                    co::UUID( _objectID + peer->getNodeID( ))));
+                                    co::uint128_t( _objectID +
+                                                   peer->getNodeID( ))));
                     }
                 }
                 nodes = *nodes_;

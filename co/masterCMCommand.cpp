@@ -37,7 +37,7 @@ public:
     uint128_t requestedVersion;
     uint128_t minCachedVersion;
     uint128_t maxCachedVersion;
-    UUID objectID;
+    uint128_t objectID;
     uint64_t maxVersion;
     uint32_t requestID;
     uint32_t instanceID;
@@ -90,7 +90,7 @@ const uint128_t& MasterCMCommand::getMaxCachedVersion() const
     return _impl->maxCachedVersion;
 }
 
-const UUID& MasterCMCommand::getObjectID() const
+const uint128_t& MasterCMCommand::getObjectID() const
 {
     return _impl->objectID;
 }

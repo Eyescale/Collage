@@ -42,7 +42,7 @@ public:
 
     const uint128_t& getMaxCachedVersion() const;
 
-    const UUID& getObjectID() const;
+    const uint128_t& getObjectID() const;
 
     uint64_t getMaxVersion() const;
 

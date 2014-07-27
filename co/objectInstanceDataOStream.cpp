@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder  <cedric.stalder@gmail.com>
  *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -78,7 +78,7 @@ void ObjectInstanceDataOStream::enableSync( const uint128_t& version,
 }
 
 void ObjectInstanceDataOStream::push( const Nodes& receivers,
-                                      const UUID& objectID,
+                                      const uint128_t& objectID,
                                       const uint128_t& groupID,
                                       const uint128_t& typeID )
 {

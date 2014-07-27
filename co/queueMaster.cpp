@@ -113,7 +113,7 @@ QueueMaster::~QueueMaster()
     delete _impl;
 }
 
-void QueueMaster::attach( const UUID& id, const uint32_t instanceID )
+void QueueMaster::attach( const uint128_t& id, const uint32_t instanceID )
 {
     Object::attach( id, instanceID );
 
