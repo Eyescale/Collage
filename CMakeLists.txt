@@ -5,8 +5,8 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(Collage)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake
-  ${CMAKE_SOURCE_DIR}/CMake/common)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake
+  ${CMAKE_CURRENT_SOURCE_DIR}/CMake/common)
 include(GitExternal)
 
 include(Buildyard)
@@ -52,5 +52,5 @@ add_subdirectory(doc)
 
 include(CPackConfig)
 
-set(DOXYGEN_EXTRA_INPUT @CMAKE_BINARY_DIR@/doc/RelNotes.md)
+set(DOXYGEN_EXTRA_INPUT @CMAKE_CURRENT_BINARY_DIR@/doc/RelNotes.md)
 include(DoxygenRule)
