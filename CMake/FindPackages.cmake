@@ -116,7 +116,7 @@ if(Lunchbox_name)
   endif()
 endif()
 
-set(COLLAGE_BUILD_DEBS autoconf;automake;cmake;doxygen;git;git-review;libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-filesystem-dev;libboost-program-options-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libboost-thread-dev;libhwloc-dev;libibverbs-dev;libjpeg-turbo8-dev;librdmacm-dev;libturbojpeg;libudt-dev;pkg-config;subversion)
+set(COLLAGE_BUILD_DEBS autoconf;automake;cmake;doxygen;git;git-review;libavahi-compat-libdnssd-dev;libboost-date-time-dev;libboost-filesystem-dev;libboost-program-options-dev;libboost-regex-dev;libboost-serialization-dev;libboost-system-dev;libboost-thread-dev;libhwloc-dev;libibverbs-dev;libjpeg-turbo8-dev;libleveldb-dev;librdmacm-dev;libturbojpeg;libudt-dev;pkg-config;subversion)
 
 set(COLLAGE_DEPENDS OFED;UDT;Boost;Lunchbox)
 
