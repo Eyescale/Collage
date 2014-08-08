@@ -273,6 +273,13 @@ bool RSPConnection::listen()
         _read->set_option( ip::multicast::join_group( mcAddr.to_v4(),
                                                       ifAddr.to_v4( )));
         _write->set_option( ip::multicast::outbound_interface( ifAddr.to_v4()));
+#ifdef SO_BINDTODEVICE // https://github.com/Eyescale/Collage/issues/16
+        const std::string& ifIP = ifAddr.to_string();
+        ::setsockopt( _write->native(), SOL_SOCKET, SO_BINDTODEVICE,
+                      ifIP.c_str(), ifIP.size() + 1 );
+        ::setsockopt( _read->native(), SOL_SOCKET, SO_BINDTODEVICE,
+                      ifIP.c_str(), ifIP.size() + 1 );
+#endif
 
         _write->connect( writeEndpoint );
 
