@@ -44,7 +44,7 @@ if(PKG_CONFIG_EXECUTABLE)
     message(FATAL_ERROR "Could not find Lunchbox")
   endif()
 else()
-  find_package(Lunchbox 1.9  REQUIRED)
+  find_package(Lunchbox 1.9 REQUIRED)
 endif()
 
 
@@ -128,7 +128,7 @@ endif()
 if(NOT OPTIONS_CMAKE)
   set(OPTIONS_CMAKE ${CMAKE_BINARY_DIR}/options.cmake)
 endif()
-set(DEFINES_FILE "${CMAKE_BINARY_DIR}/include/${PROJECT_INCLUDE_NAME}/defines${SYSTEM}.h")
+set(DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_INCLUDE_NAME}/defines${SYSTEM}.h")
 list(APPEND COMMON_INCLUDES ${DEFINES_FILE})
 set(DEFINES_FILE_IN ${DEFINES_FILE}.in)
 file(WRITE ${DEFINES_FILE_IN}
