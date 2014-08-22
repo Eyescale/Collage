@@ -122,7 +122,7 @@ public:
     {
         if( state == STATE_UNCOMPRESSED || state == STATE_UNCOMPRESSIBLE )
             return 1;
-        return compressor.getResult().chunks.size();
+        return uint32_t( compressor.getResult().chunks.size( ));
     }
 
 
@@ -435,7 +435,7 @@ void DataOStream::sendBody( ConnectionPtr connection, const void* data,
 #ifdef CO_INSTRUMENT_DATAOSTREAM
     nBytesSent += _impl->buffer.getSize();
 #endif
-    const uint32_t nChunks = _impl->compressor.getResult().chunks.size();
+    const size_t nChunks = _impl->compressor.getResult().chunks.size();
     uint64_t* chunkSizes = static_cast< uint64_t* >
                                ( alloca (nChunks * sizeof( uint64_t )));
     void** chunks = static_cast< void ** >
