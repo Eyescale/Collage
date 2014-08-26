@@ -12,12 +12,12 @@
 #
 # [optional] Flags which control behaviour
 #  NO_UPDATE
-#    When set, GitExternal will not change a repo that has already been checked out. 
-#    The purpose of this is to allow one to set a default branch to be checked out, 
-#    but stop GitExternal from changing back to that branch if the user has checked 
+#    When set, GitExternal will not change a repo that has already been checked out.
+#    The purpose of this is to allow one to set a default branch to be checked out,
+#    but stop GitExternal from changing back to that branch if the user has checked
 #    out and is working on another.
-#  VERBOSE 
-#    When set, displays information about git commands that are executed  
+#  VERBOSE
+#    When set, displays information about git commands that are executed
 #
 
 find_package(Git)
@@ -51,9 +51,12 @@ function(GIT_EXTERNAL DIR REPO TAG)
   endif()
 
   if(IS_DIRECTORY "${DIR}/.git")
-    if (${GIT_EXTERNAL_NO_UPDATE})
+    if(${GIT_EXTERNAL_NO_UPDATE})
       GIT_EXTERNAL_MESSAGE("git update disabled by user")
     else()
+      execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+        OUTPUT_VARIABLE currentref OUTPUT_STRIP_TRAILING_WHITESPACE
+        WORKING_DIRECTORY ${DIR})
       GIT_EXTERNAL_MESSAGE("current ref is \"${currentref}\" and tag is \"${TAG}\"")
       if(currentref STREQUAL TAG) # nothing to do
         return()
@@ -74,23 +77,11 @@ function(GIT_EXTERNAL DIR REPO TAG)
       endforeach()
 
       # fetch latest update
-      GIT_EXTERNAL_MESSAGE("git fetch --all -q")
       execute_process(COMMAND "${GIT_EXECUTABLE}" fetch --all -q
         RESULT_VARIABLE nok ERROR_VARIABLE error
         WORKING_DIRECTORY "${DIR}")
       if(nok)
         message(STATUS "Update of ${DIR} failed:\n   ${error}")
-      endif()
-
-      # checkout requested tag
-      GIT_EXTERNAL_MESSAGE("git checkout -q ${TAG}")
-      execute_process(
-        COMMAND "${GIT_EXECUTABLE}" checkout -q "${TAG}"
-        RESULT_VARIABLE nok ERROR_VARIABLE error
-        WORKING_DIRECTORY "${DIR}"
-        )
-      if(nok)
-        message(STATUS "${DIR} git checkout ${TAG} failed: ${error}\n")
       endif()
 
       # update tag
@@ -102,10 +93,25 @@ function(GIT_EXTERNAL DIR REPO TAG)
         message(STATUS "git rebase failed, aborting ${DIR} merge")
         execute_process(COMMAND ${GIT_EXECUTABLE} rebase --abort
           WORKING_DIRECTORY "${DIR}")
+        if(RESULT)
+          message(STATUS "git rebase failed, aborting ${DIR} merge")
+          execute_process(COMMAND ${GIT_EXECUTABLE} rebase --abort
+            WORKING_DIRECTORY "${DIR}")
+        endif()
       endif()
+
+      # checkout requested tag
+      execute_process(
+        COMMAND "${GIT_EXECUTABLE}" checkout -q "${TAG}"
+        RESULT_VARIABLE nok ERROR_VARIABLE error
+        WORKING_DIRECTORY "${DIR}"
+        )
+      if(nok)
+        message(STATUS "${DIR} git checkout ${TAG} failed: ${error}\n")
+      endif()
+    else()
+      message(STATUS "Can't update git external ${DIR}: Not a git repository")
     endif()
-  else()
-    message(STATUS "Can't update git external ${DIR}: Not a git repository")
   endif()
 endfunction()
 

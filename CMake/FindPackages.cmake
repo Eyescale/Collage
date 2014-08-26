@@ -44,12 +44,12 @@ if(PKG_CONFIG_EXECUTABLE)
     message(FATAL_ERROR "Could not find Lunchbox")
   endif()
 else()
-  find_package(Lunchbox 1.9 REQUIRED)
+  find_package(Lunchbox 1.9  REQUIRED)
 endif()
 
 
-if(EXISTS ${CMAKE_SOURCE_DIR}/CMake/FindPackagesPost.cmake)
-  include(${CMAKE_SOURCE_DIR}/CMake/FindPackagesPost.cmake)
+if(EXISTS ${PROJECT_SOURCE_DIR}/CMake/FindPackagesPost.cmake)
+  include(${PROJECT_SOURCE_DIR}/CMake/FindPackagesPost.cmake)
 endif()
 
 if(OFED_FOUND)
