@@ -32,12 +32,15 @@
 #include <co/api.h>
 #include <co/types.h>
 
+#include <boost/version.hpp>
 #pragma warning( push )
 #pragma warning( disable: 4800 )
 #include <boost/archive/basic_binary_iarchive.hpp>
 #pragma warning( pop )
 #include <boost/archive/detail/register_archive.hpp>
-#include <boost/archive/shared_ptr_helper.hpp>
+#if BOOST_VERSION < 105600
+#  include <boost/archive/shared_ptr_helper.hpp>
+#endif
 #include <boost/serialization/is_bitwise_serializable.hpp>
 
 #include <boost/spirit/home/support/detail/endian.hpp>
@@ -54,7 +57,9 @@ namespace co
 /** A boost.serialization input archive reading from a co::DataIStream. */
 class DataIStreamArchive
     : public boost::archive::basic_binary_iarchive< DataIStreamArchive >
+#if BOOST_VERSION < 105600
     , public boost::archive::detail::shared_ptr_helper
+#endif
 {
     typedef boost::archive::basic_binary_iarchive< DataIStreamArchive > Super;
 
