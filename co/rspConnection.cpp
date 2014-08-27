@@ -28,10 +28,9 @@
 
 #include <lunchbox/rng.h>
 #include <lunchbox/scopedMutex.h>
+#include <lunchbox/sleep.h>
 
 #include <boost/bind.hpp>
-#include <boost/thread.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 //#define CO_INSTRUMENT_RSP
 #define CO_RSP_MERGE_WRITES
@@ -138,7 +137,7 @@ void RSPConnection::_close()
         _parent->close();
 
     while( !_parent && _isWriting( ))
-        boost::this_thread::sleep( bp::milliseconds( 10 ));
+        lunchbox::sleep( 10 /*ms*/ );
 
     if( isClosed( ))
         return;

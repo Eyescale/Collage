@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -24,11 +24,10 @@
 #include <lunchbox/clock.h>
 #include <lunchbox/lock.h>
 #include <lunchbox/monitor.h>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <lunchbox/sleep.h>
 #pragma warning( disable: 4275 )
-#include <boost/program_options.hpp>
+#  include <boost/program_options.hpp>
 #pragma warning( default: 4275 )
-#include <boost/thread/thread.hpp>
 #include <iostream>
 
 #ifndef MIN
@@ -37,8 +36,6 @@
 
 
 namespace po = boost::program_options;
-namespace bp = boost::posix_time;
-
 
 namespace
 {
@@ -85,7 +82,7 @@ public:
         ++_nSamples;
 
         if( _delay > 0 )
-            boost::this_thread::sleep( bp::milliseconds( _delay ));
+            lunchbox::sleep( _delay );
 
         if( time < 1000.f )
             return true;
@@ -422,7 +419,7 @@ int main( int argc, char **argv )
                 clock.reset();
             }
             if( waitTime > 0 )
-                boost::this_thread::sleep( bp::milliseconds( waitTime ));
+                lunchbox::sleep( waitTime );
         }
         const float time = clock.getTimef();
         const size_t nSamples = lastOutput - nPackets;

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2013, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2012-2014, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -23,14 +23,9 @@
 #include <co/localNode.h>
 #include <co/zeroconf.h>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/thread/thread.hpp>
-
 #include <iostream>
 
 using co::uint128_t;
-
-namespace bp = boost::posix_time;
 
 #ifdef COLLAGE_USE_SERVUS
 int main( int argc, char **argv )
@@ -62,7 +57,7 @@ int main( int argc, char **argv )
 
     zeroconf = server->getZeroconf();
     zeroconf.set( "co_test_value", "42" );
-    boost::this_thread::sleep( bp::milliseconds( 500 )); // give it time to propagate
+    lunchbox::sleep( 500 /*ms*/ ); // give it time to propagate
     zeroconf = client->getZeroconf(); // rediscover, use other peer for a change
 
     const co::Strings& instances = zeroconf.getInstances();

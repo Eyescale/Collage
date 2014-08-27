@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2013, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2012-2014, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -29,13 +29,9 @@
 #include <lunchbox/rng.h>
 #include <lunchbox/thread.h>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/thread.hpp>
-
 #include <iostream>
 
 using co::uint128_t;
-namespace bp = boost::posix_time;
 
 namespace
 {
@@ -68,7 +64,7 @@ public:
 
     virtual void run()
         {
-            boost::this_thread::sleep( bp::milliseconds( 110 ));
+            lunchbox::sleep( 110 /*ms*/ );
             _object.sync( uint128_t(3) );
             TESTINFO( _object.getVersion() == 3, _object.getVersion( ));
         }
