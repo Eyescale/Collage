@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2011, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -26,15 +26,13 @@
 
 #include <lunchbox/os.h>
 #include <lunchbox/log.h>
+#include <lunchbox/sleep.h>
 #include <co/exception.h>
 
 #include <limits>
 #include <sstream>
 #include <string.h>
 #include <sys/types.h>
-
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/thread.hpp>
 
 #ifdef _WIN32
 #  include <mswsock.h>
@@ -52,8 +50,6 @@
 #    define AF_INET_SDP 27
 #  endif
 #endif
-
-namespace bp = boost::posix_time;
 
 namespace co
 {
@@ -165,7 +161,7 @@ bool SocketConnection::connect()
           case EINTR: // Happens sometimes, but looks harmless
               LBINFO << "connect: " << lunchbox::sysError << ", retrying"
                      << std::endl;
-              boost::this_thread::sleep( bp::milliseconds( 5 ));
+              lunchbox::sleep( 5 /*ms*/ );
               break;
 
           default:

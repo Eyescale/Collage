@@ -48,11 +48,11 @@
 #include <lunchbox/request.h>
 #include <lunchbox/rng.h>
 #include <lunchbox/servus.h>
+#include <lunchbox/sleep.h>
 
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
 
 #include <list>
 
@@ -906,8 +906,7 @@ NodePtr LocalNode::_connect( const NodeID& nodeID, NodePtr peer )
           {
               lunchbox::RNG rng;
               // collision avoidance
-              boost::this_thread::sleep(
-                  bp::milliseconds( rng.get< uint8_t >( )));
+              lunchbox::sleep( rng.get< uint8_t >( ));
               break;
           }
           case CONNECT_BAD_STATE:

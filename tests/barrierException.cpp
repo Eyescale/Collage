@@ -1,5 +1,5 @@
 /* Copyright (c) 2011, Cedric Stalder <cedric.stalder@gmail.com>>
- *               2011-2013, Stefan Eilemann <eile@eyescale.ch>
+ *               2011-2014, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -26,14 +26,9 @@
 #include <co/node.h>
 #include <lunchbox/rng.h>
 
-#include <boost/thread.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-
 #include <iostream>
 #define CO_TEST_RUNTIME 6000
 #define NSLAVES  10
-
-namespace bp = boost::posix_time;
 
 void testNormal();
 void testException();
@@ -151,7 +146,7 @@ protected:
     {
         for( uint32_t i = 0; i < _nOps; ++i )
         {
-            boost::this_thread::sleep( bp::milliseconds( _timeToSleep ));
+            lunchbox::sleep( _timeToSleep );
 
             const uint32_t timeout = co::Global::getIAttribute(
                      co::Global::IATTR_TIMEOUT_DEFAULT );
