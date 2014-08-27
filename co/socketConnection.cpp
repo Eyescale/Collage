@@ -498,7 +498,7 @@ int64_t SocketConnection::readSync( void* buffer, const uint64_t bytes,
                 LBWARN << "WSAGetOverlappedResult error loop"
                        << std::endl;
                 // one millisecond to recover
-                boost::this_thread::sleep( bp::milliseconds( 1 ));
+                lunchbox::sleep( 1 );
                 break;
 
             default:
