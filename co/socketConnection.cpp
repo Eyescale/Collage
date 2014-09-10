@@ -605,7 +605,6 @@ bool SocketConnection::_createSocket()
     _readFD  = fd;
     _writeFD = fd; // TCP/IP sockets are bidirectional
 
-
     return true;
 }
 
