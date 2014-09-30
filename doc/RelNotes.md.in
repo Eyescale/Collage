@@ -75,6 +75,8 @@ last release:
 Collage @VERSION_MAJOR@.@VERSION_MINOR@ includes various bugfixes over the
 Collage @LAST_RELEASE@ release, including the following:
 
+* [16](https://github.com/Eyescale/Collage/issues/16): RSP Interface not
+  bound on Linux
 * [29](https://github.com/Eyescale/Collage/issues/29): Change managers may
   access dangling objects
 * [32](https://github.com/Eyescale/Collage/pull/32): Default port is priviledged
@@ -106,8 +108,6 @@ this release.
 
 * [57](https://github.com/Eyescale/Collage/issues/57): Windows: Larger number of
   concurrent receives causes intermittent blocking
-* [16](https://github.com/Eyescale/Collage/issues/16): RSP Interface not
-  bound on Linux
 * [15](https://github.com/Eyescale/Collage/issues/15): RDMAConnection
   not endian-safe
 * [14](https://github.com/Eyescale/Collage/issues/14): coNetperf server
