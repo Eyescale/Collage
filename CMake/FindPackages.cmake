@@ -36,15 +36,15 @@ else()
 endif()
 
 if(PKG_CONFIG_EXECUTABLE)
-  find_package(Lunchbox 1.9)
+  find_package(Lunchbox 1.10)
   if((NOT Lunchbox_FOUND) AND (NOT LUNCHBOX_FOUND))
-    pkg_check_modules(Lunchbox Lunchbox>=1.9)
+    pkg_check_modules(Lunchbox Lunchbox>=1.10)
   endif()
   if((NOT Lunchbox_FOUND) AND (NOT LUNCHBOX_FOUND))
     message(FATAL_ERROR "Could not find Lunchbox")
   endif()
 else()
-  find_package(Lunchbox 1.9  REQUIRED)
+  find_package(Lunchbox 1.10  REQUIRED)
 endif()
 
 
