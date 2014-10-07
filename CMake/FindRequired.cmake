@@ -6,7 +6,7 @@ find_package(Boost 1.41.0 COMPONENTS system regex date_time serialization progra
 if(NOT Boost_FOUND AND NOT BOOST_FOUND)
   set(FIND_REQUIRED_FAILED "${FIND_REQUIRED_FAILED} Boost")
 endif()
-find_package(Lunchbox 1.9 QUIET)
+find_package(Lunchbox 1.10 QUIET)
 if(NOT Lunchbox_FOUND AND NOT LUNCHBOX_FOUND)
   set(FIND_REQUIRED_FAILED "${FIND_REQUIRED_FAILED} Lunchbox")
 endif()
