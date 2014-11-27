@@ -103,7 +103,6 @@ public:
      * @version 1.0
      */
     CO_API virtual bool listen();
-    CO_API virtual bool listen( ConnectionPtr connection ); //!< @internal
 
     /**
      * Close a listening node.
@@ -507,6 +506,9 @@ public:
      * lunchbox::Thread affinity.
      */
     CO_API void setAffinity( const int32_t affinity );
+
+    /** @internal */
+    CO_API void addConnection( ConnectionPtr connection );
 
 protected:
     /** Destruct this local node. @version 1.0 */
