@@ -1012,7 +1012,8 @@ uint32_t LocalNode::_connect( NodePtr node )
         return _connect( node, connection );
     }
 
-    LBWARN << "Node unreachable, all connections failed to connect" <<std::endl;
+    LBINFO << "Node " << node
+           << " unreachable, all connections failed to connect" <<std::endl;
     return CONNECT_UNREACHABLE;
 }
 
