@@ -53,7 +53,7 @@ CommandQueue::~CommandQueue()
 void CommandQueue::flush()
 {
     if( !isEmpty( ))
-        LBWARN << "Flushing non-empty command queue" << std::endl;
+        LBINFO << "Flushing non-empty command queue" << std::endl;
 
     _impl->commands.clear();
 }
