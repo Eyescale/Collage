@@ -31,9 +31,7 @@ namespace detail { class Serializable; }
  * Base class for distributed, inheritable objects.
  *
  * This class implements one usage pattern of Object, which allows subclassing
- * and serialization of distributed Objects. The implementation hierarchy
- * Serializable -> eq::fabric::Object -> eq::fabric::Frustum illustrates the
- * usage of this class.
+ * and serialization of distributed Objects using dirty bits.
  */
 class Serializable : public Object
 {
