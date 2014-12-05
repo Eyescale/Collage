@@ -698,6 +698,8 @@ bool ObjectStore::dispatchObjectCommand( ICommand& cmd )
                 return true;
             }
         }
+        LBERROR << "Can't find object instance " << instanceID << " for "
+                << command << std::endl;
         LBUNREACHABLE;
         return false;
     }

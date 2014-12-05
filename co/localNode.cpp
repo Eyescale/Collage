@@ -379,14 +379,6 @@ bool LocalNode::listen()
     return true;
 }
 
-bool LocalNode::listen( ConnectionPtr connection )
-{
-    if( !listen( ))
-        return false;
-    _addConnection( connection );
-    return true;
-}
-
 bool LocalNode::close()
 {
     if( !isListening() )
@@ -419,6 +411,12 @@ void LocalNode::setAffinity( const int32_t affinity )
     send( CMD_NODE_SET_AFFINITY_CMD ) << affinity;
 
     lunchbox::Thread::setAffinity( affinity );
+}
+
+void LocalNode::addConnection( ConnectionPtr connection )
+{
+    connection->ref(); // unref in _cmdAddConnection
+    send( CMD_NODE_ADD_CONNECTION ) << connection;
 }
 
 ConnectionPtr LocalNode::addListener( ConnectionDescriptionPtr desc )
@@ -485,8 +483,7 @@ void LocalNode::_addConnection( ConnectionPtr connection )
 {
     if( _impl->receiverThread->isRunning() && !_impl->inReceiverThread( ))
     {
-        connection->ref(); // unref in _cmdAddConnection
-        send( CMD_NODE_ADD_CONNECTION ) << connection;
+        addConnection( connection );
         return;
     }
 
@@ -1015,7 +1012,8 @@ uint32_t LocalNode::_connect( NodePtr node )
         return _connect( node, connection );
     }
 
-    LBWARN << "Node unreachable, all connections failed to connect" <<std::endl;
+    LBINFO << "Node " << node
+           << " unreachable, all connections failed to connect" <<std::endl;
     return CONNECT_UNREACHABLE;
 }
 

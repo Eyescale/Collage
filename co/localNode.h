@@ -103,7 +103,6 @@ public:
      * @version 1.0
      */
     CO_API virtual bool listen();
-    CO_API virtual bool listen( ConnectionPtr connection ); //!< @internal
 
     /**
      * Close a listening node.
@@ -205,39 +204,37 @@ public:
     /**
      * Map a distributed object.
      *
-     * The mapped object becomes a slave instance of the master version
-     * which was registered with the provided identifier. The given version
-     * can be used to map a specific version.
+     * The mapped object becomes a slave instance of the master version which
+     * was registered with the provided identifier. The given version can be
+     * used to map a specific version.
      *
-     * If VERSION_NONE is provided, the slave instance is not initialized
-     * with any data from the master. This is useful if the object has been
-     * pre-initialized by other means, for example from a shared file
-     * system.
+     * If VERSION_NONE is provided, the slave instance is not initialized with
+     * any data from the master. This is useful if the object has been
+     * pre-initialized by other means, for example from a shared file system.
      *
-     * If VERSION_OLDEST is provided, the oldest available version is
-     * mapped.
+     * If VERSION_OLDEST is provided, the oldest available version is mapped.
      *
-     * If a concrete requested version no longer exists, mapObject() will
-     * map the oldest available version.
+     * If a concrete requested version no longer exists, mapObject() will map
+     * the oldest available version.
      *
-     * If the requested version is newer than the head version, mapObject()
-     * will block until the requested version is available.
+     * If the requested version is newer than the head version, mapObject() will
+     * block until the requested version is available.
      *
      * Mapping an object is a potentially time-consuming operation. Using
-     * mapObjectNB() and mapObjectSync() to asynchronously map multiple
-     * objects in parallel improves performance of this operation.
+     * mapObjectNB() and mapObjectSync() to asynchronously map multiple objects
+     * in parallel improves performance of this operation.
      *
      * After mapping, the object will have the version used during
      * initialization, or VERSION_NONE if mapped to this version.
      *
-     * When no master node is given, connectObjectMaster() is used to find
-     * the node with the master instance.
+     * When no master node is given, connectObjectMaster() is used to find the
+     * node with the master instance.
      *
-     * This method returns immediately after initiating the
-     * mapping. Evaluating the value of the returned lunchbox::Future will
-     * block on the completion of the operation and return true if the
-     * object was mapped, false if the master of the object is not found or
-     * the requested version is no longer available.
+     * This method returns immediately after initiating the mapping. Evaluating
+     * the value of the returned lunchbox::Future will block on the completion
+     * of the operation and return true if the object was mapped, false if the
+     * master of the object is not found or the requested version is no longer
+     * available.
      *
      * @param object the object.
      * @param id the master object identifier.
@@ -509,6 +506,9 @@ public:
      * lunchbox::Thread affinity.
      */
     CO_API void setAffinity( const int32_t affinity );
+
+    /** @internal */
+    CO_API void addConnection( ConnectionPtr connection );
 
 protected:
     /** Destruct this local node. @version 1.0 */
