@@ -21,6 +21,7 @@
 
 #include "iCommand.h"
 #include "exception.h"
+#include "log.h"
 #include "node.h"
 
 #include <lunchbox/mtQueue.h>
@@ -53,7 +54,7 @@ CommandQueue::~CommandQueue()
 void CommandQueue::flush()
 {
     if( !isEmpty( ))
-        LBINFO << "Flushing non-empty command queue" << std::endl;
+        LBLOG( LOG_BUG ) << "Flushing non-empty command queue" << std::endl;
 
     _impl->commands.clear();
 }

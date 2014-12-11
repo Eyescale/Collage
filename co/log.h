@@ -27,6 +27,7 @@ namespace co
     /** lunchbox::Log topic emitted by Collage. */
     enum LogTopics
     {
+        LOG_BUG     = lunchbox::LOG_BUG,          // 4
         LOG_OBJECTS = lunchbox::LOG_CUSTOM << 0,  // 16
         LOG_BARRIER = lunchbox::LOG_CUSTOM << 1,  // 32
         LOG_RSP     = lunchbox::LOG_CUSTOM << 2,  // 64
