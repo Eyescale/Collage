@@ -9,6 +9,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake
   ${PROJECT_SOURCE_DIR}/CMake/common)
 
 include(GitExternal)
+include(SubProject)
 
 option(COLLAGE_BUILD_V2_API
   "Enable for pure 2.0 API (breaks compatibility with 1.x API)" OFF)
@@ -19,18 +20,11 @@ set(VERSION_PATCH "2")
 set(VERSION_ABI 2)
 
 set(PROJECT_INCLUDE_NAME co)
-
 include(Common)
-include(Buildyard)
-
-if(BUILDYARD_STOP)
-  return()
-endif()
 
 set(GITTARGETS_RELEASE_BRANCH minor)
 set(DPUT_HOST "ppa:eilemann/equalizer-dev")
 
-set(LUNCHBOX_DESCRIPTION "Multi-threaded C++ toolbox library for all application developers creating high-performance multi-threaded programs.")
 set(COMMON_PROJECT_DOMAIN ch.eyescale)
 set(COLLAGE_DESCRIPTION "High-performance C++ library for developing object-oriented distributed applications.")
 set(COLLAGE_DEPENDENT_LIBRARIES Lunchbox)
