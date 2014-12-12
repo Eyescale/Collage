@@ -26,27 +26,27 @@
 
 namespace co
 {
-    /**
-     * An object change manager handling full versions and deltas for the master
-     * instance.
-     * @internal
-     */
-    class DeltaMasterCM : public FullMasterCM
-    {
-    public:
-        DeltaMasterCM( Object* object );
-        virtual ~DeltaMasterCM();
+/**
+ * An object change manager handling full versions and deltas for the master
+ * instance.
+ * @internal
+ */
+class DeltaMasterCM : public FullMasterCM
+{
+public:
+    DeltaMasterCM( Object* object );
+    virtual ~DeltaMasterCM();
 
-    protected:
-        void _commit() override;
+protected:
+    void _commit() override;
 
-    private:
-        /* The command handlers. */
-        bool _cmdCommit( ICommand& pkg );
+private:
+    /* The command handlers. */
+    bool _cmdCommit( ICommand& pkg );
 
-        typedef ObjectDeltaDataOStream DeltaData;
-        DeltaData _deltaData;
-    };
+    typedef ObjectDeltaDataOStream DeltaData;
+    DeltaData _deltaData;
+};
 }
 
 #endif // CO_DELTAMASTERCM_H
