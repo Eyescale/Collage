@@ -22,7 +22,7 @@
 
 #include "buffer.h"
 #include "objectDataICommand.h"
-#include <lunchbox/plugins/compressorTypes.h>
+#include <pression/plugins/compressorTypes.h>
 
 namespace co
 {
