@@ -24,6 +24,7 @@
 #include <co/defines.h>
 #include <lunchbox/refPtr.h>
 #include <lunchbox/types.h>
+#include <pression/types.h>
 
 #include <deque>
 #include <vector>

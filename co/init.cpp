@@ -25,7 +25,7 @@
 
 #include <lunchbox/init.h>
 #include <lunchbox/os.h>
-#include <lunchbox/pluginRegistry.h>
+#include <pression/pluginRegistry.h>
 
 namespace co
 {
@@ -53,7 +53,7 @@ bool _init( const int argc, char** argv )
         return false;
 
     // init all available plugins
-    lunchbox::PluginRegistry& plugins = Global::getPluginRegistry();
+    pression::PluginRegistry& plugins = Global::getPluginRegistry();
     plugins.addLunchboxPlugins();
     plugins.addDirectory( "/opt/local/lib" ); // MacPorts
     plugins.init();
@@ -88,7 +88,7 @@ bool exit()
 #endif
 
     // de-initialize registered plugins
-    lunchbox::PluginRegistry& plugins = Global::getPluginRegistry();
+    pression::PluginRegistry& plugins = Global::getPluginRegistry();
     plugins.exit();
 
     return lunchbox::exit();

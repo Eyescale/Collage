@@ -72,7 +72,7 @@ namespace co
         CO_API static void toString( std::string& data );
 
         /** @return the plugin registry. @version 1.0 */
-        CO_API static lunchbox::PluginRegistry& getPluginRegistry();
+        CO_API static pression::PluginRegistry& getPluginRegistry();
 
         /** @name Attributes */
         //@{

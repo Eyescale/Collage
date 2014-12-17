@@ -19,7 +19,7 @@
 
 #include "global.h"
 
-#include <lunchbox/pluginRegistry.h>
+#include <pression/pluginRegistry.h>
 
 #include <limits>
 #include <stdlib.h>
@@ -169,9 +169,9 @@ uint32_t Global::getObjectBufferSize()
     return  _objectBufferSize;
 }
 
-lunchbox::PluginRegistry& Global::getPluginRegistry()
+pression::PluginRegistry& Global::getPluginRegistry()
 {
-    static lunchbox::PluginRegistry pluginRegistry;
+    static pression::PluginRegistry pluginRegistry;
     return pluginRegistry;
 }
 

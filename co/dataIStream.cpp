@@ -26,8 +26,8 @@
 
 #include <lunchbox/buffer.h>
 #include <lunchbox/debug.h>
-#include <lunchbox/decompressor.h>
-#include <lunchbox/plugins/compressor.h>
+#include <pression/decompressor.h>
+#include <pression/plugins/compressor.h>
 
 #include <string.h>
 
@@ -54,7 +54,7 @@ public:
     /** The current read position in the buffer */
     uint64_t position;
 
-    lunchbox::Decompressor decompressor; //!< current decompressor
+    pression::Decompressor decompressor; //!< current decompressor
     lunchbox::Bufferb data; //!< decompressed buffer
     bool swap; //!< Invoke endian conversion
 };
