@@ -36,9 +36,9 @@
 #include "unbufferedMasterCM.h"
 #include "versionedSlaveCM.h"
 
-#include <lunchbox/compressor.h>
 #include <lunchbox/scopedMutex.h>
-#include <lunchbox/plugins/compressor.h>
+#include <pression/compressor.h>
+#include <pression/plugins/compressor.h>
 #include <iostream>
 
 namespace co
@@ -346,7 +346,7 @@ void Object::notifyNewHeadVersion( const uint128_t& version LB_UNUSED )
 
 uint32_t Object::chooseCompressor() const
 {
-    return lunchbox::Compressor::choose( Global::getPluginRegistry(),
+    return pression::Compressor::choose( Global::getPluginRegistry(),
                                          EQ_COMPRESSOR_DATATYPE_BYTE, 1.f,
                                          false );
 }

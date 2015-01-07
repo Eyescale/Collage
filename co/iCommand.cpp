@@ -23,7 +23,7 @@
 #include "buffer.h"
 #include "localNode.h"
 #include "node.h"
-#include <lunchbox/plugins/compressorTypes.h>
+#include <pression/plugins/compressorTypes.h>
 
 namespace co
 {

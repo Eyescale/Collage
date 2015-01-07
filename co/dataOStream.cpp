@@ -30,9 +30,9 @@
 #include "node.h"
 #include "types.h"
 
-#include <lunchbox/compressor.h>
-#include <lunchbox/compressorResult.h>
-#include <lunchbox/plugins/compressor.h>
+#include <pression/compressor.h>
+#include <pression/compressorResult.h>
+#include <pression/plugins/compressor.h>
 
 #include  <boost/foreach.hpp>
 
@@ -82,7 +82,7 @@ public:
     Connections connections;
 
     /** The compressor instance. */
-    lunchbox::Compressor compressor;
+    pression::Compressor compressor;
 
     /** The output stream is enabled for writing */
     bool enabled;
@@ -153,7 +153,7 @@ public:
         compressionTime += uint32_t( clock.getTimef() * 1000.f );
 #endif
 
-        const lunchbox::CompressorResult &compressorResult =
+        const pression::CompressorResult &compressorResult =
             compressor.getResult();
         LBASSERT( !compressorResult.chunks.empty() );
         compressedDataSize = compressorResult.getSize();
@@ -392,7 +392,7 @@ uint64_t DataOStream::_getCompressedData( void** chunks, uint64_t* chunkSizes )
     LBASSERT( _impl->state != STATE_UNCOMPRESSED &&
               _impl->state != STATE_UNCOMPRESSIBLE );
 
-    const lunchbox::CompressorResult &result = _impl->compressor.getResult();
+    const pression::CompressorResult &result = _impl->compressor.getResult();
     LBASSERT( !result.chunks.empty() );
     size_t totalDataSize = 0;
     for( size_t i = 0; i != result.chunks.size(); ++i )
