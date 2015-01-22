@@ -27,7 +27,7 @@ set(DPUT_HOST "ppa:eilemann/equalizer-dev")
 
 set(COMMON_PROJECT_DOMAIN ch.eyescale)
 set(COLLAGE_DESCRIPTION "High-performance C++ library for developing object-oriented distributed applications.")
-set(COLLAGE_DEPENDENT_LIBRARIES Lunchbox)
+set(COLLAGE_DEPENDENT_LIBRARIES Lunchbox Pression)
 
 include(FindPackages)
 
