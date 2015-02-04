@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2015, Stefan Eilemann <eile@equalizergraphics.com>
  *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
  *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -29,6 +29,7 @@
 #include <lunchbox/nonCopyable.h> // base class
 #include <lunchbox/stdExt.h>
 
+#include <boost/noncopyable.hpp>
 #include <boost/type_traits.hpp>
 #include <map>
 #include <set>
