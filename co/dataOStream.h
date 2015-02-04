@@ -26,7 +26,6 @@
 #include <co/types.h>
 
 #include <lunchbox/array.h> // used inline
-#include <lunchbox/nonCopyable.h> // base class
 #include <lunchbox/stdExt.h>
 
 #include <boost/noncopyable.hpp>
