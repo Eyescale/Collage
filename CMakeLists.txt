@@ -47,5 +47,5 @@ add_subdirectory(doc)
 
 include(CPackConfig)
 
-set(DOXYGEN_EXTRA_INPUT @PROJECT_BINARY_DIR@/doc/RelNotes.md)
+set(DOXYGEN_EXTRA_INPUT "${PROJECT_BINARY_DIR}/doc/RelNotes.md")
 include(DoxygenRule)
