@@ -112,6 +112,7 @@ private:
   */
 struct RDMAConnParamData
 {
+    RDMAConnParamData() : magic( 0 ), version( 0 ), depth( 0 ) {}
     uint16_t magic;
     uint16_t version;
     uint32_t depth;

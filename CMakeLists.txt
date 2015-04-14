@@ -1,6 +1,6 @@
 
-# Copyright (c) 2010 Daniel Pfeifer <daniel@pfeifer-mail.de>
-#               2010-2014 Stefan Eilemann <eile@eyescale.ch>
+# Copyright (c) 2010-2015 Daniel Pfeifer <daniel@pfeifer-mail.de>
+#                         Stefan Eilemann <eile@eyescale.ch>
 
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(Collage)
@@ -22,6 +22,7 @@ set(VERSION_ABI 2)
 set(PROJECT_INCLUDE_NAME co)
 include(Common)
 
+list(APPEND CPPCHECK_EXTRA_ARGS -DCO_API=)
 set(GITTARGETS_RELEASE_BRANCH minor)
 set(DPUT_HOST "ppa:eilemann/equalizer-dev")
 

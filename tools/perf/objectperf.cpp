@@ -302,7 +302,7 @@ public:
 
         if( !initLocal( argc, argv ))
         {
-            co::exit();
+            co::exit(); // cppcheck-suppress unreachableCode
             ::exit( EXIT_FAILURE );
         }
         getZeroconf().set( "coObjectperf", co::Version::getString( ));

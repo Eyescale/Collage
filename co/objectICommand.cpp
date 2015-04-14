@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2012-2014, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2012-2015, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *                          Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -32,6 +32,7 @@ class ObjectICommand
 {
 public:
     ObjectICommand()
+        : instanceID( CO_INSTANCE_INVALID )
     {}
 
     ObjectICommand( const ObjectICommand& rhs )

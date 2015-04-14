@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2006-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2006-2015, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -50,7 +50,7 @@ public:
 
     CO_API virtual ~ICommand(); //!< @internal
 
-    CO_API ICommand & operator = ( const ICommand& rhs ); //!< @internal
+    CO_API ICommand& operator = ( const ICommand& rhs ); //!< @internal
 
     CO_API void clear(); //!< @internal
 

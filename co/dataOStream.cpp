@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2007-2015, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -97,6 +97,7 @@ public:
         : state( STATE_UNCOMPRESSED )
         , bufferStart( 0 )
         , dataSize( 0 )
+        , compressedDataSize( 0 )
         , enabled( false )
         , dataSent( false )
         , save( false )
@@ -106,6 +107,7 @@ public:
         : state( rhs.state )
         , bufferStart( rhs.bufferStart )
         , dataSize( rhs.dataSize )
+        , compressedDataSize( rhs.compressedDataSize )
         , enabled( rhs.enabled )
         , dataSent( rhs.dataSent )
         , save( rhs.save )
