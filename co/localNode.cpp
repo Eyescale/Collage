@@ -1037,7 +1037,7 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
 
     // send connect command to peer
     lunchbox::Request< bool > request = registerRequest< bool >( node.get( ));
-#ifdef COLLAGE_BIGENDIAN
+#ifdef COMMON_BIGENDIAN
     uint32_t cmd = CMD_NODE_CONNECT_BE;
     lunchbox::byteswap( cmd );
 #else
@@ -1345,7 +1345,7 @@ ICommand LocalNode::_setupCommand( ConnectionPtr connection,
         node = i->second;
     LBVERB << "Handle data from " << node << std::endl;
 
-#ifdef COLLAGE_BIGENDIAN
+#ifdef COMMON_BIGENDIAN
     const bool swapping = node ? !node->isBigEndian() : false;
 #else
     const bool swapping = node ? node->isBigEndian() : false;
@@ -1359,7 +1359,7 @@ ICommand LocalNode::_setupCommand( ConnectionPtr connection,
     }
 
     uint32_t cmd = command.getCommand();
-#ifdef COLLAGE_BIGENDIAN
+#ifdef COMMON_BIGENDIAN
     lunchbox::byteswap( cmd ); // pre-node commands are sent little endian
 #endif
     switch( cmd )
@@ -1367,7 +1367,7 @@ ICommand LocalNode::_setupCommand( ConnectionPtr connection,
     case CMD_NODE_CONNECT:
     case CMD_NODE_CONNECT_REPLY:
     case CMD_NODE_ID:
-#ifdef COLLAGE_BIGENDIAN
+#ifdef COMMON_BIGENDIAN
         command = ICommand( this, node, buffer, true );
 #endif
         break;
@@ -1375,7 +1375,7 @@ ICommand LocalNode::_setupCommand( ConnectionPtr connection,
     case CMD_NODE_CONNECT_BE:
     case CMD_NODE_CONNECT_REPLY_BE:
     case CMD_NODE_ID_BE:
-#ifndef COLLAGE_BIGENDIAN
+#ifndef COMMON_BIGENDIAN
         command = ICommand( this, node, buffer, true );
 #endif
         break;
@@ -1603,7 +1603,7 @@ bool LocalNode::_cmdConnect( ICommand& command )
               _impl->connectionNodes.end( ));
 
     NodePtr peer;
-#ifdef COLLAGE_BIGENDIAN
+#ifdef COMMON_BIGENDIAN
     uint32_t cmd = CMD_NODE_CONNECT_REPLY_BE;
     lunchbox::byteswap( cmd );
 #else

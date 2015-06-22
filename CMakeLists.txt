@@ -19,7 +19,7 @@ set(VERSION_MINOR "2")
 set(VERSION_PATCH "0")
 set(VERSION_ABI 3)
 
-set(PROJECT_INCLUDE_NAME co)
+set(COLLAGE_INCLUDE_NAME co)
 include(Common)
 
 list(APPEND CPPCHECK_EXTRA_ARGS -DCO_API=)
@@ -30,7 +30,13 @@ set(COMMON_PROJECT_DOMAIN ch.eyescale)
 set(COLLAGE_DESCRIPTION "High-performance C++ library for developing object-oriented distributed applications.")
 set(COLLAGE_DEPENDENT_LIBRARIES Lunchbox Pression)
 
-include(FindPackages)
+common_package(Boost REQUIRED COMPONENTS system regex date_time serialization
+                                         program_options thread)
+common_package(Lunchbox REQUIRED)
+common_package(OFED)
+common_package(Pression REQUIRED)
+common_package(UDT)
+common_package_post()
 
 if(NOT MSVC)
   set(PTHREAD_LIBRARIES pthread)

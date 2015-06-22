@@ -92,7 +92,7 @@ public:
         , type( type_ )
         , state( STATE_CLOSED )
         , lastReceive ( 0 )
-#ifdef COLLAGE_BIGENDIAN
+#ifdef COMMON_BIGENDIAN
         , bigEndian( true )
 #else
         , bigEndian( false )
@@ -155,7 +155,7 @@ ConnectionPtr Node::getMulticast()
     LBINFO << "Announcing id " << node->getNodeID() << " to multicast group "
            << data.connection->getDescription() << std::endl;
 
-#ifdef COLLAGE_BIGENDIAN
+#ifdef COMMON_BIGENDIAN
     uint32_t cmd = CMD_NODE_ID_BE;
     lunchbox::byteswap( cmd );
 #else

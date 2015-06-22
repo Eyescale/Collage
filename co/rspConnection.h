@@ -130,7 +130,7 @@ private:
 
         void byteswap()
             {
-#ifdef COLLAGE_BIGENDIAN
+#ifdef COMMON_BIGENDIAN
                 lunchbox::byteswap( type );
                 lunchbox::byteswap( protocolVersion );
                 lunchbox::byteswap( connectionID );
@@ -148,7 +148,7 @@ private:
 
         void byteswap()
             {
-#ifdef COLLAGE_BIGENDIAN
+#ifdef COMMON_BIGENDIAN
                 lunchbox::byteswap( type );
                 lunchbox::byteswap( writerID );
                 lunchbox::byteswap( sequence );
@@ -183,7 +183,7 @@ private:
 
         void byteswap()
             {
-#ifdef COLLAGE_BIGENDIAN
+#ifdef COMMON_BIGENDIAN
                 lunchbox::byteswap( type );
                 lunchbox::byteswap( readerID );
                 lunchbox::byteswap( writerID );
@@ -207,7 +207,7 @@ private:
 
         void byteswap()
             {
-#ifdef COLLAGE_BIGENDIAN
+#ifdef COMMON_BIGENDIAN
                 lunchbox::byteswap( type );
                 lunchbox::byteswap( readerID );
                 lunchbox::byteswap( writerID );
@@ -226,7 +226,7 @@ private:
 
         void byteswap()
             {
-#ifdef COLLAGE_BIGENDIAN
+#ifdef COMMON_BIGENDIAN
                 lunchbox::byteswap( type );
                 lunchbox::byteswap( size );
                 lunchbox::byteswap( writerID );
