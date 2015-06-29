@@ -159,7 +159,7 @@ bool SocketConnection::connect()
         switch( errno )
         {
           case EINTR: // Happens sometimes, but looks harmless
-              LBINFO << "connect: " << lunchbox::sysError << ", retrying"
+              LBDEBUG << "connect: " << lunchbox::sysError << ", retrying"
                      << std::endl;
               lunchbox::sleep( 5 /*ms*/ );
               break;
@@ -182,7 +182,7 @@ bool SocketConnection::connect()
 
     _initAIORead();
     _setState( STATE_CONNECTED );
-    LBINFO << "Connected " << description->toString() << std::endl;
+    LBDEBUG << "Connected " << description->toString() << std::endl;
     return true;
 }
 
@@ -363,7 +363,7 @@ ConnectionPtr SocketConnection::acceptSync()
     newDescription->port = ntohs( remote->sin_port );
     newDescription->setHostname( inet_ntoa( remote->sin_addr ));
 
-    LBINFO << "accepted connection from " << inet_ntoa( remote->sin_addr )
+    LBDEBUG << "accepted connection from " << inet_ntoa( remote->sin_addr )
            << ":" << ntohs( remote->sin_port ) << std::endl;
     return connection;
 }
@@ -405,7 +405,7 @@ ConnectionPtr SocketConnection::acceptSync()
     newDescription->port = ntohs( newAddress.sin_port );
     newDescription->setHostname( inet_ntoa( newAddress.sin_addr ));
 
-    LBINFO << "Accepted " << newDescription->toString() << std::endl;
+    LBDEBUG << "Accepted " << newDescription->toString() << std::endl;
     return newConnection;
 }
 
@@ -434,7 +434,7 @@ void SocketConnection::readNB( void* buffer, const uint64_t bytes )
     {
         if( _overlappedDone == 0 ) // socket closed
         {
-            LBINFO << "Got EOF, closing connection" << std::endl;
+            LBDEBUG << "Got EOF, closing connection" << std::endl;
             close();
         }
         SetEvent( _overlappedRead.hEvent );
@@ -584,7 +584,7 @@ bool SocketConnection::_createSocket()
     const SOCKET fd = WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, 0,0,flags );
 
     if( description->type == CONNECTIONTYPE_SDP )
-        LBINFO << "Created SDP socket" << std::endl;
+        LBDEBUG << "Created SDP socket" << std::endl;
 #else
     Socket fd;
     if( description->type == CONNECTIONTYPE_SDP )
@@ -705,7 +705,7 @@ bool SocketConnection::listen()
     _initAIOAccept();
     _setState( STATE_LISTENING );
 
-    LBINFO << "Listening on " << description->getHostname() << "["
+    LBDEBUG << "Listening on " << description->getHostname() << "["
            << inet_ntoa( address.sin_addr ) << "]:" << description->port
            << " (" << description->toString() << ")" << std::endl;
 
