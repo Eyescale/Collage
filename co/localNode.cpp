@@ -375,7 +375,7 @@ bool LocalNode::listen()
     _setListening();
     _impl->receiverThread->start();
 
-    LBINFO << *this << std::endl;
+    LBDEBUG << *this << std::endl;
     return true;
 }
 
@@ -389,14 +389,14 @@ bool LocalNode::close()
     LBCHECK( _impl->receiverThread->join( ));
     _cleanup();
 
-    LBINFO << _impl->incoming.getSize() << " connections open after close"
+    LBDEBUG << _impl->incoming.getSize() << " connections open after close"
            << std::endl;
 #ifndef NDEBUG
     const Connections& connections = _impl->incoming.getConnections();
     for( Connections::const_iterator i = connections.begin();
          i != connections.end(); ++i )
     {
-        LBINFO << "    " << *i << std::endl;
+        LBDEBUG << "    " << *i << std::endl;
     }
 #endif
 
@@ -508,28 +508,28 @@ void LocalNode::_cleanup()
     LBASSERTINFO( isClosed(), *this );
 
     if( !_impl->connectionNodes.empty( ))
-        LBINFO << _impl->connectionNodes.size()
+        LBDEBUG << _impl->connectionNodes.size()
                << " open connections during cleanup" << std::endl;
 #ifndef NDEBUG
     for( ConnectionNodeHashCIter i = _impl->connectionNodes.begin();
          i != _impl->connectionNodes.end(); ++i )
     {
         NodePtr node = i->second;
-        LBINFO << "    " << i->first << " : " << node << std::endl;
+        LBDEBUG << "    " << i->first << " : " << node << std::endl;
     }
 #endif
 
     _impl->connectionNodes.clear();
 
     if( !_impl->nodes->empty( ))
-        LBINFO << _impl->nodes->size() << " nodes connected during cleanup"
+        LBDEBUG << _impl->nodes->size() << " nodes connected during cleanup"
                << std::endl;
 
 #ifndef NDEBUG
     for( NodeHashCIter i = _impl->nodes->begin(); i != _impl->nodes->end(); ++i)
     {
         NodePtr node = i->second;
-        LBINFO << "    " << node << std::endl;
+        LBDEBUG << "    " << node << std::endl;
     }
 #endif
 
@@ -563,7 +563,7 @@ void LocalNode::_closeNode( NodePtr node )
     lunchbox::ScopedFastWrite mutex( _impl->nodes );
     _impl->nodes->erase( node->getNodeID( ));
     notifyDisconnect( node );
-    LBINFO << node << " disconnected from " << *this << std::endl;
+    LBDEBUG << node << " disconnected from " << *this << std::endl;
 }
 
 bool LocalNode::_connectSelf()
@@ -835,7 +835,7 @@ NodePtr LocalNode::connect( const NodeID& nodeID )
             return peer;
     }
 
-    LBINFO << "Connecting node " << nodeID << std::endl;
+    LBDEBUG << "Connecting node " << nodeID << std::endl;
     for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
     {
         NodePtr peer = *i;
@@ -994,7 +994,7 @@ uint32_t LocalNode::_connect( NodePtr node )
         return CONNECT_OK;
 
     LBASSERT( node->isClosed( ));
-    LBINFO << "Connecting " << node << std::endl;
+    LBDEBUG << "Connecting " << node << std::endl;
 
     // try connecting using the given descriptions
     const ConnectionDescriptions& cds = node->getConnectionDescriptions();
@@ -1012,7 +1012,7 @@ uint32_t LocalNode::_connect( NodePtr node )
         return _connect( node, connection );
     }
 
-    LBINFO << "Node " << node
+    LBDEBUG << "Node " << node
            << " unreachable, all connections failed to connect" <<std::endl;
     return CONNECT_UNREACHABLE;
 }
@@ -1066,7 +1066,7 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
 
     LBASSERT( node->getNodeID() != 0 );
     LBASSERTINFO( node->getNodeID() != getNodeID(), getNodeID() );
-    LBINFO << node << " connected to " << *(Node*)this << std::endl;
+    LBDEBUG << node << " connected to " << *(Node*)this << std::endl;
     return CONNECT_OK;
 }
 
@@ -1242,7 +1242,7 @@ void LocalNode::_runReceiverThread()
     _impl->smallBuffers.flush();
     _impl->bigBuffers.flush();
 
-    LBINFO << "Leaving receiver thread of " << lunchbox::className( this )
+    LBDEBUG << "Leaving receiver thread of " << lunchbox::className( this )
            << std::endl;
 }
 
@@ -1637,7 +1637,7 @@ bool LocalNode::_cmdConnect( ICommand& command )
         peer = createNode( nodeType );
     if( !peer )
     {
-        LBINFO << "Can't create node of type " << nodeType << ", disconnecting"
+        LBDEBUG << "Can't create node of type " << nodeType << ", disconnecting"
                << std::endl;
 
         // refuse connection
@@ -1788,7 +1788,7 @@ bool LocalNode::_cmdID( ICommand& command )
         return true;
     }
 
-    LBINFO << "handle ID " << command << " node " << nodeID << std::endl;
+    LBDEBUG << "handle ID " << command << " node " << nodeID << std::endl;
 
     ConnectionPtr connection = _impl->incoming.getConnection();
     LBASSERT( connection->isMulticast( ));
@@ -1828,7 +1828,7 @@ bool LocalNode::_cmdID( ICommand& command )
 
     _connectMulticast( node, connection );
     _impl->connectionNodes[ connection ] = node;
-    LBINFO << "Added multicast connection " << connection << " from " << nodeID
+    LBDEBUG << "Added multicast connection " << connection << " from " << nodeID
            << " to " << getNodeID() << std::endl;
     return true;
 }
@@ -1865,7 +1865,7 @@ bool LocalNode::_cmdGetNodeData( ICommand& command )
     {
         nodeType = node->getType();
         nodeData = node->serialize();
-        LBINFO << "Sent node data '" << nodeData << "' for " << nodeID << " to "
+        LBDEBUG << "Sent node data '" << nodeData << "' for " << nodeID << " to "
                << toNode << std::endl;
     }
 

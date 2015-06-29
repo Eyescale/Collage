@@ -54,7 +54,6 @@ int64_t FDConnection::readSync( void* buffer, const uint64_t bytes, const bool )
     if( bytesRead > 0 )
         return bytesRead;
 
-    //LBINFO << "1st " << bytesRead << " " << strerror( errno ) << std::endl;
     if( bytesRead == 0 || errno == EWOULDBLOCK || errno == EAGAIN )
     {
         struct pollfd fds[1];
@@ -72,7 +71,6 @@ int64_t FDConnection::readSync( void* buffer, const uint64_t bytes, const bool )
             throw Exception( Exception::TIMEOUT_READ );
 
         bytesRead = ::read( _readFD, buffer, bytes );
-        //LBINFO << "2nd " << bytesRead << " " << strerror(errno) << std::endl;
     }
 
     if( bytesRead > 0 )
@@ -80,8 +78,8 @@ int64_t FDConnection::readSync( void* buffer, const uint64_t bytes, const bool )
 
     if( bytesRead == 0 ) // EOF
     {
-        LBINFO << "Got EOF, closing " << getDescription()->toString()
-               << std::endl;
+        LBDEBUG << "Got EOF, closing " << getDescription()->toString()
+                << std::endl;
         close();
         return -1;
     }

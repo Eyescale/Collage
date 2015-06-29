@@ -292,7 +292,7 @@ bool Connection::recvSync( BufferPtr& outBuffer, const bool block )
             const uint64_t read = bytes - bytesLeft;
             outBuffer->resize( outBuffer->getSize() + read );
             if( bytes == bytesLeft )
-                LBINFO << "Read on dead connection" << std::endl;
+                LBDEBUG << "Read on dead connection" << std::endl;
             else
                 LBERROR << "Error during read after " << read << " bytes on "
                         << _impl->description << std::endl;
