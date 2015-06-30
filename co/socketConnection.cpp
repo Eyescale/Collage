@@ -174,8 +174,8 @@ bool SocketConnection::connect()
 
     if( !connected )
     {
-        LBINFO << "Could not connect to '" << description->getHostname() << ":"
-               << description->port << "': " << lunchbox::sysError << std::endl;
+        LBDEBUG << "Could not connect to '" << description->getHostname() << ":"
+                << description->port << "': " << lunchbox::sysError << std::endl;
         close();
         return false;
     }
