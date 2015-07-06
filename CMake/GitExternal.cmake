@@ -8,7 +8,7 @@
 #    update target to bump the tag to the master revision by
 #    recreating .gitexternals.
 #  * Provides function
-#      git_external(<directory> <giturl> <gittag> [NO_UPDATE, VERBOSE]
+#      git_external(<directory> <giturl> <gittag> [VERBOSE]
 #        [RESET <files>])
 #    which will check out directory in CMAKE_SOURCE_DIR (if relative)
 #    or in the given absolute path using the given repository and tag
@@ -29,7 +29,9 @@
 #    repositories, pointing to github.com/<user>/<project>. Defaults to user
 #    name or GIT_EXTERNAL_USER environment variable.
 
-find_package(Git)
+if(NOT GIT_FOUND)
+  find_package(Git QUIET)
+endif()
 if(NOT GIT_EXECUTABLE)
   return()
 endif()
@@ -65,7 +67,7 @@ function(GIT_EXTERNAL DIR REPO TAG)
     if(NOT OLD_TAG STREQUAL TAG)
       string(REPLACE "${CMAKE_SOURCE_DIR}/" "" PWD
         "${CMAKE_CURRENT_SOURCE_DIR}")
-      message(STATUS "${DIR}: already configured with ${OLD_TAG}, ignoring requested ${TAG} in ${PWD}")
+      git_external_message("${DIR}: already configured with ${OLD_TAG}, ignoring requested ${TAG} in ${PWD}")
       return()
     endif()
   else()
@@ -81,7 +83,7 @@ function(GIT_EXTERNAL DIR REPO TAG)
   if(NOT EXISTS "${DIR}")
     message(STATUS "git clone ${REPO} ${DIR}")
     execute_process(
-      COMMAND "${GIT_EXECUTABLE}" clone "${REPO}" "${DIR}"
+      COMMAND "${GIT_EXECUTABLE}" clone --recursive "${REPO}" "${DIR}"
       RESULT_VARIABLE nok ERROR_VARIABLE error
       WORKING_DIRECTORY "${GIT_EXTERNAL_DIR}")
     if(nok)
@@ -144,12 +146,12 @@ function(GIT_EXTERNAL DIR REPO TAG)
   # update tag
   git_external_message("git rebase FETCH_HEAD")
   execute_process(COMMAND ${GIT_EXECUTABLE} rebase FETCH_HEAD
-    RESULT_VARIABLE RESULT OUTPUT_VARIABLE OUTPUT ERROR_VARIABLE OUTPUT
+    RESULT_VARIABLE RESULT ERROR_QUIET OUTPUT_QUIET
     WORKING_DIRECTORY "${DIR}")
   if(RESULT)
     message(STATUS "git rebase failed, aborting ${DIR} merge")
     execute_process(COMMAND ${GIT_EXECUTABLE} rebase --abort
-      WORKING_DIRECTORY "${DIR}")
+      WORKING_DIRECTORY "${DIR}" ERROR_QUIET OUTPUT_QUIET)
   endif()
 
   # checkout requested tag
@@ -259,6 +261,11 @@ endif()")
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${DIR}")
           add_dependencies(flatten_git_external
             flatten_git_external_${GIT_EXTERNAL_NAME})
+
+          foreach(_target flatten_git_external_${GIT_EXTERNAL_NAME} flatten_git_external update_git_external_${GIT_EXTERNAL_NAME} ${GIT_EXTERNAL_TARGET} update_git_external update)
+            set_target_properties(${_target} PROPERTIES
+              EXCLUDE_FROM_DEFAULT_BUILD ON FOLDER "git")
+          endforeach()
         endif()
       endif()
     endif()
