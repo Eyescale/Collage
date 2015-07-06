@@ -15,9 +15,9 @@ option(COLLAGE_BUILD_V2_API
   "Enable for pure 2.0 API (breaks compatibility with 1.x API)" OFF)
 
 set(VERSION_MAJOR "1")
-set(VERSION_MINOR "1")
-set(VERSION_PATCH "2")
-set(VERSION_ABI 2)
+set(VERSION_MINOR "2")
+set(VERSION_PATCH "0")
+set(VERSION_ABI 3)
 
 set(PROJECT_INCLUDE_NAME co)
 include(Common)
@@ -48,5 +48,6 @@ add_subdirectory(doc)
 
 include(CPackConfig)
 
-set(DOXYGEN_EXTRA_INPUT "${PROJECT_BINARY_DIR}/doc/RelNotes.md")
+set(DOXYGEN_MAINPAGE_MD README.md)
+set(DOXYGEN_EXTRA_INPUT ${PROJECT_SOURCE_DIR}/README.md)
 include(DoxygenRule)
