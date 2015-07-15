@@ -120,7 +120,7 @@ OCommand::~OCommand()
 
 void OCommand::_init( const uint32_t cmd, const uint32_t type )
 {
-#ifndef COLLAGE_BIGENDIAN
+#ifndef COMMON_BIGENDIAN
     // big endian hosts swap handshake commands to little endian...
     LBASSERTINFO( cmd < CMD_NODE_MAXIMUM, std::hex << "0x" << cmd << std::dec );
 #endif

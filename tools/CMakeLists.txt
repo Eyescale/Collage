@@ -14,7 +14,7 @@ macro(CO_ADD_TOOL NAME)
     PROPERTIES OUTPUT_NAME ${NAME} FOLDER "Tools")
   install(TARGETS ${THIS_TARGET} DESTINATION bin COMPONENT apps)
   purple_install_pdb(${THIS_TARGET} DESTINATION bin COMPONENT apps)
-endmacro(CO_ADD_TOOL NAME)
+endmacro()
 
 # Avoid link errors with boost on windows
 add_definitions(-DBOOST_PROGRAM_OPTIONS_DYN_LINK)

@@ -4,7 +4,6 @@
 #                    2012 Daniel Nachbaur <danielnachbaur@gmail.com>
 
 set(COLLAGE_PUBLIC_HEADERS
-  ${COMMON_INCLUDES}
   barrier.h
   buffer.h
   bufferConnection.h
@@ -91,7 +90,6 @@ set(COLLAGE_HEADERS
   )
 
 set(COLLAGE_SOURCES
-  ${COMMON_SOURCES}
   barrier.cpp
   buffer.cpp
   bufferCache.cpp
