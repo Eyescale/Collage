@@ -92,7 +92,7 @@ bool NamedPipeConnection::connect()
     _initAIORead();
     _setState( STATE_CONNECTED );
 
-    LBINFO << "Connected " << getDescription()->toString() << std::endl;
+    LBDEBUG << "Connected " << getDescription()->toString() << std::endl;
     return true;
 }
 
@@ -188,7 +188,7 @@ bool NamedPipeConnection::listen()
     _initAIOAccept();
     _setState( STATE_LISTENING );
 
-    LBINFO << "Listening on " << getDescription()->toString() << std::endl;
+    LBDEBUG << "Listening on " << getDescription()->toString() << std::endl;
     return true;
 }
 
@@ -301,7 +301,7 @@ ConnectionPtr NamedPipeConnection::acceptSync()
     newConnection->_setState( STATE_CONNECTED );
     _fd = INVALID_HANDLE_VALUE;
 
-    LBINFO << "accepted connection" << std::endl;
+    LBDEBUG << "accepted connection" << std::endl;
     return newConnection;
 }
 

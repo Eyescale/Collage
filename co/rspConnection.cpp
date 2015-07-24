@@ -312,9 +312,9 @@ bool RSPConnection::listen()
     LBASSERT( _appBuffers.isEmpty( ));
     _appBuffers.push( _buffers );
 
-    LBINFO << "Listening on " << description->getHostname() << ":"
-           << description->port << " (" << description->toString() << " @"
-           << (void*)this << ")" << std::endl;
+    LBDEBUG << "Listening on " << description->getHostname() << ":"
+            << description->port << " (" << description->toString() << " @"
+            << (void*)this << ")" << std::endl;
     return true;
 }
 
