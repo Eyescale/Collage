@@ -49,6 +49,8 @@ public:
         TEST( _node->listen( ));
     }
 
+    size_t getNumTimeouts() const { return _nTimeouts; }
+
 protected:
     const uint32_t _nOps;
     size_t _nTimeouts;
@@ -78,7 +80,6 @@ public:
     }
 
     co::ObjectVersion getBarrierID() const { return _barrier; }
-    uint32_t getNumExceptions() const { return _nTimeouts; }
 
 protected:
     void run() final
@@ -129,9 +130,7 @@ public:
         TEST( _node->close());
         _node = 0;
     }
-
-    uint32_t getNumExceptions() const { return _nTimeouts; }
-
+    
 protected:
     void run() final
     {
@@ -176,11 +175,11 @@ void testNormal( const uint16_t serverPort )
     for( uint32_t i = 0; i < NSLAVES; i++ )
     {
         nodeThreads[i]->join();
-        TEST( nodeThreads[i]->getNumExceptions() == 0 );
+        TEST( nodeThreads[i]->getNumTimeouts() == 0 );
         delete nodeThreads[i];
     }
 
-    TEST( server.getNumExceptions() == 0 );
+    TEST( server.getNumTimeouts() == 0 );
 }
 
 /* the test perform no timeout */
@@ -201,11 +200,11 @@ void testException( const uint16_t serverPort )
     }
 
     TEST( server.join() );
-    TEST( server.getNumExceptions() == 1 );
+    TEST( server.getNumTimeouts() == 1 );
     for( uint32_t i = 0; i < NSLAVES - 1; i++ )
     {
         TEST( nodeThreads[i]->join() );
-        TEST( nodeThreads[i]->getNumExceptions() == 1 );
+        TEST( nodeThreads[i]->getNumTimeouts() == 1 );
         delete nodeThreads[i];
     }
 }
