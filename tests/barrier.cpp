@@ -49,13 +49,13 @@ public:
         TEST( barrier.getHeight() ==  3 );
 
         _barrier = &barrier;
-        barrier.enter();
+        TEST( barrier.enter( ));
 
         barrier.setHeight( 2 );
         barrier.commit();
         TEST( barrier.getVersion() == co::VERSION_FIRST + 1 );
 
-        barrier.enter();
+        TEST( barrier.enter( ));
         _barrier.waitEQ( 0 ); // wait for slave thread finish
         node->deregisterObject( &barrier );
         node->close();
@@ -89,14 +89,14 @@ public:
         TEST( barrier.getVersion() == co::VERSION_FIRST );
 
         std::cerr << "Slave enter" << std::endl;
-        barrier.enter();
+        TEST( barrier.enter( ));
         std::cerr << "Slave left" << std::endl;
 
         barrier.sync( co::VERSION_FIRST + 1 );
         TEST( barrier.getVersion() == co::VERSION_FIRST + 1 );
 
         std::cerr << "Slave enter" << std::endl;
-        barrier.enter();
+        TEST( barrier.enter( ));
         std::cerr << "Slave left" << std::endl;
 
         node->unmapObject( &barrier );
@@ -118,7 +118,7 @@ int main( int argc, char **argv )
 
     _barrier.waitNE( 0 );
     std::cerr << "Main enter" << std::endl;
-    _barrier->enter();
+    TEST( _barrier->enter( ));
     std::cerr << "Main left" << std::endl;
 
     slave.join();

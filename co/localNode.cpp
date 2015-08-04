@@ -273,13 +273,6 @@ LocalNode::~LocalNode( )
 
 bool LocalNode::initLocal( const int argc, char** argv )
 {
-#ifndef NDEBUG
-    LBVERB << lunchbox::disableFlush << "args: ";
-    for( int i=0; i<argc; i++ )
-         LBVERB << argv[i] << ", ";
-    LBVERB << std::endl << lunchbox::enableFlush;
-#endif
-
     // We do not use getopt_long because it really does not work due to the
     // following aspects:
     // - reordering of arguments
@@ -778,9 +771,9 @@ LocalNode::SendToken LocalNode::acquireSendToken( NodePtr node )
 
     try
     {
-        request.wait(  Global::getTimeout() );
+        request.wait( Global::getTimeout( ));
     }
-    catch ( lunchbox::FutureTimeout& )
+    catch( lunchbox::FutureTimeout& )
     {
         LBERROR << "Timeout while acquiring send token " << request.getID()
                 << std::endl;

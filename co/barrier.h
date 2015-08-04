@@ -110,11 +110,12 @@ public:
      * Enter the barrier, blocks until the barrier has been reached.
      *
      * The implementation currently assumes that the master node instance
-     * also enters the barrier. If a timeout happens a timeout exception is
-     * thrown.
+     * also enters the barrier.
+     *
+     * @return true on success, false on timeout or error.
      * @version 1.0
      */
-    CO_API void enter( const uint32_t timeout = LB_TIMEOUT_INDEFINITE );
+    CO_API bool enter( const uint32_t timeout = LB_TIMEOUT_INDEFINITE );
     //@}
 
 protected:

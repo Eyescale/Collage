@@ -1,3 +1,4 @@
+
 /* Copyright (c) 2011-2015 Cedric Stalder <cedric.stalder@gmail.com>>
  *                         Stefan Eilemann <eile@eyescale.ch>
  *                         Daniel Nachbaur <danielnachbaur@gmail.com>
@@ -36,7 +37,7 @@ class BarrierThread : public lunchbox::Thread
 public:
     BarrierThread( const uint32_t nOps, const uint32_t port )
         : _nOps( nOps )
-        , _numExceptions( 0 )
+        , _nTimeouts( 0 )
         , _node( new co::LocalNode )
     {
         co::ConnectionDescriptionPtr description =
@@ -49,8 +50,8 @@ public:
     }
 
 protected:
-    const uint32_t   _nOps;
-    uint32_t         _numExceptions;
+    const uint32_t _nOps;
+    size_t _nTimeouts;
     co::LocalNodePtr _node;
 };
 
@@ -77,7 +78,7 @@ public:
     }
 
     co::ObjectVersion getBarrierID() const { return _barrier; }
-    uint32_t getNumExceptions() const { return _numExceptions; }
+    uint32_t getNumExceptions() const { return _nTimeouts; }
 
 protected:
     void run() final
@@ -86,15 +87,8 @@ protected:
         {
             const uint32_t timeout = co::Global::getIAttribute(
                      co::Global::IATTR_TIMEOUT_DEFAULT );
-            try
-            {
-                _barrier->enter( timeout );
-            }
-            catch( co::Exception& e )
-            {
-                TEST( e.getType() == co::Exception::TIMEOUT_BARRIER );
-                ++_numExceptions;
-            }
+            if( !_barrier->enter( timeout ))
+                ++_nTimeouts;
         }
     }
 private:
@@ -136,7 +130,7 @@ public:
         _node = 0;
     }
 
-    uint32_t getNumExceptions() const { return _numExceptions; }
+    uint32_t getNumExceptions() const { return _nTimeouts; }
 
 protected:
     void run() final
@@ -147,15 +141,8 @@ protected:
 
             const uint32_t timeout = co::Global::getIAttribute(
                      co::Global::IATTR_TIMEOUT_DEFAULT );
-            try
-            {
-                _barrier->enter( timeout );
-            }
-            catch( co::Exception& e )
-            {
-                TEST( e.getType() == co::Exception::TIMEOUT_BARRIER );
-                ++_numExceptions;
-            }
+            if( !_barrier->enter( timeout ))
+                ++_nTimeouts;
         }
     }
 

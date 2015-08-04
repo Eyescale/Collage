@@ -1,5 +1,10 @@
 # Changelog
 
+# git master {#master}
+
+* [160](https://github.com/Eyescale/Collage/pull/160): Replace command
+  queue and barrier timeout exceptions with return values
+
 # Release 1.2 (07-07-2015) {#Release12}
 
 * [142](https://github.com/Eyescale/Collage/pull/142): Expose addConnection()

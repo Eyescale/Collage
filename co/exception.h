@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2011, Cedric Stalder <cedric.stalder@gmail.com>
- *               2012-2013, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2011-2015, Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -37,8 +37,6 @@ namespace co
         {
             TIMEOUT_WRITE,   //!< A write timeout operation
             TIMEOUT_READ,    //!< A read timeout operation
-            TIMEOUT_BARRIER, //!< A barrier timeout operation
-            TIMEOUT_COMMANDQUEUE, //!< A timeout on a cmd queue operation
             CUSTOM      = 20 //!< Application-specific exceptions
         };
 
@@ -60,10 +58,6 @@ namespace co
                   return " Timeout on write operation";
               case Exception::TIMEOUT_READ:
                   return " Timeout on read operation";
-              case Exception::TIMEOUT_BARRIER:
-                  return " Timeout on barrier";
-              case Exception::TIMEOUT_COMMANDQUEUE:
-                  return " Timeout on command queue";
               default:
                   return  " Unknown Exception";
             }

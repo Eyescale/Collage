@@ -98,27 +98,25 @@ ObjectICommand QueueSlave::pop( const uint32_t timeout )
                     << _impl->prefetchAmount << getInstanceID() << request;
         }
 
-        try
+        ObjectICommand cmd( _impl->queue.pop( timeout ));
+        if( !cmd.isValid( ))
         {
-            ObjectICommand cmd( _impl->queue.pop( timeout ));
-            switch( cmd.getCommand( ))
-            {
-            case CMD_QUEUE_ITEM:
-                return ObjectICommand( cmd );
-
-            default:
-                LBUNIMPLEMENTED;
-            case CMD_QUEUE_EMPTY:
-                if( cmd.get< int32_t >() == request )
-                    return ObjectICommand( 0, 0, 0, false );
-                // else left-over or not our empty command, discard and retry
-                break;
-            }
-        }
-        catch (co::Exception& e)
-        {
-            LBWARN << e.what() << std::endl;
+            LBERROR << "Timeout during QueueSlave::pop()" << std::endl;
             return ObjectICommand( 0, 0, 0, false );
+        }
+
+        switch( cmd.getCommand( ))
+        {
+        case CMD_QUEUE_ITEM:
+            return ObjectICommand( cmd );
+
+        default:
+            LBUNIMPLEMENTED;
+        case CMD_QUEUE_EMPTY:
+            if( cmd.get< int32_t >() == request )
+                return ObjectICommand( 0, 0, 0, false );
+            // else left-over or not our empty command, discard and retry
+            break;
         }
     }
 }
