@@ -174,13 +174,13 @@ void Barrier::attach( const uint128_t& id, const uint32_t instanceID )
 #endif
 }
 
-void Barrier::enter( const uint32_t timeout )
+bool Barrier::enter( const uint32_t timeout )
 {
     LBASSERT( _impl->height > 0 );
     LBASSERT( _impl->masterID != NodeID( ));
 
     if( _impl->height == 1 ) // trivial ;)
-        return;
+        return true;
 
     if( !_impl->master )
     {
@@ -194,7 +194,7 @@ void Barrier::enter( const uint32_t timeout )
     {
         LBWARN << "Can't connect barrier master node " << _impl->masterID
                << std::endl;
-        return;
+        return false;
     }
 
     LBLOG( LOG_BARRIER ) << "enter barrier " << getID() << " v" << getVersion()
@@ -208,10 +208,11 @@ void Barrier::enter( const uint32_t timeout )
     if( timeout == LB_TIMEOUT_INDEFINITE )
         _impl->incarnation.waitEQ( leaveVal );
     else if( !_impl->incarnation.timedWaitEQ( leaveVal, timeout ))
-        throw Exception( Exception::TIMEOUT_BARRIER );
+        return false;
 
     LBLOG( LOG_BARRIER ) << "left barrier " << getID() << " v" << getVersion()
                          << ", height " << _impl->height << std::endl;
+    return true;
 }
 
 bool Barrier::_cmdEnter( ICommand& cmd )

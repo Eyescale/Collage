@@ -85,19 +85,13 @@ ICommand CommandQueue::pop( const uint32_t timeout )
     LB_TS_THREAD( _thread );
 
     ICommand command;
-    if( !_impl->commands.timedPop( timeout, command ))
-        throw Exception( Exception::TIMEOUT_COMMANDQUEUE );
-
+    _impl->commands.timedPop( timeout, command );
     return command;
 }
 
 ICommands CommandQueue::popAll( const uint32_t timeout )
 {
-    const ICommands& result = _impl->commands.timedPopRange( timeout );
-
-    if( result.empty( ))
-        throw Exception( Exception::TIMEOUT_COMMANDQUEUE );
-    return result;
+    return _impl->commands.timedPopRange( timeout );
 }
 
 ICommand CommandQueue::tryPop()

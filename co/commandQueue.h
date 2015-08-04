@@ -59,8 +59,7 @@ public:
      * Pop a command from the queue.
      *
      * @param timeout the time in ms to wait for the operation.
-     * @return the next command in the queue.
-     * @throw Exception on timeout.
+     * @return the next command in the queue, or an invalid ICommand on timeout.
      * @version 1.0
      */
     CO_API virtual ICommand pop( const uint32_t timeout =
@@ -70,8 +69,7 @@ public:
      * Pop all, but at least one command from the queue.
      *
      * @param timeout the time in ms to wait for the operation.
-     * @return one or more commands in the queue.
-     * @throw Exception on timeout.
+     * @return All commands in the queue.
      * @version 1.0
      */
     CO_API virtual ICommands popAll( const uint32_t timeout =

@@ -771,9 +771,9 @@ LocalNode::SendToken LocalNode::acquireSendToken( NodePtr node )
 
     try
     {
-        request.wait(  Global::getTimeout() );
+        request.wait( Global::getTimeout( ));
     }
-    catch ( lunchbox::FutureTimeout& )
+    catch( lunchbox::FutureTimeout& )
     {
         LBERROR << "Timeout while acquiring send token " << request.getID()
                 << std::endl;
