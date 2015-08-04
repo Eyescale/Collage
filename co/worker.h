@@ -25,8 +25,10 @@
 #include <lunchbox/thread.h>  // base class
 #include <limits.h>
 
-#ifndef CO_WORKER_API
+#ifdef COLLAGE_SHARED
 #  define CO_WORKER_API CO_API
+#else
+#  define CO_WORKER_API
 #endif
 
 namespace co
