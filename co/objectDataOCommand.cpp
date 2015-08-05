@@ -114,6 +114,7 @@ ObjectDataOCommand::~ObjectDataOCommand()
 ObjectDataICommand ObjectDataOCommand::_getCommand( LocalNodePtr node )
 {
     lunchbox::Bufferb& outBuffer = getBuffer();
+    // cppcheck-suppress unreadVariable
     uint8_t* bytes = outBuffer.getData();
     reinterpret_cast< uint64_t* >( bytes )[ 0 ] = outBuffer.getSize();
 

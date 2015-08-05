@@ -162,6 +162,7 @@ void OCommand::sendData( const void* buffer LB_UNUSED, const uint64_t size,
     LBASSERT( getBuffer().getMaxSize() >= COMMAND_MINSIZE );
 
     // Update size field
+    // cppcheck-suppress unreadVariable
     uint8_t* bytes = getBuffer().getData();
     reinterpret_cast< uint64_t* >( bytes )[ 0 ] = _impl->size + size;
     const uint64_t sendSize = _impl->isLocked ? size : LB_MAX( size,
