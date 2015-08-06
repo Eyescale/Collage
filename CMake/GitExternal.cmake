@@ -36,8 +36,10 @@
 #    external repos when set.
 #
 # CMake or environment variables:
-#  GITHUB_USER If set, a remote called 'user' is set up for github
-#    repositories, pointing to github.com/<user>/<project>.
+#  GITHUB_USER
+#    If set, a remote called 'user' is set up for github repositories, pointing
+#    to git@github.com:<user>/<project>. Also, this remote is used by default
+#    for 'git push'.
 
 if(NOT GIT_FOUND)
   find_package(Git QUIET)
@@ -95,9 +97,11 @@ function(GIT_EXTERNAL DIR REPO TAG)
     set(_clone_options --recursive)
     if(GIT_EXTERNAL_LOCAL_SHALLOW)
       list(APPEND _clone_options --depth 1 --branch ${TAG})
+    else()
+      set(_msg_tag "[${TAG}]")
     endif()
     JOIN("${_clone_options}" " " _msg_text)
-    message(STATUS "git clone ${_msg_text} ${REPO} ${DIR}")
+    message(STATUS "git clone ${_msg_text} ${REPO} ${DIR} ${_msg_tag}")
     execute_process(
       COMMAND "${GIT_EXECUTABLE}" clone ${_clone_options} ${REPO} ${DIR}
       RESULT_VARIABLE nok ERROR_VARIABLE error
@@ -127,17 +131,20 @@ function(GIT_EXTERNAL DIR REPO TAG)
     endif()
   endif()
 
-  # set up "user" remote for github forks
+  # set up "user" remote for github forks and make it default for 'git push'
   if(GITHUB_USER AND REPO MATCHES ".*github.com.*")
-    string(REGEX REPLACE "(.*github.com[\\/:]).*(\\/.*)" "\\1${GITHUB_USER}\\2"
+    string(REGEX REPLACE ".*(github.com)[\\/:]().*(\\/.*)" "git@\\1:\\2${GITHUB_USER}\\3"
       GIT_EXTERNAL_USER_REPO ${REPO})
     execute_process(
       COMMAND "${GIT_EXECUTABLE}" remote add user ${GIT_EXTERNAL_USER_REPO}
       OUTPUT_QUIET ERROR_QUIET WORKING_DIRECTORY "${DIR}")
+    execute_process(
+      COMMAND "${GIT_EXECUTABLE}" config remote.pushdefault user
+      OUTPUT_QUIET ERROR_QUIET WORKING_DIRECTORY "${DIR}")
   endif()
 
   file(RELATIVE_PATH __dir ${CMAKE_SOURCE_DIR} ${DIR})
-  string(REGEX REPLACE "[:/]" "-" __target "${__dir}")
+  string(REGEX REPLACE "[:/\\.]" "-" __target "${__dir}")
   if(TARGET ${__target}-rebase)
     return()
   endif()
@@ -195,16 +202,18 @@ function(GIT_EXTERNAL DIR REPO TAG)
     "endif()\n"
     )
 
-  add_custom_target(${__target}-rebase
-    COMMAND ${CMAKE_COMMAND} -P ${__rebase_cmake}
-    COMMENT "Rebasing ${__dir}")
-  set_target_properties(${__target}-rebase PROPERTIES
-    EXCLUDE_FROM_DEFAULT_BUILD ON FOLDER git)
-  if(NOT TARGET rebase)
-    add_custom_target(rebase)
-    set_target_properties(rebase PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD ON)
+  if(NOT GIT_EXTERNAL_SCRIPT_MODE)
+    add_custom_target(${__target}-rebase
+      COMMAND ${CMAKE_COMMAND} -P ${__rebase_cmake}
+      COMMENT "Rebasing ${__dir}")
+    set_target_properties(${__target}-rebase PROPERTIES
+      EXCLUDE_FROM_DEFAULT_BUILD ON FOLDER git)
+    if(NOT TARGET rebase)
+      add_custom_target(rebase)
+      set_target_properties(rebase PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD ON)
+    endif()
+    add_dependencies(rebase ${__target}-rebase)
   endif()
-  add_dependencies(rebase ${__target}-rebase)
 endfunction()
 
 set(GIT_EXTERNALS ${GIT_EXTERNALS_FILE})
@@ -230,7 +239,7 @@ if(EXISTS ${GIT_EXTERNALS} AND NOT GIT_EXTERNAL_SCRIPT_MODE)
         list(GET DATA 2 TAG)
 
         # Create a unique, flat name
-        string(REPLACE "/" "_" GIT_EXTERNAL_NAME ${DIR}_${PROJECT_NAME})
+        string(REPLACE "/" "-" GIT_EXTERNAL_NAME ${DIR}_${PROJECT_NAME})
 
         if(NOT TARGET update_git_external_${GIT_EXTERNAL_NAME}) # not done
           # pull in identified external
@@ -266,7 +275,7 @@ if(EXISTS ${GIT_EXTERNALS} AND NOT GIT_EXTERNAL_SCRIPT_MODE)
           set(GIT_EXTERNAL_SCRIPT
             "${CMAKE_CURRENT_BINARY_DIR}/gitupdate${GIT_EXTERNAL_NAME}.cmake")
           file(WRITE "${GIT_EXTERNAL_SCRIPT}" "
-include(\"${CMAKE_CURRENT_LIST_DIR}\"/GitExternal.cmake)
+include(\"${CMAKE_CURRENT_LIST_DIR}/GitExternal.cmake\")
 execute_process(COMMAND \"${GIT_EXECUTABLE}\" fetch origin -q
   WORKING_DIRECTORY \"${DIR}\")
 execute_process(
@@ -274,10 +283,10 @@ execute_process(
   OUTPUT_VARIABLE newref OUTPUT_STRIP_TRAILING_WHITESPACE
   WORKING_DIRECTORY \"${DIR}\")
 if(newref)
-  file(APPEND ${GIT_EXTERNALS} \"# \"${DIR}\" \"${REPO}\" \${newref}\\n\")
-  git_external(\"${DIR}\" \"${REPO}\" \${newref})
+  file(APPEND ${GIT_EXTERNALS} \"# ${DIR} ${REPO} \${newref}\\n\")
+  git_external(${DIR} ${REPO} \${newref})
 else()
-  file(APPEND ${GIT_EXTERNALS} \"# \"${DIR}\" \"${REPO}\" ${TAG}\n\")
+  file(APPEND ${GIT_EXTERNALS} \"# ${DIR} ${REPO} ${TAG}\n\")
 endif()")
           add_custom_target(update_git_external_${GIT_EXTERNAL_NAME}
             COMMAND "${CMAKE_COMMAND}" -DGIT_EXTERNAL_SCRIPT_MODE=1 -P ${GIT_EXTERNAL_SCRIPT}
