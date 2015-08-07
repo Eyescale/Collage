@@ -164,8 +164,8 @@ public:
 protected:
     /** @name Internal */
     //@{
-    CO_API DataIStream( const bool swap );
-    DataIStream( const DataIStream& );
+    CO_API explicit DataIStream( const bool swap );
+    explicit DataIStream( const DataIStream& );
     CO_API virtual ~DataIStream();
 
     virtual bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,

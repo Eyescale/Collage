@@ -81,7 +81,7 @@ public:
                                    const std::string& key ) const;
 private:
     Zeroconf();
-    Zeroconf( lunchbox::Servus& service );
+    explicit Zeroconf( lunchbox::Servus& service );
     friend class LocalNode;
 
     detail::Zeroconf* _impl;

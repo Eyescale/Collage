@@ -102,9 +102,9 @@ namespace DataStreamTest
 class Sender : public lunchbox::Thread
 {
 public:
-    Sender( lunchbox::RefPtr< co::Connection > connection )
-            : Thread(),
-              _connection( connection )
+    explicit Sender( lunchbox::RefPtr< co::Connection > connection )
+            : Thread()
+            , _connection( connection )
         {
             TEST( connection );
             TEST( connection->isConnected( ));
@@ -112,7 +112,7 @@ public:
     virtual ~Sender(){}
 
 protected:
-    virtual void run()
+    void run() final
     {
         ::DataOStream stream;
 

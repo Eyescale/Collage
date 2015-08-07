@@ -32,6 +32,7 @@ namespace detail { class ObjectDataICommand; }
 class ObjectDataICommand : public ObjectICommand
 {
 public:
+    // cppcheck-suppress noExplicitConstructor
     CO_API ObjectDataICommand( const ICommand& command );
 
     CO_API ObjectDataICommand( LocalNodePtr local, NodePtr remote,

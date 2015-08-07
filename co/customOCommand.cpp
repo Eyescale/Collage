@@ -29,7 +29,7 @@ namespace detail
 class CustomOCommand
 {
 public:
-    CustomOCommand( const uint128_t& commandID_ )
+    explicit CustomOCommand( const uint128_t& commandID_ )
         : commandID( commandID_ )
     {}
 

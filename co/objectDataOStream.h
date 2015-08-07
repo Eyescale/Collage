@@ -30,7 +30,7 @@ namespace co
     class ObjectDataOStream : public DataOStream
     {
     public:
-        ObjectDataOStream( const ObjectCM* cm );
+        explicit ObjectDataOStream( const ObjectCM* cm );
         virtual ~ObjectDataOStream(){}
 
         void reset() override;

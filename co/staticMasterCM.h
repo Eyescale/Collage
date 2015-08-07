@@ -30,36 +30,36 @@
 
 namespace co
 {
-    class Node;
+class Node;
 
-    /** @internal
-     * An object change manager handling a static master instance.
-     */
-    class StaticMasterCM : public ObjectCM
-    {
-    public:
-        StaticMasterCM( Object* object ) : ObjectCM( object ) {}
-        virtual ~StaticMasterCM() {}
+/** @internal
+ * An object change manager handling a static master instance.
+ */
+class StaticMasterCM : public ObjectCM
+{
+public:
+    explicit StaticMasterCM( Object* object ) : ObjectCM( object ) {}
+    virtual ~StaticMasterCM() {}
 
-        void init() override {}
+    void init() override {}
 
-        /** @name Versioning */
-        //@{
-        void setAutoObsolete( const uint32_t ) override {}
-        uint32_t getAutoObsolete() const override { return 0; }
+    /** @name Versioning */
+    //@{
+    void setAutoObsolete( const uint32_t ) override {}
+    uint32_t getAutoObsolete() const override { return 0; }
 
-        uint128_t getHeadVersion() const override { return VERSION_FIRST; }
-        uint128_t getVersion() const override { return VERSION_FIRST; }
-        //@}
+    uint128_t getHeadVersion() const override { return VERSION_FIRST; }
+    uint128_t getVersion() const override { return VERSION_FIRST; }
+    //@}
 
-        bool isMaster() const override { return true; }
-        uint32_t getMasterInstanceID() const override
-            { LBDONTCALL; return CO_INSTANCE_INVALID; }
+    bool isMaster() const override { return true; }
+    uint32_t getMasterInstanceID() const override
+    { LBDONTCALL; return CO_INSTANCE_INVALID; }
 
-        bool addSlave( const MasterCMCommand& command ) override
-            { return ObjectCM::_addSlave( command, VERSION_FIRST ); }
-        void removeSlaves( NodePtr ) override { /* NOP */}
-    };
+    bool addSlave( const MasterCMCommand& command ) override
+    { return ObjectCM::_addSlave( command, VERSION_FIRST ); }
+    void removeSlaves( NodePtr ) override { /* NOP */}
+};
 }
 
 #endif // CO_STATICMASTERCM_H

@@ -38,11 +38,6 @@ namespace detail { class Barrier; }
 class Barrier : public Object
 {
 public:
-#ifdef COLLAGE_V1_API
-    /** @deprecated Does not register or map barrier. */
-    CO_API Barrier( NodePtr master = 0, const uint32_t height = 0 );
-#endif
-
     /**
      * Construct and register a new distributed barrier.
      *

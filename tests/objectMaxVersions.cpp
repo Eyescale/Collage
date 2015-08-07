@@ -60,7 +60,7 @@ protected:
 class Thread : public lunchbox::Thread
 {
 public:
-    Thread( Object& object ) : _object( object ) {}
+    explicit Thread( Object& object ) : _object( object ) {}
 
     virtual void run()
         {

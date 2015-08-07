@@ -35,7 +35,7 @@ const size_t _numIterations( 100 );
 class ServerThread : public lunchbox::Thread
 {
 public:
-    ServerThread( co::LocalNodePtr server )
+    explicit ServerThread( co::LocalNodePtr server )
         : _node( new co::LocalNode )
         , _server( server )
     {

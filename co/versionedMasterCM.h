@@ -42,7 +42,7 @@ namespace co
         typedef lunchbox::ScopedWrite Mutex;
 
     public:
-        VersionedMasterCM( Object* object );
+        explicit VersionedMasterCM( Object* object );
         virtual ~VersionedMasterCM();
 
         void init() override {}

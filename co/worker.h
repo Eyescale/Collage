@@ -38,7 +38,8 @@ template< class Q > class WorkerThread : public lunchbox::Thread
 {
 public:
     /** Construct a new worker thread. @version 1.0 */
-    WorkerThread( const size_t maxSize = ULONG_MAX ) : _commands( maxSize ) {}
+    explicit WorkerThread( const size_t maxSize = ULONG_MAX )
+        : _commands( maxSize ) {}
 
     /** Destruct the worker. @version 1.0 */
     virtual ~WorkerThread() {}

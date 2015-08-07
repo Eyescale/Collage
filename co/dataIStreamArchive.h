@@ -65,7 +65,7 @@ class DataIStreamArchive
 
 public:
     /** Construct a new deserialization archive. @version 1.0 */
-    CO_API DataIStreamArchive( DataIStream& stream );
+    CO_API explicit DataIStreamArchive( DataIStream& stream );
 
     /** @internal archives are expected to support this function */
     CO_API void load_binary( void* data, std::size_t size );

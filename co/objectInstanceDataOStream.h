@@ -29,7 +29,7 @@ namespace co
     class ObjectInstanceDataOStream : public ObjectDataOStream
     {
     public:
-        ObjectInstanceDataOStream( const ObjectCM* cm );
+        explicit ObjectInstanceDataOStream( const ObjectCM* cm );
         virtual ~ObjectInstanceDataOStream();
 
         void reset() override;

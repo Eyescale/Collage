@@ -63,7 +63,7 @@ namespace detail
 class BufferCache : public BufferListener
 {
 public:
-    BufferCache( const int32_t minFree )
+    explicit BufferCache( const int32_t minFree )
         : _minFree( minFree )
     {
         LBASSERT( minFree > 1);

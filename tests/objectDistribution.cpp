@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2014, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2015, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -45,7 +45,7 @@ static const std::string message =
 class Object : public co::Object
 {
 public:
-    Object( const ChangeType type ) : nSync( 0 ), _type( type ) {}
+    explicit Object( const ChangeType type ) : nSync( 0 ), _type( type ) {}
     Object( const ChangeType type, co::DataIStream& is )
         : nSync( 0 ), _type( type )
     { applyInstanceData( is ); }

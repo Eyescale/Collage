@@ -24,30 +24,28 @@
 
 namespace co
 {
-    class Node;
+/**
+ * @internal
+ * An object change manager handling versioned objects without any
+ * buffering.
+ */
+class UnbufferedMasterCM : public VersionedMasterCM
+{
+public:
+    explicit UnbufferedMasterCM( Object* object );
+    virtual ~UnbufferedMasterCM();
 
-    /**
-     * An object change manager handling versioned objects without any
-     * buffering.
-     * @internal
-     */
-    class UnbufferedMasterCM : public VersionedMasterCM
-    {
-    public:
-        UnbufferedMasterCM( Object* object );
-        virtual ~UnbufferedMasterCM();
+    /** @name Versioning */
+    //@{
+    uint128_t commit( const uint32_t incarnation ) override;
+    void setAutoObsolete( const uint32_t ) override {}
+    uint32_t getAutoObsolete() const override { return 0; }
+    //@}
 
-        /** @name Versioning */
-        //@{
-        uint128_t commit( const uint32_t incarnation ) override;
-        void setAutoObsolete( const uint32_t ) override {}
-        uint32_t getAutoObsolete() const override { return 0; }
-        //@}
-
-    private:
-        /* The command handlers. */
-        bool _cmdCommit( ICommand& pkg );
-    };
+private:
+    /* The command handlers. */
+    bool _cmdCommit( ICommand& pkg );
+};
 }
 
 #endif // CO_UNBUFFEREDMASTERCM_H

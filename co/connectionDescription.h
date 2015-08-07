@@ -67,7 +67,7 @@ namespace co
          * @sa fromString()
          * @version 1.0
          */
-        ConnectionDescription( std::string& data );
+        explicit ConnectionDescription( std::string& data );
 
         /** Serialize this description to a std::ostream. @version 1.0 */
         CO_API void serialize( std::ostream& os ) const;

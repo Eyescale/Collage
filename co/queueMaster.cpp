@@ -39,13 +39,12 @@ namespace detail
 class ItemBuffer : public lunchbox::Bufferb, public lunchbox::Referenced
 {
 public:
-    ItemBuffer( lunchbox::Bufferb& from )
+    explicit ItemBuffer( lunchbox::Bufferb& from )
         : lunchbox::Bufferb( from )
         , lunchbox::Referenced()
     {}
 
-    ~ItemBuffer()
-    {}
+    ~ItemBuffer() {}
 };
 
 typedef lunchbox::RefPtr< ItemBuffer > ItemBufferPtr;
@@ -53,7 +52,7 @@ typedef lunchbox::RefPtr< ItemBuffer > ItemBufferPtr;
 class QueueMaster : public co::Dispatcher
 {
 public:
-    QueueMaster( const co::QueueMaster& parent )
+    explicit QueueMaster( const co::QueueMaster& parent )
         : co::Dispatcher()
         , _parent( parent )
     {}

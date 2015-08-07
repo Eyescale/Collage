@@ -36,6 +36,7 @@ public:
                            ConstBufferPtr buffer, const bool swap );
 
     /** Copy-construct an object command from a generic ICommand. @version 1.0*/
+    // cppcheck-suppress noExplicitConstructor
     CO_API ObjectICommand( const ICommand& command );
 
     /** Copy-construct an object command. */

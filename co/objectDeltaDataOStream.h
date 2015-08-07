@@ -29,7 +29,7 @@ namespace co
     class ObjectDeltaDataOStream : public ObjectDataOStream
     {
     public:
-        ObjectDeltaDataOStream( const ObjectCM* cm );
+        explicit ObjectDeltaDataOStream( const ObjectCM* cm );
         virtual ~ObjectDeltaDataOStream();
 
     protected:

@@ -134,7 +134,7 @@ public:
 
 protected:
     CO_API DataOStream(); //!< @internal
-    DataOStream( DataOStream& rhs );  //!< @internal
+    explicit DataOStream( DataOStream& rhs );  //!< @internal
     virtual CO_API ~DataOStream(); //!< @internal
 
     /** @internal */

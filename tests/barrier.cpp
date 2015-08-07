@@ -84,7 +84,7 @@ public:
         _barrier.waitNE( 0 );
         TEST( node->connect( server ));
 
-        co::Barrier barrier( node, _barrier.get( ));
+        co::Barrier barrier( node, co::ObjectVersion( _barrier.get( )));
         TEST( barrier.isGood( ));
         TEST( barrier.getVersion() == co::VERSION_FIRST );
 

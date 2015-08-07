@@ -29,7 +29,7 @@ namespace detail
 class QueueItem
 {
 public:
-    QueueItem( co::QueueMaster& queueMaster_ )
+    explicit QueueItem( co::QueueMaster& queueMaster_ )
         : queueMaster( queueMaster_ )
     {}
 

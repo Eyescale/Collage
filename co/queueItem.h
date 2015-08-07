@@ -43,8 +43,8 @@ public:
 private:
     friend class QueueMaster;
 
-    QueueItem( QueueMaster& master );
     QueueItem( const QueueItem& rhs );
+    explicit QueueItem( QueueMaster& master );
 
     void sendData( const void*, const uint64_t, const bool ) override
         { LBDONTCALL }

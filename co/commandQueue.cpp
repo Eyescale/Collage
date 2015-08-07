@@ -33,7 +33,7 @@ namespace detail
 class CommandQueue
 {
 public:
-    CommandQueue( const size_t maxSize ) : commands( maxSize ) {}
+    explicit CommandQueue( const size_t maxSize ) : commands( maxSize ) {}
 
     /** Thread-safe buffer queue. */
     lunchbox::MTQueue< co::ICommand > commands;

@@ -61,7 +61,7 @@ class DataOStreamArchive
 
 public:
     /** Construct a new serialization archive. @version 1.0 */
-    CO_API DataOStreamArchive( DataOStream& stream );
+    CO_API explicit DataOStreamArchive( DataOStream& stream );
 
     /** @internal archives are expected to support this function. */
     CO_API void save_binary( const void* data, std::size_t size );
