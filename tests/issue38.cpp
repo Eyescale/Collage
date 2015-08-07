@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2014, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2010-2015, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -38,9 +38,7 @@ uint8_t out[ PACKETSIZE ];
 class Writer : public lunchbox::Thread
 {
 public:
-    Writer()
-        : runtime( 0.f )
-    {}
+    Writer() : runtime( 0.f ) {}
 
     void startSend( co::ConnectionPtr connection )
     {
@@ -62,7 +60,6 @@ public:
 private:
     co::ConnectionPtr connection_;
 };
-
 }
 
 int main( int argc, char **argv )

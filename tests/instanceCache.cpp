@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2009-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2009-2015, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -46,10 +46,10 @@ lunchbox::Clock _clock;
 class Reader : public lunchbox::Thread
 {
 public:
-    Reader( co::InstanceCache& cache )
-            : Thread(),
-              _cache( cache )
-        {}
+    explicit Reader( co::InstanceCache& cache )
+        : Thread()
+        , _cache( cache )
+    {}
     virtual ~Reader(){}
 
 protected:
