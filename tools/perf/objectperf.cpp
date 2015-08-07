@@ -127,7 +127,7 @@ private:
 class OperationIF
 {
 public:
-    OperationIF( const std::string& name ) : name_( name ) {}
+    explicit OperationIF( const std::string& name ) : name_( name ) {}
     virtual ~OperationIF() {}
     virtual void activate() = 0;
     virtual void print( const float time ) = 0;
