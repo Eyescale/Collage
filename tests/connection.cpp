@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2014, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2010-2015, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -48,7 +48,7 @@ static co::ConnectionType types[] =
 class Reader : public lunchbox::Thread
 {
 public:
-    Reader( co::ConnectionPtr connection ) : connection_( connection )
+    explicit Reader( co::ConnectionPtr connection ) : connection_( connection )
         { TEST( start( )); }
 
     void run() override
@@ -92,7 +92,7 @@ private:
 class Latency : public lunchbox::Thread
 {
 public:
-    Latency( co::ConnectionPtr connection ) : connection_( connection )
+    explicit Latency( co::ConnectionPtr connection ) : connection_( connection )
         { TEST( start( )); }
 
     void run() override
