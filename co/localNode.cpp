@@ -84,7 +84,9 @@ namespace detail
 class ReceiverThread : public lunchbox::Thread
 {
 public:
-    ReceiverThread( co::LocalNode* localNode ) : _localNode( localNode ) {}
+    explicit ReceiverThread( co::LocalNode* localNode )
+        : _localNode( localNode ) {}
+
     bool init() override
     {
         const int32_t threadID = ++_threadIDs - 1;
@@ -102,7 +104,7 @@ private:
 class CommandThread : public Worker
 {
 public:
-    CommandThread( co::LocalNode* localNode )
+    explicit CommandThread( co::LocalNode* localNode )
         : Worker( Global::getCommandQueueLimit( ))
         , threadID( 0 )
         , _localNode( localNode )

@@ -52,7 +52,7 @@ class DataStreamArchiveException : public boost::archive::archive_exception
 
 public:
     //! type size is not large enough for deserialized number
-    DataStreamArchiveException(signed char invalid_size)
+    explicit DataStreamArchiveException( const signed char invalid_size )
         : boost::archive::archive_exception(other_exception)
         , msg("requested integer size exceeds type size: ")
     {
@@ -68,7 +68,7 @@ public:
 
     //! serialization of inf, nan and denormals
     template <typename T>
-    DataStreamArchiveException(const T& abnormal)
+    explicit DataStreamArchiveException( const T& abnormal )
         : boost::archive::archive_exception(other_exception)
         , msg("serialization of illegal floating point value: ")
     {

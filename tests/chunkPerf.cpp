@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2013-2014, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2013-2015, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -39,7 +39,7 @@ static const size_t minChunkSize  = 512;
 class Server : public lunchbox::Thread
 {
 public:
-    Server( co::ConnectionDescriptionPtr description )
+    explicit Server( co::ConnectionDescriptionPtr description )
         : connection_( co::Connection::create( description ))
     {}
 

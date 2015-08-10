@@ -79,7 +79,8 @@ public:
         _node = 0;
     }
 
-    co::ObjectVersion getBarrierID() const { return _barrier; }
+    co::ObjectVersion getBarrierID() const
+    { return co::ObjectVersion( _barrier ); }
 
 protected:
     void run() final
@@ -130,7 +131,7 @@ public:
         TEST( _node->close());
         _node = 0;
     }
-    
+
 protected:
     void run() final
     {

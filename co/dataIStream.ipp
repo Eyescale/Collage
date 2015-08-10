@@ -169,7 +169,7 @@ namespace
 class ObjectFinder
 {
 public:
-    ObjectFinder( const uint128_t& id ) : _id( id ) {}
+    explicit ObjectFinder( const uint128_t& id ) : _id( id ) {}
     bool operator()( co::Object* candidate )
         { return candidate->getID() == _id; }
 

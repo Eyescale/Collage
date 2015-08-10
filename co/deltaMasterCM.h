@@ -34,7 +34,7 @@ namespace co
 class DeltaMasterCM : public FullMasterCM
 {
 public:
-    DeltaMasterCM( Object* object );
+    explicit DeltaMasterCM( Object* object );
     virtual ~DeltaMasterCM();
 
 protected:

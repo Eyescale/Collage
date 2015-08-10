@@ -64,7 +64,7 @@ private:
     bool _cmdCustom( co::ICommand& command )
     {
         return commandHandler< co::ObjectICommand >( command, buffer_,
-                                                    getID().low( ));
+                                                     getID().low( ));
     }
 };
 

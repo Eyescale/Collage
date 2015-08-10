@@ -38,12 +38,12 @@ namespace detail
 class DataIStream
 {
 public:
-    DataIStream( const bool swap_ )
-            : input( 0 )
-            , inputSize( 0 )
-            , position( 0 )
-            , swap( swap_ )
-        {}
+    explicit DataIStream( const bool swap_ )
+        : input( 0 )
+        , inputSize( 0 )
+        , position( 0 )
+        , swap( swap_ )
+    {}
 
     /** The current input buffer */
     const uint8_t* input;

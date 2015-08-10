@@ -27,45 +27,43 @@
 
 namespace co
 {
-    /** @internal
-     * An object change manager handling static object slave instances.
-     */
-    class StaticSlaveCM : public ObjectCM
-    {
-    public:
-        StaticSlaveCM( Object* object );
-        virtual ~StaticSlaveCM();
+/** @internal
+ * An object change manager handling static object slave instances.
+ */
+class StaticSlaveCM : public ObjectCM
+{
+public:
+    explicit StaticSlaveCM( Object* object );
+    virtual ~StaticSlaveCM();
 
-        void init() override {}
+    void init() override {}
 
-        /**
-         * @name Versioning
-         */
-        //@{
-        uint128_t getHeadVersion() const override { return VERSION_FIRST; }
-        uint128_t getVersion() const override { return VERSION_FIRST; }
-        //@}
+    /** @name Versioning */
+    //@{
+    uint128_t getHeadVersion() const override { return VERSION_FIRST; }
+    uint128_t getVersion() const override { return VERSION_FIRST; }
+    //@}
 
-        bool isMaster() const override { return false; }
-        uint32_t getMasterInstanceID() const override
-            { return CO_INSTANCE_INVALID; }
+    bool isMaster() const override { return false; }
+    uint32_t getMasterInstanceID() const override
+    { return CO_INSTANCE_INVALID; }
 
-        bool addSlave( const MasterCMCommand& ) override
-            { LBDONTCALL; return false; }
-        void removeSlaves( NodePtr ) override {}
+    bool addSlave( const MasterCMCommand& ) override
+    { LBDONTCALL; return false; }
+    void removeSlaves( NodePtr ) override {}
 
-        void applyMapData( const uint128_t& version ) override;
-        void addInstanceDatas( const ObjectDataIStreamDeque&,
-                                       const uint128_t& startVersion ) override;
-    protected:
-        /** input stream for receiving the current version */
-        ObjectDataIStream* _currentIStream;
+    void applyMapData( const uint128_t& version ) override;
+    void addInstanceDatas( const ObjectDataIStreamDeque&,
+                           const uint128_t& startVersion ) override;
+protected:
+    /** input stream for receiving the current version */
+    ObjectDataIStream* _currentIStream;
 
-    private:
-        /* The command handlers. */
-        bool _cmdInstance( ICommand& command );
-        LB_TS_VAR( _rcvThread );
-    };
+private:
+    /* The command handlers. */
+    bool _cmdInstance( ICommand& command );
+    LB_TS_VAR( _rcvThread );
+};
 }
 
 #endif // CO_STATICSLAVECM_H

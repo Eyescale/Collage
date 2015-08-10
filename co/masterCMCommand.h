@@ -30,26 +30,19 @@ namespace detail { class MasterCMCommand; }
 class MasterCMCommand : public ICommand
 {
 public:
-    MasterCMCommand( const ICommand& command );
-
+    explicit MasterCMCommand( const ICommand& command );
     MasterCMCommand( const MasterCMCommand& rhs );
 
     virtual ~MasterCMCommand();
 
     const uint128_t& getRequestedVersion() const;
-
     const uint128_t& getMinCachedVersion() const;
-
     const uint128_t& getMaxCachedVersion() const;
-
     const uint128_t& getObjectID() const;
 
     uint64_t getMaxVersion() const;
-
     uint32_t getRequestID() const;
-
     uint32_t getInstanceID() const;
-
     uint32_t getMasterInstanceID() const;
 
     bool useCache() const;

@@ -83,13 +83,6 @@ public:
 
 typedef CommandFunc<Barrier> CmdFunc;
 
-#ifdef COLLAGE_V1_API
-Barrier::Barrier( NodePtr master, const uint32_t height )
-    : _impl( new detail::Barrier( master ? master->getNodeID() : NodeID(),
-                                  height ))
-{}
-#endif
-
 Barrier::Barrier( LocalNodePtr localNode, const uint128_t& masterNodeID,
                   const uint32_t height )
     : _impl( new detail::Barrier( masterNodeID.isUUID() ?

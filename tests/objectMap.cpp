@@ -121,7 +121,8 @@ int main( int argc, char **argv )
 
         // init
         TEST( server->registerObject( &server->objectMap ));
-        TEST( client->mapObject( &client->objectMap, &server->objectMap ));
+        TEST( client->mapObject( &client->objectMap,
+                                 co::ObjectVersion( server->objectMap )));
 
 
         // Test register()

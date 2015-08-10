@@ -32,13 +32,8 @@ template< typename T >
 class Object : public co::Object
 {
 public:
-    Object()
-        : _value()
-    {}
-
-    Object( T value )
-        : _value( value )
-    {}
+    Object() : _value() {}
+    explicit Object( T value ) : _value( value ) {}
 
     T getValue() const
     {

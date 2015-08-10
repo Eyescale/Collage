@@ -50,13 +50,17 @@ struct ObjectVersion
     CO_API ObjectVersion();
 
     /** Construct a new object version. @version 1.0 */
-    CO_API ObjectVersion( const uint128_t& identifier, const uint128_t& version );
+    CO_API ObjectVersion( const uint128_t& identifier,
+                          const uint128_t& version );
 
     /** Construct a new object version. @version 1.0 */
-    CO_API ObjectVersion( const Object* object );
+    CO_API explicit ObjectVersion( const Object* object );
+
+    /** Construct a new object version. @version 1.2 */
+    CO_API explicit ObjectVersion( const Object& object );
 
     /** Construct a new object version. @version 1.0 */
-    template< class R > ObjectVersion( lunchbox::RefPtr< R > object )
+    template< class R > explicit ObjectVersion( lunchbox::RefPtr< R > object )
         { *this = object.get(); }
 
     /** Assign a new identifier and version. @version 1.0 */

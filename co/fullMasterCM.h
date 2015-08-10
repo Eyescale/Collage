@@ -38,7 +38,7 @@ namespace co
     class FullMasterCM : public VersionedMasterCM
     {
     public:
-        FullMasterCM( Object* object );
+        explicit FullMasterCM( Object* object );
         virtual ~FullMasterCM();
 
         void init() override;
@@ -59,8 +59,8 @@ namespace co
     protected:
         struct InstanceData
         {
-            InstanceData( const VersionedMasterCM* cm )
-                    : os( cm ), commitCount( 0 ) {}
+            explicit InstanceData( const VersionedMasterCM* cm )
+                : os( cm ), commitCount( 0 ) {}
 
             ObjectInstanceDataOStream os;
             uint32_t commitCount;

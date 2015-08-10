@@ -52,8 +52,8 @@ namespace co
          * @param type the connection type, can be CONNECTIONTYPE_TCPIP or
          *             CONNECTIONTYPE_SDP.
          */
-        SocketConnection( const ConnectionType type = CONNECTIONTYPE_TCPIP );
-
+        explicit SocketConnection( const ConnectionType type =
+                                   CONNECTIONTYPE_TCPIP );
         bool connect() override;
         bool listen() override;
         void acceptNB() override;

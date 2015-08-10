@@ -87,7 +87,7 @@ public:
     /** Is a big endian host? */
     bool bigEndian;
 
-    Node( const uint32_t type_ )
+    explicit Node( const uint32_t type_ )
         : id( lunchbox::make_UUID( ))
         , type( type_ )
         , state( STATE_CLOSED )

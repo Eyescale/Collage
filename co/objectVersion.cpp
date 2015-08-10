@@ -41,6 +41,11 @@ ObjectVersion::ObjectVersion( const Object* object )
     }
 }
 
+ObjectVersion::ObjectVersion( const Object& object )
+    : identifier( object.getID( ))
+    , version( object.getVersion( ))
+{}
+
 ObjectVersion& ObjectVersion::operator = ( const Object* object )
 {
     if( object )

@@ -434,7 +434,7 @@ protected:
     Object& operator = ( const Object& ) { return *this; }
 
     /** Copy construct a new, unattached object. @version 1.0 */
-    CO_API Object( const Object& );
+    CO_API explicit Object( const Object& );
 
 private:
     detail::Object* const impl_;

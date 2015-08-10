@@ -35,7 +35,7 @@ class CustomICommand : public ICommand
 {
 public:
     /** @internal */
-    CO_API CustomICommand( const ICommand& command );
+    CO_API explicit CustomICommand( const ICommand& command );
 
     /** Copy-construct a custom command. */
     CO_API CustomICommand( const CustomICommand& rhs );

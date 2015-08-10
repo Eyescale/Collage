@@ -36,8 +36,8 @@ typedef InstanceMap::const_iterator InstanceMapCIter;
 class Zeroconf
 {
 public:
-    Zeroconf( lunchbox::Servus& service )
-            : service_( service )
+    explicit Zeroconf( lunchbox::Servus& service )
+        : service_( service )
     {
         service_.getData( instanceMap_ );
     }

@@ -92,9 +92,10 @@ private:
     class Thread : public lunchbox::Thread
     {
     public:
-        Thread( RSPConnectionPtr connection )
-        : _connection( connection ){}
+        explicit Thread( RSPConnectionPtr connection )
+            : _connection( connection ) {}
         virtual ~Thread(){ _connection = 0; }
+
     protected:
         void run() override;
         bool init() override { return _connection->_initThread(); }

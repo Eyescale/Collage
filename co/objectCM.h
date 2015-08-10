@@ -49,7 +49,7 @@ class ObjectCM : public Dispatcher, public lunchbox::Referenced
 {
 public:
     /** Construct a new change manager. */
-    ObjectCM( Object* object );
+    explicit ObjectCM( Object* object );
 
     /** Destruct this change manager. */
     virtual ~ObjectCM();

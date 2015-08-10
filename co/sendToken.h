@@ -36,7 +36,7 @@ public:
     CO_API void release();
 
 private:
-    SendToken( NodePtr node ) : node_( node ) {}
+    explicit SendToken( NodePtr node ) : node_( node ) {}
     NodePtr node_;
     friend class LocalNode;
 };
