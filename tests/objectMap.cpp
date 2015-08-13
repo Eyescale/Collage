@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2013, Daniel Nachbaur <daniel.nachbaur@epfl.ch>
- *               2013, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2013-2015, Daniel Nachbaur <daniel.nachbaur@epfl.ch>
+ *                          Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -19,7 +19,6 @@
 #include <test.h>
 
 #include <co/co.h>
-#include <lunchbox/rng.h>
 
 namespace
 {
@@ -92,15 +91,11 @@ int main( int argc, char **argv )
 {
     TEST( co::init( argc, argv ));
 
-    lunchbox::RNG rng;
-    const uint16_t port = (rng.get<uint16_t>() % 60000) + 1024;
-
     lunchbox::RefPtr< TestNode > server = new TestNode;
     co::ConnectionDescriptionPtr connDesc =
         new co::ConnectionDescription;
 
     connDesc->type = co::CONNECTIONTYPE_TCPIP;
-    connDesc->port = port;
     connDesc->setHostname( "localhost" );
 
     server->addConnectionDescription( connDesc );

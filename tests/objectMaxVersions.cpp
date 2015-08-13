@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2014, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2012-2015, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -26,7 +26,6 @@
 #include <co/object.h>
 #include <lunchbox/clock.h>
 #include <lunchbox/monitor.h>
-#include <lunchbox/rng.h>
 #include <lunchbox/thread.h>
 
 #include <iostream>
@@ -77,14 +76,10 @@ private:
 int main( int argc, char **argv )
 {
     co::init( argc, argv );
-    lunchbox::RNG rng;
-    const uint16_t port = (rng.get<uint16_t>() % 60000) + 1024;
-
     co::LocalNodePtr server = new co::LocalNode;
     co::ConnectionDescriptionPtr connDesc = new co::ConnectionDescription;
 
     connDesc->type = co::CONNECTIONTYPE_TCPIP;
-    connDesc->port = port;
     connDesc->setHostname( "localhost" );
 
     server->addConnectionDescription( connDesc );

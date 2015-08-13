@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2013-2014, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2013-2015, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -18,7 +18,6 @@
 #include <co/co.h>
 #include <test.h>
 #include <lunchbox/clock.h>
-#include <lunchbox/rng.h>
 
 #define NCOMMANDS 10000
 
@@ -99,9 +98,7 @@ int main( int argc, char **argv )
 
     co::ConnectionDescriptionPtr connDesc = new co::ConnectionDescription;
 
-    lunchbox::RNG rng;
     connDesc->type = co::CONNECTIONTYPE_TCPIP;
-    connDesc->port = (rng.get<uint16_t>() % 60000) + 1024;
     connDesc->setHostname( "localhost" );
 
     LocalNodePtr server = new LocalNode;

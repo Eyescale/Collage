@@ -27,7 +27,6 @@
 #include <co/object.h>
 #include <lunchbox/clock.h>
 #include <lunchbox/monitor.h>
-#include <lunchbox/rng.h>
 
 #include <iostream>
 
@@ -101,15 +100,11 @@ int main( int argc, char **argv )
     co::init( argc, argv );
     co::Global::setObjectBufferSize( 600 );
 
-    lunchbox::RNG rng;
-    const uint16_t port = (rng.get<uint16_t>() % 60000) + 1024;
-
     lunchbox::RefPtr< Server > server = new Server;
     co::ConnectionDescriptionPtr connDesc =
         new co::ConnectionDescription;
 
     connDesc->type = co::CONNECTIONTYPE_TCPIP;
-    connDesc->port = port;
     connDesc->setHostname( "localhost" );
 
     server->addConnectionDescription( connDesc );

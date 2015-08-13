@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2005-2015, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -27,7 +27,6 @@
 
 #include <lunchbox/clock.h>
 #include <lunchbox/monitor.h>
-#include <lunchbox/rng.h>
 
 #include <iostream>
 
@@ -82,14 +81,10 @@ int main( int argc, char **argv )
 {
     co::init( argc, argv );
 
-    lunchbox::RNG rng;
-    const uint16_t port = (rng.get<uint16_t>() % 60000) + 1024;
-
     lunchbox::RefPtr< Server > server = new Server;
     co::ConnectionDescriptionPtr connDesc = new co::ConnectionDescription;
 
     connDesc->type = co::CONNECTIONTYPE_TCPIP;
-    connDesc->port = port;
     connDesc->setHostname( "localhost" );
     server->addConnectionDescription( connDesc );
 

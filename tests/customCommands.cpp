@@ -20,7 +20,6 @@
 
 #include <co/co.h>
 #include <lunchbox/monitor.h>
-#include <lunchbox/rng.h>
 #include <boost/bind.hpp>
 
 const co::uint128_t cmdID1( lunchbox::make_uint128( "ch.eyescale.collage.test.c1" ));
@@ -54,10 +53,7 @@ int main( int argc, char **argv )
     TEST( co::init( argc, argv ) );
 
     co::ConnectionDescriptionPtr connDesc = new co::ConnectionDescription;
-
-    lunchbox::RNG rng;
     connDesc->type = co::CONNECTIONTYPE_TCPIP;
-    connDesc->port = (rng.get<uint16_t>() % 60000) + 1024;
     connDesc->setHostname( "localhost" );
 
     MyLocalNodePtr server = new MyLocalNode;
