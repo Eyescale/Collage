@@ -148,6 +148,7 @@ bool _initialize( co::ConnectionDescriptionPtr desc,
         break;
 
     case co::CONNECTIONTYPE_RSP:
+        desc->port = co::ConnectionDescription::RANDOM_MULTICAST_PORT;
         TESTINFO( listener->listen(), desc );
         listener->acceptNB();
 

@@ -2,6 +2,8 @@
 
 # git master {#master}
 
+* [164](https://github.com/Eyescale/Collage/pull/164): Implement
+  OS-chosen port number for RSP
 * [160](https://github.com/Eyescale/Collage/pull/160): Replace command
   queue and barrier timeout exceptions with return values
 

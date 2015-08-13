@@ -213,7 +213,9 @@ bool RSPConnection::listen()
     _numBuffers =  Global::getIAttribute( Global::IATTR_RSP_NUM_BUFFERS );
 
     // init udp connection
-    if( description->port == 0 )
+    if( description->port == ConnectionDescription::RANDOM_MULTICAST_PORT )
+        description->port = 0; // Let OS choose
+    else if( description->port == 0 )
         description->port = CO_RSP_DEFAULT_PORT;
     if( description->getHostname().empty( ))
         description->setHostname( "239.255.42.43" );
@@ -225,23 +227,18 @@ bool RSPConnection::listen()
         const ip::address readAddress( ip::address::from_string( "0.0.0.0" ));
         const ip::udp::endpoint readEndpoint( readAddress,
                                               description->port );
-
-        std::stringstream portStr;
-        portStr << description->port;
-        const std::string& port = portStr.str();
+        const std::string& port = std::to_string( unsigned( description->port));
         ip::udp::resolver resolver( _ioService );
         const ip::udp::resolver::query queryHN( ip::udp::v4(),
                                                 description->getHostname(),
                                                 port );
-        const ip::udp::resolver::iterator end;
-        const ip::udp::resolver::iterator hostnameIP =
-            resolver.resolve( queryHN );
+        const ip::udp::resolver::iterator hostname = resolver.resolve( queryHN);
 
-        if( hostnameIP == end )
+        if( hostname == ip::udp::resolver::iterator( ))
             return false;
 
-        const ip::udp::endpoint writeEndpoint = *hostnameIP;
-        const ip::address mcAddr( writeEndpoint.address() );
+        const ip::udp::endpoint writeEndpoint = *hostname;
+        const ip::address mcAddr( writeEndpoint.address( ));
 
         _read = new ip::udp::socket( _ioService );
         _write = new ip::udp::socket( _ioService );
@@ -256,6 +253,7 @@ bool RSPConnection::listen()
                        Global::getIAttribute( Global::IATTR_UDP_BUFFER_SIZE )));
 
         _read->bind( readEndpoint );
+        description->port = _read->local_endpoint().port();
 
         const ip::udp::resolver::query queryIF( ip::udp::v4(),
                                                 description->getInterface(),
@@ -263,7 +261,7 @@ bool RSPConnection::listen()
         const ip::udp::resolver::iterator interfaceIP =
             resolver.resolve( queryIF );
 
-        if( interfaceIP == end )
+        if( interfaceIP == ip::udp::resolver::iterator( ))
             return false;
 
         const ip::address ifAddr( ip::udp::endpoint( *interfaceIP ).address( ));
