@@ -34,7 +34,7 @@
 class BarrierThread : public lunchbox::Thread
 {
 public:
-    BarrierThread( const uint32_t nOps )
+    explicit BarrierThread( const uint32_t nOps )
         : port( 0 )
         , _nOps( nOps )
         , _nTimeouts( 0 )
