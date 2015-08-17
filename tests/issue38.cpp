@@ -64,6 +64,10 @@ private:
 
 int main( int argc, char **argv )
 {
+#ifdef _MSC_VER
+    // not implemented yet, https://github.com/Eyescale/Collage/issues/38
+    return EXIT_SUCCESS;
+#endif
     co::init( argc, argv );
     co::ConnectionDescriptionPtr desc = new co::ConnectionDescription;
     desc->setHostname( "127.0.0.1" );
