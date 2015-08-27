@@ -8,6 +8,7 @@ include(files.cmake)
 option(COLLAGE_AGGRESSIVE_CACHING "Disable to reduce memory consumption" ON)
 mark_as_advanced(COLLAGE_AGGRESSIVE_CACHING)
 
+set(COLLAGE_PUBLIC_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 list(APPEND COLLAGE_LINK_LIBRARIES
   PUBLIC Lunchbox Pression
   PRIVATE ${PTHREAD_LIBRARIES} ${Boost_SERIALIZATION_LIBRARY}

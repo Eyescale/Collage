@@ -9,7 +9,6 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake
   ${CMAKE_SOURCE_DIR}/CMake/common)
 
 include(GitExternal)
-include(SubProject)
 
 option(COLLAGE_BUILD_V2_API
   "Enable for pure 2.0 API (breaks compatibility with 1.x API)" OFF)
@@ -28,7 +27,7 @@ set(DPUT_HOST "ppa:eilemann/equalizer-dev")
 
 set(COMMON_PROJECT_DOMAIN ch.eyescale)
 set(COLLAGE_DESCRIPTION "High-performance C++ library for developing object-oriented distributed applications.")
-set(COLLAGE_DEPENDENT_LIBRARIES Lunchbox Pression)
+set(COLLAGE_DEPENDENT_LIBRARIES Boost Lunchbox Pression)
 
 common_package(Boost REQUIRED COMPONENTS system regex date_time serialization
                                          program_options thread)
