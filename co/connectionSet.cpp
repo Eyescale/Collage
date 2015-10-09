@@ -611,25 +611,26 @@ bool ConnectionSet::_setupFDSet()
     for( ConnectionsCIter i = _impl->allConnections.begin();
          i != _impl->allConnections.end(); ++i )
     {
-        ConnectionPtr connection = *i;
-        fd.fd = connection->getNotifier();
+        ConnectionPtr connectionPtr = *i;
+        const Connection& connection = *connectionPtr.get();
+        fd.fd = connection.getNotifier();
 
         if( fd.fd <= 0 )
         {
-            LBINFO << "Cannot select connection " << connection
-                   << ", connection " << typeid( *connection.get( )).name()
+            LBINFO << "Cannot select connection " << connectionPtr
+                   << ", connection " << typeid( connection ).name()
                    << " doesn't have a file descriptor" << std::endl;
-            _impl->connection = connection;
+            _impl->connection = connectionPtr;
             _impl->lock.unset();
             return false;
         }
 
-        LBVERB << "Listening on " << typeid( *connection.get( )).name()
-               << " @" << (void*)connection.get() << std::endl;
+        LBVERB << "Listening on " << typeid( connection ).name()
+               << " @" << &connection << std::endl;
 
         _impl->fdSet.append( fd );
 
-        result.connection = connection.get();
+        result.connection = connectionPtr.get();
         _impl->fdSetResult.append( result );
     }
     _impl->lock.unset();
