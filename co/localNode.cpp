@@ -775,11 +775,11 @@ LocalNode::SendToken LocalNode::acquireSendToken( NodePtr node )
     {
         request.wait( Global::getTimeout( ));
     }
-    catch( lunchbox::FutureTimeout& )
+    catch( const lunchbox::FutureTimeout& )
     {
         LBERROR << "Timeout while acquiring send token " << request.getID()
                 << std::endl;
-        request.relinquish();
+        request.unregister();
         return 0;
     }
     return new co::SendToken( node );
@@ -1046,11 +1046,11 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
     {
         connected = request.wait( 10000 /*ms*/ );
     }
-    catch( lunchbox::FutureTimeout& )
+    catch( const lunchbox::FutureTimeout& )
     {
         LBWARN << "Node connection handshake timeout - " << node
                << " not a Collage node?" << std::endl;
-        request.relinquish();
+        request.unregister();
         return CONNECT_TIMEOUT;
     }
 

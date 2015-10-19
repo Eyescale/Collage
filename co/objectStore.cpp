@@ -206,13 +206,21 @@ NodeID ObjectStore::findMasterNodeID( const uint128_t& identifier )
                              << " req " << request.getID() << std::endl;
         node->send( CMD_NODE_FIND_MASTER_NODE_ID ) << identifier << request;
 
-        const NodeID& masterNodeID = request.wait( Global::getTimeout( ));
-
-        if( masterNodeID != 0 )
+        try
         {
-            LBLOG( LOG_OBJECTS ) << "Found " << identifier << " on "
-                                 << masterNodeID << std::endl;
-            return masterNodeID;
+            const NodeID& masterNodeID = request.wait( Global::getTimeout( ));
+
+            if( masterNodeID != 0 )
+            {
+                LBLOG( LOG_OBJECTS ) << "Found " << identifier << " on "
+                                     << masterNodeID << std::endl;
+                return masterNodeID;
+            }
+        }
+        catch( const lunchbox::FutureTimeout& )
+        {
+            _localNode->unregisterRequest( request.getID( ));
+            throw;
         }
     }
 
@@ -386,8 +394,7 @@ uint32_t ObjectStore::mapNB( Object* object, const uint128_t& id,
         return LB_UNDEFINED_UINT32;
     }
 
-    lunchbox::Request< void > request =
-        _localNode->registerRequest< void >( object );
+    const uint32_t request = _localNode->registerRequest( object );
     uint128_t minCachedVersion = VERSION_HEAD;
     uint128_t maxCachedVersion = VERSION_NONE;
     uint32_t masterInstanceID = 0;
@@ -399,8 +406,7 @@ uint32_t ObjectStore::mapNB( Object* object, const uint128_t& id,
         << version << minCachedVersion << maxCachedVersion << id
         << object->getMaxVersions() << request << _genNextID( _instanceIDs )
         << masterInstanceID << useCache;
-    request.relinquish();
-    return request.getID();
+    return request;
 }
 
 bool ObjectStore::_checkInstanceCache( const uint128_t& id, uint128_t& from,
@@ -483,8 +489,8 @@ uint32_t ObjectStore::_startSync( Object* object, NodePtr master,
         return LB_UNDEFINED_UINT32;
     }
 
-    lunchbox::Request< void > request =
-        _localNode->registerRequest< void >( new ObjectDataIStream );
+    const uint32_t request =
+        _localNode->registerRequest( new ObjectDataIStream );
     uint128_t minCachedVersion = VERSION_HEAD;
     uint128_t maxCachedVersion = VERSION_NONE;
     uint32_t cacheInstanceID = 0;
@@ -512,8 +518,7 @@ uint32_t ObjectStore::_startSync( Object* object, NodePtr master,
         << VERSION_NEWEST << minCachedVersion << maxCachedVersion << id
         << uint64_t(0) /* maxVersions */ << request << instanceID
         << cacheInstanceID << useCache;
-    request.relinquish();
-    return request.getID();
+    return request;
 }
 
 bool ObjectStore::_finishSync( const uint32_t requestID, Object* object )
