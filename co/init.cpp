@@ -56,6 +56,7 @@ bool _init( const int argc, char** argv )
     pression::PluginRegistry& plugins = Global::getPluginRegistry();
     plugins.addLunchboxPlugins();
     plugins.addDirectory( "/opt/local/lib" ); // MacPorts
+    plugins.addDirectory( "/usr/local/lib" ); // Homebrew
     plugins.init();
 
 #ifdef _WIN32

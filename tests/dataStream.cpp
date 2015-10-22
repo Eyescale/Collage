@@ -73,8 +73,8 @@ public:
     co::LocalNodePtr getLocalNode() const override { return 0; }
 
 protected:
-    virtual bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
-                                const void** chunkData, uint64_t& size )
+    bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
+                        const void** chunkData, uint64_t& size ) final
     {
         co::ICommand cmd = _commands.tryPop();
         if( !cmd.isValid( ))

@@ -29,7 +29,7 @@ namespace co
 class FDConnection : public Connection
 {
 public:
-    virtual Notifier getNotifier() const { return _readFD; }
+    Notifier getNotifier() const final { return _readFD; }
 
 protected:
     FDConnection();
