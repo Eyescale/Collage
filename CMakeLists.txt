@@ -14,9 +14,9 @@ option(COLLAGE_BUILD_V2_API
   "Enable for pure 2.0 API (breaks compatibility with 1.x API)" OFF)
 
 set(VERSION_MAJOR "1")
-set(VERSION_MINOR "2")
-set(VERSION_PATCH "1")
-set(VERSION_ABI 3)
+set(VERSION_MINOR "3")
+set(VERSION_PATCH "0")
+set(VERSION_ABI 4)
 
 set(COLLAGE_INCLUDE_NAME co)
 include(Common)
@@ -27,6 +27,8 @@ set(DPUT_HOST "ppa:eilemann/equalizer-dev")
 
 set(COMMON_PROJECT_DOMAIN ch.eyescale)
 set(COLLAGE_DESCRIPTION "High-performance C++ library for developing object-oriented distributed applications.")
+set(COLLAGE_MAINTAINER "Stefan Eilemann <eile@eyescale.ch>")
+set(COLLAGE_LICENSE LGPL)
 set(COLLAGE_DEPENDENT_LIBRARIES Boost Lunchbox Pression)
 
 common_package(Boost REQUIRED COMPONENTS system regex date_time serialization
