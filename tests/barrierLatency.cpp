@@ -22,9 +22,15 @@
 #include <lunchbox/mtQueue.h>
 #include <lunchbox/spinLock.h>
 
-lunchbox::Monitorb _registered( false );
-lunchbox::Monitorb _mapped( false );
-lunchbox::Monitorb _done( false );
+enum State
+{
+    STATE_INITIAL = 0,
+    STATE_REGISTERED,
+    STATE_MAPPED,
+    STATE_DONE
+};
+
+lunchbox::Monitor< State > _state;
 co::ObjectVersion _barrierID;
 co::Barrier* _barrier;
 lunchbox::MTQueue< co::uint128_t > _versions;
@@ -54,12 +60,12 @@ public:
         co::Barrier barrier( _node, _server->getNodeID(), _numThreads );
         barrier.setAutoObsolete( _latency + 1 );
         _barrierID = co::ObjectVersion( &barrier );
-        _registered = true;
         _versions.setMaxSize( (_latency + 1) * _numThreads );
 
-        _mapped.waitEQ( true );
+        _state = STATE_REGISTERED;
+        _state.waitGE( STATE_MAPPED );
 
-        while( !_done )
+        while( _state != STATE_DONE )
         {
             TEST( barrier.isGood());
 
@@ -89,14 +95,14 @@ public:
         else
             setName( "SlaveWorker" );
 
-        _registered.waitEQ( true );
+        _state.waitGE( STATE_REGISTERED );
         if( _master )
         {
             _barrier = new co::Barrier( _node, _barrierID );
-            _mapped = true;
+            _state = STATE_MAPPED;
         }
         else
-            _mapped.waitEQ( true );
+            _state.waitGE( STATE_MAPPED );
 
         for( size_t i = 0; i < _numIterations; ++i )
         {
@@ -114,7 +120,7 @@ public:
 
         if( _master )
         {
-            _done = true;
+            _state = STATE_DONE;
             _versions.clear();
             _node->releaseObject( _barrier );
             delete _barrier;

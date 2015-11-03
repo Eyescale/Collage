@@ -1,13 +1,15 @@
-# Changelog
+# Changelog {#Changelog}
 
-# git master {#master}
+# git master
+
+# Release 1.3 (3-Nov-2015)
 
 * [164](https://github.com/Eyescale/Collage/pull/164): Implement
   OS-chosen port number for RSP
 * [160](https://github.com/Eyescale/Collage/pull/160): Replace command
   queue and barrier timeout exceptions with return values
 
-# Release 1.2 (07-07-2015) {#Release12}
+# Release 1.2 (7-Jul-2015)
 
 * [142](https://github.com/Eyescale/Collage/pull/142): Expose addConnection()
   for local server connections in Equalizer
@@ -17,7 +19,7 @@
 * [147](https://github.com/Eyescale/Collage/pull/147): Adapt to
   Lunchbox/Pression refactoring
 
-# Release 1.1 (07-08-2014) {#Release11}
+# Release 1.1 (7-Aug-2014)
 
 * [69](https://github.com/Eyescale/Collage/pull/69): Refactor Barrier API for
   robustness, deprecate old API
@@ -34,19 +36,27 @@
 * [113](https://github.com/Eyescale/Collage/pull/113): De-race
   EventConnection::close to fix Travis
 
-# Known Bugs {#Bugs}
+# Release 1.0 (24-Jun-2013)
 
-The following bugs were known at release time. Please file a [Bug Report]
-(https://github.com/Eyescale/Collage/issues) if you find any other issue with
-this release.
+* 07/Mar/2013: PluginRegistry, Plugin and compressors are moved to
+  Lunchbox.  co::Global still maintains the global Collage plugin
+  registry.
 
-* [102](https://github.com/Eyescale/Collage/issues/102): test/connection fails
-  for RDMA connections
-* [57](https://github.com/Eyescale/Collage/issues/57): Windows: Larger number of
-  concurrent receives causes intermittent blocking
-* [15](https://github.com/Eyescale/Collage/issues/15): RDMAConnection
-  not endian-safe
-* [14](https://github.com/Eyescale/Collage/issues/14): coNetperf server
-  occasionally crashes on client disconnect
-* [2](https://github.com/Eyescale/Collage/issues/2): Multiple dispatcher
-  inheritance not working with xlC
+* 11/Feb/2013: Node::useMulticast has been renamed to getMulticast. This
+  method, and the previous getMulticast have been made protected.
+  Node::getConnection has a flag to prefer a multicast connection.
+
+* 28/Jan/2013: The program name and working directory have been moved
+  from co::Global to eq::Global.
+
+* 06/Sep/2012: New stream-based commands supersedes packet-based
+  messaging. New send() methods in co::Node & co::Object replaces old
+  API. All packets are superseded by NodeOCommand & ObjectOOCommand for
+  sending commands, and by Command & ObjectCommand for receiving
+  commands.
+
+* 09/Aug/2012: Made co::DataOStream::write private. Use 'os <<
+  co::Array< T >( ptr, num )' instead.
+
+* 27/Jul/2012: Made co::DataIStream::read private. Use 'is >> co::Array<
+  T >( ptr, num )' instead.
