@@ -14,7 +14,7 @@ option(COLLAGE_BUILD_V2_API
   "Enable for pure 2.0 API (breaks compatibility with 1.x API)" OFF)
 
 set(VERSION_MAJOR "1")
-set(VERSION_MINOR "3")
+set(VERSION_MINOR "4")
 set(VERSION_PATCH "0")
 set(VERSION_ABI 4)
 
@@ -38,6 +38,7 @@ common_package(OFED)
 common_package(Pression REQUIRED)
 common_package(Servus REQUIRED)
 common_package(UDT)
+common_package(ZeroBuf)
 common_package_post()
 
 if(NOT MSVC)

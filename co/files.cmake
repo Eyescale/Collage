@@ -52,6 +52,7 @@ set(COLLAGE_PUBLIC_HEADERS
   types.h
   worker.h
   worker.ipp
+  zerobuf.h
   zeroconf.h
   )
 
