@@ -62,8 +62,7 @@ public:
      * @sa isGood()
      * @version 1.1.1
      */
-    CO_API Barrier( LocalNodePtr localNode,
-                    const uint128_t& masterNodeID,
+    CO_API Barrier( LocalNodePtr localNode, const uint128_t& masterNodeID,
                     const uint32_t height = 0 );
 
     /**

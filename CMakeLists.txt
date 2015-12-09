@@ -36,6 +36,7 @@ common_package(Boost REQUIRED COMPONENTS system regex date_time serialization
 common_package(Lunchbox REQUIRED)
 common_package(OFED)
 common_package(Pression REQUIRED)
+common_package(Servus REQUIRED)
 common_package(UDT)
 common_package_post()
 
@@ -45,7 +46,7 @@ endif()
 
 if(APPLE)
   add_definitions(-DDarwin)
-endif(APPLE)
+endif()
 
 add_subdirectory(tools)
 add_subdirectory(tests)

@@ -381,8 +381,8 @@ public:
      *
      * Custom command handlers are invoked on reception of a CustomICommand
      * send by Node::send( uint128_t, ... ). The command identifier needs to
-     * be unique. It is recommended to use an UUID or
-     * lunchbox::make_uint128() to generate this identifier.
+     * be unique. It is recommended to use servus::make_uint128() to generate
+     * this identifier.
      *
      * @param command the unique identifier of the custom command
      * @param func the handler function for the custom command

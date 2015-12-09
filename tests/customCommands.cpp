@@ -22,8 +22,8 @@
 #include <lunchbox/monitor.h>
 #include <boost/bind.hpp>
 
-const co::uint128_t cmdID1( lunchbox::make_uint128( "ch.eyescale.collage.test.c1" ));
-const co::uint128_t cmdID2( lunchbox::make_uint128( "ch.eyescale.collage.test.c2" ));
+const co::uint128_t cmdID1( servus::make_uint128( "ch.eyescale.collage.test.c1" ));
+const co::uint128_t cmdID2( servus::make_uint128( "ch.eyescale.collage.test.c2" ));
 lunchbox::Monitor<bool> gotCmd1;
 lunchbox::Monitor<bool> gotCmd2;
 

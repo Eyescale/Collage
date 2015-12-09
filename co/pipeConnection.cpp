@@ -84,7 +84,7 @@ Connection::Notifier PipeConnection::getNotifier() const
 bool PipeConnection::_createPipes()
 {
     std::stringstream pipeName;
-    pipeName << "\\\\.\\pipe\\Collage." << UUID( true );
+    pipeName << "\\\\.\\pipe\\Collage." << servus::make_UUID();
 
     ConnectionDescriptionPtr desc = new ConnectionDescription;
     desc->type = CONNECTIONTYPE_NAMEDPIPE;
