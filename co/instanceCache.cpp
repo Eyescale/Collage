@@ -188,7 +188,7 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
 
 void InstanceCache::remove( const NodeID& nodeID )
 {
-    std::vector< lunchbox::uint128_t > keys;
+    std::vector< uint128_t > keys;
 
     lunchbox::ScopedWrite mutex( _items );
     for( ItemHash::iterator i = _items->begin(); i != _items->end(); ++i )
@@ -205,7 +205,7 @@ void InstanceCache::remove( const NodeID& nodeID )
         keys.push_back( i->first );
     }
 
-    for( std::vector< lunchbox::uint128_t >::const_iterator i = keys.begin();
+    for( std::vector< uint128_t >::const_iterator i = keys.begin();
          i != keys.end(); ++i )
     {
         _items->erase( *i );
@@ -272,7 +272,7 @@ void InstanceCache::expire( const int64_t timeout )
     if( time <= 0 )
         return;
 
-    std::vector< lunchbox::uint128_t > keys;
+    std::vector< uint128_t > keys;
 
     lunchbox::ScopedWrite mutex( _items );
     for( ItemHash::iterator i = _items->begin(); i != _items->end(); ++i )
@@ -286,7 +286,7 @@ void InstanceCache::expire( const int64_t timeout )
             keys.push_back( i->first );
     }
 
-    for( std::vector< lunchbox::uint128_t >::const_iterator i = keys.begin();
+    for( std::vector< uint128_t >::const_iterator i = keys.begin();
          i != keys.end(); ++i )
     {
         _items->erase( *i );
@@ -347,7 +347,7 @@ void InstanceCache::_releaseItems( const uint32_t minUsage )
 
     LB_TS_SCOPED( _thread );
 
-    std::vector< lunchbox::uint128_t > keys;
+    std::vector< uint128_t > keys;
     const uint64_t target = uint64_t( float( _maxSize ) * 0.8f );
 
     // Release used items (first stream)
@@ -376,7 +376,7 @@ void InstanceCache::_releaseItems( const uint32_t minUsage )
     {
         streamsLeft = false;
 
-        for( std::vector< lunchbox::uint128_t >::const_iterator i = keys.begin();
+        for( std::vector< uint128_t >::const_iterator i = keys.begin();
              i != keys.end() && _size > target; ++i )
         {
             Item& item = _items.data[ *i ];
@@ -394,7 +394,7 @@ void InstanceCache::_releaseItems( const uint32_t minUsage )
         }
     }
 
-    for( std::vector< lunchbox::uint128_t >::const_iterator i = keys.begin();
+    for( std::vector< uint128_t >::const_iterator i = keys.begin();
          i != keys.end(); ++i )
     {
         Item& item = _items.data[ *i ];

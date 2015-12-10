@@ -186,7 +186,7 @@ private:
     /** enableSendOnRegister() invocations. */
     lunchbox::a_int32_t _sendOnRegister;
 
-    typedef stde::hash_map< lunchbox::uint128_t, Objects > ObjectsHash;
+    typedef stde::hash_map< uint128_t, Objects > ObjectsHash;
     typedef ObjectsHash::const_iterator ObjectsHashCIter;
 
     /** All registered and mapped objects.

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.ch>
+/* Copyright (c) 2015, Daniel.Nachbaur@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -15,48 +15,51 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <co/defines.h>
 #include <test.h>
 
 #include <co/co.h>
 #include <lunchbox/monitor.h>
-#include <boost/bind.hpp>
+#include <zerobuf/render/render.h>
 
-const co::uint128_t cmdID1( servus::make_uint128( "ch.eyescale.collage.test.c1" ));
-const co::uint128_t cmdID2( servus::make_uint128( "ch.eyescale.collage.test.c2" ));
-lunchbox::Monitor<bool> gotCmd1;
-lunchbox::Monitor<bool> gotCmd2;
+typedef co::ZeroBuf< zerobuf::render::Camera > TestObject;
+std::vector< float > lookAtVector( { 1, 2, 3 } );
+std::vector< float > upVector( { -1, 0, 0 } );
 
-class MyLocalNode : public co::LocalNode
+lunchbox::Monitorb received( false );
+
+class Server : public co::LocalNode
 {
 public:
-    bool cmdCustom1( co::CustomICommand& command )
-    {
-        TEST( command.getCommandID() == cmdID1 );
-        gotCmd1 = true;
-        return true;
-    }
+    Server() : object( 0 ) {}
 
-    bool cmdCustom2( co::CustomICommand& command )
+    co::Object* object;
+
+protected:
+    void objectPush( const co::uint128_t& /*groupID*/,
+                     const co::uint128_t& /*typeID*/,
+                     const co::uint128_t& /*objectID*/, co::DataIStream& is )
+        override
     {
-        TEST( command.getCommandID() == cmdID2 );
-        gotCmd2 = true;
-        TEST( command.get< std::string >() == "hello" );
-        return true;
+        TEST( !object );
+        object = new TestObject;
+        object->applyInstanceData( is );
+        TESTINFO( !is.hasData(), is.nRemainingBuffers( ));
+        received = true;
     }
 };
 
-typedef lunchbox::RefPtr< MyLocalNode > MyLocalNodePtr;
-
 int main( int argc, char **argv )
 {
-    TEST( co::init( argc, argv ) );
+    co::init( argc, argv );
+    co::Global::setObjectBufferSize( 600 );
 
-    co::ConnectionDescriptionPtr connDesc = new co::ConnectionDescription;
+    lunchbox::RefPtr< Server > server = new Server;
+    co::ConnectionDescriptionPtr connDesc =
+        new co::ConnectionDescription;
+
     connDesc->type = co::CONNECTIONTYPE_TCPIP;
     connDesc->setHostname( "localhost" );
 
-    MyLocalNodePtr server = new MyLocalNode;
     server->addConnectionDescription( connDesc );
     TEST( server->listen( ));
 
@@ -72,19 +75,31 @@ int main( int argc, char **argv )
     TEST( client->listen( ));
     TEST( client->connect( serverProxy ));
 
-    server->registerCommandHandler( cmdID1,
-                                    boost::bind( &MyLocalNode::cmdCustom1,
-                                                 server.get(), _1 ),
-                                    server->getCommandThreadQueue( ));
-    server->registerCommandHandler( cmdID2,
-                                    boost::bind( &MyLocalNode::cmdCustom2,
-                                                 server.get(), _1 ), 0 );
+    {
+        co::Nodes nodes;
+        nodes.push_back( serverProxy );
 
-    serverProxy->send( cmdID1 );
-    serverProxy->send( cmdID2 ) << std::string( "hello" );
+        TestObject object;
+        object.setLookAt( lookAtVector );
+        TEST( client->registerObject( &object ));
+        object.push( co::uint128_t(42), co::uint128_t(42), nodes );
 
-    TEST( gotCmd1.timedWaitEQ( true, 1000 ));
-    TEST( gotCmd2.timedWaitEQ( true, 1000 ));
+        received.waitEQ( true );
+        TEST( server->mapObject( server->object, object.getID( )));
+        TEST( object == static_cast< const TestObject&>( *server->object ));
+
+        object.setUp( upVector );
+        TEST( object != static_cast< const TestObject&>( *server->object ));
+
+        server->object->sync( object.commit( ));
+        TEST( object == static_cast< const TestObject&>( *server->object ));
+
+        server->unmapObject( server->object );
+        delete server->object;
+        server->object = 0;
+
+        client->deregisterObject( &object );
+    }
 
     TEST( client->disconnect( serverProxy ));
     TEST( client->close( ));
@@ -99,7 +114,6 @@ int main( int argc, char **argv )
     client      = 0;
     server      = 0;
 
-    TEST( co::exit( ));
-
+    co::exit();
     return EXIT_SUCCESS;
 }

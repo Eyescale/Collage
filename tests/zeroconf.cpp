@@ -25,9 +25,6 @@
 
 #include <iostream>
 
-using co::uint128_t;
-
-#ifdef COLLAGE_USE_SERVUS
 int main( int argc, char **argv )
 {
     co::init( argc, argv );
@@ -57,7 +54,7 @@ int main( int argc, char **argv )
 
     zeroconf = server->getZeroconf();
     zeroconf.set( "co_test_value", "42" );
-    lunchbox::sleep( 500 /*ms*/ ); // give it time to propagate
+    lunchbox::sleep( 1000 /*ms*/ ); // give it time to propagate
     zeroconf = client->getZeroconf(); // rediscover, use other peer for a change
 
     const co::Strings& instances = zeroconf.getInstances();
@@ -67,7 +64,7 @@ int main( int argc, char **argv )
     for( co::StringsCIter i = instances.begin(); i != instances.end(); ++i )
     {
         const std::string& instance = *i;
-        const uint128_t nodeID( instance );
+        const co::uint128_t nodeID( instance );
         TEST( nodeID != 0 );
         TEST( nodeID != client->getNodeID( ));
 
@@ -98,9 +95,3 @@ int main( int argc, char **argv )
     co::exit();
     return EXIT_SUCCESS;
 }
-#else
-int main( int, char ** )
-{
-    return EXIT_SUCCESS;
-}
-#endif

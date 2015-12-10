@@ -68,7 +68,7 @@ public:
     }
 
     size_t nRemainingBuffers() const override { return _commands.getSize(); }
-    lunchbox::uint128_t getVersion() const override { return co::VERSION_NONE; }
+    co::uint128_t getVersion() const override { return co::VERSION_NONE; }
     co::NodePtr getRemoteNode() const override { return 0; }
     co::LocalNodePtr getLocalNode() const override { return 0; }
 

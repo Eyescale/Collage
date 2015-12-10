@@ -12,7 +12,7 @@ set(COLLAGE_PUBLIC_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 list(APPEND COLLAGE_LINK_LIBRARIES
   PUBLIC Lunchbox Pression
   PRIVATE ${PTHREAD_LIBRARIES} ${Boost_SERIALIZATION_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY} Servus
 )
 
 if(NOT Boost_USE_STATIC_LIBS)
@@ -38,7 +38,7 @@ if(UDT_FOUND)
   list(APPEND COLLAGE_LINK_LIBRARIES ${UDT_LIBRARIES})
 endif()
 
-if (MPI_FOUND)
+if(MPI_FOUND)
   list(APPEND CMAKE_C_FLAGS ${MPI_C_COMPILE_FLAGS})
   list(APPEND CMAKE_CXX_FLAGS ${MPI_CXX_COMPILE_FLAGS})
   list(APPEND COLLAGE_LINK_LIBRARIES ${MPI_LIBRARIES})
@@ -47,9 +47,9 @@ endif()
 common_library(Collage)
 
 source_group(\\ FILES CMakeLists.txt)
-source_group(collage FILES ${CO_PUBLIC_HEADERS} ${CO_HEADERS} ${CO_SOURCES} )
+source_group(collage FILES ${CO_PUBLIC_HEADERS} ${CO_HEADERS} ${CO_SOURCES})
 
-if (MSVC)
+if(MSVC)
   if(OFED_FOUND)
     set_target_properties(Collage PROPERTIES
       LINK_FLAGS "/DELAYLOAD:librdmacm.dll /DELAYLOAD:libibverbs.dll")

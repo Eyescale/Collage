@@ -37,7 +37,7 @@ namespace detail { class Zeroconf; }
  * service to announce application-specific data, and to retrieve a snapshot of
  * all key/value pairs of all discovered nodes on the network. Internal keys
  * start with 'co_', this prefix should not be used by applications. Please
- * refer to the documentation of lunchbox::Servus::set() for details.
+ * refer to the documentation of servus::Servus::set() for details.
  *
  * When Collage is compiled without Servus support, this class implements
  * dummy functionality.
@@ -81,7 +81,7 @@ public:
                                    const std::string& key ) const;
 private:
     Zeroconf();
-    explicit Zeroconf( lunchbox::Servus& service );
+    explicit Zeroconf( servus::Servus& service );
     friend class LocalNode;
 
     detail::Zeroconf* _impl;

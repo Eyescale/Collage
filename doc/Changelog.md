@@ -2,6 +2,9 @@
 
 # git master
 
+* [172](https://github.com/Eyescale/Collage/pull/172):
+  Add support to distribute ZeroBuf objects
+
 # Release 1.3 (3-Nov-2015)
 
 * [164](https://github.com/Eyescale/Collage/pull/164): Implement

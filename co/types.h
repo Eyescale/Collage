@@ -25,6 +25,7 @@
 #include <lunchbox/refPtr.h>
 #include <lunchbox/types.h>
 #include <pression/types.h>
+#include <servus/types.h>
 
 #include <deque>
 #include <vector>
@@ -76,10 +77,7 @@ using lunchbox::Strings;
 using lunchbox::StringsCIter;
 using lunchbox::a_ssize_t;
 using lunchbox::f_bool_t;
-using lunchbox::uint128_t;
-#ifdef LUNCHBOX_USE_V1_API
-using lunchbox::UUID;
-#endif
+using servus::uint128_t;
 
 typedef uint128_t NodeID; //!< A unique identifier for nodes.
 
