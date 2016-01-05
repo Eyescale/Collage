@@ -68,7 +68,7 @@ private:
     {
         size_t size = 0;
         is >> size;
-        T::setZerobufData( is.getRemainingBuffer( size ), size );
+        T::copyZerobufData( is.getRemainingBuffer( size ), size );
     }
 
     bool _dirty;
