@@ -22,8 +22,8 @@
 #include <zerobuf/render/render.h>
 
 typedef co::ZeroBuf< zerobuf::render::Camera > TestObject;
-std::vector< float > lookAtVector( { 1, 2, 3 } );
-std::vector< float > upVector( { -1, 0, 0 } );
+zerobuf::render::Vector3f lookAtVector( { 1, 2, 3 } );
+zerobuf::render::Vector3f upVector( { -1, 0, 0 } );
 
 lunchbox::Monitorb received( false );
 
