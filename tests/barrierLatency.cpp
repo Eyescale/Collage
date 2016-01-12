@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2014, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2014-2016, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -15,6 +15,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+// Tests barrier as used in Equalizer with multiple pipes and latency
+
 #include <test.h>
 
 #include <co/co.h>
@@ -22,21 +24,23 @@
 #include <lunchbox/mtQueue.h>
 #include <lunchbox/spinLock.h>
 
+const size_t _latency( 1 );
+const size_t _numIterations( 100 );
+const size_t _numThreads( 3 );
+
 enum State
 {
     STATE_INITIAL = 0,
     STATE_REGISTERED,
     STATE_MAPPED,
-    STATE_DONE
+    STATE_DONE = STATE_MAPPED + _numThreads,
+    STATE_EXIT
 };
 
-lunchbox::Monitor< State > _state;
+lunchbox::Monitor< uint32_t > _state;
 co::ObjectVersion _barrierID;
 co::Barrier* _barrier;
 lunchbox::MTQueue< co::uint128_t > _versions;
-const size_t _latency( 1 );
-const size_t _numThreads( 3 );
-const size_t _numIterations( 100 );
 
 class ServerThread : public lunchbox::Thread
 {
@@ -65,14 +69,14 @@ public:
         _state = STATE_REGISTERED;
         _state.waitGE( STATE_MAPPED );
 
-        while( _state != STATE_DONE )
+        for( size_t i = 0; i < _numIterations; ++i )
         {
             TEST( barrier.isGood());
-
             const co::uint128_t& version = barrier.commit();
-            for( size_t i = 0; i < _numThreads; ++i )
+            for( size_t j = 0; j < _numThreads; ++j )
                 _versions.push( version );
         }
+        _state.waitGE( STATE_EXIT );
     }
 private:
     co::LocalNodePtr _node;
@@ -117,13 +121,14 @@ public:
             TEST( _barrier->isGood());
             _barrier->enter();
         }
-
+        ++_state;
+        _state.waitGE( STATE_DONE );
         if( _master )
         {
-            _state = STATE_DONE;
-            _versions.clear();
+            TEST( _versions.empty( ));
             _node->releaseObject( _barrier );
             delete _barrier;
+            _state = STATE_EXIT;
         }
     }
 };
