@@ -79,7 +79,7 @@ public:
     }
 
     co::ObjectVersion getBarrierID() const
-    { return co::ObjectVersion( _barrier ); }
+        { return co::ObjectVersion( _barrier ); }
 
 protected:
     void run() final
