@@ -38,7 +38,6 @@ common_package(OFED)
 common_package(Pression REQUIRED)
 common_package(Servus REQUIRED)
 common_package(UDT)
-common_package(ZeroBuf)
 common_package_post()
 
 if(NOT MSVC)

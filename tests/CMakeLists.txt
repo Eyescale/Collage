@@ -6,11 +6,6 @@
 add_definitions(-DBOOST_PROGRAM_OPTIONS_DYN_LINK)
 
 set(TEST_LIBRARIES Collage ${Boost_PROGRAM_OPTIONS_LIBRARY})
-if(ZEROBUF_FOUND)
-  list(APPEND TEST_LIBRARIES ZeroBufRender)
-else()
-  set(EXCLUDE_FROM_TESTS zerobuf.cpp)
-endif()
 include(CommonCTest)
 
 install(FILES ${TEST_FILES} DESTINATION share/Collage/tests COMPONENT examples)

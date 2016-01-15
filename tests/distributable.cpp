@@ -1,5 +1,6 @@
 
-/* Copyright (c) 2015, Daniel.Nachbaur@epfl.ch
+/* Copyright (c) 2015-2016, Daniel.Nachbaur@epfl.ch
+ *                          Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -19,13 +20,53 @@
 
 #include <co/co.h>
 #include <lunchbox/monitor.h>
-#include <zerobuf/render/render.h>
 
-typedef co::ZeroBuf< zerobuf::render::Camera > TestObject;
-zerobuf::render::Vector3f lookAtVector( { 1, 2, 3 } );
-zerobuf::render::Vector3f upVector( { -1, 0, 0 } );
+class CameraBase;
+typedef co::Distributable< CameraBase > Camera;
+typedef std::array< float, 3 > Vector3f;
+Vector3f lookAtVector( { 1, 2, 3 } );
+Vector3f upVector( { -1, 0, 0 } );
 
 lunchbox::Monitorb received( false );
+
+class CameraBase : public servus::Serializable
+{
+public:
+    co::uint128_t getTypeIdentifier() const final
+        { return servus::make_uint128( "co::test::CameraBase" ); }
+
+    void setLookAt( const Vector3f& lookAt )
+        { notifyChanging(); _lookAt = lookAt; }
+    void setUp( const Vector3f& up ) { notifyChanging(); _up = up; }
+
+    bool operator == ( const CameraBase& rhs ) const
+        { return _lookAt == rhs._lookAt && _up == rhs._up; }
+    bool operator != ( const CameraBase& rhs ) const
+        { return _lookAt != rhs._lookAt || _up != rhs._up; }
+
+protected:
+    virtual void notifyChanging() = 0;
+
+private:
+    bool _fromBinary( const void* data, const size_t size ) final
+    {
+        LBASSERT( size == 2 * sizeof( Vector3f ));
+        ::memcpy( &_lookAt, data, size );
+        return true;
+    }
+
+    Data _toBinary() const final
+    {
+        Data data;
+        data.ptr = std::shared_ptr< const void >( &_lookAt,
+                                                  []( const void* ){} );
+        data.size = 2 * sizeof( Vector3f );
+        return data;
+    }
+
+    Vector3f _lookAt;
+    Vector3f _up;
+};
 
 class Server : public co::LocalNode
 {
@@ -41,7 +82,7 @@ protected:
         override
     {
         TEST( !object );
-        object = new TestObject;
+        object = new Camera;
         object->applyInstanceData( is );
         TESTINFO( !is.hasData(), is.nRemainingBuffers( ));
         received = true;
@@ -79,26 +120,26 @@ int main( int argc, char **argv )
         co::Nodes nodes;
         nodes.push_back( serverProxy );
 
-        TestObject object;
-        object.setLookAt( lookAtVector );
-        TEST( client->registerObject( &object ));
-        object.push( co::uint128_t(42), co::uint128_t(42), nodes );
+        Camera camera;
+        camera.setLookAt( lookAtVector );
+        TEST( client->registerObject( &camera ));
+        camera.push( co::uint128_t(42), co::uint128_t(42), nodes );
 
         received.waitEQ( true );
-        TEST( server->mapObject( server->object, object.getID( )));
-        TEST( object == static_cast< const TestObject&>( *server->object ));
+        TEST( server->mapObject( server->object, camera.getID( )));
+        TEST( camera == static_cast< const Camera& >( *server->object ));
 
-        object.setUp( upVector );
-        TEST( object != static_cast< const TestObject&>( *server->object ));
+        camera.setUp( upVector );
+        TEST( camera != static_cast< const Camera& >( *server->object ));
 
-        server->object->sync( object.commit( ));
-        TEST( object == static_cast< const TestObject&>( *server->object ));
+        server->object->sync( camera.commit( ));
+        TEST( camera == static_cast< const Camera& >( *server->object ));
 
         server->unmapObject( server->object );
         delete server->object;
         server->object = 0;
 
-        client->deregisterObject( &object );
+        client->deregisterObject( &camera );
     }
 
     TEST( client->disconnect( serverProxy ));

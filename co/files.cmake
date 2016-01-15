@@ -1,7 +1,7 @@
 
-# Copyright (c)      2010 Cedric Stalder <cedric.stalder@gmail.ch>
-#               2011-2014 Stefan Eilemann <eile@eyescale.ch>
-#                    2012 Daniel Nachbaur <danielnachbaur@gmail.com>
+# Copyright (c) 2010-2016 Cedric Stalder <cedric.stalder@gmail.ch>
+#                          Stefan Eilemann <eile@eyescale.ch>
+#                         Daniel Nachbaur <danielnachbaur@gmail.com>
 
 set(COLLAGE_PUBLIC_HEADERS
   barrier.h
@@ -27,6 +27,7 @@ set(COLLAGE_PUBLIC_HEADERS
   dataOStreamArchive.ipp
   dataStreamArchiveException.h
   dispatcher.h
+  distributable.h
   exception.h
   features.h
   global.h
@@ -52,7 +53,6 @@ set(COLLAGE_PUBLIC_HEADERS
   types.h
   worker.h
   worker.ipp
-  zerobuf.h
   zeroconf.h
   )
 

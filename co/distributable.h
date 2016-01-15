@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2015 Daniel.Nachbaur@epfl.ch
+/* Copyright (c) 2015-2016 Daniel.Nachbaur@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -17,31 +17,36 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CO_ZEROBUF_OBJECT_H
-#define CO_ZEROBUF_OBJECT_H
+#ifndef CO_DISTRIBUTABLE_H
+#define CO_DISTRIBUTABLE_H
 
 #include <co/object.h>      // base class
 #include <co/dataIStream.h> // used inline
 #include <co/dataOStream.h> // used inline
+#include <servus/serializable.h> //used inline
 
 namespace co
 {
 
 /**
- * Implements a distributable Collage object for any ZeroBuf object. Clients
- * instantiate this object with a concrete ZeroBuf object.
+ * Distributable Collage object for any servus::Serializable object.
+ *
+ * Clients instantiate this object with a concrete Zerobuf object (or other
+ * servus::Serializable) using CRTP. The base class T needs to implement and
+ * call an abstract change notification method "virtual void notifyChanging() =
+ * 0;" (Zerobuf does this).
  */
-template< class T >
-class ZeroBuf : public T, public Object
+template< class T > class Distributable : public T, public Object
 {
 public:
-    /** Construct a new distributable ZeroBuf object. @version 1.4 */
-    ZeroBuf() : T(), Object(), _dirty( false ) {}
+    /** Construct a new distributable object. @version 1.4 */
+    Distributable() : T(), Object(), _dirty( false ) {}
 
-    /** Copy-construct a distributable ZeroBuf object. @version 1.4 */
-    ZeroBuf( const ZeroBuf& rhs ) : T( rhs ), Object( rhs ), _dirty( false ) {}
+    /** Copy-construct a distributable object. @version 1.4 */
+    Distributable( const Distributable& rhs )
+        : T( rhs ), Object( rhs ), _dirty( false ) {}
 
-    virtual ~ZeroBuf() {}
+    virtual ~Distributable() {}
 
     /** @sa Object::dirty() */
     bool isDirty() const final { return _dirty; }
@@ -60,15 +65,15 @@ private:
 
     void getInstanceData( co::DataOStream& os ) final
     {
-        os << T::getZerobufSize()
-           << Array< const void >( T::getZerobufData(), T::getZerobufSize( ));
+        const auto& data = T::toBinary();
+        os << data.size << Array< const void >( data.ptr.get(), data.size );
     }
 
     void applyInstanceData( co::DataIStream& is ) final
     {
         size_t size = 0;
         is >> size;
-        T::copyZerobufData( is.getRemainingBuffer( size ), size );
+        T::fromBinary( is.getRemainingBuffer( size ), size );
     }
 
     bool _dirty;
