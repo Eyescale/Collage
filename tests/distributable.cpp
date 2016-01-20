@@ -32,8 +32,7 @@ lunchbox::Monitorb received( false );
 class CameraBase : public servus::Serializable
 {
 public:
-    co::uint128_t getTypeIdentifier() const final
-        { return servus::make_uint128( "co::test::CameraBase" ); }
+    std::string getTypeName() const final { return "co::test::CameraBase"; }
 
     void setLookAt( const Vector3f& lookAt )
         { notifyChanging(); _lookAt = lookAt; }
