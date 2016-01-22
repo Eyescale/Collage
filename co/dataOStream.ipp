@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
- *                    2013, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *                          Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -18,6 +18,7 @@
 
 #include <co/object.h>
 #include <co/objectVersion.h>
+#include <servus/serializable.h> // used inline
 
 namespace co
 {
@@ -42,6 +43,26 @@ DataOStream& DataOStream::operator << ( const Object* const& object )
     LBASSERT( !object || object->isAttached( ));
     (*this) << ObjectVersion( object );
     return *this;
+}
+
+/** Serialize an inline serializable object. */
+template< class T >
+void DataOStream::_writeSerializable( const T& object, const boost::true_type& )
+{
+    const auto& data = object.toBinary();
+    (*this) << data.size << Array< const void >( data.ptr.get(), data.size );
+}
+
+template<> inline void DataOStream::_writeArray( const Array< void > array,
+                                                 const boost::false_type& )
+{
+    _write( array.data, array.getNumBytes( ));
+}
+
+template<> inline void DataOStream::_writeArray( const Array< const void > array,
+                                                 const boost::false_type& )
+{
+    _write( array.data, array.getNumBytes( ));
 }
 
 /** @cond IGNORE */

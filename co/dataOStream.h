@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2007-2015, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
- *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -80,11 +80,11 @@ public:
     //@{
     /** Write a plain data item by copying it to the stream. @version 1.0 */
     template< class T > DataOStream& operator << ( const T& value )
-    { _write( &value, sizeof( value )); return *this; }
+        { _write( value, boost::has_trivial_copy< T >( )); return *this; }
 
     /** Write a C array. @version 1.0 */
     template< class T > DataOStream& operator << ( const Array< T > array )
-    { _writeArray( array, boost::is_pod<T>( )); return *this; }
+        { _writeArray( array, boost::has_trivial_copy<T>( )); return *this; }
 
     /**
      * Write a lunchbox::RefPtr. Refcount has to managed by caller.
@@ -204,6 +204,18 @@ private:
             _write( &value.front(), nElems * sizeof( T ));
         return *this;
     }
+
+    /** Write a plain data item. */
+    template< class T > void _write( const T& value, const boost::true_type& )
+        { _write( &value, sizeof( value )); }
+
+    /** Write a non-plain data item. */
+    template< class T > void _write( const T& value, const boost::false_type& )
+    { _writeSerializable( value, boost::is_base_of< servus::Serializable, T >());}
+
+    /** Write a serializable object. */
+    template< class T>
+    void _writeSerializable( const T& value, const boost::true_type& );
 
     /** Write an Array of POD data */
     template< class T >

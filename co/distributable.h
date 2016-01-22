@@ -71,8 +71,7 @@ private:
 
     void applyInstanceData( co::DataIStream& is ) final
     {
-        size_t size = 0;
-        is >> size;
+        const size_t size = is.read< size_t >();
         T::fromBinary( is.getRemainingBuffer( size ), size );
     }
 
