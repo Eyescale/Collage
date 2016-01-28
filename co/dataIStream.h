@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *               2009-2010, Cedric Stalder <cedric.stalder@gmail.com>
- *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -61,11 +61,11 @@ public:
 
     /** Read a plain data item. @version 1.0 */
     template< class T > DataIStream& operator >> ( T& value )
-        { _read( &value, sizeof( value )); _swap( value ); return *this; }
+        { _read( value, boost::has_trivial_copy< T >( )); return *this; }
 
     /** Read a C array. @version 1.0 */
     template< class T > DataIStream& operator >> ( Array< T > array )
-        { _readArray( array, boost::is_pod<T>( )); return *this; }
+        { _readArray( array, boost::has_trivial_copy< T >( )); return *this; }
 
     /**
      * Read a lunchbox::RefPtr. Refcount has to managed by caller.
@@ -203,15 +203,26 @@ private:
         return *this;
     }
 
-    /** Byte-swap a plain data item. @version 1.0 */
+    /** Byte-swap a plain data item. */
     template< class T > void _swap( T& value ) const
         { if( isSwapping( )) swap( value ); }
+
+    /** Read a plain data item. */
+    template< class T > void _read( T& value, const boost::true_type& )
+        { _read( &value, sizeof( value )); _swap( value ); }
+
+    /** Read a non-plain data item. */
+    template< class T > void _read( T& value, const boost::false_type& )
+    { _readSerializable( value, boost::is_base_of< servus::Serializable, T >( ));}
+
+    /** Read a serializable object. */
+    template< class T > void _readSerializable(T& value, const boost::true_type&);
 
     /** Read an Array of POD data */
     template< class T > void _readArray( Array< T >, const boost::true_type& );
 
     /** Read an Array of non-POD data */
-    template< class T > void _readArray( Array< T >, const boost::false_type&);
+    template< class T > void _readArray( Array< T >, const boost::false_type& );
 
     /** Byte-swap a C array. @version 1.0 */
     template< class T > void _swap( Array< T > array ) const

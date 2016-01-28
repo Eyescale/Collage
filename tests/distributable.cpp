@@ -24,8 +24,8 @@
 class CameraBase;
 typedef co::Distributable< CameraBase > Camera;
 typedef std::array< float, 3 > Vector3f;
-Vector3f lookAtVector( { 1, 2, 3 } );
-Vector3f upVector( { -1, 0, 0 } );
+Vector3f lookAtVector{{ 1, 2, 3 }};
+Vector3f upVector{{ -1, 0, 0 }};
 
 lunchbox::Monitorb received( false );
 

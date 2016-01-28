@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2013-2014, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *                          Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -18,6 +18,7 @@
 
 #include <co/object.h>
 #include <co/objectVersion.h>
+#include <servus/serializable.h> // used inline
 
 namespace co
 {
@@ -40,7 +41,6 @@ template<> inline DataIStream& DataIStream::operator >> ( std::string& str )
         str.assign(
             static_cast< const char* >( getRemainingBuffer(maxElems)),
                 size_t( maxElems ));
-
     return *this;
 }
 
@@ -52,6 +52,14 @@ template<> inline DataIStream& DataIStream::operator >> ( Object*& object )
     LBASSERT( object->getID() == data.identifier );
     object->sync( data.version );
     return *this;
+}
+
+/** Deserialize an inline serializable object. */
+template< class T >
+void DataIStream::_readSerializable( T& object, const boost::true_type& )
+{
+    const size_t size = read< size_t >();
+    object.fromBinary( getRemainingBuffer( size ), size );
 }
 
 /** @cond IGNORE */
@@ -68,6 +76,12 @@ void DataIStream::_readArray( Array< T > array, const boost::false_type& )
 {
     for( size_t i = 0; i < array.num; ++i )
         *this >> array.data[ i ];
+}
+
+template<> inline
+void DataIStream::_readArray( Array< void > array, const boost::false_type& )
+{
+    _read( array.data, array.getNumBytes( ));
 }
 
 template< class T > inline DataIStream&
@@ -177,8 +191,6 @@ private:
     const uint128_t _id;
 };
 }
-
-template<> inline void DataIStream::_swap( Array< void > ) const { /*NOP*/ }
 
 template< typename O, typename C > inline void
 DataIStream::deserializeChildren( O* object, const std::vector< C* >& old_,
