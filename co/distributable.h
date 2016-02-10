@@ -77,6 +77,12 @@ private:
 
     bool _dirty;
 };
+
+template< class T > inline
+std::ostream& operator << ( std::ostream& os, const Distributable< T >& object )
+{
+    return os << static_cast< const T& >( object );
+}
 }
 
 #endif
