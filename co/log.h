@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2016, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -20,7 +20,7 @@
 #ifndef CO_LOG_H
 #define CO_LOG_H
 
-#include <lunchbox/log.h>
+#include <pression/log.h>
 
 namespace co
 {
@@ -28,11 +28,11 @@ namespace co
     enum LogTopics
     {
         LOG_BUG     = lunchbox::LOG_BUG,          // 4
-        LOG_OBJECTS = lunchbox::LOG_CUSTOM << 0,  // 16
-        LOG_BARRIER = lunchbox::LOG_CUSTOM << 1,  // 32
-        LOG_RSP     = lunchbox::LOG_CUSTOM << 2,  // 64
-        LOG_PACKETS = lunchbox::LOG_CUSTOM << 3,  // 128
-        LOG_CUSTOM  = lunchbox::LOG_CUSTOM << 5   // 512
+        LOG_OBJECTS = pression::LOG_CUSTOM << 0,  // 16
+        LOG_BARRIER = pression::LOG_CUSTOM << 1,  // 32
+        LOG_RSP     = pression::LOG_CUSTOM << 2,  // 64
+        LOG_PACKETS = pression::LOG_CUSTOM << 3,  // 128
+        LOG_CUSTOM  = pression::LOG_CUSTOM << 5   // 512
     };
 }
 #endif // CO_LOG_H
