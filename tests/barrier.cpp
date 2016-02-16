@@ -47,13 +47,17 @@ public:
         TEST( barrier.getHeight() ==  3 );
 
         _barrier = &barrier;
+        std::cerr << "Master enter" << std::endl;
         TEST( barrier.enter( ));
+        std::cerr << "Master left" << std::endl;
 
         barrier.setHeight( 2 );
         barrier.commit();
         TEST( barrier.getVersion() == co::VERSION_FIRST + 1 );
 
+        std::cerr << "Master enter" << std::endl;
         TEST( barrier.enter( ));
+        std::cerr << "Master left" << std::endl;
         _barrier.waitEQ( 0 ); // wait for slave thread finish
         node->deregisterObject( &barrier );
         node->close();

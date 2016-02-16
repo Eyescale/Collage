@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2015, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2012-2016, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -43,17 +43,15 @@ public:
     Object() {}
 
 protected:
-    virtual ChangeType getChangeType() const { return UNBUFFERED; }
-    virtual uint64_t getMaxVersions() const { return 1; }
-
-    virtual void getInstanceData( co::DataOStream& os ) { os << message; }
-
-    virtual void applyInstanceData( co::DataIStream& is )
-        {
-            std::string msg;
-            is >> msg;
-            TEST( message == msg );
-        }
+    ChangeType getChangeType() const final { return UNBUFFERED; }
+    uint64_t getMaxVersions() const final { return 1; }
+    void getInstanceData( co::DataOStream& os ) final { os << message; }
+    void applyInstanceData( co::DataIStream& is ) final
+    {
+        std::string msg;
+        is >> msg;
+        TEST( message == msg );
+    }
 };
 
 class Thread : public lunchbox::Thread
@@ -61,12 +59,12 @@ class Thread : public lunchbox::Thread
 public:
     explicit Thread( Object& object ) : _object( object ) {}
 
-    virtual void run()
-        {
-            lunchbox::sleep( 110 /*ms*/ );
-            _object.sync( uint128_t(3) );
-            TESTINFO( _object.getVersion() == 3, _object.getVersion( ));
-        }
+    void run() final
+    {
+        lunchbox::sleep( 110 /*ms*/ );
+        _object.sync( uint128_t( 3 ));
+        TESTINFO( _object.getVersion() == 3, _object.getVersion( ));
+    }
 
 private:
     Object& _object;
@@ -105,9 +103,9 @@ int main( int argc, char **argv )
         TEST( server->mapObject( &slave, master.getID( )));
 
         Thread thread( slave );
-        TEST( thread.start( ));
 
         lunchbox::Clock clock;
+        TEST( thread.start( ));
         master.commit();
         master.commit(); // should block
         const float time = clock.getTimef();
