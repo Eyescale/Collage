@@ -63,7 +63,7 @@ public:
         setName( "MasterThread" );
         co::Barrier barrier( _node, _server->getNodeID(), _numThreads );
         barrier.setAutoObsolete( _latency + 1 );
-        _barrierID = co::ObjectVersion( &barrier );
+        _barrierID = co::ObjectVersion( barrier );
         _versions.setMaxSize( (_latency + 1) * _numThreads );
 
         _state = STATE_REGISTERED;

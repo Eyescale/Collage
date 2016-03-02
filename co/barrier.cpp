@@ -49,7 +49,7 @@ struct Request
     Nodes nodes;
 };
 
-typedef stde::hash_map< uint128_t, Request > RequestMap;
+typedef std::unordered_map< uint128_t, Request > RequestMap;
 typedef RequestMap::iterator RequestMapIter;
 }
 
