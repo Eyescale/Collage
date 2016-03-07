@@ -39,7 +39,7 @@ enum State
 
 lunchbox::Monitor< uint32_t > _state;
 co::ObjectVersion _barrierID;
-co::Barrier* _barrier;
+std::shared_ptr< co::Barrier > _barrier;
 lunchbox::MTQueue< co::uint128_t > _versions;
 
 class ServerThread : public lunchbox::Thread
@@ -63,7 +63,7 @@ public:
         setName( "MasterThread" );
         co::Barrier barrier( _node, _server->getNodeID(), _numThreads );
         barrier.setAutoObsolete( _latency + 1 );
-        _barrierID = co::ObjectVersion( &barrier );
+        _barrierID = co::ObjectVersion( barrier );
         _versions.setMaxSize( (_latency + 1) * _numThreads );
 
         _state = STATE_REGISTERED;
@@ -102,12 +102,13 @@ public:
         _state.waitGE( STATE_REGISTERED );
         if( _master )
         {
-            _barrier = new co::Barrier( _node, _barrierID );
+            _barrier.reset( new co::Barrier( _node, _barrierID ));
             _state = STATE_MAPPED;
         }
         else
             _state.waitGE( STATE_MAPPED );
 
+        std::shared_ptr< co::Barrier > barrier = _barrier;
         for( size_t i = 0; i < _numIterations; ++i )
         {
             const co::uint128_t& version = _versions.pop();
@@ -115,20 +116,19 @@ public:
             {
                 static lunchbox::SpinLock lock;
                 lunchbox::ScopedFastWrite mutex( lock );
-                _barrier->sync( version );
+                barrier->sync( version );
             }
 
-            TEST( _barrier->isGood());
-            _barrier->enter();
+            TEST( barrier->isGood());
+            barrier->enter();
         }
         ++_state;
         _state.waitGE( STATE_DONE );
         if( _master )
         {
             TEST( _versions.empty( ));
-            _node->releaseObject( _barrier );
-            delete _barrier;
-            _state = STATE_EXIT;
+            _node->releaseObject( barrier.get( ));
+            _barrier.reset();
         }
     }
 };
@@ -156,6 +156,7 @@ int main( int argc, char **argv )
     for( size_t i = 0; i < _numThreads; ++i )
         workers[i]->join();
 
+    _state = STATE_EXIT;
     master.join();
     node->close();
 

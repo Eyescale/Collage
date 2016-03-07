@@ -49,7 +49,7 @@ struct Request
     Nodes nodes;
 };
 
-typedef stde::hash_map< uint128_t, Request > RequestMap;
+typedef std::unordered_map< uint128_t, Request > RequestMap;
 typedef RequestMap::iterator RequestMapIter;
 }
 
@@ -297,9 +297,7 @@ bool Barrier::_cmdEnter( ICommand& cmd )
         _sendNotify( version, *i );
 
     // delete node vector for version
-    RequestMapIter i = _impl->enteredNodes.find( version );
-    LBASSERT( i != _impl->enteredNodes.end( ));
-    _impl->enteredNodes.erase( i );
+    _impl->enteredNodes.erase( version );
     return true;
 }
 

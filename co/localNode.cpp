@@ -1160,6 +1160,7 @@ void LocalNode::_runReceiverThread()
                 break;
 
             case ConnectionSet::EVENT_DATA:
+                nErrors = 0;
                 _handleData();
                 break;
 
@@ -1199,11 +1200,6 @@ void LocalNode::_runReceiverThread()
 
             default:
                 LBUNIMPLEMENTED;
-        }
-        if( result != ConnectionSet::EVENT_ERROR &&
-            result != ConnectionSet::EVENT_SELECT_ERROR )
-        {
-            nErrors = 0;
         }
     }
 
