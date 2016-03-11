@@ -2,8 +2,10 @@
 
 # git master
 
+# Release 1.4 (11-Mar-2016)
+
 * [172](https://github.com/Eyescale/Collage/pull/172):
-  Add support to distribute ZeroBuf objects
+  Add support to distribute servus::Serializable (ZeroBuf) objects
 
 # Release 1.3 (3-Nov-2015)
 
