@@ -20,7 +20,7 @@
 #  define CO_TEST_RUNTIME 600000 // 10min
 #endif
 
-#include <test.h>
+#include <lunchbox/test.h>
 
 #include <co/buffer.h>
 #include <co/init.h>

@@ -17,7 +17,7 @@
 
 // Tests barrier as used in Equalizer with multiple pipes and latency
 
-#include <test.h>
+#include <lunchbox/test.h>
 
 #include <co/co.h>
 #include <lunchbox/monitor.h>

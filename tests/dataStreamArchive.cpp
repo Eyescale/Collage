@@ -17,7 +17,7 @@
  */
 
 #include <co/defines.h>
-#include <test.h>
+#include <lunchbox/test.h>
 
 // uint128_t used in archive causes this warning:
 // negative integral constant converted to unsigned type

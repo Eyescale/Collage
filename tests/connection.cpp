@@ -16,7 +16,7 @@
  */
 
 // Tests basic connection functionality
-#include <test.h>
+#include <lunchbox/test.h>
 #include <co/buffer.h>
 #include <co/connection.h>
 #include <co/connectionDescription.h>

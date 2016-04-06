@@ -17,7 +17,7 @@
 
 // Tests tradeoff between memcpy to aggregate or system call to transmit data
 
-#include <test.h>
+#include <lunchbox/test.h>
 
 #include <co/buffer.h>
 #include <co/connection.h>
