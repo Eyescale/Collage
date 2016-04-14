@@ -19,7 +19,7 @@
 // Usage: ./pipeperf
 
 #define CO_TEST_RUNTIME 600 // seconds, needed for NighlyMemoryCheck
-#include <test.h>
+#include <lunchbox/test.h>
 #include <co/buffer.h>
 #include <co/connectionSet.h>
 #include <co/init.h>

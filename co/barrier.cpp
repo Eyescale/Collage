@@ -35,6 +35,8 @@
 #include <lunchbox/monitor.h>
 #include <lunchbox/stdExt.h>
 
+#include <unordered_map>
+
 namespace co
 {
 namespace

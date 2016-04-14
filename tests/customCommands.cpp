@@ -16,7 +16,7 @@
  */
 
 #include <co/defines.h>
-#include <test.h>
+#include <lunchbox/test.h>
 
 #include <co/co.h>
 #include <lunchbox/monitor.h>

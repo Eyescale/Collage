@@ -351,7 +351,6 @@ int main( int argc, char **argv )
         std::cerr << "Send perf: " << mBytesSec / time * sentPackets
                   << "MB/s (" << sentPackets / time * 1000.f  << "pps)"
                   << std::endl;
-        sentPackets = 0;
         clock.reset();
     }
 

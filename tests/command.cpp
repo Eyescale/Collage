@@ -16,7 +16,7 @@
  */
 
 #include <co/co.h>
-#include <test.h>
+#include <lunchbox/test.h>
 #include <lunchbox/clock.h>
 
 #define NCOMMANDS 10000

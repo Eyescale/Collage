@@ -19,7 +19,7 @@
 // https://github.com/Eyescale/Equalizer/issues/100
 #pragma warning( disable: 4407 )
 
-#include <test.h>
+#include <lunchbox/test.h>
 #include <co/buffer.h>
 #include <co/bufferCache.h>
 #include <co/commandFunc.h>

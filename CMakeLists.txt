@@ -2,8 +2,8 @@
 # Copyright (c) 2010-2016 Daniel Pfeifer <daniel@pfeifer-mail.de>
 #                         Stefan Eilemann <eile@eyescale.ch>
 
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-project(Collage)
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+project(Collage VERSION 1.4.0)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake
   ${CMAKE_SOURCE_DIR}/CMake/common)
@@ -13,12 +13,13 @@ include(GitExternal)
 option(COLLAGE_BUILD_V2_API
   "Enable for pure 2.0 API (breaks compatibility with 1.x API)" OFF)
 
-set(VERSION_MAJOR "1")
-set(VERSION_MINOR "4")
-set(VERSION_PATCH "0")
-set(VERSION_ABI 4)
-
+set(Collage_VERSION_ABI 4)
 set(COLLAGE_INCLUDE_NAME co)
+set(COLLAGE_DEB_DEPENDS librdmacm-dev libibverbs-dev librdmacm-dev libudt-dev
+  libboost-date-time-dev libboost-regex-dev libboost-serialization-dev
+  libboost-system-dev libboost-thread-dev libboost-program-options-dev)
+set(COLLAGE_PORT_DEPENDS boost)
+
 include(Common)
 
 list(APPEND CPPCHECK_EXTRA_ARGS -DCO_API=)
@@ -30,14 +31,30 @@ set(COLLAGE_MAINTAINER "Stefan Eilemann <eile@eyescale.ch>")
 set(COLLAGE_LICENSE LGPL)
 set(COLLAGE_DEPENDENT_LIBRARIES Boost Lunchbox Pression)
 
-common_package(Boost REQUIRED COMPONENTS system regex date_time serialization
+common_find_package(Boost REQUIRED COMPONENTS system regex date_time serialization
                                          program_options thread)
-common_package(Lunchbox REQUIRED)
-common_package(OFED)
-common_package(Pression REQUIRED)
-common_package(Servus REQUIRED)
-common_package(UDT)
-common_package_post()
+common_find_package(Lunchbox REQUIRED)
+common_find_package(OFED)
+common_find_package(Pression REQUIRED)
+common_find_package(Servus REQUIRED)
+common_find_package(UDT)
+
+if(UDT_FOUND AND NOT UDT_HAS_RCVDATA)
+  message(STATUS "Disable old UDT version, missing UDT_RCVDATA")
+  set(UDT_FOUND)
+endif()
+
+if(COLLAGE_AGGRESSIVE_CACHING)
+  list(APPEND COMMON_FIND_PACKAGE_DEFINES COLLAGE_AGGRESSIVE_CACHING)
+endif()
+
+if(COLLAGE_BUILD_V2_API)
+  list(APPEND COMMON_FIND_PACKAGE_DEFINES COLLAGE_V2_API)
+else()
+  list(APPEND COMMON_FIND_PACKAGE_DEFINES COLLAGE_V1_API)
+endif()
+
+common_find_package_post()
 
 if(NOT MSVC)
   set(PTHREAD_LIBRARIES pthread)

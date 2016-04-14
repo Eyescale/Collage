@@ -1007,7 +1007,7 @@ void RSPConnection::_handleConnectedData( const size_t bytes )
 
     void* data = _recvBuffer.getData();
     uint16_t type = *reinterpret_cast< uint16_t* >( data );
-#ifdef COMMON_BIGENDIAN
+#ifdef COLLAGE_BIGENDIAN
     lunchbox::byteswap( type );
 #endif
     switch( type )

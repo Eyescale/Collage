@@ -46,9 +46,6 @@ endif()
 
 common_library(Collage)
 
-source_group(\\ FILES CMakeLists.txt)
-source_group(collage FILES ${CO_PUBLIC_HEADERS} ${CO_HEADERS} ${CO_SOURCES})
-
 if(MSVC)
   if(OFED_FOUND)
     set_target_properties(Collage PROPERTIES
