@@ -33,7 +33,7 @@ namespace co
  *
  * Clients instantiate this object with a concrete Zerobuf object (or other
  * servus::Serializable) using CRTP. The base class T needs to implement and
- * call an abstract change notification method "virtual void notifyChanging() =
+ * call an abstract change notification method "virtual void notifyChanged() =
  * 0;" (Zerobuf does this).
  */
 template< class T > class Distributable : public T, public Object
@@ -59,9 +59,11 @@ public:
         return version;
     }
 
+    /** Call whenever the object has been modified so it can be distributed */
+    void notifyChanged() final { _dirty = true; }
+
 private:
     ChangeType getChangeType() const final { return INSTANCE; }
-    void notifyChanging() final { _dirty = true; }
 
     void getInstanceData( co::DataOStream& os ) final
     {

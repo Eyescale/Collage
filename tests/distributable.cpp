@@ -35,8 +35,8 @@ public:
     std::string getTypeName() const final { return "co::test::CameraBase"; }
 
     void setLookAt( const Vector3f& lookAt )
-        { notifyChanging(); _lookAt = lookAt; }
-    void setUp( const Vector3f& up ) { notifyChanging(); _up = up; }
+        { _lookAt = lookAt; notifyChanged(); }
+    void setUp( const Vector3f& up ) { _up = up; notifyChanged(); }
 
     bool operator == ( const CameraBase& rhs ) const
         { return _lookAt == rhs._lookAt && _up == rhs._up; }
@@ -44,7 +44,7 @@ public:
         { return _lookAt != rhs._lookAt || _up != rhs._up; }
 
 protected:
-    virtual void notifyChanging() = 0;
+    virtual void notifyChanged() {}
 
 private:
     bool _fromBinary( const void* data, const size_t size ) final
