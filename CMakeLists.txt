@@ -31,8 +31,8 @@ set(COLLAGE_MAINTAINER "Stefan Eilemann <eile@eyescale.ch>")
 set(COLLAGE_LICENSE LGPL)
 set(COLLAGE_DEPENDENT_LIBRARIES Boost Lunchbox Pression)
 
-common_find_package(Boost REQUIRED COMPONENTS system regex date_time serialization
-                                         program_options thread)
+common_find_package(Boost REQUIRED COMPONENTS system regex date_time
+  serialization program_options thread)
 common_find_package(Lunchbox REQUIRED)
 common_find_package(OFED)
 common_find_package(Pression REQUIRED)
