@@ -4,6 +4,7 @@
 
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(Collage VERSION 1.4.0)
+set(Collage_VERSION_ABI 4)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake
   ${CMAKE_SOURCE_DIR}/CMake/common)
@@ -13,7 +14,6 @@ include(GitExternal)
 option(COLLAGE_BUILD_V2_API
   "Enable for pure 2.0 API (breaks compatibility with 1.x API)" OFF)
 
-set(Collage_VERSION_ABI 4)
 set(COLLAGE_INCLUDE_NAME co)
 set(COLLAGE_DEB_DEPENDS librdmacm-dev libibverbs-dev librdmacm-dev libudt-dev
   libboost-date-time-dev libboost-regex-dev libboost-serialization-dev
