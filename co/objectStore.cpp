@@ -385,7 +385,7 @@ uint32_t ObjectStore::mapNB( Object* object, const uint128_t& id,
 
     const bool isAttached = object->isAttached();
     const bool isMaster = object->isMaster();
-    LBASSERT( !isAttached );
+    LBASSERTINFO( !isAttached, *object );
     LBASSERT( !isMaster ) ;
     if( isAttached || isMaster )
     {

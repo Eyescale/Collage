@@ -120,7 +120,7 @@ uint32_t Object::getInstanceID() const
 
 void Object::attach( const uint128_t& id, const uint32_t instanceID )
 {
-    LBASSERT( !isAttached() );
+    LBASSERTINFO( !isAttached(), *this );
     LBASSERT( impl_->localNode );
     LBASSERT( instanceID <= CO_INSTANCE_MAX );
 
