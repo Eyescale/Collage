@@ -38,9 +38,6 @@
 #  include <mswsock.h>
 #  include <winsock2.h>
 #  include <ws2tcpip.h>
-#  ifndef WSA_FLAG_SDP
-#    define WSA_FLAG_SDP 0x40
-#  endif
 #  define CO_RECV_TIMEOUT 250 /*ms*/
 #else
 #  include <arpa/inet.h>
@@ -48,14 +45,11 @@
 #  include <netinet/tcp.h>
 #  include <sys/errno.h>
 #  include <sys/socket.h>
-#  ifndef AF_INET_SDP
-#    define AF_INET_SDP 27
-#  endif
 #endif
 
 namespace co
 {
-SocketConnection::SocketConnection( const ConnectionType type )
+SocketConnection::SocketConnection()
 #ifdef _WIN32
         : _overlappedAcceptData( 0 )
         , _overlappedSocket( INVALID_SOCKET )
@@ -67,11 +61,9 @@ SocketConnection::SocketConnection( const ConnectionType type )
     memset( &_overlappedWrite, 0, sizeof( _overlappedWrite ));
 #endif
 
-    LBASSERT( type == CONNECTIONTYPE_TCPIP || type == CONNECTIONTYPE_SDP );
     ConnectionDescriptionPtr description = _getDescription();
-    description->type = type;
-    description->bandwidth = (type == CONNECTIONTYPE_TCPIP) ?
-                                 102400 : 819200; // 100MB : 800 MB
+    description->type = CONNECTIONTYPE_TCPIP;
+    description->bandwidth = 102400; // 100MB/s
 
     LBVERB << "New SocketConnection @" << (void*)this << std::endl;
 }
@@ -136,8 +128,7 @@ bool _parseAddress( ConstConnectionDescriptionPtr description,
 bool SocketConnection::connect()
 {
     ConnectionDescriptionPtr description = _getDescription();
-    LBASSERT( description->type == CONNECTIONTYPE_TCPIP ||
-              description->type == CONNECTIONTYPE_SDP );
+    LBASSERT( description->type == CONNECTIONTYPE_TCPIP );
     if( !isClosed() )
         return false;
 
@@ -297,9 +288,7 @@ void SocketConnection::acceptNB()
     LBASSERT( isListening() );
 
     // Create new accept socket
-    const DWORD flags = getDescription()->type == CONNECTIONTYPE_SDP ?
-                            WSA_FLAG_OVERLAPPED | WSA_FLAG_SDP :
-                            WSA_FLAG_OVERLAPPED;
+    const DWORD flags = WSA_FLAG_OVERLAPPED;
 
     LBASSERT( _overlappedAcceptData );
     LBASSERT( _overlappedSocket == INVALID_SOCKET );
@@ -366,7 +355,7 @@ ConnectionPtr SocketConnection::acceptSync()
     _tuneSocket( _overlappedSocket );
 
     ConstConnectionDescriptionPtr description = getDescription();
-    SocketConnection* newConnection = new SocketConnection( description->type );
+    SocketConnection* newConnection = new SocketConnection;
     ConnectionPtr connection( newConnection ); // to keep ref-counting correct
 
     newConnection->_readFD  = _overlappedSocket;
@@ -417,7 +406,7 @@ ConnectionPtr SocketConnection::acceptSync()
     _tuneSocket( fd );
 
     ConstConnectionDescriptionPtr description = getDescription();
-    SocketConnection* newConnection = new SocketConnection( description->type );
+    SocketConnection* newConnection = new SocketConnection;
 
     newConnection->_readFD      = fd;
     newConnection->_writeFD     = fd;
@@ -599,20 +588,11 @@ bool SocketConnection::_createSocket()
 {
     ConstConnectionDescriptionPtr description = getDescription();
 #ifdef _WIN32
-    const DWORD flags = description->type == CONNECTIONTYPE_SDP ?
-                            WSA_FLAG_OVERLAPPED | WSA_FLAG_SDP :
-                            WSA_FLAG_OVERLAPPED;
-
-    const SOCKET fd = WSASocketW( AF_INET, SOCK_STREAM, IPPROTO_TCP, 0,0,flags );
-
-    if( description->type == CONNECTIONTYPE_SDP )
-        LBDEBUG << "Created SDP socket" << std::endl;
+    const DWORD flags = WSA_FLAG_OVERLAPPED;
+    const SOCKET fd = WSASocketW( AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0,
+                                  flags );
 #else
-    Socket fd;
-    if( description->type == CONNECTIONTYPE_SDP )
-        fd = ::socket( AF_INET_SDP, SOCK_STREAM, IPPROTO_TCP );
-    else
-        fd = ::socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
+    const Socket fd = ::socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
 #endif
 
     if( fd == INVALID_SOCKET )
@@ -656,8 +636,7 @@ void SocketConnection::_tuneSocket( const Socket fd )
 bool SocketConnection::listen()
 {
     ConnectionDescriptionPtr description = _getDescription();
-    LBASSERT( description->type == CONNECTIONTYPE_TCPIP ||
-              description->type == CONNECTIONTYPE_SDP );
+    LBASSERT( description->type == CONNECTIONTYPE_TCPIP );
 
     if( !isClosed( ))
         return false;

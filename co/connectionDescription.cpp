@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -34,8 +34,6 @@ static ConnectionType _getConnectionType( const std::string& string )
         return CONNECTIONTYPE_TCPIP;
     if( string == "TCP" )
         return CONNECTIONTYPE_TCPIP;
-    if( string == "SDP" )
-        return CONNECTIONTYPE_SDP;
     if( string == "ANON_PIPE" )
         return CONNECTIONTYPE_PIPE;
     if( string == "PIPE" )

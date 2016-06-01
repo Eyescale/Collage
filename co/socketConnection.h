@@ -37,7 +37,7 @@
 
 namespace co
 {
-    /** A socket connection (TCPIP or SDP). */
+    /** A socket connection (TCPIP). */
     class SocketConnection
 #ifdef WIN32
         : public Connection
@@ -46,14 +46,8 @@ namespace co
 #endif
     {
     public:
-        /**
-         * Create a new socket-based connection
-         *
-         * @param type the connection type, can be CONNECTIONTYPE_TCPIP or
-         *             CONNECTIONTYPE_SDP.
-         */
-        explicit SocketConnection( const ConnectionType type =
-                                   CONNECTIONTYPE_TCPIP );
+        /** Create a new TCP-based connection */
+        SocketConnection();
         bool connect() override;
         bool listen() override;
         void acceptNB() override;

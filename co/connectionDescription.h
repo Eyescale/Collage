@@ -38,7 +38,7 @@ public:
     /** The bandwidth in kilobyte per second. @version 1.0 */
     int32_t bandwidth;
 
-    /** The listening port (TCPIP, SDP, IB, MCIP, RDMA). @version 1.0 */
+    /** The listening port (TCPIP, IB, MCIP, RDMA). @version 1.0 */
     uint16_t port;
 
     /** Use a random, instead of fixed, multicast port. @version 1.2 */
@@ -86,7 +86,7 @@ public:
      * human-readable version has the format
      * <code>hostname[:port][:type]</code> or
      * <code>filename:PIPE</code>. The <code>type</code> parameter can be
-     * TCPIP, SDP, IB, MCIP, UDT or RSP. The machine-readable format
+     * TCPIP, IB, MCIP, UDT or RSP. The machine-readable format
      * contains all connection description parameters, is not documented and
      * subject to change.
      *
