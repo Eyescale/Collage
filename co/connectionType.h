@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -30,7 +30,6 @@ namespace co
     {
         CONNECTIONTYPE_NONE = 0,
         CONNECTIONTYPE_TCPIP,     //!< TCP/IP sockets
-        CONNECTIONTYPE_SDP,       //!< SDP sockets (InfiniBand)
         CONNECTIONTYPE_PIPE,      //!< pipe() based uni-directional connection
         CONNECTIONTYPE_NAMEDPIPE, //!< Named pipe based bidirectional connection
         CONNECTIONTYPE_IB,        //!< @deprecated Win XP Infiniband RDMA
@@ -47,7 +46,6 @@ namespace co
         switch( type )
         {
             case CONNECTIONTYPE_TCPIP: return os << "TCPIP";
-            case CONNECTIONTYPE_SDP: return os << "SDP";
             case CONNECTIONTYPE_PIPE: return os << "ANON_PIPE";
             case CONNECTIONTYPE_NAMEDPIPE: return os << "PIPE";
             case CONNECTIONTYPE_RSP: return os << "RSP";
