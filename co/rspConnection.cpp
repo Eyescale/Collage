@@ -469,7 +469,7 @@ void RSPConnection::_handleInitTimeout( )
 
 void RSPConnection::_clearWriteQueues()
 {
-    while( !_threadBuffers.isEmpty() )
+    while( !_threadBuffers.isEmpty( ))
     {
         Buffer* buffer = 0;
         _threadBuffers.pop( buffer );

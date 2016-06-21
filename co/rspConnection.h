@@ -169,12 +169,12 @@ private:
     struct DatagramNack
     {
         void set( uint16_t rID, uint16_t wID, uint16_t n )
-            {
-                type       = NACK;
-                readerID   = rID;
-                writerID   = wID;
-                count      = n;
-            }
+        {
+            type       = NACK;
+            readerID   = rID;
+            writerID   = wID;
+            count      = n;
+        }
 
         uint16_t       type;
         uint16_t       readerID;
