@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
- *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -172,6 +172,34 @@ public:
      * @version 1.0
      */
     CO_API virtual bool disconnect( NodePtr node );
+    //@}
+
+    /** @name Launching a remote node */
+    //@{
+    /**
+     * Launch a remote process using the given command.
+     *
+     * The launched node will automatically connect with this node, if it passes
+     * the given options to its initLocal().
+     *
+     * The following markers are replaced in the command:
+     * * %h: Node::getHostname()
+     * * %n: Node identifier in string representation
+     * * %d: Node::getWorkDir()
+     * * %q: Node::getLaunchQuote()
+     * * %o: Options needed by remote initLocal() to connect this node. If not
+     *       given, options are appended at the end of the given command.
+     *
+     * @return true if the launch process execution was successful.
+     */
+    CO_API bool launch( NodePtr node, const std::string& command );
+
+    /**
+     * Wait for a launched node to connect.
+     *
+     * @return the remote node handle, or 0 on timeout.
+     */
+    CO_API NodePtr syncLaunch( const uint128_t& nodeID, const int64_t timeout );
     //@}
 
     /** @name Object Registry */
@@ -567,6 +595,8 @@ private:
     NodePtr _connect( const NodeID& nodeID, NodePtr peer );
     NodePtr _connectFromZeroconf( const NodeID& nodeID );
     bool _connectSelf();
+
+    bool _setupPeer( std::string setupOpts );
 
     void _handleConnect();
     void _handleDisconnect();

@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
- *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -158,6 +158,21 @@ public:
      */
     CO_API CustomOCommand send( const uint128_t& commandID,
                                 const bool multicast = false );
+    //@}
+
+    /** @name Launch parameters */
+    //@{
+    /** Set the host name for the launch command. */
+    CO_API void setHostname( const std::string& host );
+
+    /** @return the host name for the launch command. */
+    CO_API const std::string& getHostname() const;
+
+    /** @return the workind directory for the remote process. */
+    CO_API virtual std::string getWorkDir() const;
+
+    /** @return the character to quote single arguments. */
+    CO_API virtual std::string getLaunchQuote() const;
     //@}
 
     /** @internal @return last receive time. */

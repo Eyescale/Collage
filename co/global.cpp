@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -137,7 +137,7 @@ bool Global::fromString(const std::string& data )
     return true;
 }
 
-void Global::toString( std::string& data )
+std::string Global::toString()
 {
     std::stringstream stream;
     stream << SEPARATOR << SEPARATOR;
@@ -146,7 +146,7 @@ void Global::toString( std::string& data )
         stream << _iAttributes[i] << SEPARATOR;
 
     stream << SEPARATOR;
-    data = stream.str();
+    return stream.str();
 }
 
 void Global::setDefaultPort( const uint16_t port )

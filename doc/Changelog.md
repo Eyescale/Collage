@@ -2,6 +2,9 @@
 
 # git master
 
+* [189](https://github.com/Eyescale/Collage/pull/189):
+  Add remote node launch API and implementation
+
 # Release 1.4 (11-Mar-2016)
 
 * [172](https://github.com/Eyescale/Collage/pull/172):

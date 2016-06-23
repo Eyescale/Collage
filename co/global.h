@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -69,7 +69,7 @@ namespace co
         CO_API static bool fromString( const std::string& data );
 
         /** @internal Write global variables in the format for fromString(). */
-        CO_API static void toString( std::string& data );
+        CO_API static std::string toString();
 
         /** @return the plugin registry. @version 1.0 */
         CO_API static pression::PluginRegistry& getPluginRegistry();
