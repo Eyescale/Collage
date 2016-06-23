@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2013-2014, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2013-2016, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -335,8 +335,7 @@ public:
 
     void switchOperation()
     {
-        co::Nodes nodes;
-        getNodes( nodes );
+        const co::Nodes& nodes = getNodes();
         const co::Connections& connections = co::gatherConnections( nodes );
         co::OCommand( connections, CMD_NODE_OPERATION )
             << uint64_t( (active_+1) % impls_.size() );
@@ -437,9 +436,8 @@ private:
         active_ = next % impls_.size();
         impls_[ active_ ]->activate();
 
-        co::Nodes nodes;
-        getNodes( nodes, false );
-        BOOST_FOREACH( co::NodePtr coNode, nodes )
+        const co::Nodes& nodes = getNodes( false );
+        for( co::NodePtr coNode : nodes )
         {
             if( coNode->getType() != 0xB0A )
                 continue;

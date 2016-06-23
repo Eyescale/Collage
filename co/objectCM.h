@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -161,7 +161,7 @@ public:
         { LBDONTCALL; }
 
     /** Speculatively send instance data to all nodes. */
-    virtual void sendInstanceData( Nodes& ){}
+    virtual void sendInstanceData( const Nodes& ){}
 
     /** @internal @return the object. */
     const Object* getObject( ) const { return _object; }

@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -192,13 +192,11 @@ NodeID ObjectStore::findMasterNodeID( const uint128_t& identifier )
     LB_TS_NOT_THREAD( _commandThread );
 
     // OPT: look up locally first?
-    Nodes nodes;
-    _localNode->getNodes( nodes );
+    const Nodes& nodes = _localNode->getNodes();
 
     // OPT: send to multiple nodes at once?
-    for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
+    for( NodePtr node : nodes )
     {
-        NodePtr node = *i;
         lunchbox::Request< NodeID > request =
             _localNode->registerRequest< NodeID >();
 
@@ -652,8 +650,7 @@ bool ObjectStore::notifyCommandThreadIdle()
 
     if( item.age > _localNode->getTime64( ))
     {
-        Nodes nodes;
-        _localNode->getNodes( nodes, false );
+        const Nodes& nodes = _localNode->getNodes( false );
         if( nodes.empty( ))
         {
             lunchbox::Thread::yield();
@@ -1254,11 +1251,9 @@ bool ObjectStore::_cmdDisableSendOnRegister( ICommand& command )
     {
         _sendQueue.clear();
 
-        Nodes nodes;
-        _localNode->getNodes( nodes, false );
-        for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
+        const Nodes& nodes = _localNode->getNodes( false );
+        for( NodePtr node : nodes )
         {
-            NodePtr node = *i;
             ConnectionPtr multicast = node->getConnection( true );
             ConnectionPtr connection = node->getConnection( false );
             if( multicast )

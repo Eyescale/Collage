@@ -168,7 +168,7 @@ public:
     /** @return the host name for the launch command. */
     CO_API const std::string& getHostname() const;
 
-    /** @return the workind directory for the remote process. */
+    /** @return the working directory for the remote process. */
     CO_API virtual std::string getWorkDir() const;
 
     /** @return the character to quote single arguments. */

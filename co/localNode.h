@@ -199,7 +199,7 @@ public:
      *
      * @return the remote node handle, or 0 on timeout.
      */
-    CO_API NodePtr syncLaunch( const uint128_t& nodeID, const int64_t timeout );
+    CO_API NodePtr syncLaunch( const uint128_t& nodeID, int64_t timeout );
     //@}
 
     /** @name Object Registry */
@@ -440,8 +440,8 @@ public:
      */
     CO_API NodePtr getNode( const NodeID& id ) const;
 
-    /** Assemble a vector of the currently connected nodes. @version 1.0 */
-    CO_API void getNodes( Nodes& nodes, const bool addSelf = true ) const;
+    /** @return a vector of the currently connected nodes. @version 1.0 */
+    CO_API Nodes getNodes( const bool addSelf = true ) const;
 
     /** Return the command queue to the command thread. @version 1.0 */
     CO_API CommandQueue* getCommandThreadQueue();
@@ -596,7 +596,7 @@ private:
     NodePtr _connectFromZeroconf( const NodeID& nodeID );
     bool _connectSelf();
 
-    bool _setupPeer( std::string setupOpts );
+    bool _setupPeer( const std::string& setupOpts );
 
     void _handleConnect();
     void _handleDisconnect();

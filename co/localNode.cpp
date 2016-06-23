@@ -327,17 +327,14 @@ bool LocalNode::initLocal( const int argc, char** argv )
                 LBWARN << "No argument given to --co-globals!" << std::endl;
             }
         }
-        else if( std::string( "--co-setup" ) == argv[i] )
+        else if( std::string( "--co-launch" ) == argv[i] )
         {
             if( i == argc-1 || argv[i+1][0] == '-' )
-            {
-                LBERROR << "Missing options to --co-setup" << std::endl;
-                return false;
-            }
+                LBTHROW( std::runtime_error( "Missing options to --co-launch"));
 
             setupOpts = argv[ ++i ];
             if( !deserialize( setupOpts ))
-                LBWARN << "Failed to parse listen port parameters" << std::endl;
+                LBTHROW( std::runtime_error( "Corrupt --co-launch argument" ));
             LBASSERT( !setupOpts.empty( ));
         }
     }
@@ -460,11 +457,9 @@ void LocalNode::addListener( ConnectionPtr connection )
 
     // Update everybody's description list of me, add the listener to myself in
     // my handler
-    Nodes nodes;
-    getNodes( nodes );
-
-    for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
-        (*i)->send( CMD_NODE_ADD_LISTENER )
+    const Nodes& nodes = getNodes();
+    for( NodePtr node : nodes )
+        node->send( CMD_NODE_ADD_LISTENER )
             << (uint64_t)(connection.get( ))
             << connection->getDescription()->toString();
 }
@@ -486,12 +481,11 @@ lunchbox::Request< void > LocalNode::_removeListener( ConnectionPtr conn )
 
     conn->ref( this );
     const lunchbox::Request< void > request = registerRequest< void >();
-    Nodes nodes;
-    getNodes( nodes );
 
-    for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
-        (*i)->send( CMD_NODE_REMOVE_LISTENER ) << request << conn.get()
-                                          << conn->getDescription()->toString();
+    const Nodes& nodes = getNodes();
+    for( NodePtr node : nodes )
+        node->send( CMD_NODE_REMOVE_LISTENER )
+            << request << conn.get() << conn->getDescription()->toString();
     return request;
 }
 
@@ -648,13 +642,11 @@ bool LocalNode::pingIdleNodes()
 {
     LBASSERT( !_impl->inReceiverThread( ) );
     const int64_t timeout = Global::getKeepaliveTimeout() / 2;
-    Nodes nodes;
-    getNodes( nodes, false );
+    const Nodes& nodes = getNodes( false );
 
     bool pinged = false;
-    for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
+    for( NodePtr node : nodes )
     {
-        NodePtr node = *i;
         if( getTime64() - node->getLastReceiveTime() > timeout )
         {
             LBINFO << " Ping Node: " <<  node->getNodeID() << " last seen "
@@ -841,38 +833,30 @@ NodePtr LocalNode::connect( const NodeID& nodeID )
     // happen a lot during initialization, and are therefore not time-critical.
     lunchbox::ScopedWrite mutex( _impl->connectLock );
 
-    Nodes nodes;
-    getNodes( nodes );
-
-    for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
+    Nodes nodes = getNodes();
+    for( NodePtr peer : nodes )
     {
-        NodePtr peer = *i;
         if( peer->getNodeID() == nodeID && peer->isReachable( )) // early out
             return peer;
     }
 
     LBDEBUG << "Connecting node " << nodeID << std::endl;
-    for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
+    for( NodePtr peer : nodes )
     {
-        NodePtr peer = *i;
         NodePtr node = _connect( nodeID, peer );
         if( node )
             return node;
     }
-
-    NodePtr node = _connectFromZeroconf( nodeID );
-    if( node )
-        return node;
-
-    // check again if node connected by itself by now
-    nodes.clear();
-    getNodes( nodes );
-    for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
     {
-        node = *i;
-        if( node->getNodeID() == nodeID && node->isReachable( ))
+        NodePtr node = _connectFromZeroconf( nodeID );
+        if( node )
             return node;
     }
+    // check again if node connected by itself by now
+    nodes = getNodes();
+    for( NodePtr node : nodes )
+        if( node->getNodeID() == nodeID && node->isReachable( ))
+            return node;
 
     LBWARN << "Node " << nodeID << " connection failed" << std::endl;
     return 0;
@@ -1118,7 +1102,7 @@ bool LocalNode::launch( NodePtr node, const std::string& command )
 
     const std::string& quote = node->getLaunchQuote();
     std::string launchOptions =
-        std::string( " --co-setup " ) + quote + node->serialize() +
+        std::string( " --co-launch " ) + quote + node->serialize() +
         node->getWorkDir() + CO_SEPARATOR + std::to_string( getType( )) +
         CO_SEPARATOR + serialize() + quote +
         " --co-globals " + quote + co::Global::toString() + quote;
@@ -1164,7 +1148,7 @@ bool LocalNode::launch( NodePtr node, const std::string& command )
 
     cmd += command.substr( lastPos ) + launchOptions;
 
-    LBVERB << "Launching: " << cmd << std::endl;
+    LBDEBUG << "Launching: " << cmd << std::endl;
     if( lunchbox::Launcher::run( cmd ))
         return true;
 
@@ -1190,7 +1174,7 @@ NodePtr LocalNode::syncLaunch( const uint128_t& nodeID, const int64_t timeout )
     return nullptr;
 }
 
-bool LocalNode::_setupPeer( std::string setupOpts )
+bool LocalNode::_setupPeer( const std::string& setupOpts )
 {
     size_t nextPos = setupOpts.find( CO_SEPARATOR );
     if( nextPos == std::string::npos )
@@ -1246,8 +1230,9 @@ NodePtr LocalNode::getNode( const NodeID& id ) const
     return i->second;
 }
 
-void LocalNode::getNodes( Nodes& nodes, const bool addSelf ) const
+Nodes LocalNode::getNodes( const bool addSelf ) const
 {
+    Nodes nodes;
     lunchbox::ScopedFastRead mutex( _impl->nodes );
     for( NodeHashCIter i = _impl->nodes->begin(); i != _impl->nodes->end(); ++i)
     {
@@ -1255,6 +1240,7 @@ void LocalNode::getNodes( Nodes& nodes, const bool addSelf ) const
         if( node->isReachable() && ( addSelf || node != this ))
             nodes.push_back( i->second );
     }
+    return nodes;
 }
 
 CommandQueue* LocalNode::getCommandThreadQueue()
