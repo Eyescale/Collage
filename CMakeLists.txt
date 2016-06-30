@@ -3,8 +3,8 @@
 #                         Stefan Eilemann <eile@eyescale.ch>
 
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-project(Collage VERSION 1.4.0)
-set(Collage_VERSION_ABI 4)
+project(Collage VERSION 1.5.0)
+set(Collage_VERSION_ABI 5)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake
   ${CMAKE_SOURCE_DIR}/CMake/common)
