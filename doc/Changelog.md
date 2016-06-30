@@ -1,6 +1,12 @@
 # Changelog {#Changelog}
 
-# git master
+# Release 1.5 (30-Jul-2016)
+
+* [188](https://github.com/Eyescale/Collage/pull/188)
+  Improved robustness in RDMA connection estalishment to account for variations
+  of behaviour in librdmacm.
+* [186](https://github.com/Eyescale/Collage/pull/186)
+  Obsolete SDP connection removed.
 
 # Release 1.4 (11-Mar-2016)
 
