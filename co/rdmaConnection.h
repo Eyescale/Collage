@@ -280,7 +280,9 @@ private:
     std::string _device_name;
 
     /* RDMA/Verbs vars */
-    struct rdma_addrinfo *_rai;
+    struct rdma_addrinfo *_rai; // The addrinfo returned by rdma_getaddrinfo.
+    struct rdma_addrinfo *_addrinfo; // The addrinfo to be used. Points to
+                                     // one node in the list from _rai.
     struct rdma_event_channel *_cm;
     struct rdma_cm_id *_cm_id;
     struct rdma_cm_id *_new_cm_id;

@@ -117,6 +117,16 @@ static const uint32_t RINGBUFFER_ALLOC_RETRIES = 8;
 static const uint32_t WINDOWS_CONNECTION_BACKLOG = 1024;
 #endif
 static const uint32_t FC_MESSAGE_FREQUENCY = 12;
+
+bool _isInetFamily( const rdma_addrinfo* addrinfo)
+{
+#ifndef _WIN32
+    return addrinfo->ai_family == AF_INET || addrinfo->ai_family == AF_INET6;
+#else
+    return addrinfo->ai_family == AF_INET;
+#endif
+}
+
 }
 
 /**
@@ -181,6 +191,7 @@ RDMAConnection::RDMAConnection( )
 #endif
     , _timeout( Global::getIAttribute( Global::IATTR_RDMA_RESOLVE_TIMEOUT_MS ))
     , _rai( NULL )
+    , _addrinfo( NULL )
     , _cm( NULL )
     , _cm_id( NULL )
     , _new_cm_id( NULL )
@@ -238,13 +249,13 @@ bool RDMAConnection::connect( )
     _cleanup( );
     _setState( STATE_CONNECTING );
 
-    if( !_lookupAddress( false ) || ( NULL == _rai ))
+    if( !_lookupAddress( false ) || ( NULL == _addrinfo ))
     {
         LBERROR << "Failed to lookup destination address." << std::endl;
         goto err;
     }
 
-    _updateInfo( _rai->ai_dst_addr );
+    _updateInfo( _addrinfo->ai_dst_addr );
 
     if( !_createNotifier( ))
     {
@@ -396,8 +407,8 @@ bool RDMAConnection::listen( )
         goto err;
     }
 
-    if( NULL != _rai )
-        _updateInfo( _rai->ai_src_addr );
+    if( NULL != _addrinfo )
+        _updateInfo( _addrinfo->ai_src_addr );
 
     if( !_createNotifier( ))
     {
@@ -1001,11 +1012,11 @@ err:
 bool RDMAConnection::_lookupAddress( const bool passive )
 {
     struct rdma_addrinfo hints;
-    char *node = NULL, *service = NULL;
+    char* node = 0;
+    char* service = 0;
     std::string s;
 
     ::memset( (void *)&hints, 0, sizeof(struct rdma_addrinfo) );
-    //hints.ai_flags |= RAI_NOROUTE;
     if( passive )
         hints.ai_flags |= RAI_PASSIVE;
 
@@ -1025,19 +1036,27 @@ bool RDMAConnection::_lookupAddress( const bool passive )
     if(( NULL != node ) && ::rdma_getaddrinfo( node, service, &hints, &_rai ))
     {
         LBERROR << "rdma_getaddrinfo : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
-    if(( NULL != _rai ) && ( NULL != _rai->ai_next ))
-        LBWARN << "Multiple getaddrinfo results, using first." << std::endl;
+    _addrinfo = _rai;
+    while( _addrinfo && !_isInetFamily( _addrinfo ))
+        _addrinfo = _addrinfo->ai_next;
 
-    if(( NULL != _rai ) && ( _rai->ai_connect_len > 0 ))
+    if( !_addrinfo )
+    {
+        if( _rai )
+        {
+            LBWARN << "No IP or IPv6 address found by rdma_getaddrinfo. "
+                      "Connection establishment may fail." << std::endl;
+        }
+        _addrinfo = _rai;
+    }
+
+    if(( NULL != _addrinfo ) && ( _addrinfo->ai_connect_len > 0 ))
         LBWARN << "WARNING : ai_connect data specified!" << std::endl;
 
     return true;
-
-err:
-    return false;
 }
 
 void RDMAConnection::_updateInfo( struct sockaddr *addr )
@@ -1066,6 +1085,13 @@ void RDMAConnection::_updateInfo( struct sockaddr *addr )
         salen = sizeof(struct sockaddr_in6);
     }
 #endif
+    else
+    {
+        LBERROR << "Unsupported socket address family "
+                <<  addr->sa_family << std::endl;
+        return;
+    }
+
     int err;
     if(( err = ::getnameinfo( addr, salen, _addr, sizeof(_addr),
             _serv, sizeof(_serv), NI_NUMERICHOST | NI_NUMERICSERV )))
@@ -1090,7 +1116,7 @@ bool RDMAConnection::_createEventChannel( )
     {
         LBERROR << "rdma_create_event_channel : " << lunchbox::sysError <<
             std::endl;
-        goto err;
+        return false;
     }
 
 #ifdef _WIN32
@@ -1104,7 +1130,7 @@ bool RDMAConnection::_createEventChannel( )
     {
         LBERROR << "RegisterWaitForSingleObject : " << co::base::sysError
                 << std::endl;
-        goto err;
+        return false;
     }
 #else
     struct epoll_event evctl;
@@ -1118,14 +1144,11 @@ bool RDMAConnection::_createEventChannel( )
     if( ::epoll_ctl( _notifier, EPOLL_CTL_ADD, evctl.data.fd, &evctl ))
     {
         LBERROR << "epoll_ctl : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 #endif
 
     return true;
-
-err:
-    return false;
 }
 
 bool RDMAConnection::_createId( )
@@ -1136,13 +1159,10 @@ bool RDMAConnection::_createId( )
     if( ::rdma_create_id( _cm, &_cm_id, NULL, RDMA_PS_TCP ))
     {
         LBERROR << "rdma_create_id : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     return true;
-
-err:
-    return false;
 }
 
 bool RDMAConnection::_initVerbs( )
@@ -1157,7 +1177,7 @@ bool RDMAConnection::_initVerbs( )
     if( NULL == _pd )
     {
         LBERROR << "ibv_alloc_pd : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     LBASSERT( NULL == _cc );
@@ -1168,7 +1188,7 @@ bool RDMAConnection::_initVerbs( )
     {
         LBERROR << "ibv_create_comp_channel : " << lunchbox::sysError
             << std::endl;
-        goto err;
+        return false;
     }
 
 #ifdef _WIN32
@@ -1182,7 +1202,7 @@ bool RDMAConnection::_initVerbs( )
     {
         LBERROR << "RegisterWaitForSingleObject : " << lunchbox::sysError
             << std::endl;
-        goto err;
+        return false;
     }
 #else
     LBASSERT( _notifier >= 0 );
@@ -1195,7 +1215,7 @@ bool RDMAConnection::_initVerbs( )
     if( ::epoll_ctl( _notifier, EPOLL_CTL_ADD, evctl.data.fd, &evctl ))
     {
         LBERROR << "epoll_ctl : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 #endif
 
@@ -1206,21 +1226,18 @@ bool RDMAConnection::_initVerbs( )
     if( NULL == _cq )
     {
         LBERROR << "ibv_create_cq : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     // Request IBV_SEND_SOLICITED events only (i.e. RDMA writes, not FC)
     if( ::rdma_seterrno( ::ibv_req_notify_cq( _cq, 1 )))
     {
         LBERROR << "ibv_req_notify_cq : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     _wcs = new struct ibv_wc[ _depth ];
     return true;
-
-err:
-    return false;
 }
 
 bool RDMAConnection::_createQP( )
@@ -1246,7 +1263,7 @@ bool RDMAConnection::_createQP( )
     if( ::rdma_create_qp( _cm_id, _pd, &init_attr ))
     {
         LBERROR << "rdma_create_qp : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     LBVERB << "RDMA QP caps : " << std::dec <<
@@ -1254,9 +1271,6 @@ bool RDMAConnection::_createQP( )
         init_attr.cap.max_send_wr << " sends, " << std::endl;
 
     return true;
-
-err:
-    return false;
 }
 
 bool RDMAConnection::_initBuffers( )
@@ -1270,19 +1284,19 @@ bool RDMAConnection::_initBuffers( )
     if( 0 == rbs )
     {
         LBERROR << "Invalid RDMA ring buffer size." << std::endl;
-        goto err;
+        return false;
     }
 
     if( !_sourcebuf.resize( _pd, rbs ))
     {
         LBERROR << "Failed to resize source buffer." << std::endl;
-        goto err;
+        return false;
     }
 
     if( !_sinkbuf.resize( _pd, rbs ))
     {
         LBERROR << "Failed to resize sink buffer." << std::endl;
-        goto err;
+        return false;
     }
 
     _sourceptr.clear( uint32_t( _sourcebuf.getSize( )));
@@ -1292,83 +1306,59 @@ bool RDMAConnection::_initBuffers( )
     if( !_msgbuf.resize( _pd, _depth * 2 ))
     {
         LBERROR << "Failed to resize message buffer pool." << std::endl;
-        goto err;
+        return false;
     }
 
     return true;
-
-err:
-    return false;
 }
 
 bool RDMAConnection::_resolveAddress( )
 {
     LBASSERT( NULL != _cm_id );
-    LBASSERT( NULL != _rai );
+    LBASSERT( NULL != _addrinfo );
 
-    if( ::rdma_resolve_addr( _cm_id, _rai->ai_src_addr, _rai->ai_dst_addr,
+    if( ::rdma_resolve_addr( _cm_id, _addrinfo->ai_src_addr, _addrinfo->ai_dst_addr,
             _timeout ))
     {
         LBERROR << "rdma_resolve_addr : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     return _waitForCMEvent( RDMA_CM_EVENT_ADDR_RESOLVED );
-
-err:
-    return false;
 }
 
 bool RDMAConnection::_resolveRoute( )
 {
     LBASSERT( NULL != _cm_id );
-    LBASSERT( NULL != _rai );
+    LBASSERT( NULL != _addrinfo );
 
     if(( IBV_TRANSPORT_IB == _cm_id->verbs->device->transport_type ) &&
-            ( _rai->ai_route_len > 0 ))
+            ( _addrinfo->ai_route_len > 0 ))
     {
 #ifdef _WIN32
         if( ::rdma_set_option( _cm_id, RDMA_OPTION_ID, RDMA_OPTION_ID_TOS,
 #else
         if( ::rdma_set_option( _cm_id, RDMA_OPTION_IB, RDMA_OPTION_IB_PATH,
 #endif
-                _rai->ai_route, _rai->ai_route_len ))
+                _addrinfo->ai_route, _addrinfo->ai_route_len ))
         {
             LBERROR << "rdma_set_option : " << lunchbox::sysError << std::endl;
-            goto err;
+            return false;
         }
-
-        // rdma_resolve_route not required (TODO : is this really true?)
-        return true;
     }
-
-    if( ::rdma_resolve_route( _cm_id, _timeout ))
+    else if( ::rdma_resolve_route( _cm_id, _timeout ))
     {
         LBERROR << "rdma_resolve_route : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     return _waitForCMEvent( RDMA_CM_EVENT_ROUTE_RESOLVED );
-
-err:
-    return false;
 }
 
 bool RDMAConnection::_connect( )
 {
     LBASSERT( NULL != _cm_id );
     LBASSERT( !_established );
-
-#if 0 // TODO
-    static const uint8_t DSCP = 0;
-
-    if( ::rdma_set_option( _cm_id, RDMA_OPTION_ID, RDMA_OPTION_ID_TOS,
-            (void *)&DSCP, sizeof(DSCP) ))
-    {
-        LBERROR << "rdma_set_option : " << lunchbox::sysError << std::endl;
-        goto err;
-    }
-#endif
 
     struct rdma_conn_param conn_param;
 
@@ -1396,13 +1386,12 @@ bool RDMAConnection::_connect( )
     if( ::rdma_connect( _cm_id, &conn_param ))
     {
         LBERROR << "rdma_connect : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
-    return _waitForCMEvent( RDMA_CM_EVENT_ESTABLISHED );
+    bool ret = _waitForCMEvent( RDMA_CM_EVENT_ESTABLISHED );
 
-err:
-    return false;
+    return ret;
 }
 
 bool RDMAConnection::_bindAddress( )
@@ -1424,17 +1413,19 @@ bool RDMAConnection::_bindAddress( )
     sin.sin_addr.s_addr = INADDR_ANY;
 #endif
 
-    if( ::rdma_bind_addr( _cm_id, ( NULL != _rai ) ? _rai->ai_src_addr :
+    if( ::rdma_bind_addr( _cm_id, ( NULL != _addrinfo ) ? _addrinfo->ai_src_addr :
             reinterpret_cast< struct sockaddr * >( &sin )))
     {
         LBERROR << "rdma_bind_addr : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
-    return true;
+    const uint16_t port = ntohs(rdma_get_src_port(_cm_id));
+    LBDEBUG << "Listening on " << description->getHostname() << "["
+            << _addr << "]:" << port << " (" << description->toString()
+            << ")" << std::endl;
 
-err:
-    return false;
+    return true;
 }
 
 bool RDMAConnection::_listen( int backlog )
@@ -1444,13 +1435,10 @@ bool RDMAConnection::_listen( int backlog )
     if( ::rdma_listen( _cm_id, backlog ))
     {
         LBERROR << "rdma_listen : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     return true;
-
-err:
-    return false;
 }
 
 bool RDMAConnection::_migrateId( )
@@ -1461,13 +1449,10 @@ bool RDMAConnection::_migrateId( )
     if( ::rdma_migrate_id( _cm_id, _cm ))
     {
         LBERROR << "rdma_migrate_id : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     return true;
-
-err:
-    return false;
 }
 
 bool RDMAConnection::_accept( )
@@ -1500,13 +1485,10 @@ bool RDMAConnection::_accept( )
     if( ::rdma_accept( _cm_id, &accept_param ))
     {
         LBERROR << "rdma_accept : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     return _waitForCMEvent( RDMA_CM_EVENT_ESTABLISHED );
-
-err:
-    return false;
 }
 
 bool RDMAConnection::_reject( )
@@ -1517,13 +1499,10 @@ bool RDMAConnection::_reject( )
     if( ::rdma_reject( _cm_id, NULL, 0 ))
     {
         LBERROR << "rdma_reject : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     return true;
-
-err:
-    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1533,7 +1512,7 @@ bool RDMAConnection::_initProtocol( int32_t depth )
     if( depth < 2L )
     {
         LBERROR << "Invalid queue depth." << std::endl;
-        goto err;
+        return false;
     }
 
     _depth = depth;
@@ -1544,9 +1523,6 @@ bool RDMAConnection::_initProtocol( int32_t depth )
     _fcredits = _depth / 2 + 2;
 
     return true;
-
-err:
-    return false;
 }
 
 /* inline */
@@ -1594,20 +1570,19 @@ bool RDMAConnection::_postReceives( const uint32_t count )
     wrs[count - 1].next = NULL;
 
     struct ibv_recv_wr *bad_wr;
-    if( ::rdma_seterrno( ::ibv_post_recv( _cm_id->qp, wrs, &bad_wr )))
+    const bool error =
+        ::rdma_seterrno( ::ibv_post_recv( _cm_id->qp, wrs, &bad_wr ));
+
+    delete[] sge;
+    delete[] wrs;
+
+    if( error )
     {
         LBERROR << "ibv_post_recv : "  << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
-    delete[] sge;
-    delete[] wrs;
     return true;
-
-err:
-    delete[] sge;
-    delete[] wrs;
-    return false;
 }
 
 /* inline */
@@ -1685,13 +1660,10 @@ bool RDMAConnection::_postRDMAWrite( )
     if( ::rdma_seterrno( ::ibv_post_send( _cm_id->qp, &wr, &bad_wr )))
     {
         LBERROR << "ibv_post_send : "  << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     return true;
-
-err:
-    return false;
 }
 
 bool RDMAConnection::_postMessage( const RDMAMessage &message )
@@ -1704,13 +1676,10 @@ bool RDMAConnection::_postMessage( const RDMAMessage &message )
             0 ))
     {
         LBERROR << "rdma_post_send : "  << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     return true;
-
-err:
-    return false;
 }
 
 void RDMAConnection::_recvMessage( const RDMAMessage &message )
@@ -1812,19 +1781,19 @@ retry:
     if( !_checkDisconnected( events ))
     {
         LBERROR << "Error while checking event state." << std::endl;
-        goto err;
+        return false;
     }
 
     if( !_established )
     {
         LBERROR << "Disconnected while waiting for setup message." << std::endl;
-        goto err;
+        return false;
     }
 
     if( !_checkCQ( true ))
     {
         LBERROR << "Error while polling receive completion queue." << std::endl;
-        goto err;
+        return false;
     }
 
     if( 0ULL == _rkey )
@@ -1834,7 +1803,7 @@ retry:
             if(( clock.getTime64( ) - start ) > timeout )
             {
                 LBERROR << "Timed out waiting for setup message." << std::endl;
-                goto err;
+                return false;
             }
         }
 
@@ -1843,9 +1812,6 @@ retry:
     }
 
     return true;
-
-err:
-    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1861,13 +1827,10 @@ bool RDMAConnection::_createNotifier( )
     if( _notifier < 0 )
     {
         LBERROR << "epoll_create1 : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     return true;
-
-err:
-    return false;
 #endif
 }
 
@@ -1905,7 +1868,7 @@ bool RDMAConnection::_checkEvents( eventset &events )
     if( nfds < 0 )
     {
         LBERROR << "epoll_wait : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     for( int i = 0; i < nfds; i++ )
@@ -1922,9 +1885,6 @@ bool RDMAConnection::_checkEvents( eventset &events )
     }
 
     return true;
-
-err:
-    return false;
 #endif
 }
 
@@ -1935,7 +1895,7 @@ bool RDMAConnection::_checkDisconnected( eventset &events )
     if( !_checkEvents( events ))
     {
         LBERROR << "Error while checking event state." << std::endl;
-        goto err;
+        return false;
     }
 
     if( events.test( CM_EVENT ))
@@ -1943,16 +1903,13 @@ bool RDMAConnection::_checkDisconnected( eventset &events )
         if( !_doCMEvent( RDMA_CM_EVENT_DISCONNECTED ))
         {
             LBERROR << "Unexpected connection manager event." << std::endl;
-            goto err;
+            return false;
         }
 
         LBASSERT( !_established );
     }
 
     return true;
-
-err:
-    return false;
 }
 
 bool RDMAConnection::_createBytesAvailableFD( )
@@ -2015,26 +1972,24 @@ uint64_t RDMAConnection::_getAvailableBytes( )
     {
         count = ::read( _pipe_fd[0], (void *)&currBytes, sizeof( currBytes ));
         if ( count > 0 && count < (ssize_t)sizeof( currBytes ) )
-            goto err;
+            return 0ULL;
         available_bytes += currBytes;
         pfd.revents = 0;
         if ( ::poll( &pfd, 1, 0 ) == -1 )
         {
             LBERROR << "poll : " << lunchbox::sysError << std::endl;
-            goto err;
+            return 0ULL;
         }
     } while ( pfd.revents > 0 );
 
     if ( count == -1 )
     {
         LBERROR << "read : " << lunchbox::sysError << std::endl;
-        goto err;
+        return 0ULL;
     }
 
     LBASSERT( available_bytes > 0ULL );
     return available_bytes;
-err:
-    return 0ULL;
 #endif
 }
 
@@ -2050,7 +2005,7 @@ retry:
     if( !_checkEvents( events ))
     {
         LBERROR << "Error while checking event state." << std::endl;
-        goto err;
+        return false;
     }
 
     if( events.test( CM_EVENT ))
@@ -2059,7 +2014,7 @@ retry:
         if( !done )
         {
             LBERROR << "Unexpected connection manager event." << std::endl;
-            goto err;
+            return false;
         }
     }
 
@@ -2070,7 +2025,7 @@ retry:
             if(( clock.getTime64( ) - start ) > timeout )
             {
                 LBERROR << "Timed out waiting for setup message." << std::endl;
-                goto err;
+                return false;
             }
         }
 
@@ -2079,9 +2034,6 @@ retry:
     }
 
     return true;
-
-err:
-    return false;
 }
 
 bool RDMAConnection::_doCMEvent( enum rdma_cm_event_type expected )
@@ -2092,7 +2044,7 @@ bool RDMAConnection::_doCMEvent( enum rdma_cm_event_type expected )
     if( ::rdma_get_cm_event( _cm, &event ))
     {
         LBERROR << "rdma_get_cm_event : " << lunchbox::sysError << std::endl;
-        goto out;
+        return false;
     }
 
     ok = ( event->event == expected );
@@ -2152,7 +2104,6 @@ bool RDMAConnection::_doCMEvent( enum rdma_cm_event_type expected )
     if( ::rdma_ack_cm_event( event ))
         LBWARN << "rdma_ack_cm_event : "  << lunchbox::sysError << std::endl;
 
-out:
     return ok;
 }
 
@@ -2196,7 +2147,7 @@ bool RDMAConnection::_checkCQ( bool drain )
     lunchbox::ScopedWrite poll_mutex( _poll_lock );
 
     if( NULL == _cq )
-        goto out;
+        return true;
 
 repoll:
     /* CHECK RECEIVE COMPLETIONS */
@@ -2204,7 +2155,7 @@ repoll:
     if( count < 0 )
     {
         LBERROR << "ibv_poll_cq : " << lunchbox::sysError << std::endl;
-        goto err;
+        return false;
     }
 
     num_recvs = 0UL;
@@ -2226,7 +2177,7 @@ repoll:
                 << std::dec << std::endl;
 
             // All others are fatal.
-            goto err;
+            return false;
         }
 
         LBASSERT( IBV_WC_SUCCESS == wc.status );
@@ -2258,16 +2209,12 @@ repoll:
     }
 
     if(( num_recvs > 0UL ) && !_postReceives( num_recvs ))
-        goto err;
+        return false;
 
     if( drain && ( count > 0 ))
         goto repoll;
 
-out:
     return true;
-
-err:
-    return false;
 }
 
 /* inline */
@@ -2387,14 +2334,14 @@ bool BufferPool::resize( ibv_pd *pd, uint32_t num_bufs )
         {
             LBERROR << "_aligned_malloc : Couldn't allocate aligned memory. "
                     << lunchbox::sysError << std::endl;
-            goto err;
+            return false;
         }
 #else
         if( ::posix_memalign( &_buffer, (size_t)::getpagesize( ),
                 (size_t)( _num_bufs * _buffer_size )))
         {
             LBERROR << "posix_memalign : " << lunchbox::sysError << std::endl;
-            goto err;
+            return false;
         }
 #endif
         ::memset( _buffer, 0xff, (size_t)( _num_bufs * _buffer_size ));
@@ -2403,7 +2350,7 @@ bool BufferPool::resize( ibv_pd *pd, uint32_t num_bufs )
         if( NULL == _mr )
         {
             LBERROR << "ibv_reg_mr : " << lunchbox::sysError << std::endl;
-            goto err;
+            return false;
         }
 
         for( uint32_t i = 0; i != _num_bufs; i++ )
@@ -2411,9 +2358,6 @@ bool BufferPool::resize( ibv_pd *pd, uint32_t num_bufs )
     }
 
     return true;
-
-err:
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////
