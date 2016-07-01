@@ -169,7 +169,6 @@ bool ObjectCM::_initSlave( const MasterCMCommand& command,
 
     // send instance data
     ObjectInstanceDataOStream os( this );
-
     os.enableMap( replyVersion, command.getNode(), command.getInstanceID( ));
     _object->getInstanceData( os );
     os.disable();

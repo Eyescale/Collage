@@ -68,7 +68,7 @@ uint16_t    _defaultPort = 0;
 uint32_t    _objectBufferSize = _getObjectBufferSize();
 int32_t     _iAttributes[Global::IATTR_ALL] =
 {
-    100,   // INSTANCE_CACHE_SIZE
+    1000,   // INSTANCE_CACHE_SIZE
     100,   // NODE_SEND_QUEUE_SIZE
     100,   // NODE_SEND_QUEUE_AGE
     10,    // RSP_TIMEOUT

@@ -54,10 +54,10 @@ public:
 
     bool isMaster() const override { return true; }
     uint32_t getMasterInstanceID() const override
-    { LBDONTCALL; return CO_INSTANCE_INVALID; }
+        { LBDONTCALL; return CO_INSTANCE_INVALID; }
 
     bool addSlave( const MasterCMCommand& command ) override
-    { return ObjectCM::_addSlave( command, VERSION_FIRST ); }
+        { return ObjectCM::_addSlave( command, VERSION_FIRST ); }
     void removeSlaves( NodePtr ) override { /* NOP */}
 };
 }

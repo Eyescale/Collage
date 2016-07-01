@@ -479,8 +479,8 @@ void Node::_connectMulticast( NodePtr node )
                     continue;
 
                 node->_impl->multicasts.push_back( data );
-                LBINFO << "Adding " << dataDesc << " as multicast group for "
-                       << node->getNodeID() << std::endl;
+                LBDEBUG << "Adding " << dataDesc << " as multicast group for "
+                        << node->getNodeID() << std::endl;
             }
         }
     }

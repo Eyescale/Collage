@@ -451,18 +451,17 @@ bool ObjectStore::mapSync( const uint32_t requestID )
 }
 
 
-f_bool_t ObjectStore::sync( Object* object, NodePtr master, const uint128_t& id,
+f_bool_t ObjectStore::sync( Object* object, const uint128_t& id, NodePtr master,
                             const uint32_t instanceID )
 {
-    const uint32_t request = _startSync( object, master, id, instanceID );
+    const uint32_t request = _startSync( object, id, master, instanceID );
     const FuturebImpl::Func& func = boost::bind( &ObjectStore::_finishSync,
                                                  this, request, object );
     return f_bool_t( new FuturebImpl( func ));
 }
 
-uint32_t ObjectStore::_startSync( Object* object, NodePtr master,
-                                  const uint128_t& id,
-                                  const uint32_t instanceID )
+uint32_t ObjectStore::_startSync( Object* object, const uint128_t& id,
+                                  NodePtr master, const uint32_t instanceID )
 {
     LB_TS_NOT_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS )
@@ -1069,7 +1068,6 @@ bool ObjectStore::_cmdSync( ICommand& cmd )
     MasterCMCommand command( cmd );
     const uint128_t& id = command.getObjectID();
     LBINFO << command.getNode() << std::endl;
-
     LBLOG( LOG_OBJECTS ) << "Cmd sync object id " << id << "."
                          << command.getInstanceID() << " req "
                          << command.getRequestID() << std::endl;
@@ -1083,9 +1081,8 @@ bool ObjectStore::_cmdSync( ICommand& cmd )
         {
             const Objects& objects = i->second;
 
-            for( ObjectsCIter j = objects.begin(); j != objects.end(); ++j )
+            for( Object* object : objects )
             {
-                Object* object = *j;
                 if( command.getInstanceID() == object->getInstanceID( ))
                 {
                     cm = object->_getChangeManager();

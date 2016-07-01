@@ -719,10 +719,10 @@ bool LocalNode::mapObjectSync( const uint32_t requestID )
     return _impl->objectStore->mapSync( requestID );
 }
 
-f_bool_t LocalNode::syncObject( Object* object, NodePtr master, const uint128_t& id,
-                               const uint32_t instanceID )
+f_bool_t LocalNode::syncObject( Object* object, const uint128_t& id,
+                                NodePtr master, const uint32_t instanceID )
 {
-    return _impl->objectStore->sync( object, master, id, instanceID );
+    return _impl->objectStore->sync( object, id, master, instanceID );
 }
 
 void LocalNode::unmapObject( Object* object )

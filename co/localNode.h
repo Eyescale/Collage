@@ -318,8 +318,8 @@ public:
      *         the operation on evaluation.
      * @version 1.1.1
      */
-    CO_API f_bool_t syncObject( Object* object, NodePtr master,
-                                const uint128_t& id,
+    CO_API f_bool_t syncObject( Object* object, const uint128_t& id,
+                                NodePtr master,
                          const uint32_t instanceID = CO_INSTANCE_ALL ) override;
     /**
      * Unmap a mapped object.
