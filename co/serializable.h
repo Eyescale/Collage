@@ -116,10 +116,10 @@ protected:
     /** @sa Object::notifyAttached() */
     CO_API void notifyAttached() override;
 
-    void getInstanceData( co::DataOStream& os ) final
+    void getInstanceData( co::DataOStream& os ) override
         { serialize( os, DIRTY_ALL ); }
 
-    CO_API void applyInstanceData( co::DataIStream& is ) final;
+    CO_API void applyInstanceData( co::DataIStream& is ) override;
 
     CO_API void pack( co::DataOStream& os ) final;
     CO_API void unpack( co::DataIStream& is ) final;
