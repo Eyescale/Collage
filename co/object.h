@@ -288,7 +288,7 @@ public:
      * @param os The output stream.
      * @version 1.0
      */
-    virtual void getInstanceData( DataOStream& os ) = 0;
+    virtual void getInstanceData( DataOStream& os LB_UNUSED ) {}
 
     /**
      * Deserialize the instance data.
@@ -299,7 +299,7 @@ public:
      * @param is the input stream.
      * @version 1.0
      */
-    virtual void applyInstanceData( DataIStream& is ) = 0;
+    virtual void applyInstanceData( DataIStream& is LB_UNUSED ) {}
 
     /**
      * Serialize the modifications since the last call to commit().

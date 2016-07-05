@@ -20,7 +20,7 @@
 #ifndef CO_DISTRIBUTABLE_H
 #define CO_DISTRIBUTABLE_H
 
-#include <co/object.h>      // base class
+#include <co/object.h>      // default base class
 #include <co/dataIStream.h> // used inline
 #include <co/dataOStream.h> // used inline
 #include <servus/serializable.h> //used inline
@@ -36,43 +36,50 @@ namespace co
  * call an abstract change notification method "virtual void notifyChanged() =
  * 0;" (Zerobuf does this).
  */
-template< class T > class Distributable : public T, public Object
+template< class T, class S = Object, typename... Args > class Distributable : public T, public S
 {
 public:
     /** Construct a new distributable object. @version 1.4 */
-    Distributable() : T(), Object(), _dirty( false ) {}
+    Distributable( Args... args ) : T(), S( args... ), _dirty( false ) {}
 
     /** Copy-construct a distributable object. @version 1.4 */
     Distributable( const Distributable& rhs )
-        : T( rhs ), Object( rhs ), _dirty( false ) {}
+        : T( rhs ), S( rhs ), _dirty( false ) {}
 
     virtual ~Distributable() {}
 
     /** @sa Object::dirty() */
-    bool isDirty() const final { return _dirty; }
+    bool isDirty() const final { return S::isDirty() || _dirty; }
 
     /** @sa Object::commit() */
     uint128_t commit( const uint32_t incarnation = CO_COMMIT_NEXT ) final
     {
-        const uint128_t& version = co::Object::commit( incarnation );
+        const uint128_t& version = S::commit( incarnation );
         _dirty = false;
         return version;
     }
 
     /** Call whenever the object has been modified so it can be distributed */
-    void notifyChanged() final { _dirty = true; }
+    void notifyChanged() override
+    {
+        T::notifyChanged();
+        if( S::isMaster( ))
+            _dirty = true;
+    }
 
 private:
-    ChangeType getChangeType() const final { return INSTANCE; }
+    typename S::ChangeType getChangeType() const final { return S::INSTANCE; }
 
-    void getInstanceData( co::DataOStream& os ) final
+    void getInstanceData( co::DataOStream& os ) override
     {
+        S::getInstanceData( os );
         const auto& data = T::toBinary();
         os << data.size << Array< const void >( data.ptr.get(), data.size );
     }
 
-    void applyInstanceData( co::DataIStream& is ) final
+    void applyInstanceData( co::DataIStream& is ) override
     {
+        S::applyInstanceData( is );
         const size_t size = is.read< size_t >();
         T::fromBinary( is.getRemainingBuffer( size ), size );
     }
