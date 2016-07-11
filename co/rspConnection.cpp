@@ -265,7 +265,7 @@ bool RSPConnection::listen()
             return false;
 
         const ip::address ifAddr( ip::udp::endpoint( *interfaceIP ).address( ));
-        LBINFO << "Joining " << mcAddr << " on " << ifAddr << std::endl;
+        LBDEBUG << "Joining " << mcAddr << " on " << ifAddr << std::endl;
 
         _read->set_option( ip::multicast::join_group( mcAddr.to_v4(),
                                                       ifAddr.to_v4( )));
@@ -329,7 +329,7 @@ ConnectionPtr RSPConnection::acceptSync()
     RSPConnectionPtr newConnection = _newChildren.back();
     _newChildren.pop_back();
 
-    LBINFO << _id << " accepted RSP connection " << newConnection->_id
+    LBDEBUG << _id << " accepted RSP connection " << newConnection->_id
            << std::endl;
 
     lunchbox::ScopedWrite mutex2( _mutexEvent );
@@ -413,7 +413,7 @@ void RSPConnection::Thread::run()
 {
     _connection->_runThread();
     _connection = 0;
-    LBINFO << "Left RSP protocol thread" << std::endl;
+    LBDEBUG << "Left RSP protocol thread" << std::endl;
 }
 
 void RSPConnection::_handleTimeout( const boost::system::error_code& error )
@@ -460,7 +460,7 @@ void RSPConnection::_handleInitTimeout( )
     else
     {
         _setState( STATE_LISTENING );
-        LBINFO << "RSP connection " << _id << " listening" << std::endl;
+        LBDEBUG << "RSP connection " << _id << " listening" << std::endl;
         _timeouts = 0;
         _ioService.stop(); // thread initialized, run restarts
     }
@@ -1515,7 +1515,7 @@ bool RSPConnection::_addConnection( const uint16_t id, const uint16_t sequence )
     if( _findConnection( id ))
         return false;
 
-    LBINFO << "add connection " << id << std::endl;
+    LBDEBUG << "add connection " << id << std::endl;
     RSPConnectionPtr connection = new RSPConnection();
     connection->_id = id;
     connection->_parent = this;
@@ -1545,7 +1545,7 @@ bool RSPConnection::_addConnection( const uint16_t id, const uint16_t sequence )
 
 void RSPConnection::_removeConnection( const uint16_t id )
 {
-    LBINFO << "remove connection " << id << std::endl;
+    LBDEBUG << "remove connection " << id << std::endl;
     if( id == _id )
         return;
 

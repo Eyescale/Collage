@@ -668,7 +668,7 @@ bool SocketConnection::listen()
         return false;
     }
     else if( address.sin_port == 0 )
-        LBINFO << "Bound to port " << _getPort() << std::endl;
+        LBDEBUG << "Bound to port " << _getPort() << std::endl;
 
     const bool listening = (::listen( _readFD, SOMAXCONN ) == 0);
 
