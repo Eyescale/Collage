@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2006-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2006-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -29,73 +29,73 @@ namespace co
 {
 namespace detail { class Dispatcher; }
 
+/**
+ * A class providing command dispatch functionality to networked objects.
+ *
+ * Command dispatch in performed through a command queue and command handler
+ * table.
+ */
+class Dispatcher
+{
+public:
+    /** The signature of the base Dispatcher callback. @version 1.0 */
+    typedef CommandFunc< Dispatcher > Func;
+
+    /** @internal NOP assignment operator. */
+    Dispatcher& operator = ( const Dispatcher& ) { return *this; }
+
     /**
-     * A class providing command dispatch functionality to networked objects.
+     * Register a command member function for a command.
      *
-     * Command dispatch in performed through a command queue and command handler
-     * table.
+     * If the destination queue is 0, the command function is invoked directly
+     * upon dispatch, otherwise it is pushed to the given queue and invoked
+     * during the processing of the command queue.
+     *
+     * @param command the command.
+     * @param func the functor to handle the command.
+     * @param queue the queue to which the the command is dispatched
+     * @version 1.0
      */
-    class Dispatcher
-    {
-    public:
-        /** The signature of the base Dispatcher callback. @version 1.0 */
-        typedef CommandFunc< Dispatcher > Func;
+    template< typename T > void
+    registerCommand( const uint32_t command, const CommandFunc< T >& func,
+                     CommandQueue* queue );
 
-        /** @internal NOP assignment operator. */
-        Dispatcher& operator = ( const Dispatcher& ) { return *this; }
+    /**
+     * Dispatch a command from the receiver thread to the registered queue.
+     *
+     * @param command the command.
+     * @return true if the command was dispatched, false if not.
+     * @sa registerCommand
+     * @version 1.0
+     */
+    CO_API virtual bool dispatchCommand( ICommand& command );
 
-        /**
-         * Register a command member function for a command.
-         *
-         * If the destination queue is 0, the command function is invoked
-         * directly upon dispatch, otherwise it is pushed to the given queue and
-         * invoked during the processing of the command queue.
-         *
-         * @param command the command.
-         * @param func the functor to handle the command.
-         * @param queue the queue to which the the command is dispatched
-         * @version 1.0
-         */
-        template< typename T > void
-        registerCommand( const uint32_t command, const CommandFunc< T >& func,
-                         CommandQueue* queue );
+protected:
+    CO_API Dispatcher();
+    CO_API Dispatcher( const Dispatcher& from );
+    CO_API virtual ~Dispatcher();
 
-        /**
-         * Dispatch a command from the receiver thread to the registered queue.
-         *
-         * @param command the command.
-         * @return true if the command was dispatched, false if not.
-         * @sa registerCommand
-         * @version 1.0
-         */
-        CO_API virtual bool dispatchCommand( ICommand& command );
+    /**
+     * The default handler for handling commands.
+     *
+     * @param command the command
+     * @return false
+     */
+    CO_API bool _cmdUnknown( ICommand& command );
 
-    protected:
-        CO_API Dispatcher();
-        CO_API Dispatcher( const Dispatcher& from );
-        CO_API virtual ~Dispatcher();
+private:
+    detail::Dispatcher* const _impl;
 
-        /**
-         * The default handler for handling commands.
-         *
-         * @param command the command
-         * @return false
-         */
-        CO_API bool _cmdUnknown( ICommand& command );
+    CO_API void _registerCommand( const uint32_t command,
+                                  const Func& func, CommandQueue* queue );
+};
 
-    private:
-        detail::Dispatcher* const _impl;
-
-        CO_API void _registerCommand( const uint32_t command,
-                                      const Func& func, CommandQueue* queue );
-    };
-
-    template< typename T >
-    void Dispatcher::registerCommand( const uint32_t command,
-                                      const CommandFunc< T >& func,
-                                      CommandQueue* queue )
-    {
-        _registerCommand( command, Dispatcher::Func( func ), queue );
-    }
+template< typename T >
+void Dispatcher::registerCommand( const uint32_t command,
+                                  const CommandFunc< T >& func,
+                                  CommandQueue* queue )
+{
+    _registerCommand( command, Dispatcher::Func( func ), queue );
+}
 }
 #endif // CO_DISPATCHER_H
