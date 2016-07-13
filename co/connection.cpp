@@ -44,30 +44,7 @@
 #include <lunchbox/scopedMutex.h>
 #include <lunchbox/stdExt.h>
 
-//#define STATISTICS
-#ifdef STATISTICS
-typedef std::map< uint64_t, size_t > Histogram;
-typedef Histogram::const_iterator HistogramCIter;
-lunchbox::Lockable< Histogram, lunchbox::SpinLock > _histogram;
-
-#  define ADD_STATISTIC( x )                            \
-    {                                                   \
-        lunchbox::ScopedFastWrite mutex( _histogram );  \
-        ++(*_histogram)[ x ];                           \
-    }
-#  define DUMP_STATISTIC                                                \
-    {                                                                   \
-        lunchbox::ScopedFastRead mutex( _histogram );                   \
-        LBINFO << lunchbox::disableFlush << lunchbox::disableHeader;    \
-        for( HistogramCIter i=_histogram->begin(); i!=_histogram->end(); ++i) \
-            LBINFO << i->first << ", " << i->second << std::endl;       \
-        LBINFO << lunchbox::enableHeader << lunchbox::enableFlush <<std::endl; \
-    }
-#else
-#  define ADD_STATISTIC( x )
-#  define DUMP_STATISTIC
-#endif
-
+#define STATISTICS
 namespace co
 {
 namespace detail
@@ -87,10 +64,15 @@ public:
     /** The listeners on state changes */
     ConnectionListeners listeners;
 
+    uint64_t outBytes; //!< Statistic: written bytes
+    uint64_t inBytes; //!< Statistic: read bytes
+
     Connection()
             : state( co::Connection::STATE_CLOSED )
             , description( new ConnectionDescription )
             , bytes( 0 )
+            , outBytes( 0 )
+            , inBytes( 0 )
     {
         description->type = CONNECTIONTYPE_NONE;
     }
@@ -124,9 +106,12 @@ Connection::Connection()
 
 Connection::~Connection()
 {
-    delete _impl;
     LBVERB << "Delete Connection @" << (void*)this << std::endl;
-    DUMP_STATISTIC;
+#ifdef STATISTICS
+    LBDEBUG << *this << ": " << (_impl->outBytes >> 20) << " MB out, "
+            << (_impl->inBytes >> 20) << " MB in" << std::endl;
+#endif
+    delete _impl;
 }
 
 bool Connection::operator == ( const Connection& rhs ) const
@@ -264,6 +249,9 @@ bool Connection::recvSync( BufferPtr& outBuffer, const bool block )
         return false;
     LBASSERTINFO( bytes < LB_BIT48,
                   "Out-of-sync network stream: read size " << bytes << "?" );
+#ifdef STATISTICS
+    _impl->inBytes += bytes;
+#endif
 
     // 'Iterators' for receive loop
     uint8_t* ptr = outBuffer->getData() + outBuffer->getSize();
@@ -348,7 +336,9 @@ BufferPtr Connection::resetRecvData()
 bool Connection::send( const void* buffer, const uint64_t bytes,
                        const bool isLocked )
 {
-    ADD_STATISTIC( bytes );
+#ifdef STATISTICS
+    _impl->outBytes += bytes;
+#endif
     LBASSERT( bytes > 0 );
     if( bytes == 0 )
         return true;

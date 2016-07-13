@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2014, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2012-2016, Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -86,16 +86,16 @@ public:
      * given object.
      *
      * @param object The local object instance to synchronize.
-     * @param master The node where the synchronizing object is attached.
      * @param id the object identifier.
+     * @param master The node where the synchronizing object is attached.
      * @param instanceID the instance identifier of the synchronizing
      *                   object.
      * @return A lunchbox::Future which will deliver the success status of
      *         the operation on evaluation.
      * @version 1.1.1
      */
-    virtual f_bool_t syncObject( Object* object, NodePtr master,
-                                 const uint128_t& id,
+    virtual f_bool_t syncObject( Object* object, const uint128_t& id,
+                                 NodePtr master,
                                  const uint32_t instanceID=CO_INSTANCE_ALL) = 0;
 protected:
     /** Construct a new object handler. @version 1.0 */

@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -54,10 +54,10 @@ public:
 
     bool isMaster() const override { return true; }
     uint32_t getMasterInstanceID() const override
-    { LBDONTCALL; return CO_INSTANCE_INVALID; }
+        { LBDONTCALL; return CO_INSTANCE_INVALID; }
 
     bool addSlave( const MasterCMCommand& command ) override
-    { return ObjectCM::_addSlave( command, VERSION_FIRST ); }
+        { return ObjectCM::_addSlave( command, VERSION_FIRST ); }
     void removeSlaves( NodePtr ) override { /* NOP */}
 };
 }

@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -423,7 +423,7 @@ public:
     void transfer( Object* from );
 
     void applyMapData( const uint128_t& version ); //!< @internal
-    void sendInstanceData( Nodes& nodes ); //!< @internal
+    void sendInstanceData( const Nodes& nodes ); //!< @internal
     //@}
 
 protected:

@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -27,6 +27,14 @@
 
 #include <lunchbox/scopedMutex.h>
 #include <lunchbox/spinLock.h>
+
+#ifdef _MSC_VER
+#  include <direct.h>
+#  define getcwd _getcwd
+#endif
+#ifndef MAXPATHLEN
+#  define MAXPATHLEN 1024
+#endif
 
 namespace co
 {
@@ -76,6 +84,9 @@ public:
      * outMulticast.
      */
     MCDatas multicasts;
+
+    /** The host name used to launch the remote node process */
+    std::string hostname;
 
     /** The list of descriptions on how this node is reachable. */
     lunchbox::Lockable< ConnectionDescriptions, lunchbox::SpinLock >
@@ -152,7 +163,7 @@ ConnectionPtr Node::getMulticast()
     NodePtr node = data.node;
 
     // prime multicast connections on peers
-    LBINFO << "Announcing id " << node->getNodeID() << " to multicast group "
+    LBDEBUG << "Announcing id " << node->getNodeID() << " to multicast group "
            << data.connection->getDescription() << std::endl;
 
 #ifdef COLLAGE_BIGENDIAN
@@ -337,6 +348,31 @@ ConnectionPtr Node::_getMulticast() const
     return _impl->outMulticast.data;
 }
 
+void Node::setHostname( const std::string& host )
+{
+    _impl->hostname = host;
+}
+
+const std::string& Node::getHostname() const
+{
+    return _impl->hostname;
+}
+
+std::string Node::getWorkDir() const
+{
+    char cwd[MAXPATHLEN];
+    return getcwd( cwd, MAXPATHLEN );
+}
+
+std::string Node::getLaunchQuote() const
+{
+#ifdef WIN32
+    return "\"";
+#else
+    return "\'";
+#endif
+}
+
 OCommand Node::send( const uint32_t cmd, const bool multicast )
 {
     ConnectionPtr connection = _getConnection( multicast );
@@ -429,8 +465,8 @@ void Node::_connectMulticast( NodePtr node )
                 _impl->outMulticast.data->getDescription() == description )
             {
                 node->_impl->outMulticast.data = _impl->outMulticast.data;
-                LBINFO << "Using " << description << " as multicast group for "
-                       << node->getNodeID() << std::endl;
+                LBDEBUG << "Using " << description << " as multicast group for "
+                        << node->getNodeID() << std::endl;
             }
             // find unused multicast connection to node
             else for( MCDatas::const_iterator k = _impl->multicasts.begin();
@@ -443,8 +479,8 @@ void Node::_connectMulticast( NodePtr node )
                     continue;
 
                 node->_impl->multicasts.push_back( data );
-                LBINFO << "Adding " << dataDesc << " as multicast group for "
-                       << node->getNodeID() << std::endl;
+                LBDEBUG << "Adding " << dataDesc << " as multicast group for "
+                        << node->getNodeID() << std::endl;
             }
         }
     }

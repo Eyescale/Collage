@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -61,7 +61,7 @@ FullMasterCM::~FullMasterCM()
     _instanceDataCache.clear();
 }
 
-void FullMasterCM::sendInstanceData( Nodes& nodes )
+void FullMasterCM::sendInstanceData( const Nodes& nodes )
 {
     LB_TS_THREAD( _cmdThread );
     Mutex mutex( _slaves );

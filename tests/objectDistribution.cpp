@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2015, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2016, Stefan Eilemann <eile@eyescale.ch>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -139,8 +139,8 @@ int main( int argc, char **argv )
         TEST( object.nSync == 0 );
         TEST( server->object->nSync == 1 );
 
-        TESTINFO( client->syncObject( server->object, serverProxy,
-                                      object.getID( )),
+        TESTINFO( client->syncObject( server->object, object.getID(),
+                                      serverProxy ),
                   "type " << type );
         TEST( object.nSync == 0 );
         TEST( server->object->nSync == 2 );

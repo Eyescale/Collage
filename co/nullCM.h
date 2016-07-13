@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -25,38 +25,37 @@
 
 namespace co
 {
-    class Node;
+class Node;
 
-    /**
-     * The NOP object change manager for unmapped objects.
-     * @internal
-     */
-    class NullCM : public ObjectCM
-    {
-    public:
-        NullCM() : ObjectCM( 0 ) {}
-        virtual ~NullCM() {}
+/**
+ * The NOP object change manager for unmapped objects.
+ * @internal
+ */
+class NullCM : public ObjectCM
+{
+public:
+    NullCM() : ObjectCM( 0 ) {}
+    virtual ~NullCM() {}
 
-        void init() override {}
+    void init() override {}
 
-        void push( const uint128_t&, const uint128_t&,
-                   const Nodes& ) override { LBDONTCALL; }
-        bool sendSync( const MasterCMCommand& ) override
-            { LBDONTCALL; return false; }
+    void push( const uint128_t&, const uint128_t&,
+               const Nodes& ) override { LBDONTCALL; }
+    bool sendSync( const MasterCMCommand& ) override
+        { LBDONTCALL; return false; }
 
-        uint128_t getHeadVersion() const override
-            { return VERSION_NONE; }
-        uint128_t getVersion() const override { return VERSION_NONE; }
-        bool isMaster() const override { return false; }
-        uint32_t getMasterInstanceID() const override
-            { LBDONTCALL; return CO_INSTANCE_INVALID; }
+    uint128_t getHeadVersion() const override { return VERSION_NONE; }
+    uint128_t getVersion() const override { return VERSION_NONE; }
+    bool isMaster() const override { return false; }
+    uint32_t getMasterInstanceID() const override
+        { LBDONTCALL; return CO_INSTANCE_INVALID; }
 
-        bool addSlave( const MasterCMCommand& ) override
-            { LBDONTCALL; return false; }
-        void removeSlaves( NodePtr ) override { LBDONTCALL; }
+    bool addSlave( const MasterCMCommand& ) override
+        { LBDONTCALL; return false; }
+    void removeSlaves( NodePtr ) override { LBDONTCALL; }
 
-    private:
-    };
+private:
+};
 }
 
 #endif // CO_NULLCM_H

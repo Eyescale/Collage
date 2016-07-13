@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
- *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -174,6 +174,34 @@ public:
     CO_API virtual bool disconnect( NodePtr node );
     //@}
 
+    /** @name Launching a remote node */
+    //@{
+    /**
+     * Launch a remote process using the given command.
+     *
+     * The launched node will automatically connect with this node, if it passes
+     * the given options to its initLocal().
+     *
+     * The following markers are replaced in the command:
+     * * %h: Node::getHostname()
+     * * %n: Node identifier in string representation
+     * * %d: Node::getWorkDir()
+     * * %q: Node::getLaunchQuote()
+     * * %o: Options needed by remote initLocal() to connect this node. If not
+     *       given, options are appended at the end of the given command.
+     *
+     * @return true if the launch process execution was successful.
+     */
+    CO_API bool launch( NodePtr node, const std::string& command );
+
+    /**
+     * Wait for a launched node to connect.
+     *
+     * @return the remote node handle, or 0 on timeout.
+     */
+    CO_API NodePtr syncLaunch( const uint128_t& nodeID, int64_t timeout );
+    //@}
+
     /** @name Object Registry */
     //@{
     /**
@@ -290,8 +318,8 @@ public:
      *         the operation on evaluation.
      * @version 1.1.1
      */
-    CO_API f_bool_t syncObject( Object* object, NodePtr master,
-                                const uint128_t& id,
+    CO_API f_bool_t syncObject( Object* object, const uint128_t& id,
+                                NodePtr master,
                          const uint32_t instanceID = CO_INSTANCE_ALL ) override;
     /**
      * Unmap a mapped object.
@@ -412,8 +440,8 @@ public:
      */
     CO_API NodePtr getNode( const NodeID& id ) const;
 
-    /** Assemble a vector of the currently connected nodes. @version 1.0 */
-    CO_API void getNodes( Nodes& nodes, const bool addSelf = true ) const;
+    /** @return a vector of the currently connected nodes. @version 1.0 */
+    CO_API Nodes getNodes( const bool addSelf = true ) const;
 
     /** Return the command queue to the command thread. @version 1.0 */
     CO_API CommandQueue* getCommandThreadQueue();
@@ -567,6 +595,8 @@ private:
     NodePtr _connect( const NodeID& nodeID, NodePtr peer );
     NodePtr _connectFromZeroconf( const NodeID& nodeID );
     bool _connectSelf();
+
+    bool _setupPeer( const std::string& setupOpts );
 
     void _handleConnect();
     void _handleDisconnect();

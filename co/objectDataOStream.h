@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -26,30 +26,30 @@
 
 namespace co
 {
-    /** The DataOStream for object data. */
-    class ObjectDataOStream : public DataOStream
-    {
-    public:
-        explicit ObjectDataOStream( const ObjectCM* cm );
-        virtual ~ObjectDataOStream(){}
+/** The DataOStream for object data. */
+class ObjectDataOStream : public DataOStream
+{
+public:
+    explicit ObjectDataOStream( const ObjectCM* cm );
+    virtual ~ObjectDataOStream(){}
 
-        void reset() override;
+    void reset() override;
 
-        /** Set up commit of the given version to the receivers. */
-        virtual void enableCommit( const uint128_t& version,
-                                   const Nodes& receivers );
+    /** Set up commit of the given version to the receivers. */
+    virtual void enableCommit( const uint128_t& version,
+                               const Nodes& receivers );
 
-        uint128_t getVersion() const { return _version; }
+    uint128_t getVersion() const { return _version; }
 
-    protected:
-        ObjectDataOCommand send( const uint32_t cmd, const uint32_t type,
-                                 const uint32_t instanceID,
-                                 const void* data, const uint64_t size,
-                                 const bool last );
+protected:
+    ObjectDataOCommand send( const uint32_t cmd, const uint32_t type,
+                             const uint32_t instanceID,
+                             const void* data, const uint64_t size,
+                             const bool last );
 
-        const ObjectCM* _cm;
-        uint128_t _version;
-        uint32_t _sequence;
-    };
+    const ObjectCM* _cm;
+    uint128_t _version;
+    uint32_t _sequence;
+};
 }
 #endif //CO_OBJECTDATAOSTREAM_H

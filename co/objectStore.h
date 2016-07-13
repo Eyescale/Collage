@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2015, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Cedric Stalder <cedric.stalder@gmail.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -102,7 +102,7 @@ public:
     bool mapSync( const uint32_t requestID );
 
     /** Synchronize an object. */
-    f_bool_t sync( Object* object, NodePtr master, const uint128_t& id,
+    f_bool_t sync( Object* object, const uint128_t& id, NodePtr master,
                    const uint32_t instanceID );
     /**
      * Unmap a mapped object.
@@ -217,7 +217,7 @@ private:
 
 
     /** Start synchronizing an object. */
-    uint32_t _startSync( Object* object, NodePtr master, const uint128_t& id,
+    uint32_t _startSync( Object* object, const uint128_t& id, NodePtr master,
                          const uint32_t instanceID );
 
     /** Finalize the synchronization of a distributed object. */

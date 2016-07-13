@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
- *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -44,6 +44,7 @@
 #include <lunchbox/clock.h>
 #include <lunchbox/futureFunction.h>
 #include <lunchbox/hash.h>
+#include <lunchbox/launcher.h>
 #include <lunchbox/lockable.h>
 #include <lunchbox/request.h>
 #include <lunchbox/rng.h>
@@ -55,8 +56,10 @@
 #include <boost/lexical_cast.hpp>
 
 #include <list>
-
-namespace bp = boost::posix_time;
+#ifdef _MSC_VER
+#  include <direct.h>  // for chdir
+#  define chdir _chdir
+#endif
 
 namespace co
 {
@@ -275,6 +278,8 @@ LocalNode::~LocalNode( )
 
 bool LocalNode::initLocal( const int argc, char** argv )
 {
+    std::string setupOpts;
+
     // We do not use getopt_long because it really does not work due to the
     // following aspects:
     // - reordering of arguments
@@ -306,7 +311,7 @@ bool LocalNode::initLocal( const int argc, char** argv )
                 LBWARN << "No argument given to --co-listen!" << std::endl;
             }
         }
-        else if ( std::string( "--co-globals" ) == argv[i] )
+        else if( std::string( "--co-globals" ) == argv[i] )
         {
             if( (i+1)<argc && argv[i+1][0] != '-' )
             {
@@ -322,6 +327,16 @@ bool LocalNode::initLocal( const int argc, char** argv )
                 LBWARN << "No argument given to --co-globals!" << std::endl;
             }
         }
+        else if( std::string( "--co-launch" ) == argv[i] )
+        {
+            if( i == argc-1 || argv[i+1][0] == '-' )
+                LBTHROW( std::runtime_error( "Missing options to --co-launch"));
+
+            setupOpts = argv[ ++i ];
+            if( !deserialize( setupOpts ))
+                LBTHROW( std::runtime_error( "Corrupt --co-launch argument" ));
+            LBASSERT( !setupOpts.empty( ));
+        }
     }
 
     if( !listen( ))
@@ -330,6 +345,9 @@ bool LocalNode::initLocal( const int argc, char** argv )
                << std::endl;
         return false;
     }
+
+    if( !setupOpts.empty( ))
+        return _setupPeer( setupOpts );
     return true;
 }
 
@@ -439,11 +457,9 @@ void LocalNode::addListener( ConnectionPtr connection )
 
     // Update everybody's description list of me, add the listener to myself in
     // my handler
-    Nodes nodes;
-    getNodes( nodes );
-
-    for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
-        (*i)->send( CMD_NODE_ADD_LISTENER )
+    const Nodes& nodes = getNodes();
+    for( NodePtr node : nodes )
+        node->send( CMD_NODE_ADD_LISTENER )
             << (uint64_t)(connection.get( ))
             << connection->getDescription()->toString();
 }
@@ -465,12 +481,11 @@ lunchbox::Request< void > LocalNode::_removeListener( ConnectionPtr conn )
 
     conn->ref( this );
     const lunchbox::Request< void > request = registerRequest< void >();
-    Nodes nodes;
-    getNodes( nodes );
 
-    for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
-        (*i)->send( CMD_NODE_REMOVE_LISTENER ) << request << conn.get()
-                                          << conn->getDescription()->toString();
+    const Nodes& nodes = getNodes();
+    for( NodePtr node : nodes )
+        node->send( CMD_NODE_REMOVE_LISTENER )
+            << request << conn.get() << conn->getDescription()->toString();
     return request;
 }
 
@@ -627,13 +642,11 @@ bool LocalNode::pingIdleNodes()
 {
     LBASSERT( !_impl->inReceiverThread( ) );
     const int64_t timeout = Global::getKeepaliveTimeout() / 2;
-    Nodes nodes;
-    getNodes( nodes, false );
+    const Nodes& nodes = getNodes( false );
 
     bool pinged = false;
-    for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
+    for( NodePtr node : nodes )
     {
-        NodePtr node = *i;
         if( getTime64() - node->getLastReceiveTime() > timeout )
         {
             LBINFO << " Ping Node: " <<  node->getNodeID() << " last seen "
@@ -706,10 +719,10 @@ bool LocalNode::mapObjectSync( const uint32_t requestID )
     return _impl->objectStore->mapSync( requestID );
 }
 
-f_bool_t LocalNode::syncObject( Object* object, NodePtr master, const uint128_t& id,
-                               const uint32_t instanceID )
+f_bool_t LocalNode::syncObject( Object* object, const uint128_t& id,
+                                NodePtr master, const uint32_t instanceID )
 {
-    return _impl->objectStore->sync( object, master, id, instanceID );
+    return _impl->objectStore->sync( object, id, master, instanceID );
 }
 
 void LocalNode::unmapObject( Object* object )
@@ -820,38 +833,30 @@ NodePtr LocalNode::connect( const NodeID& nodeID )
     // happen a lot during initialization, and are therefore not time-critical.
     lunchbox::ScopedWrite mutex( _impl->connectLock );
 
-    Nodes nodes;
-    getNodes( nodes );
-
-    for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
+    Nodes nodes = getNodes();
+    for( NodePtr peer : nodes )
     {
-        NodePtr peer = *i;
         if( peer->getNodeID() == nodeID && peer->isReachable( )) // early out
             return peer;
     }
 
     LBDEBUG << "Connecting node " << nodeID << std::endl;
-    for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
+    for( NodePtr peer : nodes )
     {
-        NodePtr peer = *i;
         NodePtr node = _connect( nodeID, peer );
         if( node )
             return node;
     }
-
-    NodePtr node = _connectFromZeroconf( nodeID );
-    if( node )
-        return node;
-
-    // check again if node connected by itself by now
-    nodes.clear();
-    getNodes( nodes );
-    for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
     {
-        node = *i;
-        if( node->getNodeID() == nodeID && node->isReachable( ))
+        NodePtr node = _connectFromZeroconf( nodeID );
+        if( node )
             return node;
     }
+    // check again if node connected by itself by now
+    nodes = getNodes();
+    for( NodePtr node : nodes )
+        if( node->getNodeID() == nodeID && node->isReachable( ))
+            return node;
 
     LBWARN << "Node " << nodeID << " connection failed" << std::endl;
     return 0;
@@ -1090,6 +1095,126 @@ NodePtr LocalNode::connectObjectMaster( const uint128_t& id )
     return 0;
 }
 
+bool LocalNode::launch( NodePtr node, const std::string& command )
+{
+    size_t lastPos = 0;
+    std::string cmd;
+
+    const std::string& quote = node->getLaunchQuote();
+    std::string launchOptions =
+        std::string( " --co-launch " ) + quote + node->serialize() +
+        node->getWorkDir() + CO_SEPARATOR + std::to_string( getType( )) +
+        CO_SEPARATOR + serialize() + quote +
+        " --co-globals " + quote + co::Global::toString() + quote;
+
+    for( size_t percentPos = command.find( '%' );
+         percentPos != std::string::npos;
+         percentPos = command.find( '%', percentPos + 1 ))
+    {
+        std::string replacement;
+        switch( command[percentPos+1] )
+        {
+        case 'h':
+            replacement = node->getHostname();
+            if( replacement.empty( ))
+                replacement = "127.0.0.1";
+            break;
+
+        case 'n':
+            replacement = node->getNodeID().getString();
+            break;
+
+        case 'd':
+            replacement = node->getWorkDir();
+            break;
+
+        case 'q':
+            replacement = quote;
+            break;
+
+        case 'o':
+            replacement = launchOptions;
+            launchOptions.clear();
+            break;
+
+        default:
+            LBWARN << "Unknown token " << command[percentPos+1] << std::endl;
+            replacement = command.substr( percentPos, percentPos+1 );
+        }
+
+        cmd += command.substr( lastPos, percentPos-lastPos ) + replacement;
+        lastPos = percentPos + 2;
+    }
+
+    cmd += command.substr( lastPos ) + launchOptions;
+
+    LBDEBUG << "Launching: " << cmd << std::endl;
+    if( lunchbox::Launcher::run( cmd ))
+        return true;
+
+    LBWARN << "Could not launch node using '" << cmd << "'" << std::endl;
+    return false;
+}
+
+NodePtr LocalNode::syncLaunch( const uint128_t& nodeID, const int64_t timeout )
+{
+    const lunchbox::Clock clock;
+
+    do
+    {
+        co::NodePtr node = getNode( nodeID );
+        if( node && node->isConnected( ))
+            return node;
+
+        lunchbox::sleep( 100 /*ms*/ );
+    }
+    while( timeout == static_cast< int32_t >( LB_TIMEOUT_INDEFINITE ) ||
+           clock.getTime64() < timeout );
+
+    return nullptr;
+}
+
+bool LocalNode::_setupPeer( const std::string& setupOpts )
+{
+    size_t nextPos = setupOpts.find( CO_SEPARATOR );
+    if( nextPos == std::string::npos )
+    {
+        LBERROR << "Could not parse working directory: " << setupOpts
+                << std::endl;
+        return false;
+    }
+
+    const std::string workDir = setupOpts.substr( 0, nextPos );
+    std::string description = setupOpts.substr( nextPos + 1 );
+
+    if( !workDir.empty() && chdir( workDir.c_str( )) == -1 )
+        LBWARN << "Can't change working directory to " << workDir << ": "
+               << lunchbox::sysError << std::endl;
+
+    nextPos = description.find( CO_SEPARATOR );
+    if( nextPos == std::string::npos )
+    {
+        LBERROR << "Could not parse server node type: " << description
+                << " is left from " << setupOpts << std::endl;
+        return false;
+    }
+
+    const std::string nodeType = description.substr( 0, nextPos );
+    description = description.substr( nextPos + 1 );
+
+    co::NodePtr peer = createNode( std::stoi( nodeType ));
+    if( !peer->deserialize( description ))
+        LBWARN << "Can't parse peer data" << std::endl;
+
+    LBASSERTINFO( description.empty(), description );
+    if( !connect( peer ))
+    {
+        LBERROR << "Can't connect peer node using " << *peer << std::endl;
+        return false;
+    }
+    return true;
+}
+
 NodePtr LocalNode::createNode( const uint32_t type )
 {
     LBASSERTINFO( type == NODETYPE_NODE, type );
@@ -1105,8 +1230,9 @@ NodePtr LocalNode::getNode( const NodeID& id ) const
     return i->second;
 }
 
-void LocalNode::getNodes( Nodes& nodes, const bool addSelf ) const
+Nodes LocalNode::getNodes( const bool addSelf ) const
 {
+    Nodes nodes;
     lunchbox::ScopedFastRead mutex( _impl->nodes );
     for( NodeHashCIter i = _impl->nodes->begin(); i != _impl->nodes->end(); ++i)
     {
@@ -1114,6 +1240,7 @@ void LocalNode::getNodes( Nodes& nodes, const bool addSelf ) const
         if( node->isReachable() && ( addSelf || node != this ))
             nodes.push_back( i->second );
     }
+    return nodes;
 }
 
 CommandQueue* LocalNode::getCommandThreadQueue()

@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2010, Cedric Stalder <cedric.stalder@gmail.com>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -192,13 +192,11 @@ NodeID ObjectStore::findMasterNodeID( const uint128_t& identifier )
     LB_TS_NOT_THREAD( _commandThread );
 
     // OPT: look up locally first?
-    Nodes nodes;
-    _localNode->getNodes( nodes );
+    const Nodes& nodes = _localNode->getNodes();
 
     // OPT: send to multiple nodes at once?
-    for( NodesIter i = nodes.begin(); i != nodes.end(); ++i )
+    for( NodePtr node : nodes )
     {
-        NodePtr node = *i;
         lunchbox::Request< NodeID > request =
             _localNode->registerRequest< NodeID >();
 
@@ -453,18 +451,17 @@ bool ObjectStore::mapSync( const uint32_t requestID )
 }
 
 
-f_bool_t ObjectStore::sync( Object* object, NodePtr master, const uint128_t& id,
+f_bool_t ObjectStore::sync( Object* object, const uint128_t& id, NodePtr master,
                             const uint32_t instanceID )
 {
-    const uint32_t request = _startSync( object, master, id, instanceID );
+    const uint32_t request = _startSync( object, id, master, instanceID );
     const FuturebImpl::Func& func = boost::bind( &ObjectStore::_finishSync,
                                                  this, request, object );
     return f_bool_t( new FuturebImpl( func ));
 }
 
-uint32_t ObjectStore::_startSync( Object* object, NodePtr master,
-                                  const uint128_t& id,
-                                  const uint32_t instanceID )
+uint32_t ObjectStore::_startSync( Object* object, const uint128_t& id,
+                                  NodePtr master, const uint32_t instanceID )
 {
     LB_TS_NOT_THREAD( _receiverThread );
     LBLOG( LOG_OBJECTS )
@@ -652,8 +649,7 @@ bool ObjectStore::notifyCommandThreadIdle()
 
     if( item.age > _localNode->getTime64( ))
     {
-        Nodes nodes;
-        _localNode->getNodes( nodes, false );
+        const Nodes& nodes = _localNode->getNodes( false );
         if( nodes.empty( ))
         {
             lunchbox::Thread::yield();
@@ -1072,7 +1068,6 @@ bool ObjectStore::_cmdSync( ICommand& cmd )
     MasterCMCommand command( cmd );
     const uint128_t& id = command.getObjectID();
     LBINFO << command.getNode() << std::endl;
-
     LBLOG( LOG_OBJECTS ) << "Cmd sync object id " << id << "."
                          << command.getInstanceID() << " req "
                          << command.getRequestID() << std::endl;
@@ -1086,9 +1081,8 @@ bool ObjectStore::_cmdSync( ICommand& cmd )
         {
             const Objects& objects = i->second;
 
-            for( ObjectsCIter j = objects.begin(); j != objects.end(); ++j )
+            for( Object* object : objects )
             {
-                Object* object = *j;
                 if( command.getInstanceID() == object->getInstanceID( ))
                 {
                     cm = object->_getChangeManager();
@@ -1254,11 +1248,9 @@ bool ObjectStore::_cmdDisableSendOnRegister( ICommand& command )
     {
         _sendQueue.clear();
 
-        Nodes nodes;
-        _localNode->getNodes( nodes, false );
-        for( NodesCIter i = nodes.begin(); i != nodes.end(); ++i )
+        const Nodes& nodes = _localNode->getNodes( false );
+        for( NodePtr node : nodes )
         {
-            NodePtr node = *i;
             ConnectionPtr multicast = node->getConnection( true );
             ConnectionPtr connection = node->getConnection( false );
             if( multicast )
