@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2009-2014, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2009-2016, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -68,29 +68,35 @@ struct ObjectVersion
 
     /** @return true if both structs contain the same values. @version 1.0 */
     bool operator == ( const ObjectVersion& value ) const
-        {
-            return ( identifier == value.identifier &&
-                     version == value.version );
-        }
+    {
+        return ( identifier == value.identifier && version == value.version );
+    }
 
     /** @return true if both structs have different values. @version 1.0 */
     bool operator != ( const ObjectVersion& value ) const
-        {
-            return ( identifier != value.identifier ||
-                     version != value.version );
-        }
+    {
+        return ( identifier != value.identifier || version != value.version );
+    }
 
     bool operator < ( const ObjectVersion& rhs ) const //!< @internal
-        {
-            return identifier < rhs.identifier ||
-                   ( identifier == rhs.identifier && version < rhs.version );
-        }
+    {
+        return identifier < rhs.identifier ||
+               ( identifier == rhs.identifier && version < rhs.version );
+    }
 
     bool operator > ( const ObjectVersion& rhs ) const //!< @internal
-        {
-            return identifier > rhs.identifier ||
-                   ( identifier == rhs.identifier && version > rhs.version );
-        }
+    {
+        return identifier > rhs.identifier ||
+               ( identifier == rhs.identifier && version > rhs.version );
+    }
+
+    /** @return true if the identifier and version are set. */
+    explicit operator bool() const
+        { return identifier != 0 && version != VERSION_NONE; }
+
+    /** @return true if the identifier or version are not set. */
+    bool operator ! () const
+        { return identifier == 0 || version == VERSION_NONE; }
 
     uint128_t identifier; //!< the object identifier
     uint128_t version; //!< the object version

@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -400,8 +400,8 @@ ConnectionSet::Event ConnectionSet::select( const uint32_t timeout )
 #else
         const int pollTimeout = timeout == LB_TIMEOUT_INDEFINITE ?
                                 -1 : int( timeout );
-        const int ret = poll( _impl->fdSet.getData(), _impl->fdSet.getSize(),
-                              pollTimeout );
+        const int ret = ::poll( _impl->fdSet.getData(), _impl->fdSet.getSize(),
+                                pollTimeout );
 #endif
         switch( ret )
         {
@@ -594,7 +594,7 @@ bool ConnectionSet::_setupFDSet()
     _impl->lock.unset();
 #else // _WIN32
     pollfd fd;
-    fd.events = POLLIN; // | POLLPRI;
+    fd.events = POLLIN;
     fd.revents = 0;
 
     // add self 'connection'
@@ -608,29 +608,26 @@ bool ConnectionSet::_setupFDSet()
 
     // add regular connections
     _impl->lock.set();
-    for( ConnectionsCIter i = _impl->allConnections.begin();
-         i != _impl->allConnections.end(); ++i )
+    for( ConnectionPtr connection : _impl->allConnections )
     {
-        ConnectionPtr connectionPtr = *i;
-        const Connection& connection = *connectionPtr.get();
-        fd.fd = connection.getNotifier();
+        fd.fd = connection->getNotifier();
 
         if( fd.fd <= 0 )
         {
-            LBINFO << "Cannot select connection " << connectionPtr
-                   << ", connection " << typeid( connection ).name()
+            LBINFO << "Cannot select connection " << connection
+                   << ", connection " << lunchbox::className( connection.get( ))
                    << " doesn't have a file descriptor" << std::endl;
-            _impl->connection = connectionPtr;
+            _impl->connection = connection;
             _impl->lock.unset();
             return false;
         }
 
-        LBVERB << "Listening on " << typeid( connection ).name()
-               << " @" << &connection << std::endl;
+        LBVERB << "Listening on " << lunchbox::className( connection.get( ))
+               << std::endl;
 
         _impl->fdSet.append( fd );
 
-        result.connection = connectionPtr.get();
+        result.connection = connection.get();
         _impl->fdSetResult.append( result );
     }
     _impl->lock.unset();
