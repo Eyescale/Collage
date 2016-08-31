@@ -453,6 +453,9 @@ public:
      */
     CO_API bool inCommandThread() const;
 
+    /** @return the non-Collage command line options passed to initLocal(). */
+    CO_API const Strings& getCommandLine() const;
+
     CO_API int64_t getTime64() const; //!< @internal
     CO_API ssize_t getCounter( const Counter counter ) const; //!< @internal
     //@}
