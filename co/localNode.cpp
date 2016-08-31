@@ -206,8 +206,9 @@ public:
 
     lunchbox::Lockable< servus::Servus > service;
 
-    // Performance counters:
-    a_ssize_t counters[ co::LocalNode::COUNTER_ALL ];
+    a_ssize_t counters[ co::LocalNode::COUNTER_ALL ]; //!< Performance counters
+
+    Strings args; //!< Command line arguments for remote node launch()
 };
 }
 
@@ -279,19 +280,22 @@ LocalNode::~LocalNode( )
 bool LocalNode::initLocal( const int argc, char** argv )
 {
     std::string setupOpts;
+    _impl->args.clear();
 
     // We do not use getopt_long because it really does not work due to the
     // following aspects:
     // - reordering of arguments
     // - different behavior of GNU and BSD implementations
     // - incomplete man pages
-    for( int i=1; i<argc; ++i )
+    for( int i = 1; i < argc; ++i )
     {
-        if( std::string( "--eq-listen" ) == argv[i] )
-            LBWARN << "Deprecated --eq-listen, use --co-listen" << std::endl;
         if( std::string( "--eq-listen" ) == argv[i] ||
             std::string( "--co-listen" ) == argv[i] )
         {
+            if( std::string( "--eq-listen" ) == argv[i] )
+                LBWARN << "Deprecated --eq-listen, use --co-listen"
+                       << std::endl;
+
             if( (i+1)<argc && argv[i+1][0] != '-' )
             {
                 std::string data = argv[++i];
@@ -337,6 +341,8 @@ bool LocalNode::initLocal( const int argc, char** argv )
                 LBTHROW( std::runtime_error( "Corrupt --co-launch argument" ));
             LBASSERT( !setupOpts.empty( ));
         }
+        else
+            _impl->args.push_back( argv[ i ]);
     }
 
     if( !listen( ))
@@ -1104,8 +1110,8 @@ bool LocalNode::launch( NodePtr node, const std::string& command )
     std::string launchOptions =
         std::string( " --co-launch " ) + quote + node->serialize() +
         node->getWorkDir() + CO_SEPARATOR + std::to_string( getType( )) +
-        CO_SEPARATOR + serialize() + quote +
-        " --co-globals " + quote + co::Global::toString() + quote;
+        CO_SEPARATOR + serialize() + quote + " --co-globals " + quote +
+        co::Global::toString() + quote;
 
     for( size_t percentPos = command.find( '%' );
          percentPos != std::string::npos;
@@ -1142,7 +1148,7 @@ bool LocalNode::launch( NodePtr node, const std::string& command )
             replacement = command.substr( percentPos, percentPos+1 );
         }
 
-        cmd += command.substr( lastPos, percentPos-lastPos ) + replacement;
+        cmd += command.substr( lastPos, percentPos - lastPos ) + replacement;
         lastPos = percentPos + 2;
     }
 
@@ -1251,6 +1257,11 @@ CommandQueue* LocalNode::getCommandThreadQueue()
 bool LocalNode::inCommandThread() const
 {
     return _impl->commandThread->isCurrent();
+}
+
+const Strings& LocalNode::getCommandLine() const
+{
+    return _impl->args;
 }
 
 int64_t LocalNode::getTime64() const
