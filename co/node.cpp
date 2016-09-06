@@ -25,13 +25,10 @@
 #include "nodeCommand.h"
 #include "oCommand.h"
 
+#include <lunchbox/file.h>
 #include <lunchbox/scopedMutex.h>
 #include <lunchbox/spinLock.h>
 
-#ifdef _MSC_VER
-#  include <direct.h>
-#  define getcwd _getcwd
-#endif
 #ifndef MAXPATHLEN
 #  define MAXPATHLEN 1024
 #endif
@@ -360,8 +357,7 @@ const std::string& Node::getHostname() const
 
 std::string Node::getWorkDir() const
 {
-    char cwd[MAXPATHLEN];
-    return getcwd( cwd, MAXPATHLEN );
+    return lunchbox::getWorkDir();
 }
 
 std::string Node::getLaunchQuote() const
