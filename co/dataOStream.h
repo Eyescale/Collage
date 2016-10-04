@@ -132,6 +132,9 @@ public:
     void serializeChildren( const std::vector< C* >& children );
     //@}
 
+    CO_API static std::ostream& printStatistics( std::ostream& ); //!< @internal
+    CO_API static void clearStatistics(); //!< @internal
+
 protected:
     CO_API DataOStream(); //!< @internal
     explicit DataOStream( DataOStream& rhs );  //!< @internal
@@ -233,8 +236,6 @@ private:
     /** Send the trailing data (command) to the receivers */
     void _sendFooter( const void* buffer, const uint64_t size );
 };
-
-std::ostream& operator << ( std::ostream&, const DataOStream& );
 }
 
 #include "dataOStream.ipp" // template implementation
