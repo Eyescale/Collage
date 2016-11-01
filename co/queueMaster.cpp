@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2011-2014, Stefan Eilemann <eile@eyescale.ch>
- *                    2011, Carsten Rohn <carsten.rohn@rtt.ag>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2011-2016, Stefan Eilemann <eile@eyescale.ch>
+ *                          Carsten Rohn <carsten.rohn@rtt.ag>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -39,8 +39,8 @@ namespace detail
 class ItemBuffer : public lunchbox::Bufferb, public lunchbox::Referenced
 {
 public:
-    explicit ItemBuffer( lunchbox::Bufferb& from )
-        : lunchbox::Bufferb( from )
+    explicit ItemBuffer( lunchbox::Bufferb&& from )
+        : lunchbox::Bufferb( std::move( from ))
         , lunchbox::Referenced()
     {}
 
@@ -139,8 +139,9 @@ QueueItem QueueMaster::push()
 
 void QueueMaster::_addItem( QueueItem& item )
 {
-    detail::ItemBufferPtr newBuffer = new detail::ItemBuffer( item.getBuffer());
+    detail::ItemBufferPtr newBuffer = new detail::ItemBuffer(
+        std::move( item.getBuffer( )));
     _impl->queue.push( newBuffer );
 }
 
-} // co
+}
