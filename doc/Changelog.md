@@ -1,5 +1,12 @@
 # Changelog {#Changelog}
 
+# git master
+
+# Release 1.6 (09-12-2016)
+
+* [192](https://github.com/Eyescale/Collage/pull/192)
+  Add remote launch capability
+
 # Release 1.5 (30-Jul-2016)
 
 * [188](https://github.com/Eyescale/Collage/pull/188)
