@@ -387,7 +387,7 @@ public:
     uint32_t getMasterInstanceID() const;
 
     /** @internal @return the master object instance identifier. */
-    NodePtr getMasterNode();
+    CO_API NodePtr getMasterNode();
 
     /** @internal */
     CO_API void removeSlave( NodePtr node, const uint32_t instanceID );
