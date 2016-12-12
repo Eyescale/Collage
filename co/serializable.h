@@ -77,7 +77,7 @@ protected:
      * need to be transmitted by the overriding method.
      * @version 1.0
      */
-    virtual void serialize( co::DataOStream&, uint64_t ) = 0;
+    virtual void serialize( co::DataOStream&, const uint64_t ) = 0;
 
     /**
      * Worker for unpack() and applyInstanceData().
@@ -89,7 +89,7 @@ protected:
      * @sa serialize()
      * @version 1.0
      */
-    virtual void deserialize( co::DataIStream&, uint64_t ) = 0;
+    virtual void deserialize( co::DataIStream&, const uint64_t ) = 0;
 
     /**
      * The changed parts of the serializable since the last pack().
@@ -105,10 +105,10 @@ protected:
     };
 
     /** Add dirty flags to mark data for distribution. @version 1.0 */
-    CO_API virtual void setDirty( uint64_t bits );
+    CO_API virtual void setDirty( const uint64_t bits );
 
     /** Remove dirty flags to clear data from distribution. @version 1.0 */
-    CO_API virtual void unsetDirty( uint64_t bits );
+    CO_API virtual void unsetDirty( const uint64_t bits );
 
     /** @sa Object::getChangeType() */
     ChangeType getChangeType() const override { return DELTA; }

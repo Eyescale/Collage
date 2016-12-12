@@ -140,7 +140,7 @@ public:
         {
             return 1;
         }
-        return compressor->getCompressedData().size();
+        return uint32_t(compressor->getCompressedData().size( ));
     }
 
     /** Compress data and update the compressor state. */
