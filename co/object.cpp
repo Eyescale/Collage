@@ -37,8 +37,7 @@
 #include "versionedSlaveCM.h"
 
 #include <lunchbox/scopedMutex.h>
-#include <pression/compressor.h>
-#include <pression/plugins/compressor.h>
+#include <pression/data/Registry.h>
 #include <iostream>
 
 namespace co
@@ -344,11 +343,9 @@ void Object::notifyNewHeadVersion( const uint128_t& version LB_UNUSED )
                   lunchbox::className( this ));
 }
 
-uint32_t Object::chooseCompressor() const
+CompressorInfo Object::chooseCompressor() const
 {
-    return pression::Compressor::choose( Global::getPluginRegistry(),
-                                         EQ_COMPRESSOR_DATATYPE_BYTE, 1.f,
-                                         false );
+    return pression::data::Registry::getInstance().choose();
 }
 
 uint32_t Object::getMasterInstanceID() const

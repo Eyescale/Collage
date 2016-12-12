@@ -139,8 +139,8 @@ QueueItem QueueMaster::push()
 
 void QueueMaster::_addItem( QueueItem& item )
 {
-    detail::ItemBufferPtr newBuffer = new detail::ItemBuffer(
-        std::move( item.getBuffer( )));
+    detail::ItemBufferPtr newBuffer =
+        new detail::ItemBuffer( std::move( item.getBuffer( )));
     _impl->queue.push( newBuffer );
 }
 

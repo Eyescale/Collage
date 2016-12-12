@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -207,10 +207,6 @@ void VersionedSlaveCM::applyMapData( const uint128_t& version )
                           is->nRemainingBuffers() << " buffer(s)" );
 
             _releaseStream( is );
-#if 0
-            LBLOG( LOG_OBJECTS ) << "Mapped initial data of " << _object
-                                 << std::endl;
-#endif
             return;
         }
         else
@@ -285,14 +281,8 @@ void VersionedSlaveCM::addInstanceDatas( const ObjectDataIStreamDeque& cache,
             LBASSERT( debugStream->getVersion() == stream->getVersion() + 1);
 #endif
         _queuedVersions.pushFront( new ObjectDataIStream( *stream ));
-#if 0
-        LBLOG( LOG_OBJECTS ) << stream->getVersion() << ' ';
-#endif
     }
 
-#if 0
-    LBLOG( LOG_OBJECTS ) << " back ";
-#endif
     for( ObjectDataIStreams::const_iterator i = tail.begin();
          i != tail.end(); ++i )
     {
@@ -306,13 +296,7 @@ void VersionedSlaveCM::addInstanceDatas( const ObjectDataIStreamDeque& cache,
         }
 #endif
         _queuedVersions.push( new ObjectDataIStream( *stream ));
-#if 0
-        LBLOG( LOG_OBJECTS ) << stream->getVersion() << ' ';
-#endif
     }
-#if 0
-    LBLOG( LOG_OBJECTS ) << std::endl << lunchbox::enableFlush;
-#endif
 }
 
 //---------------------------------------------------------------------------
@@ -332,11 +316,6 @@ bool VersionedSlaveCM::_cmdData( ICommand& cmd )
     if( _currentIStream->isReady( ))
     {
         const uint128_t& version = _currentIStream->getVersion();
-#if 0
-        LBLOG( LOG_OBJECTS ) << "v" << version << ", id " << _object->getID()
-                             << "." << _object->getInstanceID() << " ready"
-                             << std::endl;
-#endif
 #ifndef NDEBUG
         ObjectDataIStream* debugStream = 0;
         _queuedVersions.getBack( debugStream );

@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2006-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2006-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -24,10 +24,11 @@
 #include <co/defines.h>
 #include <lunchbox/refPtr.h>
 #include <lunchbox/types.h>
-#include <pression/types.h>
+#include <pression/data/types.h>
 #include <servus/types.h>
 
 #include <deque>
+#include <memory>
 #include <vector>
 
 namespace co
@@ -153,6 +154,9 @@ typedef std::vector< ObjectVersion > ObjectVersions;
 typedef ObjectVersions::const_iterator ObjectVersionsCIter;
 typedef std::deque< ObjectDataIStream* > ObjectDataIStreamDeque;
 typedef std::vector< ObjectDataIStream* > ObjectDataIStreams;
+
+typedef std::unique_ptr< pression::data::Compressor > CompressorPtr;
+using pression::data::CompressorInfo;
 /** @endcond */
 
 }

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2015, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Cedric Stalder <cedric.stalder@gmail.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -31,11 +31,8 @@
 #include "types.h"
 
 #include <lunchbox/clock.h>
-#include <pression/compressor.h>
-#include <pression/compressorResult.h>
-#include <pression/plugins/compressor.h>
-
-#include  <boost/foreach.hpp>
+#include <pression/data/Compressor.h>
+#include <pression/data/CompressorInfo.h>
 
 namespace co
 {
@@ -66,8 +63,6 @@ namespace detail
 class DataOStream
 {
 public:
-    CompressorState state;
-
     /** The buffer used for saving and buffering */
     lunchbox::Bufferb buffer;
 
@@ -83,8 +78,9 @@ public:
     /** Locked connections to the receivers, if _enabled */
     Connections connections;
 
-    /** The compressor instance. */
-    pression::Compressor compressor;
+    CompressorState state; //!< State of compression
+    CompressorPtr compressor; //!< The compressor instance.
+    CompressorInfo compressorInfo; //!< Information on the compr.
 
     /** The output stream is enabled for writing */
     bool enabled;
@@ -96,65 +92,78 @@ public:
     bool save;
 
     DataOStream()
-        : state( STATE_UNCOMPRESSED )
-        , bufferStart( 0 )
+        : bufferStart( 0 )
         , dataSize( 0 )
         , compressedDataSize( 0 )
+        , state( STATE_UNCOMPRESSED )
         , enabled( false )
         , dataSent( false )
         , save( false )
     {}
 
     DataOStream( const DataOStream& rhs )
-        : state( rhs.state )
-        , bufferStart( rhs.bufferStart )
+        : bufferStart( rhs.bufferStart )
         , dataSize( rhs.dataSize )
         , compressedDataSize( rhs.compressedDataSize )
+        , state( rhs.state )
         , enabled( rhs.enabled )
         , dataSent( rhs.dataSent )
         , save( rhs.save )
     {}
 
-    uint32_t getCompressor() const
+    std::string getCompressorName() const
     {
-        if( state == STATE_UNCOMPRESSED || state == STATE_UNCOMPRESSIBLE )
-            return EQ_COMPRESSOR_NONE;
-        return compressor.getInfo().name;
+        if( state == STATE_UNCOMPRESSED || state == STATE_UNCOMPRESSIBLE ||
+            !compressor )
+        {
+            return std::string();
+        }
+        return compressorInfo.name;
+    }
+
+    bool initCompressor()
+    {
+        if( compressorInfo.name.empty( ))
+            return false;
+        if( compressor )
+            return true;
+
+        compressor.reset( compressorInfo.create( ));
+        LBLOG( LOG_OBJECTS ) << "Allocated " << compressorInfo.name <<std::endl;
+        return compressor != nullptr;
     }
 
     uint32_t getNumChunks() const
     {
-        if( state == STATE_UNCOMPRESSED || state == STATE_UNCOMPRESSIBLE )
+        if( state == STATE_UNCOMPRESSED || state == STATE_UNCOMPRESSIBLE ||
+            !compressor )
+        {
             return 1;
-        return uint32_t( compressor.getResult().chunks.size( ));
+        }
+        return compressor->getCompressedData().size();
     }
 
-
     /** Compress data and update the compressor state. */
-    void compress( void* src, const uint64_t size, const CompressorState result)
+    void compress( const uint8_t* src, const uint64_t size,
+                   const CompressorState result )
     {
         if( state == result || state == STATE_UNCOMPRESSIBLE )
             return;
         const uint64_t threshold =
            uint64_t( Global::getIAttribute( Global::IATTR_OBJECT_COMPRESSION ));
 
-        if( !compressor.isGood() || size <= threshold )
+        if( size <= threshold || !initCompressor( ))
         {
             state = STATE_UNCOMPRESSED;
             return;
         }
 
-        const uint64_t inDims[2] = { 0, size };
-
 #ifdef CO_INSTRUMENT_DATAOSTREAM
         lunchbox::Clock clock;
 #endif
-        compressor.compress( src, inDims );
-
-        const pression::CompressorResult &compressorResult =
-            compressor.getResult();
-        LBASSERT( !compressorResult.chunks.empty() );
-        compressedDataSize = compressorResult.getSize();
+        const auto& output = compressor->compress( src, size );
+        LBASSERT( !output.empty( ));
+        compressedDataSize = pression::data::getDataSize( output );
 
 #ifdef CO_INSTRUMENT_DATAOSTREAM
         compressionTime += size_t( clock.getTimef() * 1000.f );
@@ -167,7 +176,7 @@ public:
         {
             state = STATE_UNCOMPRESSIBLE;
 #ifndef CO_AGGRESSIVE_CACHING
-            compressor.realloc();
+            compressor.reset( compressorInfo.create( ));
 
             if( result == STATE_COMPLETE )
                 buffer.pack();
@@ -210,10 +219,12 @@ DataOStream::~DataOStream()
     delete _impl;
 }
 
-void DataOStream::_initCompressor( const uint32_t name )
+void DataOStream::_setCompressor( const CompressorInfo& info )
 {
-    LBCHECK( _impl->compressor.setup( Global::getPluginRegistry(), name ));
-    LB_TS_RESET( _impl->compressor._thread );
+    if( info == _impl->compressorInfo )
+        return;
+    _impl->compressorInfo = info;
+    _impl->compressor.reset( nullptr );
 }
 
 void DataOStream::_enable()
@@ -279,7 +290,7 @@ void DataOStream::disable()
 
     if( _impl->dataSent && !_impl->connections.empty( ))
     {
-        void* ptr = _impl->buffer.getData() + _impl->bufferStart;
+        const uint8_t* ptr = _impl->buffer.getData() + _impl->bufferStart;
         const uint64_t size = _impl->buffer.getSize() - _impl->bufferStart;
 
         if( size == 0 && _impl->state == STATE_PARTIAL )
@@ -350,7 +361,7 @@ void DataOStream::flush( const bool last )
     LBASSERT( _impl->enabled );
     if( !_impl->connections.empty( ))
     {
-        void* ptr = _impl->buffer.getData() + _impl->bufferStart;
+        const uint8_t* ptr = _impl->buffer.getData() + _impl->bufferStart;
         const uint64_t size = _impl->buffer.getSize() - _impl->bufferStart;
 
         _impl->state = STATE_UNCOMPRESSED;
@@ -385,24 +396,25 @@ void DataOStream::_resetBuffer()
     }
 }
 
-uint64_t DataOStream::_getCompressedData( void** chunks, uint64_t* chunkSizes )
+uint64_t DataOStream::_getCompressedData( const uint8_t** chunks,
+                                          uint64_t* chunkSizes )
     const
 {
     LBASSERT( _impl->state != STATE_UNCOMPRESSED &&
-              _impl->state != STATE_UNCOMPRESSIBLE );
+              _impl->state != STATE_UNCOMPRESSIBLE && _impl->compressor );
 
-    const pression::CompressorResult &result = _impl->compressor.getResult();
-    LBASSERT( !result.chunks.empty() );
+    const auto& result = _impl->compressor->getCompressedData();
+    LBASSERT( !result.empty() );
     size_t totalDataSize = 0;
-    for( size_t i = 0; i != result.chunks.size(); ++i )
+    for( size_t i = 0; i != result.size(); ++i )
     {
-        chunks[i] = result.chunks[i].data;
-        const size_t dataSize = result.chunks[i].getNumBytes();
+        chunks[i] = result[i].getData();
+        const size_t dataSize = result[i].getSize();
         chunkSizes[i] = dataSize;
         totalDataSize += dataSize;
     }
 
-    LBASSERT( totalDataSize == result.getSize( ));
+    LBASSERT( totalDataSize == pression::data::getDataSize( result ));
     return totalDataSize;
 }
 
@@ -413,16 +425,15 @@ lunchbox::Bufferb& DataOStream::getBuffer()
 
 DataOStream& DataOStream::streamDataHeader( DataOStream& os )
 {
-    os << _impl->getCompressor() << _impl->getNumChunks();
-    return os;
+    return os << _impl->getCompressorName() << _impl->getNumChunks();
 }
 
 void DataOStream::sendBody( ConnectionPtr connection, const void* data,
                             const uint64_t size )
 {
 
-    const uint32_t compressor = _impl->getCompressor();
-    if( compressor == EQ_COMPRESSOR_NONE )
+    const auto& compressorName = _impl->getCompressorName();
+    if( compressorName.empty( ))
     {
 #ifdef CO_INSTRUMENT_DATAOSTREAM
         nBytesSent += size;
@@ -432,10 +443,10 @@ void DataOStream::sendBody( ConnectionPtr connection, const void* data,
         return;
     }
 
-    const size_t nChunks = _impl->compressor.getResult().chunks.size();
+    const size_t nChunks = _impl->compressor->getCompressedData().size();
     uint64_t* chunkSizes = static_cast< uint64_t* >
                                ( alloca (nChunks * sizeof( uint64_t )));
-    void** chunks = static_cast< void ** >
+    const uint8_t** chunks = static_cast< const uint8_t ** >
                                   ( alloca( nChunks * sizeof( void* )));
 
 #ifdef CO_INSTRUMENT_DATAOSTREAM
@@ -465,25 +476,28 @@ void DataOStream::sendBody( ConnectionPtr connection, const void* data,
 
 uint64_t DataOStream::getCompressedDataSize() const
 {
-    if( _impl->getCompressor() == EQ_COMPRESSOR_NONE )
+    if( _impl->state == STATE_UNCOMPRESSED ||
+        _impl->state == STATE_UNCOMPRESSIBLE || !_impl->compressor )
+    {
         return 0;
-    return _impl->compressedDataSize
-            + _impl->getNumChunks() * sizeof( uint64_t );
+    }
+    return _impl->compressedDataSize +
+           _impl->getNumChunks() * sizeof( uint64_t );
 }
 
 std::ostream& DataOStream::printStatistics( std::ostream& os )
 {
-    os << "DataOStream "
+    return os << "DataOStream "
 #ifdef CO_INSTRUMENT_DATAOSTREAM
-       << "compressed " << nBytesIn << " -> " << nBytesOut << " of " << nBytes
-       << " in " << compressionTime/1000 << "ms/" << compressionRuns
-       << " runs, saved " << nBytesSaved << " of " << nBytesSent
-       << " brutto sent ("
-       << double( nBytesSaved ) / double( nBytesSent ) * 100. << "%)";
+              << "compressed " << nBytesIn << " -> " << nBytesOut << " of "
+              << nBytes << " @ "
+              << int( float( nBytesIn )/1.024f/1.024f/compressionTime + .5f )
+              << " MB/s " << compressionRuns << " runs, saved " << nBytesSaved
+              << " of " << nBytesSent << " brutto sent ("
+              << double( nBytesSaved ) / double( nBytesSent ) * 100. << "%)";
 #else
-       << "without statistics enabled"
+              << "without statistics enabled";
 #endif
-    return os;
 }
 
 void DataOStream::clearStatistics()

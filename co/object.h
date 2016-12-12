@@ -126,13 +126,13 @@ public:
     /**
      * Return the compressor to be used for data transmission.
      *
-     * This default implementation chooses the compressor with the highest
-     * lossless compression ratio for EQ_COMPRESSOR_DATATYPE_BYTE tokens. The
-     * application may override this method to deactivate compression by
-     * returning EQ_COMPRESSOR_NONE or to select object-specific compressors.
-     * @version 1.0
+     * This default implementation uses a heuristic to choose the best lossless
+     * compressor in terms of speed and compression ratio. The application may
+     * override this method to deactivate compression by returning the default
+     * pression::Data::CompressorInfo or to select object-specific compressors.
+     * @version 1.6
      */
-    CO_API virtual uint32_t chooseCompressor() const;
+    CO_API virtual CompressorInfo chooseCompressor() const;
 
     /**
      * Return if this object needs a commit.

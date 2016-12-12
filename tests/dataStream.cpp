@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -32,6 +32,8 @@
 #include <co/objectCommand.h>      // private header
 #include <co/objectDataOCommand.h> // private header
 #include <co/objectDataICommand.h> // private header
+
+#include <pression/data/CompressorInfo.h>
 
 // Tests the functionality of the DataOStream and DataIStream
 
@@ -73,8 +75,8 @@ public:
     co::LocalNodePtr getLocalNode() const override { return 0; }
 
 protected:
-    bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
-                        const void** chunkData, uint64_t& size ) final
+    bool getNextBuffer( co::CompressorInfo& info, uint32_t& nChunks,
+                        const void*& chunkData, uint64_t& size ) final
     {
         co::ICommand cmd = _commands.tryPop();
         if( !cmd.isValid( ))
@@ -85,9 +87,9 @@ protected:
         TEST( command.getCommand() == co::CMD_OBJECT_DELTA );
 
         size = command.getDataSize();
-        compressor = command.getCompressor();
+        info = command.getCompressorInfo();
         nChunks = command.getChunks();
-        *chunkData = command.getRemainingBuffer( size );
+        chunkData = command.getRemainingBuffer( size );
         return true;
     }
 

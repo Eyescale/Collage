@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -52,7 +52,7 @@ public:
     CO_API uint64_t getDataSize() const;
 
     /** @return the compressor used for the object data. */
-    CO_API uint32_t getCompressor() const;
+    CO_API CompressorInfo getCompressorInfo() const;
 
     /** @return the number of chunks containing the object data. */
     CO_API uint32_t getChunks() const;

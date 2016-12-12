@@ -28,11 +28,11 @@ namespace co
     enum LogTopics
     {
         LOG_BUG     = lunchbox::LOG_BUG,          // 4
-        LOG_OBJECTS = pression::LOG_CUSTOM << 0,  // 16
-        LOG_BARRIER = pression::LOG_CUSTOM << 1,  // 32
-        LOG_RSP     = pression::LOG_CUSTOM << 2,  // 64
-        LOG_PACKETS = pression::LOG_CUSTOM << 3,  // 128
-        LOG_CUSTOM  = pression::LOG_CUSTOM << 5   // 512
+        LOG_OBJECTS = pression::LOG_CUSTOM << 0,  // 32
+        LOG_BARRIER = pression::LOG_CUSTOM << 1,  // 64
+        LOG_RSP     = pression::LOG_CUSTOM << 2,  // 128
+        LOG_PACKETS = pression::LOG_CUSTOM << 3,  // 256
+        LOG_CUSTOM  = pression::LOG_CUSTOM << 5   // 1024
     };
 }
 #endif // CO_LOG_H

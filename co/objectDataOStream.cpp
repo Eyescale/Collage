@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2010-2013, Stefan Eilemann <eile@eyescale.ch>
- *                    2010, Cedric Stalder  <cedric.stalder@gmail.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2010-2016, Stefan Eilemann <eile@eyescale.ch>
+ *                          Cedric Stalder  <cedric.stalder@gmail.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -25,6 +25,8 @@
 #include "objectCM.h"
 #include "objectDataOCommand.h"
 
+#include <pression/data/CompressorInfo.h>
+
 namespace co
 {
 ObjectDataOStream::ObjectDataOStream( const ObjectCM* cm )
@@ -33,11 +35,10 @@ ObjectDataOStream::ObjectDataOStream( const ObjectCM* cm )
         , _sequence( 0 )
 {
     const Object* object = cm->getObject();
-    const uint32_t name = object->chooseCompressor();
-    _initCompressor( name );
-    LBLOG( LOG_OBJECTS )
-        << "Using byte compressor 0x" << std::hex << name << std::dec << " for "
-        << lunchbox::className( object ) << std::endl;
+    const CompressorInfo& info = object->chooseCompressor();
+    _setCompressor( info );
+    LBLOG( LOG_OBJECTS ) << "Using " << info.name << " for "
+                         << lunchbox::className( object ) << std::endl;
 }
 
 void ObjectDataOStream::reset()

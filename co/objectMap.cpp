@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2012-2013, Daniel Nachbaur <danielnachbaur@googlemail.com>
- *               2012-2014, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@googlemail.com>
+ *                          Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -166,7 +166,6 @@ void ObjectMap::_commitMasters( const uint32_t incarnation )
 
 void ObjectMap::serialize( DataOStream& os, const uint64_t dirtyBits )
 {
-    Serializable::serialize( os, dirtyBits );
     lunchbox::ScopedFastWrite mutex( _impl->lock );
     if( dirtyBits == DIRTY_ALL )
     {
@@ -194,7 +193,6 @@ void ObjectMap::serialize( DataOStream& os, const uint64_t dirtyBits )
 
 void ObjectMap::deserialize( DataIStream& is, const uint64_t dirtyBits )
 {
-    Serializable::deserialize( is, dirtyBits );
     lunchbox::ScopedFastWrite mutex( _impl->lock );
     if( dirtyBits == DIRTY_ALL )
     {

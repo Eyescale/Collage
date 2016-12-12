@@ -168,8 +168,8 @@ protected:
     explicit DataIStream( const DataIStream& );
     CO_API virtual ~DataIStream();
 
-    virtual bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
-                                const void** chunkData, uint64_t& size )=0;
+    virtual bool getNextBuffer( CompressorInfo& info, uint32_t& nChunks,
+                                const void*& chunkData, uint64_t& size ) = 0;
     //@}
 
 private:
@@ -185,9 +185,8 @@ private:
     CO_API bool _checkBuffer();
     CO_API void _reset();
 
-    const uint8_t* _decompress( const void* data, const uint32_t name,
-                                const uint32_t nChunks,
-                                const uint64_t dataSize );
+    const uint8_t* _decompress( const void* data, const CompressorInfo& info,
+                                uint32_t nChunks, uint64_t dataSize );
 
     /** Read a vector of trivial data. */
     template< class T >

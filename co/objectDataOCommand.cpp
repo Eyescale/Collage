@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2012-2014, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *                          Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -22,7 +22,6 @@
 
 #include "buffer.h"
 #include "objectDataICommand.h"
-#include <pression/plugins/compressorTypes.h>
 
 namespace co
 {
@@ -91,7 +90,7 @@ void ObjectDataOCommand::_init( const uint128_t& version,
     if( _impl->stream )
         _impl->stream->streamDataHeader( *this );
     else
-        *this << EQ_COMPRESSOR_NONE << 0u; // compressor, nChunks
+        *this << std::string() << uint32_t(0); // compressor, nChunks
 }
 
 ObjectDataOCommand::~ObjectDataOCommand()

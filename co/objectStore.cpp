@@ -932,8 +932,8 @@ bool ObjectStore::_cmdMapSuccess( ICommand& command )
     LBASSERT( object );
     LBASSERT( !object->isMaster( ));
 
-    object->setupChangeManager( Object::ChangeType( changeType ), false,
-                                _localNode, masterInstanceID );
+    object->setupChangeManager( changeType, false, _localNode,
+                                masterInstanceID );
     _attach( object, objectID, instanceID );
     return true;
 }
@@ -1196,31 +1196,31 @@ bool ObjectStore::_cmdInstance( ICommand& inCommand )
 
     switch( cmd )
     {
-      case CMD_NODE_OBJECT_INSTANCE:
+    case CMD_NODE_OBJECT_INSTANCE:
         LBASSERT( nodeID == 0 );
         LBASSERT( command.getInstanceID() == CO_INSTANCE_NONE );
         return true;
 
-      case CMD_NODE_OBJECT_INSTANCE_MAP:
+    case CMD_NODE_OBJECT_INSTANCE_MAP:
         if( nodeID != _localNode->getNodeID( )) // not for me
             return true;
 
         LBASSERT( command.getInstanceID() <= CO_INSTANCE_MAX );
         return dispatchObjectCommand( command );
 
-      case CMD_NODE_OBJECT_INSTANCE_COMMIT:
+    case CMD_NODE_OBJECT_INSTANCE_COMMIT:
         LBASSERT( nodeID == 0 );
         LBASSERT( command.getInstanceID() == CO_INSTANCE_NONE );
         return dispatchObjectCommand( command );
 
-      case CMD_NODE_OBJECT_INSTANCE_PUSH:
+    case CMD_NODE_OBJECT_INSTANCE_PUSH:
         LBASSERT( nodeID == 0 );
         LBASSERT( command.getInstanceID() == CO_INSTANCE_NONE );
         _pushData.addDataCommand( command.getObjectID(), command );
         return true;
 
-      case CMD_NODE_OBJECT_INSTANCE_SYNC:
-      {
+    case CMD_NODE_OBJECT_INSTANCE_SYNC:
+    {
         if( nodeID != _localNode->getNodeID( )) // not for me
             return true;
 
@@ -1231,9 +1231,9 @@ bool ObjectStore::_cmdInstance( ICommand& inCommand )
         ObjectDataIStream* is = LBSAFECAST( ObjectDataIStream*, data );
         is->addDataCommand( command );
         return true;
-      }
+    }
 
-      default:
+    default:
         LBUNREACHABLE;
         return false;
     }

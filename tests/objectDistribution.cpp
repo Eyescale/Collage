@@ -46,8 +46,7 @@ class Object : public co::Object
 public:
     explicit Object( const ChangeType type ) : nSync( 0 ), _type( type ) {}
     Object( const ChangeType type, co::DataIStream& is )
-        : nSync( 0 ), _type( type )
-    { applyInstanceData( is ); }
+        : nSync( 0 ), _type( type ) { applyInstanceData( is ); }
 
     size_t nSync;
 
@@ -99,6 +98,7 @@ int main( int argc, char **argv )
 {
     co::init( argc, argv );
     co::Global::setObjectBufferSize( 600 );
+    co::Global::setIAttribute( co::Global::IATTR_OBJECT_COMPRESSION, 600 );
 
     lunchbox::RefPtr< Server > server = new Server;
     co::ConnectionDescriptionPtr connDesc =

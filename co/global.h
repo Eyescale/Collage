@@ -71,9 +71,6 @@ public:
     /** @internal Write global variables in the format for fromString(). */
     CO_API static std::string toString();
 
-    /** @return the plugin registry. @version 1.0 */
-    CO_API static pression::PluginRegistry& getPluginRegistry();
-
     /** @name Attributes */
     //@{
     // Note: also update string array initialization in global.cpp

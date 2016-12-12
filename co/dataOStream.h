@@ -144,7 +144,7 @@ protected:
     CO_API lunchbox::Bufferb& getBuffer();
 
     /** @internal Initialize the given compressor. */
-    void _initCompressor( const uint32_t compressor );
+    void _setCompressor( const pression::data::CompressorInfo& info );
 
     /** @internal Enable output. */
     CO_API void _enable();
@@ -185,7 +185,7 @@ private:
     detail::DataOStream* const _impl;
 
     /** Collect compressed data. */
-    CO_API uint64_t _getCompressedData( void** chunks,
+    CO_API uint64_t _getCompressedData( const uint8_t** chunks,
                                         uint64_t* chunkSizes ) const;
 
     /** Write a number of bytes from data into the stream. */
@@ -214,7 +214,10 @@ private:
 
     /** Write a non-plain data item. */
     template< class T > void _write( const T& value, const boost::false_type& )
-    { _writeSerializable( value, boost::is_base_of< servus::Serializable, T >());}
+    {
+        _writeSerializable( value,
+                            boost::is_base_of< servus::Serializable, T >( ));
+    }
 
     /** Write a serializable object. */
     template< class T>
@@ -223,7 +226,7 @@ private:
     /** Write an Array of POD data */
     template< class T >
     void _writeArray( const Array< T > array, const boost::true_type& )
-    { _write( array.data, array.getNumBytes( )); }
+        { _write( array.data, array.getNumBytes( )); }
 
     /** Write an Array of non-POD data */
     template< class T >

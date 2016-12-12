@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2011-2012, Stefan Eilemann <eile@equalizergraphics.com>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2011-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -81,32 +81,29 @@ bool DataIStreamQueue::addDataCommand( const uint128_t& key, ICommand& command )
     LB_TS_THREAD( _thread );
     LBASSERTINFO( _pending.size() < 100, "More than 100 pending commits");
 
-    ObjectDataIStream* istream = 0;
+    ObjectDataIStream* is = 0;
     PendingStreams::iterator i = _pending.find( key );
     if( i == _pending.end( ))
-        istream = _iStreamCache.alloc();
+        is = _iStreamCache.alloc();
     else
-        istream = i->second;
+        is = i->second;
 
-    istream->addDataCommand( command );
-    if( istream->isReady( ))
+    is->addDataCommand( command );
+    if( is->isReady( ))
     {
         if( i != _pending.end( ))
             _pending.erase( i );
 
-        _queued.push( QueuedStream( key, istream ));
-        //LBLOG( LOG_OBJECTS ) << "Queued commit " << key << std::endl;
+        _queued.push( QueuedStream( key, is ));
         return true;
     }
 
     if( i == _pending.end( ))
     {
-        _pending[ key ] = istream;
-        //LBLOG( LOG_OBJECTS ) << "New incomplete commit " << key << std::endl;
+        _pending[ key ] = is;
         return false;
     }
 
-    //LBLOG(LOG_OBJECTS) << "Add data to incomplete commit " << key <<std::endl;
     return false;
 }
 

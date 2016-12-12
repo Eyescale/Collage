@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2012-2013, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *                          Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -21,7 +21,8 @@
 #include "objectDataICommand.h"
 
 #include "buffer.h"
-#include <pression/plugins/compressorTypes.h>
+#include <pression/data/CompressorInfo.h>
+#include <pression/data/Registry.h>
 
 namespace co
 {
@@ -35,7 +36,6 @@ public:
         : version( 0, 0 )
         , datasize( 0 )
         , sequence( 0 )
-        , compressor( EQ_COMPRESSOR_NONE )
         , chunks( 1 )
         , isLast( false )
     {}
@@ -43,7 +43,7 @@ public:
     uint128_t version;
     uint64_t datasize;
     uint32_t sequence;
-    uint32_t compressor;
+    std::string compressorName;
     uint32_t chunks;
     bool isLast;
 };
@@ -58,7 +58,7 @@ ObjectDataICommand::ObjectDataICommand( const ICommand& command )
 }
 
 ObjectDataICommand::ObjectDataICommand( LocalNodePtr local, NodePtr remote,
-                                      ConstBufferPtr buffer, const bool swap_ )
+                                        ConstBufferPtr buffer, const bool swap_)
     : ObjectICommand( local, remote, buffer, swap_ )
     , _impl( new detail::ObjectDataICommand )
 {
@@ -77,7 +77,7 @@ void ObjectDataICommand::_init()
 {
     if( isValid( ))
         *this >> _impl->version >> _impl->datasize >> _impl->sequence
-              >> _impl->isLast >> _impl->compressor >> _impl->chunks;
+              >> _impl->isLast >> _impl->compressorName >> _impl->chunks;
 }
 
 ObjectDataICommand::~ObjectDataICommand()
@@ -100,9 +100,9 @@ uint64_t ObjectDataICommand::getDataSize() const
     return _impl->datasize;
 }
 
-uint32_t ObjectDataICommand::getCompressor() const
+CompressorInfo ObjectDataICommand::getCompressorInfo() const
 {
-    return _impl->compressor;
+    return pression::data::Registry::getInstance().find( _impl->compressorName);
 }
 
 uint32_t ObjectDataICommand::getChunks() const

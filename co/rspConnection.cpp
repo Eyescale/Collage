@@ -1,7 +1,7 @@
 
-/* Copyright (c)      2009, Cedric Stalder <cedric.stalder@gmail.com>
- *               2009-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2009-2016, Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -129,6 +129,10 @@ RSPConnection::~RSPConnection()
         delete _buffers.back();
         _buffers.pop_back();
     }
+#ifdef CO_INSTRUMENT_RSP
+    LBWARN << *this << std::endl;
+    instrumentClock.reset();
+#endif
 }
 
 void RSPConnection::_close()
@@ -434,7 +438,7 @@ void RSPConnection::_handleAcceptIDTimeout()
     ++_timeouts;
     if( _timeouts < 20 )
     {
-        LBLOG( LOG_RSP ) << "Announce " << _id << std::endl;
+        LBLOG( LOG_RSP ) << "Announce " << _id << " " << _timeouts << std::endl;
         _sendSimpleDatagram( ID_HELLO, _id );
     }
     else
@@ -954,6 +958,7 @@ void RSPConnection::_handleAcceptIDData( const size_t bytes )
             break;
 
         default:
+            LBERROR << "Got unexpected datagram type " << node.type <<std::endl;
             LBUNIMPLEMENTED;
             break;
     }
@@ -995,6 +1000,7 @@ void RSPConnection::_handleInitData( const size_t bytes, const bool connected )
             return;
 
         default:
+            LBERROR << "Got unexpected datagram type " << node.type <<std::endl;
             LBUNIMPLEMENTED;
             break;
     }

@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2013, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *                          Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -126,7 +126,7 @@ void OCommand::_init( const uint32_t cmd, const uint32_t type )
 #endif
     enableSave();
     _enable();
-    *this << 0ull /* size */ << type << cmd;
+    *this << uint64_t( 0 )/* size */ << type << cmd;
 }
 
 void OCommand::sendHeader( const uint64_t additionalSize )
@@ -168,9 +168,8 @@ void OCommand::sendData( const void* buffer LB_UNUSED, const uint64_t size,
     const uint64_t sendSize = _impl->isLocked ? size : LB_MAX( size,
                                                                COMMAND_MINSIZE);
     const Connections& connections = getConnections();
-    for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )
+    for( auto connection : connections )
     {
-        ConnectionPtr connection = *i;
         if ( connection )
             connection->send( bytes, sendSize, _impl->isLocked );
         else

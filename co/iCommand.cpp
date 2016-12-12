@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2006-2013, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2006-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -23,7 +23,7 @@
 #include "buffer.h"
 #include "localNode.h"
 #include "node.h"
-#include <pression/plugins/compressorTypes.h>
+#include <pression/data/CompressorInfo.h>
 
 namespace co
 {
@@ -172,8 +172,8 @@ uint128_t ICommand::getVersion() const
     return VERSION_NONE;
 }
 
-bool ICommand::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
-                              const void** chunkData, uint64_t& size )
+bool ICommand::getNextBuffer( CompressorInfo& info, uint32_t& nChunks,
+                              const void*& chunkData, uint64_t& size )
 {
     if( _impl->consumed ) // 2nd call
         _impl->buffer = 0;
@@ -182,9 +182,9 @@ bool ICommand::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
         return false;
 
     _impl->consumed = true;
-    *chunkData = _impl->buffer->getData();
-    size = reinterpret_cast< const uint64_t* >( *chunkData )[ 0 ];
-    compressor = EQ_COMPRESSOR_NONE;
+    chunkData = _impl->buffer->getData();
+    size = reinterpret_cast< const uint64_t* >( chunkData )[ 0 ];
+    info = CompressorInfo();
     nChunks = 1;
     return true;
 }

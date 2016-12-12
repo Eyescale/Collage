@@ -19,8 +19,6 @@
 
 #include "global.h"
 
-#include <pression/pluginRegistry.h>
-
 #include <limits>
 #include <stdlib.h>
 
@@ -167,12 +165,6 @@ void Global::setObjectBufferSize( const uint32_t size )
 uint32_t Global::getObjectBufferSize()
 {
     return  _objectBufferSize;
-}
-
-pression::PluginRegistry& Global::getPluginRegistry()
-{
-    static pression::PluginRegistry pluginRegistry;
-    return pluginRegistry;
 }
 
 void Global::setIAttribute( const IAttribute attr, const int32_t value )

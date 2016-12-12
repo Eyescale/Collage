@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2015, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2016, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -108,7 +108,7 @@ private:
     //@{
     CO_API size_t nRemainingBuffers() const override;
     CO_API uint128_t getVersion() const override;
-    CO_API bool getNextBuffer( uint32_t&, uint32_t&, const void**,
+    CO_API bool getNextBuffer( CompressorInfo&, uint32_t&, const void*&,
                                uint64_t& ) override;
     //@}
 

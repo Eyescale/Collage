@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -31,53 +31,53 @@
 
 namespace co
 {
-    /** The DataIStream for object data. */
-    class ObjectDataIStream : public DataIStream
-    {
-    public:
-        ObjectDataIStream();
-        ObjectDataIStream( const ObjectDataIStream& rhs );
-        virtual ~ObjectDataIStream();
+/** The DataIStream for object data. */
+class ObjectDataIStream : public DataIStream
+{
+public:
+    ObjectDataIStream();
+    ObjectDataIStream( const ObjectDataIStream& rhs );
+    virtual ~ObjectDataIStream();
 
-        ObjectDataIStream& operator = ( const ObjectDataIStream& rhs );
+    ObjectDataIStream& operator = ( const ObjectDataIStream& rhs );
 
-        void addDataCommand( ObjectDataICommand command );
-        size_t getDataSize() const;
+    void addDataCommand( ObjectDataICommand command );
+    size_t getDataSize() const;
 
-        uint128_t getVersion() const override { return _version.get(); }
-        uint128_t getPendingVersion() const;
+    uint128_t getVersion() const override { return _version.get(); }
+    uint128_t getPendingVersion() const;
 
-        void waitReady() const { _version.waitNE( VERSION_INVALID ); }
-        bool isReady() const { return _version != VERSION_INVALID; }
+    void waitReady() const { _version.waitNE( VERSION_INVALID ); }
+    bool isReady() const { return _version != VERSION_INVALID; }
 
-        size_t nRemainingBuffers() const override { return _commands.size(); }
+    size_t nRemainingBuffers() const override { return _commands.size(); }
 
-        void reset() override;
+    void reset() override;
 
-        bool hasInstanceData() const;
+    bool hasInstanceData() const;
 
-        CO_API NodePtr getRemoteNode() const override;
-        CO_API LocalNodePtr getLocalNode() const override;
+    CO_API NodePtr getRemoteNode() const override;
+    CO_API LocalNodePtr getLocalNode() const override;
 
-    protected:
-        bool getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
-                            const void** chunkData, uint64_t& size ) override;
+protected:
+    bool getNextBuffer( CompressorInfo& compressor, uint32_t& nChunks,
+                        const void*& chunkData, uint64_t& size ) override;
 
-    private:
-        typedef std::deque< ICommand > CommandDeque;
+private:
+    typedef std::deque< ICommand > CommandDeque;
 
-        /** All data commands for this istream. */
-        CommandDeque _commands;
+    /** All data commands for this istream. */
+    CommandDeque _commands;
 
-        ICommand _usedCommand; //!< Currently used buffer
+    ICommand _usedCommand; //!< Currently used buffer
 
-        /** The object version associated with this input stream. */
-        lunchbox::Monitor< uint128_t > _version;
+    /** The object version associated with this input stream. */
+    lunchbox::Monitor< uint128_t > _version;
 
-        void _setReady() { _version = getPendingVersion(); }
-        void _reset();
+    void _setReady() { _version = getPendingVersion(); }
+    void _reset();
 
-        LB_TS_VAR( _thread );
-    };
+    LB_TS_VAR( _thread );
+};
 }
 #endif //CO_OBJECTDATAISTREAM_H

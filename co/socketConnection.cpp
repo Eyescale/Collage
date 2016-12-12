@@ -83,6 +83,8 @@ std::string getHostName( const sockaddr_in& address )
     {
         return std::string( hostname );
     }
+    if( address.sin_addr.s_addr == htonl( INADDR_ANY ))
+        return "*";
     return std::string();
 }
 
@@ -129,7 +131,7 @@ bool SocketConnection::connect()
 {
     ConnectionDescriptionPtr description = _getDescription();
     LBASSERT( description->type == CONNECTIONTYPE_TCPIP );
-    if( !isClosed() )
+    if( !isClosed( ))
         return false;
 
     if( description->port == 0 )
@@ -630,9 +632,6 @@ void SocketConnection::_tuneSocket( const Socket fd )
 //----------------------------------------------------------------------
 // listen
 //----------------------------------------------------------------------
-#ifdef LB_GCC_4_5_OR_LATER
-#  pragma GCC diagnostic ignored "-Wunused-result"
-#endif
 bool SocketConnection::listen()
 {
     ConnectionDescriptionPtr description = _getDescription();
@@ -667,12 +666,8 @@ bool SocketConnection::listen()
         close();
         return false;
     }
-    else if( address.sin_port == 0 )
-        LBDEBUG << "Bound to port " << _getPort() << std::endl;
 
-    const bool listening = (::listen( _readFD, SOMAXCONN ) == 0);
-
-    if( !listening )
+    if( ::listen( _readFD, SOMAXCONN ) != 0 )
     {
         LBWARN << "Could not listen on socket: " << lunchbox::sysError
                << std::endl;
@@ -683,7 +678,6 @@ bool SocketConnection::listen()
     // get socket parameters
     socklen_t used = size;
     getsockname( _readFD, (struct sockaddr *)&address, &used );
-
     description->port = ntohs( address.sin_port );
 
     std::string hostname = description->getHostname();
@@ -700,9 +694,7 @@ bool SocketConnection::listen()
         else
             description->setHostname( getHostName( address ));
     }
-#ifndef _WIN32
-    //fcntl( _readFD, F_SETFL, O_NONBLOCK );
-#endif
+
     _initAIOAccept();
     _setState( STATE_LISTENING );
 

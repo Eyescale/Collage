@@ -35,6 +35,7 @@ common_find_package(Boost REQUIRED COMPONENTS system regex date_time
   serialization program_options thread)
 common_find_package(Lunchbox REQUIRED)
 common_find_package(OFED)
+common_find_package(OpenMP)
 common_find_package(Pression REQUIRED)
 common_find_package(Servus REQUIRED)
 common_find_package(UDT)

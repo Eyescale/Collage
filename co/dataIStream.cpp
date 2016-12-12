@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2007-2013, Stefan Eilemann <eile@equalizergraphics.com>
- *               2009-2010, Cedric Stalder <cedric.stalder@gmail.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Cedric Stalder <cedric.stalder@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -24,10 +24,10 @@
 #include "log.h"
 #include "node.h"
 
+#include <pression/data/Compressor.h>
+#include <pression/data/CompressorInfo.h>
 #include <lunchbox/buffer.h>
 #include <lunchbox/debug.h>
-#include <pression/decompressor.h>
-#include <pression/plugins/compressor.h>
 
 #include <string.h>
 
@@ -45,6 +45,15 @@ public:
         , swap( swap_ )
     {}
 
+    void initCompressor( const CompressorInfo& info )
+    {
+        if( info == compressorInfo )
+            return;
+        compressorInfo = info;
+        compressor.reset( info.create( ));
+        LBLOG( LOG_OBJECTS ) << "Allocated " << compressorInfo.name <<std::endl;
+    }
+
     /** The current input buffer */
     const uint8_t* input;
 
@@ -54,7 +63,8 @@ public:
     /** The current read position in the buffer */
     uint64_t position;
 
-    pression::Decompressor decompressor; //!< current decompressor
+    CompressorPtr compressor; //!< current decompressor
+    CompressorInfo compressorInfo; //!< current decompressor data
     lunchbox::Bufferb data; //!< decompressed buffer
     bool swap; //!< Invoke endian conversion
 };
@@ -111,9 +121,9 @@ void DataIStream::_read( void* data, uint64_t size )
     LBASSERT( _impl->input );
     if( size > _impl->inputSize - _impl->position )
     {
-        LBERROR << "Not enough data in input buffer: need " << size
-                << " bytes, " << _impl->inputSize - _impl->position << " left "
-                << std::endl;
+        LBERROR << "Not enough data in input buffer: need 0x" << std::hex << size
+                << " bytes, 0x" << _impl->inputSize - _impl->position << " left "
+                << std::dec << std::endl;
         LBUNREACHABLE;
         // TODO: Allow reads which are asymmetric to writes by reading from
         // multiple blocks here?
@@ -154,7 +164,7 @@ bool DataIStream::_checkBuffer()
 {
     while( _impl->position >= _impl->inputSize )
     {
-        uint32_t compressor = EQ_COMPRESSOR_NONE;
+        CompressorInfo info;
         uint32_t nChunks = 0;
         const void* data = 0;
 
@@ -162,51 +172,41 @@ bool DataIStream::_checkBuffer()
         _impl->input = 0;
         _impl->inputSize = 0;
 
-        if( !getNextBuffer( compressor, nChunks, &data, _impl->inputSize ))
+        if( !getNextBuffer( info, nChunks, data, _impl->inputSize ))
             return false;
 
-        _impl->input = _decompress( data, compressor, nChunks,
-                                    _impl->inputSize );
+        _impl->input = _decompress( data, info, nChunks, _impl->inputSize );
     }
     return true;
 }
 
-const uint8_t* DataIStream::_decompress( const void* data, const uint32_t name,
+const uint8_t* DataIStream::_decompress( const void* data,
+                                         const CompressorInfo& info,
                                          const uint32_t nChunks,
                                          const uint64_t dataSize )
 {
     const uint8_t* src = reinterpret_cast< const uint8_t* >( data );
-    if( name == EQ_COMPRESSOR_NONE )
+    if( info.name.empty( ))
         return src;
 
-    LBASSERT( name > EQ_COMPRESSOR_NONE );
+    LBASSERT( !info.name.empty( ));
 #ifndef CO_AGGRESSIVE_CACHING
     _impl->data.clear();
 #endif
     _impl->data.reset( dataSize );
+    _impl->initCompressor( info );
 
-    _impl->decompressor.setup( Global::getPluginRegistry(), name );
-    LBASSERT( _impl->decompressor.uses( name ));
-
-    uint64_t outDim[2] = { 0, dataSize };
-    uint64_t* chunkSizes = static_cast< uint64_t* >(
-                                alloca( nChunks * sizeof( uint64_t )));
-    void** chunks = static_cast< void ** >(
-                                alloca( nChunks * sizeof( void* )));
-
+    std::vector< std::pair< const uint8_t*, size_t >> inputs( nChunks );
     for( uint32_t i = 0; i < nChunks; ++i )
     {
         const uint64_t size = *reinterpret_cast< const uint64_t* >( src );
-        chunkSizes[ i ] = size;
         src += sizeof( uint64_t );
 
-        // The plugin API uses non-const source buffers for in-place operations
-        chunks[ i ] = const_cast< uint8_t* >( src );
+        inputs[ i ] = { src, size };
         src += size;
     }
 
-    _impl->decompressor.decompress( chunks, chunkSizes, nChunks,
-                                    _impl->data.getData(), outDim );
+    _impl->compressor->decompress( inputs, _impl->data.getData(), dataSize );
     return _impl->data.getData();
 }
 

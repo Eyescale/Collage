@@ -1,7 +1,7 @@
 
-# Copyright (c) 2010 Daniel Pfeifer <daniel@pfeifer-mail.de>
-#               2010-2013 Stefan Eilemann <eile@eyescale.ch>
-#               2010 Cedric Stalder <cedric.stalder@gmail.ch>
+# Copyright (c) 2010-2016 Daniel Pfeifer <daniel@pfeifer-mail.de>
+#                         Stefan Eilemann <eile@eyescale.ch>
+#                         Cedric Stalder <cedric.stalder@gmail.ch>
 
 include(files.cmake)
 
@@ -10,7 +10,7 @@ mark_as_advanced(COLLAGE_AGGRESSIVE_CACHING)
 
 set(COLLAGE_PUBLIC_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 list(APPEND COLLAGE_LINK_LIBRARIES
-  PUBLIC Lunchbox Pression
+  PUBLIC Lunchbox PressionData
   PRIVATE ${PTHREAD_LIBRARIES} ${Boost_SERIALIZATION_LIBRARY}
   ${Boost_SYSTEM_LIBRARY} Servus
 )

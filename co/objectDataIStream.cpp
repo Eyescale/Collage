@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -23,6 +23,7 @@
 #include "commands.h"
 #include "objectCommand.h"
 #include "objectDataICommand.h"
+#include <pression/data/CompressorInfo.h>
 
 namespace co
 {
@@ -150,8 +151,8 @@ uint128_t ObjectDataIStream::getPendingVersion() const
     return cmd.getVersion();
 }
 
-bool ObjectDataIStream::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
-                                       const void** chunkData, uint64_t& size )
+bool ObjectDataIStream::getNextBuffer( CompressorInfo& info, uint32_t& nChunks,
+                                       const void*& chunkData, uint64_t& size )
 {
     if( _commands.empty( ))
     {
@@ -172,22 +173,22 @@ bool ObjectDataIStream::getNextBuffer( uint32_t& compressor, uint32_t& nChunks,
     const uint64_t dataSize = command.getDataSize();
 
     if( dataSize == 0 ) // empty command
-        return getNextBuffer( compressor, nChunks, chunkData, size );
+        return getNextBuffer( info, nChunks, chunkData, size );
 
     size = dataSize;
-    compressor = command.getCompressor();
+    info = command.getCompressorInfo();
     nChunks = command.getChunks();
     switch( command.getCommand( ))
     {
-      case CMD_OBJECT_INSTANCE:
+    case CMD_OBJECT_INSTANCE:
         command.get< NodeID >();    // nodeID
         command.get< uint32_t >();  // instanceID
         break;
-      case CMD_OBJECT_SLAVE_DELTA:
+    case CMD_OBJECT_SLAVE_DELTA:
         command.get< uint128_t >(); // commit UUID
         break;
     }
-    *chunkData = command.getRemainingBuffer( command.getRemainingBufferSize( ));
+    chunkData = command.getRemainingBuffer( command.getRemainingBufferSize( ));
 
     setSwapping( command.isSwapping( ));
     return true;
