@@ -115,7 +115,7 @@ private:
         // detection magic relies on only using the LSB.
     };
 
-    /** ID_HELLO, ID_DENY, ID_CONFIRM, ID_EXIT or COUNTNODE packet */
+    /** ID_HELLO, ID_DENY, ID_CONFIRM, ID_EXIT packet */
     struct DatagramNode
     {
         uint16_t type;

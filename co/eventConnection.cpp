@@ -32,8 +32,7 @@ EventConnection::EventConnection()
     : _connection(new PipeConnection)
     , _set(false)
 #endif
-{
-}
+{}
 
 EventConnection::~EventConnection()
 {
