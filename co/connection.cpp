@@ -108,8 +108,9 @@ Connection::~Connection()
 {
     LBVERB << "Delete Connection @" << (void*)this << std::endl;
 #ifdef STATISTICS
-    LBDEBUG << *this << ": " << (_impl->outBytes >> 20) << " MB out, "
-            << (_impl->inBytes >> 20) << " MB in" << std::endl;
+    if( _impl->outBytes || _impl->inBytes )
+        LBINFO << *this << ": " << (_impl->outBytes >> 20) << " MB out, "
+               << (_impl->inBytes >> 20) << " MB in" << std::endl;
 #endif
     delete _impl;
 }

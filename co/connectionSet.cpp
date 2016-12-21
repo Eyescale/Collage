@@ -566,8 +566,8 @@ bool ConnectionSet::_setupFDSet()
 
         if( !readHandle )
         {
-            LBINFO << "Cannot select connection " << connection
-                 << ", connection does not provide a read handle" << std::endl;
+            LBDEBUG << "Cannot select connection " << connection
+                    << ", connection does not provide a read handle" << std::endl;
             _impl->connection = connection;
             _impl->lock.unset();
             return false;
@@ -614,9 +614,9 @@ bool ConnectionSet::_setupFDSet()
 
         if( fd.fd <= 0 )
         {
-            LBINFO << "Cannot select connection " << connection
-                   << ", connection " << lunchbox::className( connection.get( ))
-                   << " doesn't have a file descriptor" << std::endl;
+            LBDEBUG << "Cannot select connection " << connection
+                    << ", connection " << lunchbox::className( connection.get( ))
+                    << " doesn't have a file descriptor" << std::endl;
             _impl->connection = connection;
             _impl->lock.unset();
             return false;

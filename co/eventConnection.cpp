@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2012, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2010-2016, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -27,16 +27,22 @@ namespace co
 
 EventConnection::EventConnection()
 #ifdef _WIN32
-        : _event( 0 )
+    : _event( CreateEvent( 0, TRUE, FALSE, 0 ))
+
 #else
-        : _set( false )
+    : _connection( new PipeConnection )
+    , _set( false )
 #endif
-{
-}
+{}
 
 EventConnection::~EventConnection()
 {
     _close();
+
+#ifdef _WIN32
+    if( _event )
+        CloseHandle( _event );
+#endif
 }
 
 bool EventConnection::connect()
@@ -46,10 +52,7 @@ bool EventConnection::connect()
 
     _setState( STATE_CONNECTING );
 
-#ifdef _WIN32
-    _event = CreateEvent( 0, TRUE, FALSE, 0 );
-#else
-    _connection = new PipeConnection;
+#ifndef _WIN32
     LBCHECK( _connection->connect( ));
     _set = false;
 #endif
@@ -60,19 +63,9 @@ bool EventConnection::connect()
 
 void EventConnection::_close()
 {
-#ifdef _WIN32
-    if( _event )
-        CloseHandle( _event );
-    _event = 0;
-#else
-    ConnectionPtr connection = _connection;
-    _connection = 0;
-    _set = false;
-
-    if( connection )
-        connection->close();
+#ifndef _WIN32
+    _connection->close();
 #endif
-
     _setState( STATE_CLOSED );
 }
 

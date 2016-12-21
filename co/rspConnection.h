@@ -54,7 +54,7 @@ public:
     RSPConnection();
 
     bool listen() override;
-    void close() override { _close(); }
+    void close() override;
 
     /** Identical to listen() for multicast connections. */
     bool connect() override { return listen(); }
@@ -81,8 +81,7 @@ public:
      */
     uint16_t getID() const { return _id; }
 
-    Notifier getNotifier() const override
-        { return _event->getNotifier(); }
+    Notifier getNotifier() const override { return _event->getNotifier(); }
 
 protected:
     virtual ~RSPConnection();
@@ -244,7 +243,6 @@ private:
 
     const unsigned _writeTimeOut;
 
-    void _close();
     uint16_t _buildNewID();
 
     void _processOutgoing();

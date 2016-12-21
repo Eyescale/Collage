@@ -45,7 +45,6 @@
 // Note: Do not use version > 255, endianness detection magic relies on this.
 const uint16_t CO_RSP_PROTOCOL_VERSION = 0;
 
-namespace bp = boost::posix_time;
 namespace ip = boost::asio::ip;
 
 namespace co
@@ -123,7 +122,7 @@ RSPConnection::RSPConnection()
 
 RSPConnection::~RSPConnection()
 {
-    _close();
+    close();
     while( !_buffers.empty( ))
     {
         delete _buffers.back();
@@ -135,7 +134,7 @@ RSPConnection::~RSPConnection()
 #endif
 }
 
-void RSPConnection::_close()
+void RSPConnection::close()
 {
     if( _parent.isValid() && _parent->_id == _id )
         _parent->close();
