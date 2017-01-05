@@ -48,7 +48,7 @@ public:
 
 OCommand::OCommand( const Connections& receivers, const uint32_t cmd,
                     const uint32_t type )
-    : DataOStream()
+    : DataOStream( std::numeric_limits< size_t >::max( ))
     , _impl( new detail::OCommand( 0, 0 ))
 {
     _setupConnections( receivers );
@@ -57,7 +57,7 @@ OCommand::OCommand( const Connections& receivers, const uint32_t cmd,
 
 OCommand::OCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
                     const uint32_t cmd, const uint32_t type )
-    : DataOStream()
+    : DataOStream( std::numeric_limits< size_t >::max( ))
     , _impl( new detail::OCommand( dispatcher, localNode ))
 {
     _init( cmd, type );

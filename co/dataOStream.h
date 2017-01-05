@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Cedric Stalder <cedric.stalder@gmail.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -23,6 +23,7 @@
 #define CO_DATAOSTREAM_H
 
 #include <co/api.h>
+#include <co/global.h>
 #include <co/types.h>
 
 #include <lunchbox/array.h> // used inline
@@ -136,7 +137,8 @@ public:
     CO_API static void clearStatistics(); //!< @internal
 
 protected:
-    CO_API DataOStream(); //!< @internal
+    CO_API explicit DataOStream(
+            size_t chunkSize = Global::getObjectBufferSize( )); //!< @internal
     explicit DataOStream( DataOStream& rhs );  //!< @internal
     virtual CO_API ~DataOStream(); //!< @internal
 

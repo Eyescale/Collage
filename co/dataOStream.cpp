@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Cedric Stalder <cedric.stalder@gmail.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -25,7 +25,6 @@
 #include "connectionDescription.h"
 #include "commands.h"
 #include "connections.h"
-#include "global.h"
 #include "log.h"
 #include "node.h"
 #include "types.h"
@@ -75,6 +74,9 @@ public:
     /** The compressed size, 0 for uncompressed or uncompressable data. */
     uint64_t compressedDataSize;
 
+    /** The maximum of size of chunk that gets flushed/sent. */
+    const size_t chunkSize;
+
     /** Locked connections to the receivers, if _enabled */
     Connections connections;
 
@@ -91,10 +93,11 @@ public:
     /** Save all sent data */
     bool save;
 
-    DataOStream()
+    DataOStream( const size_t chunkSize_ )
         : bufferStart( 0 )
         , dataSize( 0 )
         , compressedDataSize( 0 )
+        , chunkSize( chunkSize_ )
         , state( STATE_UNCOMPRESSED )
         , enabled( false )
         , dataSent( false )
@@ -105,6 +108,7 @@ public:
         : bufferStart( rhs.bufferStart )
         , dataSize( rhs.dataSize )
         , compressedDataSize( rhs.compressedDataSize )
+        , chunkSize( rhs.chunkSize )
         , state( rhs.state )
         , enabled( rhs.enabled )
         , dataSent( rhs.dataSent )
@@ -196,8 +200,8 @@ public:
 };
 }
 
-DataOStream::DataOStream()
-    : _impl( new detail::DataOStream )
+DataOStream::DataOStream( const size_t chunkSize )
+    : _impl( new detail::DataOStream( chunkSize ))
 {}
 
 DataOStream::DataOStream( DataOStream& rhs )
@@ -348,11 +352,8 @@ void DataOStream::_write( const void* data, uint64_t size )
     nBytes += size;
 #endif
 
-    if( _impl->buffer.getSize() - _impl->bufferStart >
-        Global::getObjectBufferSize( ))
-    {
+    if( _impl->buffer.getSize() - _impl->bufferStart > _impl->chunkSize )
         flush( false );
-    }
     _impl->buffer.append( static_cast< const uint8_t* >( data ), size );
 }
 
@@ -397,8 +398,7 @@ void DataOStream::_resetBuffer()
 }
 
 uint64_t DataOStream::_getCompressedData( const uint8_t** chunks,
-                                          uint64_t* chunkSizes )
-    const
+                                          uint64_t* chunkSizes ) const
 {
     LBASSERT( _impl->state != STATE_UNCOMPRESSED &&
               _impl->state != STATE_UNCOMPRESSIBLE && _impl->compressor );
