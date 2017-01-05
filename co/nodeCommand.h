@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -27,11 +27,8 @@ namespace co
 enum NodeCommand
 {
     CMD_NODE_CONNECT,
-    CMD_NODE_CONNECT_BE,
     CMD_NODE_CONNECT_REPLY,
-    CMD_NODE_CONNECT_REPLY_BE,
     CMD_NODE_ID,
-    CMD_NODE_ID_BE,
     CMD_NODE_STOP_RCV,
     CMD_NODE_STOP_CMD,
     CMD_NODE_SET_AFFINITY_RCV,

@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2012-2013, Stefan Eilemann <eile@eyescale.ch>
- *               2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2012-2017, Stefan Eilemann <eile@eyescale.ch>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -122,7 +122,7 @@ int main( int, char** )
     buffer->resize( size );
     reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
 
-    co::ICommand command( node, node, buffer, false );
+    co::ICommand command( node, node, buffer );
     command.setType( co::COMMANDTYPE_NODE );
     command.setCommand( co::CMD_NODE_CUSTOM );
 

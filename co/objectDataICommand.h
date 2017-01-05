@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2012-2017, Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -36,7 +36,7 @@ public:
     CO_API ObjectDataICommand( const ICommand& command );
 
     CO_API ObjectDataICommand( LocalNodePtr local, NodePtr remote,
-                              ConstBufferPtr buffer, const bool swap );
+                              ConstBufferPtr buffer );
 
     ObjectDataICommand( const ObjectDataICommand& rhs );
 

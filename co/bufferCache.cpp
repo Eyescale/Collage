@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2006-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2006-2017, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -257,7 +257,7 @@ std::ostream& operator << ( std::ostream& os, const BufferCache& cache )
     {
         Buffer* buffer = *i;
         if( !buffer->isFree( ))
-            os << ICommand( 0, 0, buffer, false /*swap*/ ) << std::endl;
+            os << ICommand( 0, 0, buffer ) << std::endl;
     }
     return os << lunchbox::enableHeader << lunchbox::exdent
               << lunchbox::enableFlush;

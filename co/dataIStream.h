@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Cedric Stalder <cedric.stalder@gmail.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -48,9 +48,6 @@ public:
 
     virtual uint128_t getVersion() const = 0; //!< @internal
     virtual void reset() { _reset(); } //!< @internal
-    void setSwapping( const bool onOff ); //!< @internal enable endian swap
-    CO_API bool isSwapping() const; //!< @internal
-    DataIStream& operator = ( const DataIStream& rhs ); //!< @internal
     //@}
 
     /** @name Data input */
@@ -92,19 +89,6 @@ public:
 
     /** Read a stde::hash_set of serializable items. @version 1.0 */
     template< class T > DataIStream& operator >> ( stde::hash_set< T >& );
-
-    /**
-     * @define CO_IGNORE_BYTESWAP: If set, no byteswapping of transmitted data
-     * is performed. Enable when you get unresolved symbols for
-     * lunchbox::byteswap and you don't care about mixed-endian environments.
-     */
-#  ifdef CO_IGNORE_BYTESWAP
-    /** Byte-swap a plain data item. @version 1.0 */
-    template< class T > static void swap( T& ) { /* nop */ }
-#  else
-    /** Byte-swap a plain data item. @version 1.0 */
-    template< class T > static void swap( T& v ) { lunchbox::byteswap(v); }
-#  endif
 
     /** @internal
      * Deserialize child objects.
@@ -164,8 +148,7 @@ public:
 protected:
     /** @name Internal */
     //@{
-    CO_API explicit DataIStream( const bool swap );
-    explicit DataIStream( const DataIStream& );
+    CO_API DataIStream();
     CO_API virtual ~DataIStream();
 
     virtual bool getNextBuffer( CompressorInfo& info, uint32_t& nChunks,
@@ -202,13 +185,9 @@ private:
         return *this;
     }
 
-    /** Byte-swap a plain data item. */
-    template< class T > void _swap( T& value ) const
-        { if( isSwapping( )) swap( value ); }
-
     /** Read a plain data item. */
     template< class T > void _read( T& value, const boost::true_type& )
-        { _read( &value, sizeof( value )); _swap( value ); }
+        { _read( &value, sizeof( value )); }
 
     /** Read a non-plain data item. */
     template< class T > void _read( T& value, const boost::false_type& )
@@ -222,16 +201,6 @@ private:
 
     /** Read an Array of non-POD data */
     template< class T > void _readArray( Array< T >, const boost::false_type& );
-
-    /** Byte-swap a C array. @version 1.0 */
-    template< class T > void _swap( Array< T > array ) const
-    {
-        if( !isSwapping( ))
-            return;
-#pragma omp parallel for
-        for( ssize_t i = 0; i < ssize_t( array.num ); ++i )
-            swap( array.data[i] );
-    }
 };
 }
 

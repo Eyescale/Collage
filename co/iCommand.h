@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -45,7 +45,7 @@ class ICommand : public DataIStream
 public:
     CO_API ICommand(); //!< @internal
     CO_API ICommand( LocalNodePtr local, NodePtr remote,
-                     ConstBufferPtr buffer, const bool swap ); //!<@internal
+                     ConstBufferPtr buffer ); //!<@internal
     CO_API ICommand( const ICommand& rhs ); //!< @internal
 
     CO_API virtual ~ICommand(); //!< @internal

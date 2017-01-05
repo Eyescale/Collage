@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2005-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2005-2017, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -323,12 +323,6 @@ private:
 };
 
 CO_API std::ostream& operator << ( std::ostream&, const Connection& );
-}
-
-namespace lunchbox
-{
-template<> inline void byteswap( co::Connection*& ) { /*NOP*/ }
-template<> inline void byteswap( co::ConnectionPtr& ) { /*NOP*/ }
 }
 
 #endif //CO_CONNECTION_H

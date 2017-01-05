@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -69,14 +69,13 @@ public:
 } // detail namespace
 
 ICommand::ICommand()
-    : DataIStream( false )
+    : DataIStream()
     , _impl( new detail::ICommand )
 {
 }
 
-ICommand::ICommand( LocalNodePtr local, NodePtr remote, ConstBufferPtr buffer,
-                    const bool swap_ )
-    : DataIStream( swap_ )
+ICommand::ICommand( LocalNodePtr local, NodePtr remote, ConstBufferPtr buffer )
+    : DataIStream()
     , _impl( new detail::ICommand( local, remote, buffer ))
 {
     if( _impl->buffer )
@@ -89,7 +88,7 @@ ICommand::ICommand( LocalNodePtr local, NodePtr remote, ConstBufferPtr buffer,
 }
 
 ICommand::ICommand( const ICommand& rhs )
-    : DataIStream( rhs )
+    : DataIStream()
     , _impl( new detail::ICommand( *rhs._impl ))
 {
     _impl->consumed = false;
@@ -100,7 +99,6 @@ ICommand& ICommand::operator = ( const ICommand& rhs )
 {
     if( this != &rhs )
     {
-        DataIStream::operator = ( rhs );
         *_impl = *rhs._impl;
         _impl->consumed = false;
         _skipHeader();

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2012-2017, Daniel Nachbaur <danielnachbaur@gmail.com>
  *                          Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -67,7 +67,6 @@ template< class T >
 void DataIStream::_readArray( Array< T > array, const boost::true_type& )
 {
     _read( array.data, array.getNumBytes( ));
-    _swap( array );
 }
 
 /** Read an Array of non-POD data */

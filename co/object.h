@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -25,7 +25,6 @@
 #include <co/localNode.h>     // used in RefPtr
 #include <co/types.h>         // for Nodes
 #include <co/version.h>       // used as default parameter
-#include <lunchbox/bitOperation.h> // byteswap inline impl
 
 namespace co
 {
@@ -453,9 +452,4 @@ CO_API std::ostream& operator << ( std::ostream&, const Object& );
 CO_API std::ostream& operator << ( std::ostream&, const Object::ChangeType& );
 }
 
-namespace lunchbox
-{
-template<> inline void byteswap( co::Object::ChangeType& value )
-{ byteswap( reinterpret_cast< uint32_t& >( value )); }
-}
 #endif // CO_OBJECT_H

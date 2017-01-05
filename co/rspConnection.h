@@ -1,7 +1,7 @@
 
-/* Copyright (c)      2009, Cedric Stalder <cedric.stalder@gmail.com>
- *               2009-2013, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2009-2017, Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -128,16 +128,6 @@ private:
         uint16_t protocolVersion;
         uint16_t connectionID;  // clientID for type COUNTNODE
         uint16_t data;
-
-        void byteswap()
-            {
-#ifdef COLLAGE_BIGENDIAN
-                lunchbox::byteswap( type );
-                lunchbox::byteswap( protocolVersion );
-                lunchbox::byteswap( connectionID );
-                lunchbox::byteswap( data );
-#endif
-            }
     };
 
     /** Request receive confirmation of all packets up to sequence. */
@@ -146,15 +136,6 @@ private:
         uint16_t type;
         uint16_t writerID;
         uint16_t sequence;
-
-        void byteswap()
-            {
-#ifdef COLLAGE_BIGENDIAN
-                lunchbox::byteswap( type );
-                lunchbox::byteswap( writerID );
-                lunchbox::byteswap( sequence );
-#endif
-            }
     };
 
     /** Missing packets from start..end sequence */
@@ -181,21 +162,6 @@ private:
         uint16_t       writerID;
         uint16_t       count;       //!< number of NACK requests used
         Nack           nacks[ CO_RSP_MAX_NACKS ];
-
-        void byteswap()
-            {
-#ifdef COLLAGE_BIGENDIAN
-                lunchbox::byteswap( type );
-                lunchbox::byteswap( readerID );
-                lunchbox::byteswap( writerID );
-                lunchbox::byteswap( count );
-                for( uint16_t i = 0; i < count; ++i )
-                {
-                    lunchbox::byteswap( nacks[i].start );
-                    lunchbox::byteswap( nacks[i].end );
-                }
-#endif
-            }
     };
 
     /** Acknowledge reception of all packets including sequence .*/
@@ -205,16 +171,6 @@ private:
         uint16_t        readerID;
         uint16_t        writerID;
         uint16_t        sequence;
-
-        void byteswap()
-            {
-#ifdef COLLAGE_BIGENDIAN
-                lunchbox::byteswap( type );
-                lunchbox::byteswap( readerID );
-                lunchbox::byteswap( writerID );
-                lunchbox::byteswap( sequence );
-#endif
-            }
     };
 
     /** Data packet */
@@ -224,16 +180,6 @@ private:
         uint16_t    size;
         uint16_t    writerID;
         uint16_t    sequence;
-
-        void byteswap()
-            {
-#ifdef COLLAGE_BIGENDIAN
-                lunchbox::byteswap( type );
-                lunchbox::byteswap( size );
-                lunchbox::byteswap( writerID );
-                lunchbox::byteswap( sequence );
-#endif
-            }
     };
 
     typedef std::vector< RSPConnectionPtr > RSPConnections;

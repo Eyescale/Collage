@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -60,11 +60,11 @@ protected:
 class DataIStream : public co::DataIStream
 {
 public:
-    DataIStream() : co::DataIStream( false /*swap*/ ){}
+    DataIStream() {}
 
     void addDataCommand( co::ConstBufferPtr buffer )
     {
-        co::ObjectDataICommand command( 0, 0, buffer, false /*swap*/ );
+        co::ObjectDataICommand command( 0, 0, buffer );
         TESTINFO( command.getCommand() == co::CMD_OBJECT_DELTA, command );
         _commands.push( command );
     }
@@ -175,13 +175,13 @@ int main( int argc, char **argv )
         TEST( connection->recvSync( buffer ));
         TEST( !buffer->isEmpty( ));
 
-        co::ICommand command( 0, 0, buffer, false );
+        co::ICommand command( 0, 0, buffer );
         if( command.getSize() > buffer->getMaxSize( ))
         {
             // not enough space for remaining data, alloc and copy to new buffer
             co::BufferPtr newBuffer = bufferCache.alloc( command.getSize( ));
             newBuffer->replace( *buffer );
-            command = co::ICommand( 0, 0, newBuffer, false );
+            command = co::ICommand( 0, 0, newBuffer );
         }
         if( command.getSize() > buffer->getSize( ))
         {

@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2011-2014, Stefan Eilemann <eile@eyescale.ch>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2011-2017, Stefan Eilemann <eile@eyescale.ch>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -99,7 +99,7 @@ int main( int argc, char **argv )
             buffer->resize( size );
             reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
 
-            co::ICommand command( 0, 0, buffer, false /*swap*/ );
+            co::ICommand command( 0, 0, buffer );
             command.setCommand( 0 );
             command.setType( co::COMMANDTYPE_CUSTOM );
 
@@ -120,7 +120,7 @@ int main( int argc, char **argv )
             buffer->resize( size );
             reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
 
-            co::ICommand command( 0, 0, buffer, false /*swap*/ );
+            co::ICommand command( 0, 0, buffer );
             command.setCommand( 1 );
 
             readers[i].dispatchCommand( command );

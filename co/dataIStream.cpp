@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Cedric Stalder <cedric.stalder@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -38,11 +38,10 @@ namespace detail
 class DataIStream
 {
 public:
-    explicit DataIStream( const bool swap_ )
+    DataIStream()
         : input( 0 )
         , inputSize( 0 )
         , position( 0 )
-        , swap( swap_ )
     {}
 
     void initCompressor( const CompressorInfo& info )
@@ -66,16 +65,11 @@ public:
     CompressorPtr compressor; //!< current decompressor
     CompressorInfo compressorInfo; //!< current decompressor data
     lunchbox::Bufferb data; //!< decompressed buffer
-    bool swap; //!< Invoke endian conversion
 };
 }
 
-DataIStream::DataIStream( const bool swap_ )
-        : _impl( new detail::DataIStream( swap_ ))
-{}
-
-DataIStream::DataIStream( const DataIStream& rhs )
-        : _impl( new detail::DataIStream( rhs._impl->swap ))
+DataIStream::DataIStream()
+        : _impl( new detail::DataIStream( ))
 {}
 
 DataIStream::~DataIStream()
@@ -84,29 +78,11 @@ DataIStream::~DataIStream()
     delete _impl;
 }
 
-DataIStream& DataIStream::operator = ( const DataIStream& rhs )
-{
-    _reset();
-    setSwapping( rhs.isSwapping( ));
-    return *this;
-}
-
-void DataIStream::setSwapping( const bool onOff )
-{
-    _impl->swap = onOff;
-}
-
-bool DataIStream::isSwapping() const
-{
-    return _impl->swap;
-}
-
 void DataIStream::_reset()
 {
     _impl->input     = 0;
     _impl->inputSize = 0;
     _impl->position  = 0;
-    _impl->swap      = false;
 }
 
 void DataIStream::_read( void* data, uint64_t size )

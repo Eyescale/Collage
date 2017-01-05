@@ -1,10 +1,10 @@
 
-# Copyright (c) 2010-2016 Daniel Pfeifer <daniel@pfeifer-mail.de>
+# Copyright (c) 2010-2017 Daniel Pfeifer <daniel@pfeifer-mail.de>
 #                         Stefan Eilemann <eile@eyescale.ch>
 
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-project(Collage VERSION 1.6.0)
-set(Collage_VERSION_ABI 6)
+project(Collage VERSION 1.7.0)
+set(Collage_VERSION_ABI 7)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake
   ${CMAKE_SOURCE_DIR}/CMake/common)

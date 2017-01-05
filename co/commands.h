@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2005-2013, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2005-2017, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -21,7 +21,7 @@
 #ifndef CO_COMMANDS_H
 #define CO_COMMANDS_H
 
-#include <lunchbox/bitOperation.h> // byteswap inline impl
+#include <lunchbox/types.h>
 
 namespace co
 {
@@ -51,12 +51,6 @@ static const size_t COMMAND_MINSIZE = 256;
 
 /** @internal Minimal allocation size of a packet. */
 static const size_t COMMAND_ALLOCSIZE = 4096; // Bigger than minSize!
-}
-
-namespace lunchbox
-{
-template<> inline void byteswap( co::CommandType& value )
-    { byteswap( reinterpret_cast< uint32_t& >( value )); }
 }
 
 #endif // CO_COMMANDS_H

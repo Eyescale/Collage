@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Cedric Stalder <cedric.stalder@gmail.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -68,7 +68,6 @@ public:
     CO_API uint32_t getType() const;
 
     bool operator == ( const Node* n ) const; //!< @internal
-    bool isBigEndian() const; //!< @internal
 
     /** @return true if the node can send/receive messages. @version 1.0 */
     CO_API bool isReachable() const;
@@ -231,12 +230,6 @@ private:
 };
 
 CO_API std::ostream& operator << ( std::ostream& os, const Node& node );
-}
-
-namespace lunchbox
-{
-template<> inline void byteswap( co::Node*& ) { /*NOP*/ }
-template<> inline void byteswap( co::NodePtr& ) { /*NOP*/ }
 }
 
 #endif // CO_NODE_H

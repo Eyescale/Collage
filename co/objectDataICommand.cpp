@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2012-2017, Daniel Nachbaur <danielnachbaur@gmail.com>
  *                          Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -58,8 +58,8 @@ ObjectDataICommand::ObjectDataICommand( const ICommand& command )
 }
 
 ObjectDataICommand::ObjectDataICommand( LocalNodePtr local, NodePtr remote,
-                                        ConstBufferPtr buffer, const bool swap_)
-    : ObjectICommand( local, remote, buffer, swap_ )
+                                        ConstBufferPtr buffer )
+    : ObjectICommand( local, remote, buffer )
     , _impl( new detail::ObjectDataICommand )
 {
     _init();

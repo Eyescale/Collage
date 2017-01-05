@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2009-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2009-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -104,15 +104,6 @@ struct ObjectVersion
 
 inline std::ostream& operator << (std::ostream& os, const ObjectVersion& ov)
 { return os << "id " << ov.identifier << " v" << ov.version; }
-}
-
-namespace lunchbox
-{
-template<> inline void byteswap( co::ObjectVersion& value ) //!< @internal
-{
-    lunchbox::byteswap( value.identifier );
-    lunchbox::byteswap( value.version );
-}
 }
 
 LB_STDEXT_NAMESPACE_OPEN

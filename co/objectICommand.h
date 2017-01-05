@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2012, Daniel Nachbaur <danielnachbaur@gmail.com>
- *               2012-2014, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2012-2017, Daniel Nachbaur <danielnachbaur@gmail.com>
+ *                          Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -33,7 +33,7 @@ class ObjectICommand : public ICommand
 public:
     /** @internal */
     CO_API ObjectICommand( LocalNodePtr local, NodePtr remote,
-                           ConstBufferPtr buffer, const bool swap );
+                           ConstBufferPtr buffer );
 
     /** Copy-construct an object command from a generic ICommand. @version 1.0*/
     // cppcheck-suppress noExplicitConstructor

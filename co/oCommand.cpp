@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2012-2017, Daniel Nachbaur <danielnachbaur@gmail.com>
  *                          Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -111,7 +111,7 @@ OCommand::~OCommand()
         buffer->swap( getBuffer( ));
         reinterpret_cast< uint64_t* >( buffer->getData( ))[ 0 ] = size;
 
-        ICommand cmd( _impl->localNode, _impl->localNode, buffer, false );
+        ICommand cmd( _impl->localNode, _impl->localNode, buffer );
         _impl->dispatcher->dispatchCommand( cmd );
     }
 
@@ -120,10 +120,6 @@ OCommand::~OCommand()
 
 void OCommand::_init( const uint32_t cmd, const uint32_t type )
 {
-#ifndef COLLAGE_BIGENDIAN
-    // big endian hosts swap handshake commands to little endian...
-    LBASSERTINFO( cmd < CMD_NODE_MAXIMUM, std::hex << "0x" << cmd << std::dec );
-#endif
     enableSave();
     _enable();
     *this << uint64_t( 0 )/* size */ << type << cmd;

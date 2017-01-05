@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -92,20 +92,12 @@ public:
     /** Last time commands were received */
     int64_t lastReceive;
 
-    /** Is a big endian host? */
-    bool bigEndian;
-
     explicit Node( const uint32_t type_ )
         : id( lunchbox::make_UUID( ))
         , type( type_ )
         , state( STATE_CLOSED )
         , lastReceive ( 0 )
-#ifdef COLLAGE_BIGENDIAN
-        , bigEndian( true )
-#else
-        , bigEndian( false )
-#endif
-        {}
+    {}
 
     ~Node()
     {
@@ -163,12 +155,7 @@ ConnectionPtr Node::getMulticast()
     LBDEBUG << "Announcing id " << node->getNodeID() << " to multicast group "
            << data.connection->getDescription() << std::endl;
 
-#ifdef COLLAGE_BIGENDIAN
-    uint32_t cmd = CMD_NODE_ID_BE;
-    lunchbox::byteswap( cmd );
-#else
     const uint32_t cmd = CMD_NODE_ID;
-#endif
     OCommand( Connections( 1, data.connection ), cmd )
         << node->getNodeID() << getType() << node->serialize();
 
@@ -219,8 +206,7 @@ std::string Node::serialize() const
 {
     std::ostringstream data;
     data << Version::getMajor() << CO_SEPARATOR << Version::getMinor()
-         << CO_SEPARATOR << _impl->id << CO_SEPARATOR << _impl->bigEndian
-         << CO_SEPARATOR;
+         << CO_SEPARATOR << _impl->id << CO_SEPARATOR;
     {
         lunchbox::ScopedFastRead mutex( _impl->connectionDescriptions );
         data << co::serialize( _impl->connectionDescriptions.data );
@@ -276,28 +262,10 @@ bool Node::deserialize( std::string& data )
     _impl->id = data.substr( 0, nextPos );
     data = data.substr( nextPos + 1 );
 
-    // endianness
-    nextPos = data.find( CO_SEPARATOR );
-    if( nextPos == std::string::npos || nextPos == 0 )
-    {
-        LBERROR << "Could not parse node endianness data" << std::endl;
-        return false;
-    }
-
-    is.clear();
-    is.str( data.substr( 0, nextPos ));
-    data = data.substr( nextPos + 1 );
-    is >> _impl->bigEndian;
-
     // Connections data
     lunchbox::ScopedFastWrite mutex( _impl->connectionDescriptions );
     _impl->connectionDescriptions->clear();
     return co::deserialize( data, _impl->connectionDescriptions.data );
-}
-
-bool Node::isBigEndian() const
-{
-    return _impl->bigEndian;
 }
 
 bool Node::isReachable() const

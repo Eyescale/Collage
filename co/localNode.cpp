@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Cedric Stalder <cedric.stalder@gmail.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -223,15 +223,9 @@ LocalNode::LocalNode( const uint32_t type )
     CommandQueue* queue = getCommandThreadQueue();
     registerCommand( CMD_NODE_CONNECT,
                      CmdFunc( this, &LocalNode::_cmdConnect ), 0 );
-    registerCommand( CMD_NODE_CONNECT_BE,
-                     CmdFunc( this, &LocalNode::_cmdConnect ), 0 );
     registerCommand( CMD_NODE_CONNECT_REPLY,
                      CmdFunc( this, &LocalNode::_cmdConnectReply ), 0 );
-    registerCommand( CMD_NODE_CONNECT_REPLY_BE,
-                     CmdFunc( this, &LocalNode::_cmdConnectReply ), 0 );
     registerCommand( CMD_NODE_ID,
-                     CmdFunc( this, &LocalNode::_cmdID ), 0 );
-    registerCommand( CMD_NODE_ID_BE,
                      CmdFunc( this, &LocalNode::_cmdID ), 0 );
     registerCommand( CMD_NODE_ACK_REQUEST,
                      CmdFunc( this, &LocalNode::_cmdAckRequest ), 0 );
@@ -1043,12 +1037,7 @@ uint32_t LocalNode::_connect( NodePtr node, ConnectionPtr connection )
 
     // send connect command to peer
     lunchbox::Request< bool > request = registerRequest< bool >( node.get( ));
-#ifdef COLLAGE_BIGENDIAN
-    uint32_t cmd = CMD_NODE_CONNECT_BE;
-    lunchbox::byteswap( cmd );
-#else
     const uint32_t cmd = CMD_NODE_CONNECT;
-#endif
     OCommand( Connections( 1, connection ), cmd )
         << getNodeID() << request << getType() << serialize();
 
@@ -1474,47 +1463,11 @@ ICommand LocalNode::_setupCommand( ConnectionPtr connection,
         node = i->second;
     LBVERB << "Handle data from " << node << std::endl;
 
-#ifdef COLLAGE_BIGENDIAN
-    const bool swapping = node ? !node->isBigEndian() : false;
-#else
-    const bool swapping = node ? node->isBigEndian() : false;
-#endif
-    ICommand command( this, node, buffer, swapping );
+    ICommand command( this, node, buffer );
 
     if( node )
-    {
         node->_setLastReceive( getTime64( ));
-        return command;
-    }
 
-    uint32_t cmd = command.getCommand();
-#ifdef COLLAGE_BIGENDIAN
-    lunchbox::byteswap( cmd ); // pre-node commands are sent little endian
-#endif
-    switch( cmd )
-    {
-    case CMD_NODE_CONNECT:
-    case CMD_NODE_CONNECT_REPLY:
-    case CMD_NODE_ID:
-#ifdef COLLAGE_BIGENDIAN
-        command = ICommand( this, node, buffer, true );
-#endif
-        break;
-
-    case CMD_NODE_CONNECT_BE:
-    case CMD_NODE_CONNECT_REPLY_BE:
-    case CMD_NODE_ID_BE:
-#ifndef COLLAGE_BIGENDIAN
-        command = ICommand( this, node, buffer, true );
-#endif
-        break;
-
-    default:
-        LBUNIMPLEMENTED;
-        return ICommand();
-    }
-
-    command.setCommand( cmd ); // reset correctly swapped version
     return command;
 }
 
@@ -1535,8 +1488,7 @@ bool LocalNode::_readTail( ICommand& command, BufferPtr buffer,
         newBuffer->replace( *buffer );
         buffer = newBuffer;
 
-        command = ICommand( this, command.getRemoteNode(), buffer,
-                            command.isSwapping( ));
+        command = ICommand( this, command.getRemoteNode(), buffer );
     }
 
     // read remaining data
@@ -1732,12 +1684,7 @@ bool LocalNode::_cmdConnect( ICommand& command )
               _impl->connectionNodes.end( ));
 
     NodePtr peer;
-#ifdef COLLAGE_BIGENDIAN
-    uint32_t cmd = CMD_NODE_CONNECT_REPLY_BE;
-    lunchbox::byteswap( cmd );
-#else
     const uint32_t cmd = CMD_NODE_CONNECT_REPLY;
-#endif
 
     // No locking needed, only recv thread modifies
     NodeHashCIter i = _impl->nodes->find( nodeID );

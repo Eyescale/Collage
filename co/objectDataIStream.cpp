@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -28,13 +28,13 @@
 namespace co
 {
 ObjectDataIStream::ObjectDataIStream()
-    : DataIStream( false )
+    : DataIStream()
 {
     _reset();
 }
 
 ObjectDataIStream::ObjectDataIStream( const ObjectDataIStream& rhs )
-    : DataIStream( rhs )
+    : DataIStream()
 {
     *this = rhs;
 }
@@ -43,7 +43,6 @@ ObjectDataIStream& ObjectDataIStream::operator = ( const ObjectDataIStream& rhs)
 {
     if( this != &rhs )
     {
-        DataIStream::operator = ( rhs );
         _commands = rhs._commands;
         _version = rhs._version;
     }
@@ -189,8 +188,6 @@ bool ObjectDataIStream::getNextBuffer( CompressorInfo& info, uint32_t& nChunks,
         break;
     }
     chunkData = command.getRemainingBuffer( command.getRemainingBufferSize( ));
-
-    setSwapping( command.isSwapping( ));
     return true;
 }
 

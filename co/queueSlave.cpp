@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2011-2014, Stefan Eilemann <eile@eyescale.ch>
- *                    2011, Carsten Rohn <carsten.rohn@rtt.ag>
- *               2011-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2011-2017, Stefan Eilemann <eile@eyescale.ch>
+ *                          Carsten Rohn <carsten.rohn@rtt.ag>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -102,7 +102,7 @@ ObjectICommand QueueSlave::pop( const uint32_t timeout )
         if( !cmd.isValid( ))
         {
             LBERROR << "Timeout during QueueSlave::pop()" << std::endl;
-            return ObjectICommand( 0, 0, 0, false );
+            return ObjectICommand( 0, 0, 0 );
         }
 
         switch( cmd.getCommand( ))
@@ -114,7 +114,7 @@ ObjectICommand QueueSlave::pop( const uint32_t timeout )
             LBUNIMPLEMENTED;
         case CMD_QUEUE_EMPTY:
             if( cmd.get< int32_t >() == request )
-                return ObjectICommand( 0, 0, 0, false );
+                return ObjectICommand( 0, 0, 0 );
             // else left-over or not our empty command, discard and retry
             break;
         }

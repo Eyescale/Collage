@@ -2,6 +2,9 @@
 
 # git master
 
+* [206](https://github.com/Eyescale/Collage/pull/206)
+  Remove unused big-endian/byteswap support
+
 # Release 1.6 (09-12-2016)
 
 * [192](https://github.com/Eyescale/Collage/pull/192)

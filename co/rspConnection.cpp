@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2009-2016, Cedric Stalder <cedric.stalder@gmail.com>
+/* Copyright (c) 2009-2017, Cedric Stalder <cedric.stalder@gmail.com>
  *                          Stefan Eilemann <eile@equalizergraphics.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -562,7 +562,6 @@ RSPConnection::_getDatagramNode( const size_t bytes )
     }
     DatagramNode& node =
                     *reinterpret_cast< DatagramNode* >( _recvBuffer.getData( ));
-    node.byteswap();
     if( node.protocolVersion != CO_RSP_PROTOCOL_VERSION )
     {
         LBERROR << "Protocol version mismatch, got " << node.protocolVersion
@@ -707,7 +706,6 @@ void RSPConnection::_writeData()
     const uint32_t size = header->size + sizeof( DatagramData );
 
     _waitWritable( size ); // OPT: process incoming in between
-    header->byteswap();
     _write->send( boost::asio::buffer( header, size ));
 
 #ifdef CO_INSTRUMENT_RSP
@@ -800,7 +798,6 @@ void RSPConnection::_repeatData()
 
             // send data
             _waitWritable( size ); // OPT: process incoming in between
-            // already done by _writeData: header->byteswap();
             _write->send( boost::asio::buffer( header, size ) );
 #ifdef CO_INSTRUMENT_RSP
             ++nRepeated;
@@ -844,7 +841,6 @@ void RSPConnection::_finishWriteQueue( const uint16_t sequence )
 #ifndef NDEBUG
         DatagramData* datagram =
                          reinterpret_cast< DatagramData* >( buffer->getData( ));
-        datagram->byteswap();
         LBASSERT( datagram->writerID == _id );
         LBASSERTINFO( datagram->sequence ==
                       uint16_t( connection->_sequence + readBuffers.size( )),
@@ -1013,9 +1009,6 @@ void RSPConnection::_handleConnectedData( const size_t bytes )
 
     void* data = _recvBuffer.getData();
     uint16_t type = *reinterpret_cast< uint16_t* >( data );
-#ifdef COLLAGE_BIGENDIAN
-    lunchbox::byteswap( type );
-#endif
     switch( type )
     {
         case DATA:
@@ -1065,7 +1058,6 @@ bool RSPConnection::_handleData( const size_t bytes )
         return false;
     DatagramData& datagram =
                     *reinterpret_cast< DatagramData* >( _recvBuffer.getData( ));
-    datagram.byteswap();
 
 #ifdef CO_INSTRUMENT_RSP
     ++nReadData;
@@ -1231,7 +1223,6 @@ bool RSPConnection::_handleAck( const size_t bytes )
         return false;
     DatagramAck& ack =
                      *reinterpret_cast< DatagramAck* >( _recvBuffer.getData( ));
-    ack.byteswap();
 
 #ifdef CO_INSTRUMENT_RSP
     ++nAcksRead;
@@ -1291,7 +1282,6 @@ bool RSPConnection::_handleNack()
 {
     DatagramNack& nack =
                     *reinterpret_cast< DatagramNack* >( _recvBuffer.getData( ));
-    nack.byteswap();
 
 #ifdef CO_INSTRUMENT_RSP
     ++nNAcksRead;
@@ -1391,7 +1381,6 @@ bool RSPConnection::_handleAckRequest( const size_t bytes )
         return false;
     DatagramAckRequest& ackRequest =
               *reinterpret_cast< DatagramAckRequest* >( _recvBuffer.getData( ));
-    ackRequest.byteswap();
 
     const uint16_t writerID = ackRequest.writerID;
 #ifdef Darwin
@@ -1648,7 +1637,6 @@ void RSPConnection::_sendCountNode()
     LBLOG( LOG_RSP ) << _children.size() << " nodes" << std::endl;
     DatagramNode count = { COUNTNODE, CO_RSP_PROTOCOL_VERSION, _id,
                            uint16_t( _children.size( )) };
-    count.byteswap();
     _write->send( boost::asio::buffer( &count, sizeof( count )) );
 }
 
@@ -1657,7 +1645,6 @@ void RSPConnection::_sendSimpleDatagram( const DatagramType type,
 {
     DatagramNode simple = { uint16_t( type ), CO_RSP_PROTOCOL_VERSION, id,
                             _sequence };
-    simple.byteswap();
     _write->send( boost::asio::buffer( &simple, sizeof( simple )) );
 }
 
@@ -1671,7 +1658,6 @@ void RSPConnection::_sendAck( const uint16_t writerID,
 
     LBLOG( LOG_RSP ) << "send ack " << sequence << std::endl;
     DatagramAck ack = { ACK, _id, writerID, sequence };
-    ack.byteswap();
     _write->send( boost::asio::buffer( &ack, sizeof( ack )) );
 }
 
@@ -1697,7 +1683,6 @@ void RSPConnection::_sendNack( const uint16_t writerID, const Nack* nacks,
     DatagramNack packet;
     packet.set( _id, writerID, count );
     memcpy( packet.nacks, nacks, count * sizeof( Nack ));
-    packet.byteswap();
     _write->send( boost::asio::buffer( &packet, size ));
 }
 
@@ -1709,7 +1694,6 @@ void RSPConnection::_sendAckRequest()
     LBLOG( LOG_RSP ) << "send ack request for " << uint16_t( _sequence -1 )
                      << std::endl;
     DatagramAckRequest ackRequest = { ACKREQ, _id, uint16_t( _sequence - 1 ) };
-    ackRequest.byteswap();
     _write->send( boost::asio::buffer( &ackRequest, sizeof( DatagramAckRequest )) );
 }
 

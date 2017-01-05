@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2012-2017, Daniel Nachbaur <danielnachbaur@gmail.com>
  *                          Stefan.Eilemann@epfl.ch
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -119,7 +119,7 @@ ObjectDataICommand ObjectDataOCommand::_getCommand( LocalNodePtr node )
 
     BufferPtr inBuffer = node->allocBuffer( outBuffer.getSize( ));
     inBuffer->swap( outBuffer );
-    return ObjectDataICommand( node, node, inBuffer, false );
+    return ObjectDataICommand( node, node, inBuffer );
 }
 
 }
