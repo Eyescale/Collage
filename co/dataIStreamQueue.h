@@ -31,41 +31,41 @@
 
 namespace co
 {
-    /**
-     * @internal
-     * Manages lifecycle of DataIStreams (assembles, queues and reuses them).
-     */
-    class DataIStreamQueue
-    {
-    public:
-        DataIStreamQueue();
-        ~DataIStreamQueue();
+/**
+ * @internal
+ * Manages lifecycle of DataIStreams (assembles, queues and reuses them).
+ */
+class DataIStreamQueue
+{
+public:
+    DataIStreamQueue();
+    ~DataIStreamQueue();
 
-        bool addDataCommand( const uint128_t& key, ICommand& command );
+    bool addDataCommand(const uint128_t& key, ICommand& command);
 
-        ObjectDataIStream* pop() { return _queued.pop().second; }
-        ObjectDataIStream* tryPop();
-        ObjectDataIStream* pull( const uint128_t& key );
-        void recycle( ObjectDataIStream* stream );
+    ObjectDataIStream* pop() { return _queued.pop().second; }
+    ObjectDataIStream* tryPop();
+    ObjectDataIStream* pull(const uint128_t& key);
+    void recycle(ObjectDataIStream* stream);
 
-    protected:
-        typedef stde::hash_map< uint128_t, ObjectDataIStream* > PendingStreams;
-        typedef PendingStreams::const_iterator PendingStreamsCIter;
+protected:
+    typedef stde::hash_map<uint128_t, ObjectDataIStream*> PendingStreams;
+    typedef PendingStreams::const_iterator PendingStreamsCIter;
 
-        /** Not yet ready streams. */
-        PendingStreams _pending;
+    /** Not yet ready streams. */
+    PendingStreams _pending;
 
-        typedef std::pair< uint128_t, ObjectDataIStream* > QueuedStream;
-        typedef std::vector< QueuedStream > QueuedStreams;
+    typedef std::pair<uint128_t, ObjectDataIStream*> QueuedStream;
+    typedef std::vector<QueuedStream> QueuedStreams;
 
-        /** The change queue. */
-        lunchbox::MTQueue< QueuedStream > _queued;
+    /** The change queue. */
+    lunchbox::MTQueue<QueuedStream> _queued;
 
-        /** Cached input streams (+decompressor) */
-        lunchbox::Pool< ObjectDataIStream, true > _iStreamCache;
+    /** Cached input streams (+decompressor) */
+    lunchbox::Pool<ObjectDataIStream, true> _iStreamCache;
 
-        LB_TS_VAR( _thread );
-    };
+    LB_TS_VAR(_thread);
+};
 }
 
 #endif // CO_DATAISTREAMQUEUE_H

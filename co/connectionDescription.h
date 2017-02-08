@@ -55,11 +55,12 @@ public:
 
     /** Construct a new, default description. @version 1.0 */
     ConnectionDescription()
-        : type( CONNECTIONTYPE_TCPIP )
-        , bandwidth( 0 )
-        , port( 0 )
-        , filename( "default" )
-    {}
+        : type(CONNECTIONTYPE_TCPIP)
+        , bandwidth(0)
+        , port(0)
+        , filename("default")
+    {
+    }
 
     /**
      * Construct a description from a string representation.
@@ -70,10 +71,10 @@ public:
      * @sa fromString()
      * @version 1.0
      */
-    explicit ConnectionDescription( std::string& data );
+    explicit ConnectionDescription(std::string& data);
 
     /** Serialize this description to a std::ostream. @version 1.0 */
-    CO_API void serialize( std::ostream& os ) const;
+    CO_API void serialize(std::ostream& os) const;
 
     /** @return this description as a string. @version 1.0 */
     CO_API std::string toString() const;
@@ -94,32 +95,34 @@ public:
      * @return true if the information was read correctly, false if not.
      * @version 1.0
      */
-    CO_API bool fromString( std::string& data );
+    CO_API bool fromString(std::string& data);
 
     /** @name Data Access */
     //@{
     /** @internal
      * @return true if the two descriptions configure the same mc group.
      */
-    CO_API bool isSameMulticastGroup( ConstConnectionDescriptionPtr rhs );
+    CO_API bool isSameMulticastGroup(ConstConnectionDescriptionPtr rhs);
 
     /** @return true if the two descriptions have the same values. */
-    CO_API bool operator == ( const ConnectionDescription& rhs ) const;
+    CO_API bool operator==(const ConnectionDescription& rhs) const;
 
     /** @return true if the two descriptions have the different values. */
-    bool operator != ( const ConnectionDescription& rhs ) const
-    { return !( *this == rhs ); }
+    bool operator!=(const ConnectionDescription& rhs) const
+    {
+        return !(*this == rhs);
+    }
     //@}
 
     /** @deprecated @name Deprecated Data Access */
     //@{
-    CO_API void setHostname( const std::string& hostname );
+    CO_API void setHostname(const std::string& hostname);
     CO_API const std::string& getHostname() const;
 
-    CO_API void setInterface( const std::string& interfacename );
+    CO_API void setInterface(const std::string& interfacename);
     CO_API const std::string& getInterface() const;
 
-    CO_API void setFilename( const std::string& filename );
+    CO_API void setFilename(const std::string& filename);
     CO_API const std::string& getFilename() const;
     //@}
 
@@ -128,11 +131,10 @@ protected:
 };
 
 /** Output the given description in human-readable format. */
-CO_API std::ostream& operator << ( std::ostream&,
-                                   const ConnectionDescription& );
+CO_API std::ostream& operator<<(std::ostream&, const ConnectionDescription&);
 
 /** Serialize a vector of connection descriptions to a string. */
-CO_API std::string serialize( const ConnectionDescriptions& );
+CO_API std::string serialize(const ConnectionDescriptions&);
 
 /**
  * Deserialize a vector or connection descriptions from a string.
@@ -143,8 +145,8 @@ CO_API std::string serialize( const ConnectionDescriptions& );
  * @param descriptions return value, deserialized connection descriptions.
  * @return true on successful parsing, false otherwise.
  */
-CO_API bool deserialize( std::string& data,
-                         ConnectionDescriptions& descriptions );
+CO_API bool deserialize(std::string& data,
+                        ConnectionDescriptions& descriptions);
 }
 
 #endif // CO_CONNECTION_DESCRIPTION_H

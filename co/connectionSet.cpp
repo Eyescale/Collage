@@ -34,76 +34,71 @@
 #include <errno.h>
 
 #ifdef _WIN32
-#  include <lunchbox/monitor.h>
-#  define SELECT_TIMEOUT WAIT_TIMEOUT
-#  define SELECT_ERROR   WAIT_FAILED
-#  define MAX_CONNECTIONS (MAXIMUM_WAIT_OBJECTS - 1)
+#include <lunchbox/monitor.h>
+#define SELECT_TIMEOUT WAIT_TIMEOUT
+#define SELECT_ERROR WAIT_FAILED
+#define MAX_CONNECTIONS (MAXIMUM_WAIT_OBJECTS - 1)
 #else
-#  include <poll.h>
-#  define SELECT_TIMEOUT  0
-#  define SELECT_ERROR   -1
-#  define MAX_CONNECTIONS LB_100KB  // Arbitrary
+#include <poll.h>
+#define SELECT_TIMEOUT 0
+#define SELECT_ERROR -1
+#define MAX_CONNECTIONS LB_100KB // Arbitrary
 #endif
 
 namespace co
 {
 namespace
 {
-
 #ifdef _WIN32
 /** Handles connections exceeding MAXIMUM_WAIT_OBJECTS */
 class Thread : public lunchbox::Thread
 {
 public:
-    Thread( ConnectionSet* parent )
-        : notifier( CreateEvent( 0, false, false, 0 ))
-        , event( ConnectionSet::EVENT_NONE )
-        , _parent( parent )
-    {}
+    Thread(ConnectionSet* parent)
+        : notifier(CreateEvent(0, false, false, 0))
+        , event(ConnectionSet::EVENT_NONE)
+        , _parent(parent)
+    {
+    }
 
-    virtual ~Thread()
-        {}
-
+    virtual ~Thread() {}
     ConnectionSet set;
-    HANDLE        notifier;
+    HANDLE notifier;
 
-    lunchbox::Monitor< ConnectionSet::Event > event;
+    lunchbox::Monitor<ConnectionSet::Event> event;
 
 protected:
     virtual void run()
+    {
+        while (!set.isEmpty())
         {
-            while ( !set.isEmpty( ))
+            event = set.select();
+            if (event != ConnectionSet::EVENT_INTERRUPT &&
+                event != ConnectionSet::EVENT_NONE)
             {
-                event = set.select();
-                if( event != ConnectionSet::EVENT_INTERRUPT &&
-                    event != ConnectionSet::EVENT_NONE )
-                {
-                    SetEvent( notifier );
-                    event.waitEQ( ConnectionSet::EVENT_NONE );
-                }
+                SetEvent(notifier);
+                event.waitEQ(ConnectionSet::EVENT_NONE);
             }
         }
+    }
 
 private:
     ConnectionSet* const _parent;
 };
 
-typedef std::vector< Thread* > Threads;
+typedef std::vector<Thread*> Threads;
 typedef Threads::const_iterator ThreadsCIter;
 typedef Threads::iterator ThreadsIter;
 
-union Result
-{
+union Result {
     Connection* connection;
     Thread* thread;
 };
 #else
-union Result
-{
+union Result {
     Connection* connection;
 };
 #endif // _WIN32
-
 }
 
 namespace detail
@@ -117,17 +112,17 @@ public:
     /** The connections of this set */
     Connections allConnections;
 
-    // Note: std::vector had to much overhead here
+// Note: std::vector had to much overhead here
 #ifdef _WIN32
-    lunchbox::Buffer< HANDLE > fdSet;
+    lunchbox::Buffer<HANDLE> fdSet;
 #else
-    lunchbox::Buffer< pollfd > fdSetCopy; // 'const' set
-    lunchbox::Buffer< pollfd > fdSet;     // copy of _fdSetCopy used to poll
+    lunchbox::Buffer<pollfd> fdSetCopy; // 'const' set
+    lunchbox::Buffer<pollfd> fdSet;     // copy of _fdSetCopy used to poll
 #endif
-    lunchbox::Buffer< Result > fdSetResult;
+    lunchbox::Buffer<Result> fdSetResult;
 
     /** The connection to reset a running select, see constructor. */
-    lunchbox::RefPtr< EventConnection > selfConnection;
+    lunchbox::RefPtr<EventConnection> selfConnection;
 
 #ifdef _WIN32
     /** The connections to handle */
@@ -148,29 +143,29 @@ public:
     bool dirty;
 
     ConnectionSet()
-           : selfConnection( new EventConnection )
+        : selfConnection(new EventConnection)
 #ifdef _WIN32
-           , thread( 0 )
+        , thread(0)
 #endif
-           , error( 0 )
-           , dirty( true )
+        , error(0)
+        , dirty(true)
     {
         // Whenever another threads modifies the connection list while the
         // connection set is waiting in a select, the select is interrupted
         // using this connection.
-        LBCHECK( selfConnection->connect( ));
+        LBCHECK(selfConnection->connect());
     }
 
     ~ConnectionSet()
-     {
-         connection = 0;
-         selfConnection->close();
-         selfConnection = 0;
-     }
+    {
+        connection = 0;
+        selfConnection->close();
+        selfConnection = 0;
+    }
 
     void setDirty()
     {
-        if( dirty )
+        if (dirty)
             return;
 
         LBVERB << "FD set modified, restarting select" << std::endl;
@@ -179,15 +174,15 @@ public:
     }
 
     void interrupt() { selfConnection->set(); }
-
 private:
-    virtual void notifyStateChanged( co::Connection* ) { setDirty(); }
+    virtual void notifyStateChanged(co::Connection*) { setDirty(); }
 };
 }
 
 ConnectionSet::ConnectionSet()
-        : _impl( new detail::ConnectionSet )
-{}
+    : _impl(new detail::ConnectionSet)
+{
+}
 ConnectionSet::~ConnectionSet()
 {
     _clear();
@@ -196,13 +191,13 @@ ConnectionSet::~ConnectionSet()
 
 size_t ConnectionSet::getSize() const
 {
-    lunchbox::ScopedWrite mutex( _impl->lock );
+    lunchbox::ScopedWrite mutex(_impl->lock);
     return _impl->allConnections.size();
 }
 
 bool ConnectionSet::isEmpty() const
 {
-    lunchbox::ScopedWrite mutex( _impl->lock );
+    lunchbox::ScopedWrite mutex(_impl->lock);
     return _impl->allConnections.empty();
 }
 
@@ -231,81 +226,81 @@ void ConnectionSet::interrupt()
     _impl->interrupt();
 }
 
-void ConnectionSet::addConnection( ConnectionPtr connection )
+void ConnectionSet::addConnection(ConnectionPtr connection)
 {
-    LBASSERT( connection->isConnected() || connection->isListening( ));
+    LBASSERT(connection->isConnected() || connection->isListening());
 
     {
-        lunchbox::ScopedWrite mutex( _impl->lock );
-        _impl->allConnections.push_back( connection );
+        lunchbox::ScopedWrite mutex(_impl->lock);
+        _impl->allConnections.push_back(connection);
 
 #ifdef _WIN32
-        LBASSERT( _impl->allConnections.size() <
-                  MAX_CONNECTIONS * MAX_CONNECTIONS );
-        if( _impl->connections.size() < MAX_CONNECTIONS - _impl->threads.size())
+        LBASSERT(_impl->allConnections.size() <
+                 MAX_CONNECTIONS * MAX_CONNECTIONS);
+        if (_impl->connections.size() < MAX_CONNECTIONS - _impl->threads.size())
         {
             // can handle it ourself
-            _impl->connections.push_back( connection );
-            connection->addListener( _impl );
+            _impl->connections.push_back(connection);
+            connection->addListener(_impl);
         }
         else
         {
             // add to existing thread
-            for( ThreadsCIter i = _impl->threads.begin();
-                 i != _impl->threads.end(); ++i )
+            for (ThreadsCIter i = _impl->threads.begin();
+                 i != _impl->threads.end(); ++i)
             {
                 Thread* thread = *i;
-                if( thread->set._impl->connections.size() > MAX_CONNECTIONS )
+                if (thread->set._impl->connections.size() > MAX_CONNECTIONS)
                     continue;
 
-                thread->set.addConnection( connection );
+                thread->set.addConnection(connection);
                 return;
             }
 
             // add to new thread
-            Thread* thread = new Thread( this );
-            thread->set.addConnection( connection );
-            thread->set.addConnection( _impl->connections.back( ));
+            Thread* thread = new Thread(this);
+            thread->set.addConnection(connection);
+            thread->set.addConnection(_impl->connections.back());
             _impl->connections.pop_back();
 
-            _impl->threads.push_back( thread );
+            _impl->threads.push_back(thread);
             thread->start();
         }
 #else
-        connection->addListener( _impl );
+        connection->addListener(_impl);
 
-        LBASSERT( _impl->allConnections.size() < MAX_CONNECTIONS );
+        LBASSERT(_impl->allConnections.size() < MAX_CONNECTIONS);
 #endif // _WIN32
     }
 
     setDirty();
 }
 
-bool ConnectionSet::removeConnection( ConnectionPtr connection )
+bool ConnectionSet::removeConnection(ConnectionPtr connection)
 {
     {
-        lunchbox::ScopedWrite mutex( _impl->lock );
-        ConnectionsIter i = lunchbox::find( _impl->allConnections, connection );
-        if( i == _impl->allConnections.end( ))
+        lunchbox::ScopedWrite mutex(_impl->lock);
+        ConnectionsIter i = lunchbox::find(_impl->allConnections, connection);
+        if (i == _impl->allConnections.end())
             return false;
 
-        if( _impl->connection == connection )
+        if (_impl->connection == connection)
             _impl->connection = 0;
 
 #ifdef _WIN32
-        ConnectionsIter j = lunchbox::find( _impl->connections, connection );
-        if( j == _impl->connections.end( ))
+        ConnectionsIter j = lunchbox::find(_impl->connections, connection);
+        if (j == _impl->connections.end())
         {
             Threads::iterator k = _impl->threads.begin();
-            for( ; k != _impl->threads.end(); ++k )
+            for (; k != _impl->threads.end(); ++k)
             {
                 Thread* thread = *k;
-                if( thread->set.removeConnection( connection ))
+                if (thread->set.removeConnection(connection))
                 {
-                    if( !thread->set.isEmpty( ))
+                    if (!thread->set.isEmpty())
                         return true;
 
-                    if( thread == _impl->thread )
+                    if (thread == _impl->thread)
                         _impl->thread = 0;
 
                     thread->event = EVENT_NONE;
@@ -315,19 +310,19 @@ bool ConnectionSet::removeConnection( ConnectionPtr connection )
                 }
             }
 
-            LBASSERT( k != _impl->threads.end( ));
-            _impl->threads.erase( k );
+            LBASSERT(k != _impl->threads.end());
+            _impl->threads.erase(k);
         }
         else
         {
-            connection->removeListener( _impl );
-            _impl->connections.erase( j );
+            connection->removeListener(_impl);
+            _impl->connections.erase(j);
         }
 #else
-        connection->removeListener( _impl );
+        connection->removeListener(_impl);
 #endif
 
-        _impl->allConnections.erase( i );
+        _impl->allConnections.erase(i);
     }
 
     setDirty();
@@ -339,7 +334,7 @@ void ConnectionSet::_clear()
     _impl->connection = 0;
 
 #ifdef _WIN32
-    for( ThreadsIter i =_impl->threads.begin(); i != _impl->threads.end(); ++i )
+    for (ThreadsIter i = _impl->threads.begin(); i != _impl->threads.end(); ++i)
     {
         Thread* thread = *i;
         thread->set._clear();
@@ -353,8 +348,8 @@ void ConnectionSet::_clear()
 #else
     Connections& connections = _impl->allConnections;
 #endif
-    for( ConnectionsIter i = connections.begin(); i != connections.end(); ++i )
-        (*i)->removeListener( _impl );
+    for (ConnectionsIter i = connections.begin(); i != connections.end(); ++i)
+        (*i)->removeListener(_impl);
 
     _impl->allConnections.clear();
 #ifdef _WIN32
@@ -365,116 +360,115 @@ void ConnectionSet::_clear()
     _impl->fdSetResult.clear();
 }
 
-ConnectionSet::Event ConnectionSet::select( const uint32_t timeout )
+ConnectionSet::Event ConnectionSet::select(const uint32_t timeout)
 {
-    LB_TS_SCOPED( _selectThread );
+    LB_TS_SCOPED(_selectThread);
 
-    while( true )
+    while (true)
     {
         _impl->connection = 0;
-        _impl->error      = 0;
+        _impl->error = 0;
 #ifdef _WIN32
-        if( _impl->thread )
+        if (_impl->thread)
         {
             _impl->thread->event = EVENT_NONE; // unblock previous thread
             _impl->thread = 0;
         }
 #else
-        if( !_impl->dirty ) // #38: check results from previous poll()
+        if (!_impl->dirty) // #38: check results from previous poll()
         {
-            const Event event = _getSelectResult( 0 );
-            if( event != EVENT_NONE )
+            const Event event = _getSelectResult(0);
+            if (event != EVENT_NONE)
                 return event;
         }
 #endif
 
-        if( !_setupFDSet( ))
+        if (!_setupFDSet())
             return EVENT_INVALID_HANDLE;
 
-        // poll for a result
+// poll for a result
 #ifdef _WIN32
-        LBASSERT( LB_TIMEOUT_INDEFINITE == INFINITE );
-        const DWORD ret = WaitForMultipleObjectsEx( _impl->fdSet.getSize(),
-                                                    _impl->fdSet.getData(),
-                                                    FALSE, timeout, TRUE );
+        LBASSERT(LB_TIMEOUT_INDEFINITE == INFINITE);
+        const DWORD ret = WaitForMultipleObjectsEx(_impl->fdSet.getSize(),
+                                                   _impl->fdSet.getData(),
+                                                   FALSE, timeout, TRUE);
 #else
-        const int pollTimeout = timeout == LB_TIMEOUT_INDEFINITE ?
-                                -1 : int( timeout );
-        const int ret = ::poll( _impl->fdSet.getData(), _impl->fdSet.getSize(),
-                                pollTimeout );
+        const int pollTimeout =
+            timeout == LB_TIMEOUT_INDEFINITE ? -1 : int(timeout);
+        const int ret =
+            ::poll(_impl->fdSet.getData(), _impl->fdSet.getSize(), pollTimeout);
 #endif
-        switch( ret )
+        switch (ret)
         {
-            case SELECT_TIMEOUT:
-                return EVENT_TIMEOUT;
+        case SELECT_TIMEOUT:
+            return EVENT_TIMEOUT;
 
-            case SELECT_ERROR:
+        case SELECT_ERROR:
 #ifdef _WIN32
-                if( !_impl->thread )
-                    _impl->error = GetLastError();
+            if (!_impl->thread)
+                _impl->error = GetLastError();
 
-                if( _impl->error == WSA_INVALID_HANDLE )
-                {
-                    _impl->dirty = true;
-                    break;
-                }
+            if (_impl->error == WSA_INVALID_HANDLE)
+            {
+                _impl->dirty = true;
+                break;
+            }
 #else
-                if( errno == EINTR ) // Interrupted system call (gdb) - ignore
-                    break;
+            if (errno == EINTR) // Interrupted system call (gdb) - ignore
+                break;
 
-                _impl->error = errno;
+            _impl->error = errno;
 #endif
 
-                LBERROR << "Error during select: " << lunchbox::sysError
-                        << std::endl;
-                return EVENT_SELECT_ERROR;
+            LBERROR << "Error during select: " << lunchbox::sysError
+                    << std::endl;
+            return EVENT_SELECT_ERROR;
 
-            default: // SUCCESS
-            {
-                const Event event = _getSelectResult( ret );
-                if( event == EVENT_NONE )
-                     break;
-                return event;
-            }
+        default: // SUCCESS
+        {
+            const Event event = _getSelectResult(ret);
+            if (event == EVENT_NONE)
+                break;
+            return event;
+        }
         }
     }
 }
 
-
-ConnectionSet::Event ConnectionSet::_getSelectResult( const uint32_t index )
+ConnectionSet::Event ConnectionSet::_getSelectResult(const uint32_t index)
 {
-    const Event event = _parseSelect( index );
-    if( _impl->connection == _impl->selfConnection.get( ))
+    const Event event = _parseSelect(index);
+    if (_impl->connection == _impl->selfConnection.get())
     {
         _impl->connection = 0;
         _impl->selfConnection->reset();
         return EVENT_INTERRUPT;
     }
-    if( event == EVENT_DATA && _impl->connection->isListening( ))
+    if (event == EVENT_DATA && _impl->connection->isListening())
         return EVENT_CONNECT;
 
     return event;
 }
 
 #ifdef _WIN32
-ConnectionSet::Event ConnectionSet::_parseSelect( const uint32_t index )
+ConnectionSet::Event ConnectionSet::_parseSelect(const uint32_t index)
 {
     const uint32_t i = index - WAIT_OBJECT_0;
-    LBASSERT( i < MAXIMUM_WAIT_OBJECTS );
+    LBASSERT(i < MAXIMUM_WAIT_OBJECTS);
 
     // Bug: WaitForMultipleObjects returns occasionally 16 with fdSet size 2,
     //   when used by the RSPConnection
     // WAR: Catch this and ignore the result, this seems to have no side-effects
-    if( i >= _impl->fdSetResult.getSize( ))
+    if (i >= _impl->fdSetResult.getSize())
         return EVENT_NONE;
 
-    if( i > _impl->connections.size( ))
+    if (i > _impl->connections.size())
     {
         _impl->thread = _impl->fdSetResult[i].thread;
-        LBASSERT( _impl->thread->event != EVENT_NONE );
-        LBASSERT( _impl->fdSet[ i ] == _impl->thread->notifier );
+        LBASSERT(_impl->thread->event != EVENT_NONE);
+        LBASSERT(_impl->fdSet[i] == _impl->thread->notifier);
 
-        ResetEvent( _impl->thread->notifier );
+        ResetEvent(_impl->thread->notifier);
         _impl->connection = _impl->thread->set.getConnection();
         _impl->error = _impl->thread->set.getError();
         return _impl->thread->event.get();
@@ -482,30 +476,30 @@ ConnectionSet::Event ConnectionSet::_parseSelect( const uint32_t index )
     // else locally handled connection
 
     _impl->connection = _impl->fdSetResult[i].connection;
-    LBASSERT( _impl->fdSet[i] == _impl->connection->getNotifier() ||
-              _impl->connection->isClosed( ));
+    LBASSERT(_impl->fdSet[i] == _impl->connection->getNotifier() ||
+             _impl->connection->isClosed());
     return EVENT_DATA;
 }
-#else // _WIN32
-ConnectionSet::Event ConnectionSet::_parseSelect( const uint32_t )
+#else  // _WIN32
+ConnectionSet::Event ConnectionSet::_parseSelect(const uint32_t)
 {
-    for( size_t i = 0; i < _impl->fdSet.getSize(); ++i )
+    for (size_t i = 0; i < _impl->fdSet.getSize(); ++i)
     {
         pollfd& pollFD = _impl->fdSet[i];
-        if( pollFD.revents == 0 )
+        if (pollFD.revents == 0)
             continue;
 
         const int pollEvents = pollFD.revents;
         pollFD.revents = 0;
-        LBASSERT( pollFD.fd > 0 );
+        LBASSERT(pollFD.fd > 0);
 
         _impl->connection = _impl->fdSetResult[i].connection;
-        LBASSERT( _impl->connection );
+        LBASSERT(_impl->connection);
 
         LBVERB << "Got event on connection @" << (void*)_impl->connection.get()
                << std::endl;
 
-        if( pollEvents & POLLERR )
+        if (pollEvents & POLLERR)
         {
             LBINFO << "Error during poll(): " << lunchbox::sysError
                    << std::endl;
@@ -513,14 +507,14 @@ ConnectionSet::Event ConnectionSet::_parseSelect( const uint32_t )
         }
 
         // disconnect event or disconnected connection
-        if( (pollEvents & POLLHUP) || (pollEvents & POLLNVAL) )
+        if ((pollEvents & POLLHUP) || (pollEvents & POLLNVAL))
             return EVENT_DISCONNECT;
 
         // Note: Intuitively I would handle the read before HUP to
         // read remaining data of the connection, but at least on
         // OS X both events happen simultaneously and no more data
         // can be read.
-        if( pollEvents & POLLIN || pollEvents & POLLPRI )
+        if (pollEvents & POLLIN || pollEvents & POLLPRI)
             return EVENT_DATA;
 
         LBERROR << "Unhandled poll event(s): " << pollEvents << std::endl;
@@ -532,7 +526,7 @@ ConnectionSet::Event ConnectionSet::_parseSelect( const uint32_t )
 
 bool ConnectionSet::_setupFDSet()
 {
-    if( !_impl->dirty )
+    if (!_impl->dirty)
     {
 #ifndef _WIN32
         // TODO: verify that poll() really modifies _fdSet, and remove the copy
@@ -543,53 +537,55 @@ bool ConnectionSet::_setupFDSet()
     }
 
     _impl->dirty = false;
-    _impl->fdSet.setSize( 0 );
-    _impl->fdSetResult.setSize( 0 );
+    _impl->fdSet.setSize(0);
+    _impl->fdSetResult.setSize(0);
 
 #ifdef _WIN32
     // add self connection
     HANDLE readHandle = _impl->selfConnection->getNotifier();
-    LBASSERT( readHandle );
-    _impl->fdSet.append( readHandle );
+    LBASSERT(readHandle);
+    _impl->fdSet.append(readHandle);
 
     Result res;
     res.connection = _impl->selfConnection.get();
-    _impl->fdSetResult.append( res );
+    _impl->fdSetResult.append(res);
 
     // add regular connections
     _impl->lock.set();
-    for( ConnectionsCIter i = _impl->connections.begin();
-         i != _impl->connections.end(); ++i )
+    for (ConnectionsCIter i = _impl->connections.begin();
+         i != _impl->connections.end(); ++i)
     {
         ConnectionPtr connection = *i;
         readHandle = connection->getNotifier();
 
-        if( !readHandle )
+        if (!readHandle)
         {
             LBDEBUG << "Cannot select connection " << connection
-                    << ", connection does not provide a read handle" << std::endl;
+                    << ", connection does not provide a read handle"
+                    << std::endl;
             _impl->connection = connection;
             _impl->lock.unset();
             return false;
         }
 
-        _impl->fdSet.append( readHandle );
+        _impl->fdSet.append(readHandle);
 
         Result result;
         result.connection = connection.get();
-        _impl->fdSetResult.append( result );
+        _impl->fdSetResult.append(result);
     }
 
-    for( ThreadsCIter i=_impl->threads.begin(); i != _impl->threads.end(); ++i )
+    for (ThreadsCIter i = _impl->threads.begin(); i != _impl->threads.end();
+         ++i)
     {
         Thread* thread = *i;
         readHandle = thread->notifier;
-        LBASSERT( readHandle );
-        _impl->fdSet.append( readHandle );
+        LBASSERT(readHandle);
+        _impl->fdSet.append(readHandle);
 
         Result result;
         result.thread = thread;
-        _impl->fdSetResult.append( result );
+        _impl->fdSetResult.append(result);
     }
     _impl->lock.unset();
 #else // _WIN32
@@ -599,36 +595,36 @@ bool ConnectionSet::_setupFDSet()
 
     // add self 'connection'
     fd.fd = _impl->selfConnection->getNotifier();
-    LBASSERT( fd.fd > 0 );
-    _impl->fdSet.append( fd );
+    LBASSERT(fd.fd > 0);
+    _impl->fdSet.append(fd);
 
     Result result;
     result.connection = _impl->selfConnection.get();
-    _impl->fdSetResult.append( result );
+    _impl->fdSetResult.append(result);
 
     // add regular connections
     _impl->lock.set();
-    for( ConnectionPtr connection : _impl->allConnections )
+    for (ConnectionPtr connection : _impl->allConnections)
     {
         fd.fd = connection->getNotifier();
 
-        if( fd.fd <= 0 )
+        if (fd.fd <= 0)
         {
             LBDEBUG << "Cannot select connection " << connection
-                    << ", connection " << lunchbox::className( connection.get( ))
+                    << ", connection " << lunchbox::className(connection.get())
                     << " doesn't have a file descriptor" << std::endl;
             _impl->connection = connection;
             _impl->lock.unset();
             return false;
         }
 
-        LBVERB << "Listening on " << lunchbox::className( connection.get( ))
+        LBVERB << "Listening on " << lunchbox::className(connection.get())
                << std::endl;
 
-        _impl->fdSet.append( fd );
+        _impl->fdSet.append(fd);
 
         result.connection = connection.get();
-        _impl->fdSetResult.append( result );
+        _impl->fdSetResult.append(result);
     }
     _impl->lock.unset();
     _impl->fdSetCopy = _impl->fdSet;
@@ -637,34 +633,50 @@ bool ConnectionSet::_setupFDSet()
     return true;
 }
 
-std::ostream& operator << ( std::ostream& os, const ConnectionSet& set )
+std::ostream& operator<<(std::ostream& os, const ConnectionSet& set)
 {
     const Connections& connections = set.getConnections();
 
     os << "connection set " << (void*)&set << ", " << connections.size()
        << " connections";
 
-    for( ConnectionsCIter i = connections.begin(); i != connections.end(); ++i )
+    for (ConnectionsCIter i = connections.begin(); i != connections.end(); ++i)
         os << std::endl << "    " << (*i).get();
 
     return os;
 }
 
-std::ostream& operator << ( std::ostream& os, const ConnectionSet::Event event )
+std::ostream& operator<<(std::ostream& os, const ConnectionSet::Event event)
 {
-    if( event >= ConnectionSet::EVENT_ALL )
-        return os << "unknown (" << unsigned( event ) << ')';
+    if (event >= ConnectionSet::EVENT_ALL)
+        return os << "unknown (" << unsigned(event) << ')';
 
-    return os << ( event == ConnectionSet::EVENT_NONE ? "none" :
-                   event == ConnectionSet::EVENT_CONNECT ? "connect" :
-                   event == ConnectionSet::EVENT_DISCONNECT ? "disconnect" :
-                   event == ConnectionSet::EVENT_DATA ? "data" :
-                   event == ConnectionSet::EVENT_TIMEOUT ? "timeout" :
-                   event == ConnectionSet::EVENT_INTERRUPT ? "interrupted" :
-                   event == ConnectionSet::EVENT_ERROR ? "error" :
-                   event == ConnectionSet::EVENT_SELECT_ERROR ? "select error" :
-                   event == ConnectionSet::EVENT_INVALID_HANDLE ?
-                   "invalid handle" : "ERROR" );
+    return os
+           << (event == ConnectionSet::EVENT_NONE
+                   ? "none"
+                   : event == ConnectionSet::EVENT_CONNECT
+                         ? "connect"
+                         : event == ConnectionSet::EVENT_DISCONNECT
+                               ? "disconnect"
+                               : event == ConnectionSet::EVENT_DATA
+                                     ? "data"
+                                     : event == ConnectionSet::EVENT_TIMEOUT
+                                           ? "timeout"
+                                           : event == ConnectionSet::
+                                                          EVENT_INTERRUPT
+                                                 ? "interrupted"
+                                                 : event == ConnectionSet::
+                                                                EVENT_ERROR
+                                                       ? "error"
+                                                       : event ==
+                                                                 ConnectionSet::
+                                                                     EVENT_SELECT_ERROR
+                                                             ? "select error"
+                                                             : event ==
+                                                                       ConnectionSet::
+                                                                           EVENT_INVALID_HANDLE
+                                                                   ? "invalid "
+                                                                     "handle"
+                                                                   : "ERROR");
 }
-
 }

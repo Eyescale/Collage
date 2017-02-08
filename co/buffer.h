@@ -24,14 +24,16 @@
 #include <co/api.h>
 #include <co/types.h>
 
-#include <lunchbox/buffer.h>        // base class
-#include <lunchbox/referenced.h>    // base class
-#include <lunchbox/thread.h>        // LB_TS_VAR macro
-
+#include <lunchbox/buffer.h>     // base class
+#include <lunchbox/referenced.h> // base class
+#include <lunchbox/thread.h>     // LB_TS_VAR macro
 
 namespace co
 {
-namespace detail { class Buffer; }
+namespace detail
+{
+class Buffer;
+}
 
 /**
  * A receive buffer for a Connection.
@@ -45,7 +47,7 @@ class Buffer : public lunchbox::Bufferb, public lunchbox::Referenced
 {
 public:
     /** Construct a new buffer. @version 1.0 */
-    CO_API explicit Buffer( BufferListener* listener = 0 );
+    CO_API explicit Buffer(BufferListener* listener = 0);
 
     /** Destruct this buffer. @version 1.0 */
     CO_API virtual ~Buffer();
@@ -57,12 +59,12 @@ public:
 
 private:
     detail::Buffer* const _impl;
-    LB_TS_VAR( _writeThread );
+    LB_TS_VAR(_writeThread);
 
     void notifyFree() override;
 };
 
-std::ostream& operator << ( std::ostream&, const Buffer& );
+std::ostream& operator<<(std::ostream&, const Buffer&);
 }
 
-#endif //CO_BUFFER_H
+#endif // CO_BUFFER_H

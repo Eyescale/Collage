@@ -26,37 +26,37 @@
 #include "objectDataICommand.h"
 #include "objectDataIStream.h"
 #include "objectDataOCommand.h"
-#include <lunchbox/scopedMutex.h>
 #include <limits>
+#include <lunchbox/scopedMutex.h>
 
 namespace co
 {
-typedef CommandFunc< VersionedSlaveCM > CmdFunc;
+typedef CommandFunc<VersionedSlaveCM> CmdFunc;
 
-VersionedSlaveCM::VersionedSlaveCM( Object* object, uint32_t masterInstanceID )
-        : ObjectCM( object )
-        , _version( VERSION_NONE )
-        , _currentIStream( 0 )
+VersionedSlaveCM::VersionedSlaveCM(Object* object, uint32_t masterInstanceID)
+    : ObjectCM(object)
+    , _version(VERSION_NONE)
+    , _currentIStream(0)
 #pragma warning(push)
-#pragma warning(disable: 4355)
-        , _ostream( this )
+#pragma warning(disable : 4355)
+    , _ostream(this)
 #pragma warning(pop)
-        , _masterInstanceID( masterInstanceID )
+    , _masterInstanceID(masterInstanceID)
 {
-    LBASSERT( object );
+    LBASSERT(object);
 
-    object->registerCommand( CMD_OBJECT_INSTANCE,
-                             CmdFunc( this, &VersionedSlaveCM::_cmdData ), 0 );
-    object->registerCommand( CMD_OBJECT_DELTA,
-                             CmdFunc( this, &VersionedSlaveCM::_cmdData ), 0 );
+    object->registerCommand(CMD_OBJECT_INSTANCE,
+                            CmdFunc(this, &VersionedSlaveCM::_cmdData), 0);
+    object->registerCommand(CMD_OBJECT_DELTA,
+                            CmdFunc(this, &VersionedSlaveCM::_cmdData), 0);
 }
 
 VersionedSlaveCM::~VersionedSlaveCM()
 {
-    while( !_queuedVersions.isEmpty( ))
+    while (!_queuedVersions.isEmpty())
         delete _queuedVersions.pop();
 
-    LBASSERT( !_currentIStream );
+    LBASSERT(!_currentIStream);
     delete _currentIStream;
     _currentIStream = 0;
 
@@ -64,49 +64,49 @@ VersionedSlaveCM::~VersionedSlaveCM()
     _master = 0;
 }
 
-uint128_t VersionedSlaveCM::commit( const uint32_t )
+uint128_t VersionedSlaveCM::commit(const uint32_t)
 {
 #if 0
     LBLOG( LOG_OBJECTS ) << "commit v" << _version << " " << command
                          << std::endl;
 #endif
-    if( !_object->isDirty() || !_master || !_master->isReachable( ))
+    if (!_object->isDirty() || !_master || !_master->isReachable())
         return VERSION_NONE;
 
-    _ostream.enableSlaveCommit( _master );
-    _object->pack( _ostream );
+    _ostream.enableSlaveCommit(_master);
+    _object->pack(_ostream);
     _ostream.disable();
 
     return _ostream.hasSentData() ? _ostream.getVersion() : VERSION_NONE;
 }
 
-uint128_t VersionedSlaveCM::sync( const uint128_t& v )
+uint128_t VersionedSlaveCM::sync(const uint128_t& v)
 {
 #if 0
     LBLOG( LOG_OBJECTS ) << "sync to v" << v << ", id " << _object->getID()
                          << "." << _object->getInstanceID() << std::endl;
 #endif
-    if( _version == v )
+    if (_version == v)
         return _version;
 
-    if( v == VERSION_HEAD )
+    if (v == VERSION_HEAD)
     {
         _syncToHead();
         return _version;
     }
 
-    const uint128_t version = ( v == VERSION_NEXT ) ? _version + 1 : v;
-    LBASSERTINFO( version.high() == 0, "Not a master version: " << version )
-    LBASSERTINFO( _version <= version,
-                  "can't sync to older version of object " <<
-                  lunchbox::className( _object ) << " " << _object->getID() <<
-                  " (" << _version << ", " << version <<")" );
+    const uint128_t version = (v == VERSION_NEXT) ? _version + 1 : v;
+    LBASSERTINFO(version.high() == 0, "Not a master version: " << version)
+    LBASSERTINFO(_version <= version,
+                 "can't sync to older version of object "
+                     << lunchbox::className(_object) << " " << _object->getID()
+                     << " (" << _version << ", " << version << ")");
 
-    while( _version < version )
-        _unpackOneVersion( _queuedVersions.pop( ));
+    while (_version < version)
+        _unpackOneVersion(_queuedVersions.pop());
 
     LocalNodePtr node = _object->getLocalNode();
-    if( node.isValid( ))
+    if (node.isValid())
         node->flushCommands();
 
     return _version;
@@ -114,23 +114,23 @@ uint128_t VersionedSlaveCM::sync( const uint128_t& v )
 
 void VersionedSlaveCM::_syncToHead()
 {
-    if( _queuedVersions.isEmpty( ))
+    if (_queuedVersions.isEmpty())
         return;
 
     ObjectDataIStream* is = 0;
-    while( _queuedVersions.tryPop( is ))
-        _unpackOneVersion( is );
+    while (_queuedVersions.tryPop(is))
+        _unpackOneVersion(is);
 
     LocalNodePtr localNode = _object->getLocalNode();
-    if( localNode.isValid( ))
+    if (localNode.isValid())
         localNode->flushCommands();
 }
 
-void VersionedSlaveCM::_releaseStream( ObjectDataIStream* stream )
+void VersionedSlaveCM::_releaseStream(ObjectDataIStream* stream)
 {
 #ifdef CO_AGGRESSIVE_CACHING
     stream->reset();
-    _iStreamCache.release( stream );
+    _iStreamCache.release(stream);
 #else
     delete stream;
 #endif
@@ -139,74 +139,76 @@ void VersionedSlaveCM::_releaseStream( ObjectDataIStream* stream )
 uint128_t VersionedSlaveCM::getHeadVersion() const
 {
     ObjectDataIStream* is = 0;
-    if( _queuedVersions.getBack( is ))
+    if (_queuedVersions.getBack(is))
     {
-        LBASSERT( is );
+        LBASSERT(is);
         return is->getVersion();
     }
     return _version;
 }
 
-void VersionedSlaveCM::_unpackOneVersion( ObjectDataIStream* is )
+void VersionedSlaveCM::_unpackOneVersion(ObjectDataIStream* is)
 {
-    LBASSERT( is );
-    LBASSERTINFO( _version == is->getVersion() - 1 || _version == VERSION_NONE,
-                  "Expected version " << _version + 1 << " or 0, got "
-                  << is->getVersion() << " for " << *_object );
+    LBASSERT(is);
+    LBASSERTINFO(_version == is->getVersion() - 1 || _version == VERSION_NONE,
+                 "Expected version " << _version + 1 << " or 0, got "
+                                     << is->getVersion() << " for "
+                                     << *_object);
 
-    if( is->hasInstanceData( ))
-        _object->applyInstanceData( *is );
+    if (is->hasInstanceData())
+        _object->applyInstanceData(*is);
     else
-        _object->unpack( *is );
+        _object->unpack(*is);
 
     _version = is->getVersion();
     _sendAck();
 
-    LBASSERT( _version != VERSION_INVALID );
-    LBASSERT( _version != VERSION_NONE );
-    LBASSERTINFO( is->getRemainingBufferSize()==0 && is->nRemainingBuffers()==0,
-                  "Object " << typeid( *_object ).name() <<
-                  " did not unpack all data" );
+    LBASSERT(_version != VERSION_INVALID);
+    LBASSERT(_version != VERSION_NONE);
+    LBASSERTINFO(is->getRemainingBufferSize() == 0 &&
+                     is->nRemainingBuffers() == 0,
+                 "Object " << typeid(*_object).name()
+                           << " did not unpack all data");
 
 #if 0
     LBLOG( LOG_OBJECTS ) << "applied v" << _version << ", id "
                          << _object->getID() << "." << _object->getInstanceID()
                          << std::endl;
 #endif
-    _releaseStream( is );
+    _releaseStream(is);
 }
 
 void VersionedSlaveCM::_sendAck()
 {
     const uint64_t maxVersion = _version.low() + _object->getMaxVersions();
-    if( maxVersion <= _version.low( )) // overflow: default unblocking commit
+    if (maxVersion <= _version.low()) // overflow: default unblocking commit
         return;
 
-    _object->send( _master, CMD_OBJECT_MAX_VERSION, _masterInstanceID )
-            << maxVersion << _object->getInstanceID();
+    _object->send(_master, CMD_OBJECT_MAX_VERSION, _masterInstanceID)
+        << maxVersion << _object->getInstanceID();
 }
 
-void VersionedSlaveCM::applyMapData( const uint128_t& version )
+void VersionedSlaveCM::applyMapData(const uint128_t& version)
 {
-    while( true )
+    while (true)
     {
         ObjectDataIStream* is = _queuedVersions.pop();
-        if( is->getVersion() == version )
+        if (is->getVersion() == version)
         {
-            LBASSERTINFO( is->hasInstanceData(), *_object );
+            LBASSERTINFO(is->hasInstanceData(), *_object);
 
-            if( is->hasData( )) // not VERSION_NONE
-                _object->applyInstanceData( *is );
+            if (is->hasData()) // not VERSION_NONE
+                _object->applyInstanceData(*is);
             _version = is->getVersion();
 
-            LBASSERT( _version != VERSION_INVALID );
-            LBASSERTINFO( !is->hasData(),
-                          lunchbox::className( _object ) <<
-                          " did not unpack all data, " <<
-                          is->getRemainingBufferSize() << " bytes, " <<
-                          is->nRemainingBuffers() << " buffer(s)" );
+            LBASSERT(_version != VERSION_INVALID);
+            LBASSERTINFO(!is->hasData(),
+                         lunchbox::className(_object)
+                             << " did not unpack all data, "
+                             << is->getRemainingBufferSize() << " bytes, "
+                             << is->nRemainingBuffers() << " buffer(s)");
 
-            _releaseStream( is );
+            _releaseStream(is);
             return;
         }
         else
@@ -220,116 +222,115 @@ void VersionedSlaveCM::applyMapData( const uint128_t& version )
             // - p1, cmd receives commit data
             // -> newly attached object recv new commit data before map data,
             //    ignore it
-            LBASSERTINFO( is->getVersion() > version,
-                          is->getVersion() << " <= " << version );
-            _releaseStream( is );
+            LBASSERTINFO(is->getVersion() > version, is->getVersion()
+                                                         << " <= " << version);
+            _releaseStream(is);
         }
     }
 }
 
-void VersionedSlaveCM::addInstanceDatas( const ObjectDataIStreamDeque& cache,
-                                         const uint128_t& startVersion )
+void VersionedSlaveCM::addInstanceDatas(const ObjectDataIStreamDeque& cache,
+                                        const uint128_t& startVersion)
 {
-    LB_TS_THREAD( _rcvThread );
+    LB_TS_THREAD(_rcvThread);
 #if 0
     LBLOG( LOG_OBJECTS ) << lunchbox::disableFlush << "Adding data front ";
 #endif
 
     uint128_t oldest = VERSION_NONE;
     uint128_t newest = VERSION_NONE;
-    if( !_queuedVersions.isEmpty( ))
+    if (!_queuedVersions.isEmpty())
     {
         ObjectDataIStream* is = 0;
 
-        LBCHECK( _queuedVersions.getFront( is ));
+        LBCHECK(_queuedVersions.getFront(is));
         oldest = is->getVersion();
 
-        LBCHECK( _queuedVersions.getBack( is ));
+        LBCHECK(_queuedVersions.getBack(is));
         newest = is->getVersion();
     }
 
     ObjectDataIStreamDeque head;
     ObjectDataIStreams tail;
 
-    for( ObjectDataIStreamDeque::const_iterator i = cache.begin();
-         i != cache.end(); ++i )
+    for (ObjectDataIStreamDeque::const_iterator i = cache.begin();
+         i != cache.end(); ++i)
     {
         ObjectDataIStream* stream = *i;
         const uint128_t& version = stream->getVersion();
-        if( version < startVersion )
+        if (version < startVersion)
             continue;
 
-        LBASSERT( stream->isReady( ));
-        LBASSERT( stream->hasInstanceData( ));
-        if( !stream->isReady( ))
+        LBASSERT(stream->isReady());
+        LBASSERT(stream->hasInstanceData());
+        if (!stream->isReady())
             break;
 
-        if( version < oldest )
-            head.push_front( stream );
-        else if( version > newest )
-            tail.push_back( stream );
+        if (version < oldest)
+            head.push_front(stream);
+        else if (version > newest)
+            tail.push_back(stream);
     }
 
-    for( ObjectDataIStreamDeque::const_iterator i = head.begin();
-         i != head.end(); ++i )
+    for (ObjectDataIStreamDeque::const_iterator i = head.begin();
+         i != head.end(); ++i)
     {
         const ObjectDataIStream* stream = *i;
 #ifndef NDEBUG
         ObjectDataIStream* debugStream = 0;
-        _queuedVersions.getFront( debugStream );
-        if( debugStream )
-            LBASSERT( debugStream->getVersion() == stream->getVersion() + 1);
+        _queuedVersions.getFront(debugStream);
+        if (debugStream)
+            LBASSERT(debugStream->getVersion() == stream->getVersion() + 1);
 #endif
-        _queuedVersions.pushFront( new ObjectDataIStream( *stream ));
+        _queuedVersions.pushFront(new ObjectDataIStream(*stream));
     }
 
-    for( ObjectDataIStreams::const_iterator i = tail.begin();
-         i != tail.end(); ++i )
+    for (ObjectDataIStreams::const_iterator i = tail.begin(); i != tail.end();
+         ++i)
     {
         const ObjectDataIStream* stream = *i;
 #ifndef NDEBUG
         ObjectDataIStream* debugStream = 0;
-        _queuedVersions.getBack( debugStream );
-        if( debugStream )
+        _queuedVersions.getBack(debugStream);
+        if (debugStream)
         {
-            LBASSERT( debugStream->getVersion() + 1 == stream->getVersion( ));
+            LBASSERT(debugStream->getVersion() + 1 == stream->getVersion());
         }
 #endif
-        _queuedVersions.push( new ObjectDataIStream( *stream ));
+        _queuedVersions.push(new ObjectDataIStream(*stream));
     }
 }
 
 //---------------------------------------------------------------------------
 // command handlers
 //---------------------------------------------------------------------------
-bool VersionedSlaveCM::_cmdData( ICommand& cmd )
+bool VersionedSlaveCM::_cmdData(ICommand& cmd)
 {
-    ObjectDataICommand command( cmd );
+    ObjectDataICommand command(cmd);
 
-    LB_TS_THREAD( _rcvThread );
-    LBASSERT( command.getNode().isValid( ));
+    LB_TS_THREAD(_rcvThread);
+    LBASSERT(command.getNode().isValid());
 
-    if( !_currentIStream )
+    if (!_currentIStream)
         _currentIStream = _iStreamCache.alloc();
 
-    _currentIStream->addDataCommand( command );
-    if( _currentIStream->isReady( ))
+    _currentIStream->addDataCommand(command);
+    if (_currentIStream->isReady())
     {
         const uint128_t& version = _currentIStream->getVersion();
 #ifndef NDEBUG
         ObjectDataIStream* debugStream = 0;
-        _queuedVersions.getBack( debugStream );
-        if ( debugStream )
+        _queuedVersions.getBack(debugStream);
+        if (debugStream)
         {
-            LBASSERT( debugStream->getVersion() + 1 == version ||
-                      debugStream->getVersion() == VERSION_NONE );
+            LBASSERT(debugStream->getVersion() + 1 == version ||
+                     debugStream->getVersion() == VERSION_NONE);
         }
 #endif
-        _queuedVersions.push( _currentIStream );
-        _object->notifyNewHeadVersion( version );
+        _queuedVersions.push(_currentIStream);
+        _object->notifyNewHeadVersion(version);
         _currentIStream = 0;
     }
     return true;
 }
-
 }

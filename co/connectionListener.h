@@ -22,14 +22,13 @@
 
 namespace co
 {
-    /** A listener interface to connection changes. */
-    class ConnectionListener
-    {
-    public:
-        virtual ~ConnectionListener() {}
-
-        virtual void notifyStateChanged( Connection* ){}
-    };
+/** A listener interface to connection changes. */
+class ConnectionListener
+{
+public:
+    virtual ~ConnectionListener() {}
+    virtual void notifyStateChanged(Connection*) {}
+};
 }
 
 #endif // CO_CONNECTION_LISTENER_H

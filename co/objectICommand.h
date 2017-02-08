@@ -21,26 +21,29 @@
 #ifndef CO_OBJECTICOMMAND_H
 #define CO_OBJECTICOMMAND_H
 
-#include <co/iCommand.h>   // base class
+#include <co/iCommand.h> // base class
 
 namespace co
 {
-namespace detail { class ObjectICommand; }
+namespace detail
+{
+class ObjectICommand;
+}
 
 /** An input command specialization for objects. */
 class ObjectICommand : public ICommand
 {
 public:
     /** @internal */
-    CO_API ObjectICommand( LocalNodePtr local, NodePtr remote,
-                           ConstBufferPtr buffer );
+    CO_API ObjectICommand(LocalNodePtr local, NodePtr remote,
+                          ConstBufferPtr buffer);
 
     /** Copy-construct an object command from a generic ICommand. @version 1.0*/
     // cppcheck-suppress noExplicitConstructor
-    CO_API ObjectICommand( const ICommand& command );
+    CO_API ObjectICommand(const ICommand& command);
 
     /** Copy-construct an object command. */
-    CO_API ObjectICommand( const ObjectICommand& rhs );
+    CO_API ObjectICommand(const ObjectICommand& rhs);
 
     /** Destruct an object command. @version 1.0 */
     CO_API virtual ~ObjectICommand();
@@ -53,14 +56,14 @@ public:
 
 private:
     ObjectICommand();
-    ObjectICommand& operator = ( const ObjectICommand& );
+    ObjectICommand& operator=(const ObjectICommand&);
     detail::ObjectICommand* const _impl;
 
     void _init();
 };
 
 /** Output information about the object input command. @version 1.0 */
-CO_API std::ostream& operator << ( std::ostream& os, const ObjectICommand& );
+CO_API std::ostream& operator<<(std::ostream& os, const ObjectICommand&);
 }
 
-#endif //CO_OBJECTICOMMAND_H
+#endif // CO_OBJECTICOMMAND_H

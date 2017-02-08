@@ -27,46 +27,47 @@
 
 namespace co
 {
-
-DeltaMasterCM::DeltaMasterCM( Object* object )
-        : FullMasterCM( object )
+DeltaMasterCM::DeltaMasterCM(Object* object)
+    : FullMasterCM(object)
 #pragma warning(push)
 #pragma warning(disable : 4355)
-        , _deltaData( this )
+    , _deltaData(this)
 #pragma warning(pop)
-{}
+{
+}
 
 DeltaMasterCM::~DeltaMasterCM()
-{}
+{
+}
 
 void DeltaMasterCM::_commit()
 {
-    if( !_slaves->empty( ))
+    if (!_slaves->empty())
     {
         _deltaData.reset();
-        _deltaData.enableCommit( _version + 1, *_slaves );
-        _object->pack( _deltaData );
+        _deltaData.enableCommit(_version + 1, *_slaves);
+        _object->pack(_deltaData);
         _deltaData.disable();
     }
 
-    if( _slaves->empty() || _deltaData.hasSentData( ))
+    if (_slaves->empty() || _deltaData.hasSentData())
     {
         // save instance data
         InstanceData* instanceData = _newInstanceData();
 
-        instanceData->os.enableCommit( _version + 1, Nodes( ));
-        _object->getInstanceData( instanceData->os );
+        instanceData->os.enableCommit(_version + 1, Nodes());
+        _object->getInstanceData(instanceData->os);
         instanceData->os.disable();
 
-        if( _deltaData.hasSentData() || instanceData->os.hasSentData( ))
+        if (_deltaData.hasSentData() || instanceData->os.hasSentData())
         {
             ++_version;
-            LBASSERT( _version != VERSION_NONE );
+            LBASSERT(_version != VERSION_NONE);
 
-            _addInstanceData( instanceData );
+            _addInstanceData(instanceData);
         }
         else
-            _releaseInstanceData( instanceData );
+            _releaseInstanceData(instanceData);
 
 #if 0
         LBLOG( LOG_OBJECTS ) << "Committed v" << _version << " " << *_object
@@ -74,5 +75,4 @@ void DeltaMasterCM::_commit()
 #endif
     }
 }
-
 }

@@ -32,64 +32,64 @@
 
 namespace co
 {
-
 namespace detail
 {
-
 class ItemBuffer : public lunchbox::Bufferb, public lunchbox::Referenced
 {
 public:
-    explicit ItemBuffer( lunchbox::Bufferb&& from )
-        : lunchbox::Bufferb( std::move( from ))
+    explicit ItemBuffer(lunchbox::Bufferb&& from)
+        : lunchbox::Bufferb(std::move(from))
         , lunchbox::Referenced()
-    {}
+    {
+    }
 
     ~ItemBuffer() {}
 };
 
-typedef lunchbox::RefPtr< ItemBuffer > ItemBufferPtr;
+typedef lunchbox::RefPtr<ItemBuffer> ItemBufferPtr;
 
 class QueueMaster : public co::Dispatcher
 {
 public:
-    explicit QueueMaster( const co::QueueMaster& parent )
+    explicit QueueMaster(const co::QueueMaster& parent)
         : co::Dispatcher()
-        , _parent( parent )
-    {}
+        , _parent(parent)
+    {
+    }
 
     /** The command handler functions. */
-    bool cmdGetItem( co::ICommand& comd )
+    bool cmdGetItem(co::ICommand& comd)
     {
-        co::ObjectICommand command( comd );
+        co::ObjectICommand command(comd);
 
-        const uint32_t itemsRequested = command.get< uint32_t >();
-        const uint32_t slaveInstanceID = command.get< uint32_t >();
-        const int32_t requestID = command.get< int32_t >();
+        const uint32_t itemsRequested = command.get<uint32_t>();
+        const uint32_t slaveInstanceID = command.get<uint32_t>();
+        const int32_t requestID = command.get<int32_t>();
 
-        typedef std::vector< ItemBufferPtr > Items;
+        typedef std::vector<ItemBufferPtr> Items;
         Items items;
-        queue.tryPop( itemsRequested, items );
+        queue.tryPop(itemsRequested, items);
 
-        Connections connections( 1, command.getNode()->getConnection( ));
-        for( Items::const_iterator i = items.begin(); i != items.end(); ++i )
+        Connections connections(1, command.getNode()->getConnection());
+        for (Items::const_iterator i = items.begin(); i != items.end(); ++i)
         {
-            co::ObjectOCommand cmd( connections, CMD_QUEUE_ITEM,
-                                    COMMANDTYPE_OBJECT, _parent.getID(),
-                                    slaveInstanceID );
+            co::ObjectOCommand cmd(connections, CMD_QUEUE_ITEM,
+                                   COMMANDTYPE_OBJECT, _parent.getID(),
+                                   slaveInstanceID);
 
             const ItemBufferPtr item = *i;
-            if( !item->isEmpty( ))
-                cmd << Array< const void >( item->getData(), item->getSize( ));
+            if (!item->isEmpty())
+                cmd << Array<const void>(item->getData(), item->getSize());
         }
 
-        if( itemsRequested > items.size( ))
-            co::ObjectOCommand( connections, CMD_QUEUE_EMPTY,
-                                COMMANDTYPE_OBJECT, command.getObjectID(),
-                                slaveInstanceID ) << requestID;
+        if (itemsRequested > items.size())
+            co::ObjectOCommand(connections, CMD_QUEUE_EMPTY, COMMANDTYPE_OBJECT,
+                               command.getObjectID(), slaveInstanceID)
+                << requestID;
         return true;
     }
 
-    typedef lunchbox::MTQueue< ItemBufferPtr > ItemQueue;
+    typedef lunchbox::MTQueue<ItemBufferPtr> ItemQueue;
 
     ItemQueue queue;
 
@@ -100,8 +100,8 @@ private:
 
 QueueMaster::QueueMaster()
 #pragma warning(push)
-#pragma warning(disable: 4355)
-    : _impl( new detail::QueueMaster( *this ))
+#pragma warning(disable : 4355)
+    : _impl(new detail::QueueMaster(*this))
 #pragma warning(pop)
 {
 }
@@ -112,14 +112,15 @@ QueueMaster::~QueueMaster()
     delete _impl;
 }
 
-void QueueMaster::attach( const uint128_t& id, const uint32_t instanceID )
+void QueueMaster::attach(const uint128_t& id, const uint32_t instanceID)
 {
-    Object::attach( id, instanceID );
+    Object::attach(id, instanceID);
 
     CommandQueue* queue = getLocalNode()->getCommandThreadQueue();
-    registerCommand( CMD_QUEUE_GET_ITEM,
-                     CommandFunc< detail::QueueMaster >(
-                         _impl, &detail::QueueMaster::cmdGetItem ), queue );
+    registerCommand(CMD_QUEUE_GET_ITEM,
+                    CommandFunc<detail::QueueMaster>(
+                        _impl, &detail::QueueMaster::cmdGetItem),
+                    queue);
 }
 
 void QueueMaster::clear()
@@ -127,21 +128,20 @@ void QueueMaster::clear()
     _impl->queue.clear();
 }
 
-void QueueMaster::getInstanceData( co::DataOStream& os )
+void QueueMaster::getInstanceData(co::DataOStream& os)
 {
     os << getInstanceID() << getLocalNode()->getNodeID();
 }
 
 QueueItem QueueMaster::push()
 {
-    return QueueItem( *this );
+    return QueueItem(*this);
 }
 
-void QueueMaster::_addItem( QueueItem& item )
+void QueueMaster::_addItem(QueueItem& item)
 {
     detail::ItemBufferPtr newBuffer =
-        new detail::ItemBuffer( std::move( item.getBuffer( )));
-    _impl->queue.push( newBuffer );
+        new detail::ItemBuffer(std::move(item.getBuffer()));
+    _impl->queue.push(newBuffer);
 }
-
 }

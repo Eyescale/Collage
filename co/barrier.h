@@ -21,12 +21,15 @@
 #ifndef CO_BARRIER_H
 #define CO_BARRIER_H
 
-#include <co/object.h>   // base class
+#include <co/object.h> // base class
 #include <co/types.h>
 
 namespace co
 {
-namespace detail { class Barrier; }
+namespace detail
+{
+class Barrier;
+}
 
 /**
  * A networked, versioned barrier.
@@ -62,8 +65,8 @@ public:
      * @sa isGood()
      * @version 1.1.1
      */
-    CO_API Barrier( LocalNodePtr localNode, const uint128_t& masterNodeID,
-                    const uint32_t height = 0 );
+    CO_API Barrier(LocalNodePtr localNode, const uint128_t& masterNodeID,
+                   const uint32_t height = 0);
 
     /**
      * Construct and join a distributed barrier.
@@ -73,7 +76,7 @@ public:
      * @sa isGood()
      * @version 1.1.1
      */
-    CO_API Barrier( LocalNodePtr localNode, const ObjectVersion& barrier );
+    CO_API Barrier(LocalNodePtr localNode, const ObjectVersion& barrier);
 
     /** Destruct the barrier. @version 1.0 */
     CO_API virtual ~Barrier();
@@ -87,9 +90,8 @@ public:
     //@{
     /** @return true if the barrier was created successfully. @version 1.1.1 */
     bool isGood() const { return isAttached(); }
-
     /** Set the number of participants in the barrier. @version 1.0 */
-    CO_API void setHeight( const uint32_t height );
+    CO_API void setHeight(const uint32_t height);
 
     /** Add one participant to the barrier. @version 1.0 */
     CO_API void increase();
@@ -109,32 +111,31 @@ public:
      * @return true on success, false on timeout or error.
      * @version 1.0
      */
-    CO_API bool enter( const uint32_t timeout = LB_TIMEOUT_INDEFINITE );
+    CO_API bool enter(const uint32_t timeout = LB_TIMEOUT_INDEFINITE);
     //@}
 
 protected:
     /** @internal */
     //@{
-    void attach( const uint128_t& id, const uint32_t instanceID ) override;
+    void attach(const uint128_t& id, const uint32_t instanceID) override;
     ChangeType getChangeType() const override { return DELTA; }
-
-    void getInstanceData( DataOStream& os ) override;
-    void applyInstanceData( DataIStream& is ) override;
-    void pack( DataOStream& os ) override;
-    void unpack( DataIStream& is ) override;
+    void getInstanceData(DataOStream& os) override;
+    void applyInstanceData(DataIStream& is) override;
+    void pack(DataOStream& os) override;
+    void unpack(DataIStream& is) override;
     //@}
 
 private:
     detail::Barrier* const _impl;
 
-    void _cleanup( const uint64_t time );
-    void _sendNotify( const uint128_t& version, NodePtr node );
+    void _cleanup(const uint64_t time);
+    void _sendNotify(const uint128_t& version, NodePtr node);
 
     /* The command handlers. */
-    bool _cmdEnter( ICommand& command );
-    bool _cmdEnterReply( ICommand& command );
+    bool _cmdEnter(ICommand& command);
+    bool _cmdEnterReply(ICommand& command);
 
-    LB_TS_VAR( _thread );
+    LB_TS_VAR(_thread);
 };
 }
 

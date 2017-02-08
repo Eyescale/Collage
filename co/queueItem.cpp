@@ -21,7 +21,6 @@
 
 #include "queueMaster.h"
 
-
 namespace co
 {
 namespace detail
@@ -29,29 +28,31 @@ namespace detail
 class QueueItem
 {
 public:
-    explicit QueueItem( co::QueueMaster& queueMaster_ )
-        : queueMaster( queueMaster_ )
-    {}
+    explicit QueueItem(co::QueueMaster& queueMaster_)
+        : queueMaster(queueMaster_)
+    {
+    }
 
-    QueueItem( const QueueItem& rhs )
-        : queueMaster( rhs.queueMaster )
-    {}
+    QueueItem(const QueueItem& rhs)
+        : queueMaster(rhs.queueMaster)
+    {
+    }
 
     co::QueueMaster& queueMaster;
 };
 }
 
-QueueItem::QueueItem( QueueMaster& master )
+QueueItem::QueueItem(QueueMaster& master)
     : DataOStream()
-    , _impl( new detail::QueueItem( master ))
+    , _impl(new detail::QueueItem(master))
 {
     enableSave();
     _enable();
 }
 
-QueueItem::QueueItem( const QueueItem& rhs )
+QueueItem::QueueItem(const QueueItem& rhs)
     : DataOStream()
-    , _impl( new detail::QueueItem( *rhs._impl ))
+    , _impl(new detail::QueueItem(*rhs._impl))
 {
     enableSave();
     _enable();
@@ -59,9 +60,8 @@ QueueItem::QueueItem( const QueueItem& rhs )
 
 QueueItem::~QueueItem()
 {
-    _impl->queueMaster._addItem( *this );
+    _impl->queueMaster._addItem(*this);
     disable();
     delete _impl;
 }
-
 }

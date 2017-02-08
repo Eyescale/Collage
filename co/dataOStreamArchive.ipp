@@ -15,25 +15,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-
-template< typename T >
-void DataOStreamArchive::save_array( const boost::serialization::array< T >& a,
-                                     unsigned int )
+template <typename T>
+void DataOStreamArchive::save_array(const boost::serialization::array<T>& a,
+                                    unsigned int)
 {
-    _stream << Array< const T >( a.address(), a.count( ));
+    _stream << Array<const T>(a.address(), a.count());
 }
 
-template< class C, class T, class A >
-void DataOStreamArchive::save( const std::basic_string< C, T, A >& s )
+template <class C, class T, class A>
+void DataOStreamArchive::save(const std::basic_string<C, T, A>& s)
 {
     // implementation only valid for narrow string
-    BOOST_STATIC_ASSERT( sizeof(C) == sizeof(char));
+    BOOST_STATIC_ASSERT(sizeof(C) == sizeof(char));
     _stream << s;
 }
 
-template< typename T >
-typename boost::enable_if< boost::is_integral<T> >::type
-DataOStreamArchive::save( const T& t )
+template <typename T>
+typename boost::enable_if<boost::is_integral<T> >::type
+    DataOStreamArchive::save(const T& t)
 {
 #if BOOST_VERSION < 104800
     namespace bs = boost::detail;
@@ -41,7 +40,7 @@ DataOStreamArchive::save( const T& t )
     namespace bs = boost::spirit::detail;
 #endif
 
-    if( T temp = t )
+    if (T temp = t)
     {
         // examine the number of bytes
         // needed to represent the number
@@ -53,34 +52,33 @@ DataOStreamArchive::save( const T& t )
             temp >>= CHAR_BIT;
 #pragma clang diagnostic pop
             ++size;
-        }
-        while( temp != 0 && temp != (T) -1 );
+        } while (temp != 0 && temp != (T)-1);
 
         // encode the sign bit into the size
-        _saveSignedChar( t > 0 ? size : -size );
-        BOOST_ASSERT( t > 0 || boost::is_signed<T>::value) ;
+        _saveSignedChar(t > 0 ? size : -size);
+        BOOST_ASSERT(t > 0 || boost::is_signed<T>::value);
 
         // we choose to use little endian because this way we just
         // save the first size bytes to the stream and skip the rest
-        bs::store_little_endian<T, sizeof(T)>( &temp, t );
-        save_binary( &temp, size );
+        bs::store_little_endian<T, sizeof(T)>(&temp, t);
+        save_binary(&temp, size);
     }
     else
         // zero optimization
-        _saveSignedChar (0 );
+        _saveSignedChar(0);
 }
 
-template< typename T >
-typename boost::enable_if< boost::is_floating_point<T> >::type
-DataOStreamArchive::save( const T& t )
+template <typename T>
+typename boost::enable_if<boost::is_floating_point<T> >::type
+    DataOStreamArchive::save(const T& t)
 {
     namespace fp = boost::spirit::math;
 
     typedef typename fp::detail::fp_traits<T>::type traits;
 
     // if the no_infnan flag is set we must throw here
-    if( get_flags() & serialization::no_infnan && !fp::isfinite( t ))
-        throw DataStreamArchiveException( t );
+    if (get_flags() & serialization::no_infnan && !fp::isfinite(t))
+        throw DataStreamArchiveException(t);
 
     // if you end here there are three possibilities:
     // 1. you're serializing a long double which is not portable
@@ -89,11 +87,11 @@ DataOStreamArchive::save( const T& t )
     // after reading the note above you still might decide to
     // deactivate this static assert and try if it works out.
     typename traits::bits bits;
-    BOOST_STATIC_ASSERT( sizeof(bits) == sizeof(T));
-    BOOST_STATIC_ASSERT( std::numeric_limits<T>::is_iec559 );
+    BOOST_STATIC_ASSERT(sizeof(bits) == sizeof(T));
+    BOOST_STATIC_ASSERT(std::numeric_limits<T>::is_iec559);
 
     // examine value closely
-    switch( fp::fpclassify( t ))
+    switch (fp::fpclassify(t))
     {
     case FP_ZERO:
         bits = 0;
@@ -102,16 +100,16 @@ DataOStreamArchive::save( const T& t )
         bits = traits::exponent | traits::mantissa;
         break;
     case FP_INFINITE:
-        bits = traits::exponent | (t<0) * traits::sign;
+        bits = traits::exponent | (t < 0) * traits::sign;
         break;
     case FP_SUBNORMAL:
-        assert( std::numeric_limits<T>::has_denorm );
+        assert(std::numeric_limits<T>::has_denorm);
     case FP_NORMAL:
         traits::get_bits(t, bits);
         break;
     default:
-        throw DataStreamArchiveException( t );
+        throw DataStreamArchiveException(t);
     }
 
-    save( bits );
+    save(bits);
 }

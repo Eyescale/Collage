@@ -25,7 +25,10 @@
 
 namespace co
 {
-namespace detail { class Zeroconf; }
+namespace detail
+{
+class Zeroconf;
+}
 
 /**
  * A zeroconf communicator.
@@ -47,13 +50,13 @@ class Zeroconf
 {
 public:
     /** Create a copy of a zeroconf communicator. @version 1.0 */
-    CO_API Zeroconf( const Zeroconf& from );
+    CO_API Zeroconf(const Zeroconf& from);
 
     /** Destruct this zeroconf communicator. @version 1.0 */
     CO_API ~Zeroconf();
 
     /** Assign the data from another zeroconf communicator. @version 1.0 */
-    CO_API Zeroconf& operator = ( const Zeroconf& rhs );
+    CO_API Zeroconf& operator=(const Zeroconf& rhs);
 
     /**
      * Set a key/value pair to be announced.
@@ -64,24 +67,25 @@ public:
      * which needs some time to propagate after this function returns.
      * @version 1.0
      */
-    CO_API void set( const std::string& key, const std::string& value );
+    CO_API void set(const std::string& key, const std::string& value);
 
     /** @return all instances found at the time of creation. @version 1.0 */
     CO_API Strings getInstances() const;
 
     /** @return all keys discovered on the given instance. @version 1.0 */
-    CO_API Strings getKeys( const std::string& instance ) const;
+    CO_API Strings getKeys(const std::string& instance) const;
 
     /** @return true if the given key was discovered. @version 1.0 */
-    CO_API bool containsKey( const std::string& instance,
-                             const std::string& key ) const;
+    CO_API bool containsKey(const std::string& instance,
+                            const std::string& key) const;
 
     /** @return the value of the given key on the given instance. @version 1.0*/
-    CO_API const std::string& get( const std::string& instance,
-                                   const std::string& key ) const;
+    CO_API const std::string& get(const std::string& instance,
+                                  const std::string& key) const;
+
 private:
     Zeroconf();
-    explicit Zeroconf( servus::Servus& service );
+    explicit Zeroconf(servus::Servus& service);
     friend class LocalNode;
 
     detail::Zeroconf* _impl;

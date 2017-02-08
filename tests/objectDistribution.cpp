@@ -34,34 +34,54 @@ using co::uint128_t;
 
 namespace
 {
-
-lunchbox::Monitor< co::Object::ChangeType > monitor( co::Object::NONE );
+lunchbox::Monitor<co::Object::ChangeType> monitor(co::Object::NONE);
 
 static const std::string message =
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut eget felis sed leo tincidunt dictum eu eu felis. Aenean aliquam augue nec elit tristique tempus. Pellentesque dignissim adipiscing tellus, ut porttitor nisl lacinia vel. Donec malesuada lobortis velit, nec lobortis metus consequat ac. Ut dictum rutrum dui. Pellentesque quis risus at lectus bibendum laoreet. Suspendisse tristique urna quis urna faucibus et auctor risus ultricies. Morbi vitae mi vitae nisi adipiscing ultricies ac in nulla. Nam mattis venenatis nulla, non posuere felis tempus eget. Cras dapibus ultrices arcu vel dapibus. Nam hendrerit lacinia consectetur. Donec ullamcorper nibh nisl, id aliquam nisl. Nunc at tortor a lacus tincidunt gravida vitae nec risus. Suspendisse potenti. Fusce tristique dapibus ipsum, sit amet posuere turpis fermentum nec. Nam nec ante dolor.";
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut eget felis "
+    "sed leo tincidunt dictum eu eu felis. Aenean aliquam augue nec elit "
+    "tristique tempus. Pellentesque dignissim adipiscing tellus, ut porttitor "
+    "nisl lacinia vel. Donec malesuada lobortis velit, nec lobortis metus "
+    "consequat ac. Ut dictum rutrum dui. Pellentesque quis risus at lectus "
+    "bibendum laoreet. Suspendisse tristique urna quis urna faucibus et auctor "
+    "risus ultricies. Morbi vitae mi vitae nisi adipiscing ultricies ac in "
+    "nulla. Nam mattis venenatis nulla, non posuere felis tempus eget. Cras "
+    "dapibus ultrices arcu vel dapibus. Nam hendrerit lacinia consectetur. "
+    "Donec ullamcorper nibh nisl, id aliquam nisl. Nunc at tortor a lacus "
+    "tincidunt gravida vitae nec risus. Suspendisse potenti. Fusce tristique "
+    "dapibus ipsum, sit amet posuere turpis fermentum nec. Nam nec ante dolor.";
 }
 
 class Object : public co::Object
 {
 public:
-    explicit Object( const ChangeType type ) : nSync( 0 ), _type( type ) {}
-    Object( const ChangeType type, co::DataIStream& is )
-        : nSync( 0 ), _type( type ) { applyInstanceData( is ); }
+    explicit Object(const ChangeType type)
+        : nSync(0)
+        , _type(type)
+    {
+    }
+    Object(const ChangeType type, co::DataIStream& is)
+        : nSync(0)
+        , _type(type)
+    {
+        applyInstanceData(is);
+    }
 
     size_t nSync;
 
 protected:
     virtual ChangeType getChangeType() const { return _type; }
-    virtual void getInstanceData( co::DataOStream& os )
-        { os << message << _type; }
+    virtual void getInstanceData(co::DataOStream& os)
+    {
+        os << message << _type;
+    }
 
-    virtual void applyInstanceData( co::DataIStream& is )
+    virtual void applyInstanceData(co::DataIStream& is)
     {
         std::string msg;
         ChangeType type;
         is >> msg >> type;
-        TEST( message == msg );
-        TEST( _type == type );
+        TEST(message == msg);
+        TEST(_type == type);
         ++nSync;
     }
 
@@ -72,103 +92,105 @@ private:
 class Server : public co::LocalNode
 {
 public:
-    Server() : object( 0 ) {}
+    Server()
+        : object(0)
+    {
+    }
 
     Object* object;
 
 protected:
-    void objectPush( const uint128_t& /*groupID*/, const uint128_t& typeID,
-                     const co::uint128_t& /*objectID*/, co::DataIStream& is )
-        override
+    void objectPush(const uint128_t& /*groupID*/, const uint128_t& typeID,
+                    const co::uint128_t& /*objectID*/,
+                    co::DataIStream& is) override
     {
         const co::Object::ChangeType type =
-            co::Object::ChangeType( typeID.low( ));
-        TESTINFO( is.nRemainingBuffers() == 1 || // buffered
-                  is.nRemainingBuffers() == 2,   // unbuffered
-                  is.nRemainingBuffers( ));
-        TEST( !object );
-        object = new Object( type, is );
-        TESTINFO( !is.hasData(), is.nRemainingBuffers( ));
-        TESTINFO( monitor != type, monitor << " == " << type );
+            co::Object::ChangeType(typeID.low());
+        TESTINFO(is.nRemainingBuffers() == 1 ||   // buffered
+                     is.nRemainingBuffers() == 2, // unbuffered
+                 is.nRemainingBuffers());
+        TEST(!object);
+        object = new Object(type, is);
+        TESTINFO(!is.hasData(), is.nRemainingBuffers());
+        TESTINFO(monitor != type, monitor << " == " << type);
         monitor = type;
     }
 };
 
-int main( int argc, char **argv )
+int main(int argc, char** argv)
 {
-    co::init( argc, argv );
-    co::Global::setObjectBufferSize( 600 );
-    co::Global::setIAttribute( co::Global::IATTR_OBJECT_COMPRESSION, 600 );
+    co::init(argc, argv);
+    co::Global::setObjectBufferSize(600);
+    co::Global::setIAttribute(co::Global::IATTR_OBJECT_COMPRESSION, 600);
 
-    lunchbox::RefPtr< Server > server = new Server;
-    co::ConnectionDescriptionPtr connDesc =
-        new co::ConnectionDescription;
+    lunchbox::RefPtr<Server> server = new Server;
+    co::ConnectionDescriptionPtr connDesc = new co::ConnectionDescription;
 
     connDesc->type = co::CONNECTIONTYPE_TCPIP;
-    connDesc->setHostname( "localhost" );
+    connDesc->setHostname("localhost");
 
-    server->addConnectionDescription( connDesc );
-    TEST( server->listen( ));
+    server->addConnectionDescription(connDesc);
+    TEST(server->listen());
 
     co::NodePtr serverProxy = new co::Node;
-    serverProxy->addConnectionDescription( connDesc );
+    serverProxy->addConnectionDescription(connDesc);
 
     connDesc = new co::ConnectionDescription;
     connDesc->type = co::CONNECTIONTYPE_TCPIP;
-    connDesc->setHostname( "localhost" );
+    connDesc->setHostname("localhost");
 
     co::LocalNodePtr client = new co::LocalNode;
-    client->addConnectionDescription( connDesc );
-    TEST( client->listen( ));
-    TEST( client->connect( serverProxy ));
+    client->addConnectionDescription(connDesc);
+    TEST(client->listen());
+    TEST(client->connect(serverProxy));
 
     co::Nodes nodes;
-    nodes.push_back( serverProxy );
+    nodes.push_back(serverProxy);
 
     lunchbox::Clock clock;
-    for( uint64_t i = co::Object::NONE+1; i <= co::Object::UNBUFFERED; ++i )
+    for (uint64_t i = co::Object::NONE + 1; i <= co::Object::UNBUFFERED; ++i)
     {
-        const co::Object::ChangeType type = co::Object::ChangeType( i );
-        Object object( type );
-        TEST( client->registerObject( &object ));
-        object.push( co::uint128_t(42), co::uint128_t(i), nodes );
+        const co::Object::ChangeType type = co::Object::ChangeType(i);
+        Object object(type);
+        TEST(client->registerObject(&object));
+        object.push(co::uint128_t(42), co::uint128_t(i), nodes);
 
-        monitor.waitEQ( type );
-        TEST( server->mapObject( server->object, object.getID(),
-                                 co::VERSION_NONE ));
-        TEST( object.nSync == 0 );
-        TEST( server->object->nSync == 1 );
+        monitor.waitEQ(type);
+        TEST(server->mapObject(server->object, object.getID(),
+                               co::VERSION_NONE));
+        TEST(object.nSync == 0);
+        TEST(server->object->nSync == 1);
 
-        TESTINFO( client->syncObject( server->object, object.getID(),
-                                      serverProxy ),
-                  "type " << type );
-        TEST( object.nSync == 0 );
-        TEST( server->object->nSync == 2 );
+        TESTINFO(client->syncObject(server->object, object.getID(),
+                                    serverProxy),
+                 "type " << type);
+        TEST(object.nSync == 0);
+        TEST(server->object->nSync == 2);
 
-        server->unmapObject( server->object );
+        server->unmapObject(server->object);
         delete server->object;
         server->object = 0;
 
-        client->deregisterObject( &object );
+        client->deregisterObject(&object);
     }
     const float time = clock.getTimef();
     nodes.clear();
 
-    std::cout << time << "ms for " << int( co::Object::UNBUFFERED )
+    std::cout << time << "ms for " << int(co::Object::UNBUFFERED)
               << " object types" << std::endl;
 
-    TEST( client->disconnect( serverProxy ));
-    TEST( client->close( ));
-    TEST( server->close( ));
+    TEST(client->disconnect(serverProxy));
+    TEST(client->close());
+    TEST(server->close());
 
-    serverProxy->printHolders( std::cerr );
-    TESTINFO( serverProxy->getRefCount() == 1, serverProxy->getRefCount( ));
-    TESTINFO( client->getRefCount() == 1, client->getRefCount( ));
-    TESTINFO( server->getRefCount() == 1, server->getRefCount( ));
+    serverProxy->printHolders(std::cerr);
+    TESTINFO(serverProxy->getRefCount() == 1, serverProxy->getRefCount());
+    TESTINFO(client->getRefCount() == 1, client->getRefCount());
+    TESTINFO(server->getRefCount() == 1, server->getRefCount());
 
     serverProxy = 0;
-    client      = 0;
-    server      = 0;
+    client = 0;
+    server = 0;
 
     co::exit();
     return EXIT_SUCCESS;

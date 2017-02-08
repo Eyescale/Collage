@@ -22,9 +22,9 @@
 #ifndef CO_STATICMASTERCM_H
 #define CO_STATICMASTERCM_H
 
-#include "objectCM.h"    // base class
-#include <co/version.h>  // enum
+#include "objectCM.h" // base class
 #include "objectInstanceDataOStream.h"
+#include <co/version.h> // enum
 
 #include <deque>
 
@@ -38,27 +38,32 @@ class Node;
 class StaticMasterCM : public ObjectCM
 {
 public:
-    explicit StaticMasterCM( Object* object ) : ObjectCM( object ) {}
+    explicit StaticMasterCM(Object* object)
+        : ObjectCM(object)
+    {
+    }
     virtual ~StaticMasterCM() {}
-
     void init() override {}
-
     /** @name Versioning */
     //@{
-    void setAutoObsolete( const uint32_t ) override {}
+    void setAutoObsolete(const uint32_t) override {}
     uint32_t getAutoObsolete() const override { return 0; }
-
     uint128_t getHeadVersion() const override { return VERSION_FIRST; }
     uint128_t getVersion() const override { return VERSION_FIRST; }
     //@}
 
     bool isMaster() const override { return true; }
     uint32_t getMasterInstanceID() const override
-        { LBDONTCALL; return CO_INSTANCE_INVALID; }
+    {
+        LBDONTCALL;
+        return CO_INSTANCE_INVALID;
+    }
 
-    bool addSlave( const MasterCMCommand& command ) override
-        { return ObjectCM::_addSlave( command, VERSION_FIRST ); }
-    void removeSlaves( NodePtr ) override { /* NOP */}
+    bool addSlave(const MasterCMCommand& command) override
+    {
+        return ObjectCM::_addSlave(command, VERSION_FIRST);
+    }
+    void removeSlaves(NodePtr) override { /* NOP */}
 };
 }
 

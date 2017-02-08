@@ -24,12 +24,15 @@
 #include <co/api.h>
 #include <co/types.h>
 
-#include <lunchbox/thread.h> // thread-safety checks
 #include <boost/noncopyable.hpp>
+#include <lunchbox/thread.h> // thread-safety checks
 
 namespace co
 {
-namespace detail { class BufferCache; }
+namespace detail
+{
+class BufferCache;
+}
 
 /** @internal
  * The buffer cache handles the reuse of allocated buffers for a node.
@@ -45,11 +48,11 @@ public:
      *
      * @param minFree number of buffers that are always kept free.
      */
-    CO_API explicit BufferCache( const int32_t minFree );
+    CO_API explicit BufferCache(const int32_t minFree);
     CO_API ~BufferCache();
 
     /** @return a new buffer. */
-    CO_API BufferPtr alloc( const uint64_t reserve );
+    CO_API BufferPtr alloc(const uint64_t reserve);
 
     /** Compact buffer if too many commands are free. */
     void compact();
@@ -59,11 +62,11 @@ public:
 
 private:
     detail::BufferCache* const _impl;
-    friend std::ostream& operator << ( std::ostream&, const BufferCache& );
-    LB_TS_VAR( _thread );
+    friend std::ostream& operator<<(std::ostream&, const BufferCache&);
+    LB_TS_VAR(_thread);
 };
 
-std::ostream& operator << ( std::ostream&, const BufferCache& );
+std::ostream& operator<<(std::ostream&, const BufferCache&);
 }
 
-#endif //CO_BUFFERCACHE_H
+#endif // CO_BUFFERCACHE_H

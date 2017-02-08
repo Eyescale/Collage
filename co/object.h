@@ -21,18 +21,21 @@
 #ifndef CO_OBJECT_H
 #define CO_OBJECT_H
 
-#include <co/dispatcher.h>    // base class
-#include <co/localNode.h>     // used in RefPtr
-#include <co/types.h>         // for Nodes
-#include <co/version.h>       // used as default parameter
+#include <co/dispatcher.h> // base class
+#include <co/localNode.h>  // used in RefPtr
+#include <co/types.h>      // for Nodes
+#include <co/version.h>    // used as default parameter
 
 namespace co
 {
-namespace detail { class Object; }
+namespace detail
+{
+class Object;
+}
 class ObjectCM;
-typedef lunchbox::RefPtr< ObjectCM > ObjectCMPtr;
+typedef lunchbox::RefPtr<ObjectCM> ObjectCMPtr;
 
-#  define CO_COMMIT_NEXT LB_UNDEFINED_UINT32 //!< the next commit incarnation
+#define CO_COMMIT_NEXT LB_UNDEFINED_UINT32 //!< the next commit incarnation
 
 /**
  * A distributed object.
@@ -47,11 +50,11 @@ public:
     /** Object change handling characteristics, see Programming Guide */
     enum ChangeType
     {
-        NONE,              //!< @internal
-        STATIC,            //!< non-versioned, unbuffered, static object.
-        INSTANCE,          //!< use only instance data
-        DELTA,             //!< use pack/unpack delta
-        UNBUFFERED         //!< versioned, but don't retain versions
+        NONE,      //!< @internal
+        STATIC,    //!< non-versioned, unbuffered, static object.
+        INSTANCE,  //!< use only instance data
+        DELTA,     //!< use pack/unpack delta
+        UNBUFFERED //!< versioned, but don't retain versions
     };
 
     /** Destruct the distributed object. @version 1.0 */
@@ -78,7 +81,7 @@ public:
      * overwritten with the identifier of the master object.
      * @version 1.0
      */
-    CO_API void setID( const uint128_t& identifier );
+    CO_API void setID(const uint128_t& identifier);
 
     /** @return the object's unique identifier. @version 1.0 */
     CO_API const uint128_t& getID() const;
@@ -100,7 +103,6 @@ public:
     //@{
     /** @return how the changes are to be handled. @version 1.0 */
     virtual ChangeType getChangeType() const { return STATIC; }
-
     /**
      * Limit the number of queued versions on slave instances.
      *
@@ -120,7 +122,9 @@ public:
      * @version 1.0
      */
     virtual uint64_t getMaxVersions() const
-        { return std::numeric_limits< uint64_t >::max(); }
+    {
+        return std::numeric_limits<uint64_t>::max();
+    }
 
     /**
      * Return the compressor to be used for data transmission.
@@ -146,7 +150,6 @@ public:
      * @version 1.0
      */
     virtual bool isDirty() const { return true; }
-
     /**
      * Push the instance data of the object to the given nodes.
      *
@@ -165,8 +168,8 @@ public:
      * @param nodes The vector of nodes to push to.
      * @version 1.0
      */
-    CO_API void push( const uint128_t& groupID, const uint128_t& objectType,
-                      const Nodes& nodes );
+    CO_API void push(const uint128_t& groupID, const uint128_t& objectType,
+                     const Nodes& nodes);
 
     /**
      * Commit a new version of this object.
@@ -201,8 +204,8 @@ public:
      * @return the new head version (master) or commit id (slave).
      * @version 1.0
      */
-    CO_API virtual uint128_t commit( const uint32_t incarnation =
-                                     CO_COMMIT_NEXT );
+    CO_API virtual uint128_t commit(
+        const uint32_t incarnation = CO_COMMIT_NEXT);
 
     /**
      * Automatically obsolete old versions.
@@ -213,7 +216,7 @@ public:
      * @param count the number of incarnations to retain.
      * @version 1.0
      */
-    CO_API void setAutoObsolete( const uint32_t count );
+    CO_API void setAutoObsolete(const uint32_t count);
 
     /** @return get the number of retained incarnations. @version 1.0 */
     CO_API uint32_t getAutoObsolete() const;
@@ -248,7 +251,7 @@ public:
      * @return the last version applied.
      * @version 1.0
      */
-    CO_API virtual uint128_t sync( const uint128_t& version = VERSION_HEAD );
+    CO_API virtual uint128_t sync(const uint128_t& version = VERSION_HEAD);
 
     /** @return the latest available (head) version. @version 1.0 */
     CO_API uint128_t getHeadVersion() const;
@@ -269,7 +272,7 @@ public:
      * @param version The new head version.
      * @version 1.0
      */
-    CO_API virtual void notifyNewHeadVersion( const uint128_t& version );
+    CO_API virtual void notifyNewHeadVersion(const uint128_t& version);
 
     /**
      * Notification that a new version was received by a master object.
@@ -287,8 +290,7 @@ public:
      * @param os The output stream.
      * @version 1.0
      */
-    virtual void getInstanceData( DataOStream& os LB_UNUSED ) {}
-
+    virtual void getInstanceData(DataOStream& os LB_UNUSED) {}
     /**
      * Deserialize the instance data.
      *
@@ -298,8 +300,7 @@ public:
      * @param is the input stream.
      * @version 1.0
      */
-    virtual void applyInstanceData( DataIStream& is LB_UNUSED ) {}
-
+    virtual void applyInstanceData(DataIStream& is LB_UNUSED) {}
     /**
      * Serialize the modifications since the last call to commit().
      *
@@ -309,15 +310,14 @@ public:
      * @param os the output stream.
      * @version 1.0
      */
-    virtual void pack( DataOStream& os ) { getInstanceData( os ); }
-
+    virtual void pack(DataOStream& os) { getInstanceData(os); }
     /**
      * Deserialize a change.
      *
      * @param is the input data stream.
      * @version 1.0
      */
-    virtual void unpack( DataIStream& is ) { applyInstanceData( is ); }
+    virtual void unpack(DataIStream& is) { applyInstanceData(is); }
     //@}
 
     /** @name Messaging API */
@@ -336,8 +336,8 @@ public:
      * @return the command object to pass additional data to.
      * @version 1.0
      */
-    CO_API ObjectOCommand send( NodePtr node, const uint32_t cmd,
-                                const uint32_t instanceID = CO_INSTANCE_ALL );
+    CO_API ObjectOCommand send(NodePtr node, const uint32_t cmd,
+                               const uint32_t instanceID = CO_INSTANCE_ALL);
     //@}
 
     /** @name Notifications */
@@ -349,7 +349,6 @@ public:
      * @version 1.0
      */
     virtual void notifyAttach() {}
-
     /**
      * Notify that this object has been registered or mapped.
      *
@@ -359,7 +358,6 @@ public:
      * @version 1.0
      */
     virtual void notifyAttached() {}
-
     /**
      * Notify that this object will be deregistered or unmapped.
      *
@@ -389,11 +387,11 @@ public:
     CO_API NodePtr getMasterNode();
 
     /** @internal */
-    CO_API void removeSlave( NodePtr node, const uint32_t instanceID );
-    CO_API void removeSlaves( NodePtr node ); //!< @internal
-    void setMasterNode( NodePtr node ); //!< @internal
+    CO_API void removeSlave(NodePtr node, const uint32_t instanceID);
+    CO_API void removeSlaves(NodePtr node); //!< @internal
+    void setMasterNode(NodePtr node);       //!< @internal
     /** @internal */
-    void addInstanceDatas( const ObjectDataIStreamDeque&, const uint128_t&);
+    void addInstanceDatas(const ObjectDataIStreamDeque&, const uint128_t&);
 
     /**
      * @internal
@@ -405,13 +403,12 @@ public:
      * @param masterInstanceID the instance identifier of the master object,
      *                         used when master == false.
      */
-    void setupChangeManager( const Object::ChangeType type,
-                             const bool master, LocalNodePtr localNode,
-                             const uint32_t masterInstanceID );
+    void setupChangeManager(const Object::ChangeType type, const bool master,
+                            LocalNodePtr localNode,
+                            const uint32_t masterInstanceID);
 
     /** @internal Called when object is attached from the receiver thread. */
-    CO_API virtual void attach( const uint128_t& id,
-                                const uint32_t instanceID );
+    CO_API virtual void attach(const uint128_t& id, const uint32_t instanceID);
     /**
      * @internal Called when the object is detached from the local node from the
      * receiver thread.
@@ -419,10 +416,10 @@ public:
     CO_API virtual void detach();
 
     /** @internal Transfer the attachment from the given object. */
-    void transfer( Object* from );
+    void transfer(Object* from);
 
-    void applyMapData( const uint128_t& version ); //!< @internal
-    void sendInstanceData( const Nodes& nodes ); //!< @internal
+    void applyMapData(const uint128_t& version); //!< @internal
+    void sendInstanceData(const Nodes& nodes);   //!< @internal
     //@}
 
 protected:
@@ -430,26 +427,25 @@ protected:
     CO_API Object();
 
     /** NOP assignment operator. @version 1.0 */
-    Object& operator = ( const Object& ) { return *this; }
-
+    Object& operator=(const Object&) { return *this; }
     /** Copy construct a new, unattached object. @version 1.0 */
-    CO_API explicit Object( const Object& );
+    CO_API explicit Object(const Object&);
 
 private:
     detail::Object* const impl_;
-    void _setChangeManager( ObjectCMPtr cm );
+    void _setChangeManager(ObjectCMPtr cm);
 
     ObjectCMPtr _getChangeManager();
     friend class ObjectStore;
 
-    LB_TS_VAR( _thread );
+    LB_TS_VAR(_thread);
 };
 
 /** Output information about the object to the given stream. @version 1.0 */
-CO_API std::ostream& operator << ( std::ostream&, const Object& );
+CO_API std::ostream& operator<<(std::ostream&, const Object&);
 
 /** Output object change type in human-readably form. @version 1.0 */
-CO_API std::ostream& operator << ( std::ostream&, const Object::ChangeType& );
+CO_API std::ostream& operator<<(std::ostream&, const Object::ChangeType&);
 }
 
 #endif // CO_OBJECT_H

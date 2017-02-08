@@ -25,7 +25,10 @@
 
 namespace co
 {
-namespace detail { class QueueItem; }
+namespace detail
+{
+class QueueItem;
+}
 
 /**
  * The item of the distributed queue holding the data.
@@ -43,15 +46,16 @@ public:
 private:
     friend class QueueMaster;
 
-    QueueItem( const QueueItem& rhs );
-    explicit QueueItem( QueueMaster& master );
+    QueueItem(const QueueItem& rhs);
+    explicit QueueItem(QueueMaster& master);
 
-    void sendData( const void*, const uint64_t, const bool ) override
-        { LBDONTCALL }
+    void sendData(const void*, const uint64_t, const bool) override
+    {
+        LBDONTCALL
+    }
 
     detail::QueueItem* const _impl;
 };
-
 }
 
 #endif // CO_QUEUEITEM_H

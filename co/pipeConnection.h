@@ -21,9 +21,9 @@
 #define CO_PIPE_CONNECTION_H
 
 #ifdef _WIN32
-#  include <co/namedPipeConnection.h>
+#include <co/namedPipeConnection.h>
 #else
-#  include "fdConnection.h"
+#include "fdConnection.h"
 #endif
 
 #include <lunchbox/monitor.h>
@@ -31,68 +31,65 @@
 
 namespace co
 {
-    class NamedPipeConnection;
-    class PipeConnection;
-    typedef lunchbox::RefPtr< PipeConnection > PipeConnectionPtr;
-    typedef lunchbox::RefPtr< const PipeConnection > ConstPipeConnectionPtr;
+class NamedPipeConnection;
+class PipeConnection;
+typedef lunchbox::RefPtr<PipeConnection> PipeConnectionPtr;
+typedef lunchbox::RefPtr<const PipeConnection> ConstPipeConnectionPtr;
 
-    /**
-     * An inter-thread, bi-directional connection using anonymous pipes.
-     *
-     * The pipe connection is implemented using anonymous pipes, and can
-     * therefore only be used between related threads. It consist of a pair of
-     * siblings representing the two endpoints.
-     */
-    class PipeConnection
+/**
+ * An inter-thread, bi-directional connection using anonymous pipes.
+ *
+ * The pipe connection is implemented using anonymous pipes, and can
+ * therefore only be used between related threads. It consist of a pair of
+ * siblings representing the two endpoints.
+ */
+class PipeConnection
 #ifdef _WIN32
-        : public Connection
+    : public Connection
 #else
-        : public FDConnection
+    : public FDConnection
 #endif
-    {
-    public:
-        /** Construct a new pipe connection. */
-        CO_API PipeConnection();
-        /** Destruct this pipe connection. */
-        CO_API virtual ~PipeConnection();
+{
+public:
+    /** Construct a new pipe connection. */
+    CO_API PipeConnection();
+    /** Destruct this pipe connection. */
+    CO_API virtual ~PipeConnection();
 
-        bool connect() override;
-        void close() override { _close(); }
+    bool connect() override;
+    void close() override { _close(); }
+#ifdef _WIN32
+    Notifier getNotifier() const override;
+#endif
+
+    void acceptNB() override { /* nop */}
+
+    /** @return the sibling of this pipe connection. */
+    ConnectionPtr acceptSync() override;
+
+    /** @return the sibling connection. */
+    PipeConnectionPtr getSibling() { return _sibling; }
+protected:
+#ifdef _WIN32
+    void readNB(void* buffer, const uint64_t bytes) override;
+    int64_t readSync(void* buffer, const uint64_t bytes,
+                     const bool ignored) override;
+    int64_t write(const void* buffer, const uint64_t bytes) override;
+#endif
+
+private:
+    PipeConnectionPtr _sibling;
+    lunchbox::Monitorb _connected;
 
 #ifdef _WIN32
-        Notifier getNotifier() const override;
+    NamedPipeConnectionPtr _namedPipe;
+
+    LB_TS_VAR(_recvThread);
 #endif
 
-        void acceptNB() override { /* nop */ }
-
-        /** @return the sibling of this pipe connection. */
-        ConnectionPtr acceptSync() override;
-
-        /** @return the sibling connection. */
-        PipeConnectionPtr getSibling() { return _sibling; }
-
-    protected:
-#ifdef _WIN32
-        void readNB( void* buffer, const uint64_t bytes ) override;
-        int64_t readSync( void* buffer, const uint64_t bytes,
-                                  const bool ignored ) override;
-        int64_t write( const void* buffer,
-                               const uint64_t bytes ) override;
-#endif
-
-    private:
-        PipeConnectionPtr _sibling;
-        lunchbox::Monitorb _connected;
-
-#ifdef _WIN32
-        NamedPipeConnectionPtr _namedPipe;
-
-        LB_TS_VAR( _recvThread );
-#endif
-
-        bool _createPipes();
-        void _close();
-    };
+    bool _createPipes();
+    void _close();
+};
 }
 
-#endif //CO_PIPE_CONNECTION_H
+#endif // CO_PIPE_CONNECTION_H

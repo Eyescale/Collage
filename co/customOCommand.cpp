@@ -22,45 +22,44 @@
 
 namespace co
 {
-
 namespace detail
 {
-
 class CustomOCommand
 {
 public:
-    explicit CustomOCommand( const uint128_t& commandID_ )
-        : commandID( commandID_ )
-    {}
+    explicit CustomOCommand(const uint128_t& commandID_)
+        : commandID(commandID_)
+    {
+    }
 
-    CustomOCommand( const CustomOCommand& rhs )
-        : commandID( rhs.commandID )
-    {}
+    CustomOCommand(const CustomOCommand& rhs)
+        : commandID(rhs.commandID)
+    {
+    }
 
     const uint128_t commandID;
 };
-
 }
 
-CustomOCommand::CustomOCommand( const Connections& receivers,
-                                const uint128_t& commandID )
-    : OCommand( receivers, CMD_NODE_COMMAND, COMMANDTYPE_NODE )
-    , _impl( new detail::CustomOCommand( commandID ))
+CustomOCommand::CustomOCommand(const Connections& receivers,
+                               const uint128_t& commandID)
+    : OCommand(receivers, CMD_NODE_COMMAND, COMMANDTYPE_NODE)
+    , _impl(new detail::CustomOCommand(commandID))
 {
     _init();
 }
 
-CustomOCommand::CustomOCommand( LocalNodePtr localNode,
-                                const uint128_t& commandID )
-    : OCommand( localNode.get(), localNode, CMD_NODE_COMMAND, COMMANDTYPE_NODE )
-    , _impl( new detail::CustomOCommand( commandID ))
+CustomOCommand::CustomOCommand(LocalNodePtr localNode,
+                               const uint128_t& commandID)
+    : OCommand(localNode.get(), localNode, CMD_NODE_COMMAND, COMMANDTYPE_NODE)
+    , _impl(new detail::CustomOCommand(commandID))
 {
     _init();
 }
 
-CustomOCommand::CustomOCommand( const CustomOCommand& rhs )
-    : OCommand( rhs )
-    , _impl( new detail::CustomOCommand( *rhs._impl ))
+CustomOCommand::CustomOCommand(const CustomOCommand& rhs)
+    : OCommand(rhs)
+    , _impl(new detail::CustomOCommand(*rhs._impl))
 {
     _init();
 }
@@ -74,5 +73,4 @@ CustomOCommand::~CustomOCommand()
 {
     delete _impl;
 }
-
 }

@@ -26,40 +26,40 @@
 
 #include <iostream>
 
-static lunchbox::Monitor< co::Barrier* > _barrier( 0 );
-static lunchbox::Monitor< uint16_t > _port;
+static lunchbox::Monitor<co::Barrier*> _barrier(0);
+static lunchbox::Monitor<uint16_t> _port;
 
 class MasterThread : public lunchbox::Thread
 {
 public:
     void run() override
     {
-        setName( "Master" );
+        setName("Master");
         co::ConnectionDescriptionPtr desc = new co::ConnectionDescription;
         co::LocalNodePtr node = new co::LocalNode;
-        node->addConnectionDescription( desc );
-        TEST( node->listen( ));
+        node->addConnectionDescription(desc);
+        TEST(node->listen());
         _port = desc->port;
 
-        co::Barrier barrier( node, node->getNodeID(), 3 );
-        TEST( barrier.isAttached( ));
-        TEST( barrier.getVersion() == co::VERSION_FIRST );
-        TEST( barrier.getHeight() ==  3 );
+        co::Barrier barrier(node, node->getNodeID(), 3);
+        TEST(barrier.isAttached());
+        TEST(barrier.getVersion() == co::VERSION_FIRST);
+        TEST(barrier.getHeight() == 3);
 
         _barrier = &barrier;
         std::cerr << "Master enter" << std::endl;
-        TEST( barrier.enter( ));
+        TEST(barrier.enter());
         std::cerr << "Master left" << std::endl;
 
-        barrier.setHeight( 2 );
+        barrier.setHeight(2);
         barrier.commit();
-        TEST( barrier.getVersion() == co::VERSION_FIRST + 1 );
+        TEST(barrier.getVersion() == co::VERSION_FIRST + 1);
 
         std::cerr << "Master enter" << std::endl;
-        TEST( barrier.enter( ));
+        TEST(barrier.enter());
         std::cerr << "Master left" << std::endl;
-        _barrier.waitEQ( 0 ); // wait for slave thread finish
-        node->deregisterObject( &barrier );
+        _barrier.waitEQ(0); // wait for slave thread finish
+        node->deregisterObject(&barrier);
         node->close();
     }
 };
@@ -69,46 +69,45 @@ class SlaveThread : public lunchbox::Thread
 public:
     void run() override
     {
-        setName( "Slave" );
+        setName("Slave");
         co::ConnectionDescriptionPtr desc = new co::ConnectionDescription;
         co::LocalNodePtr node = new co::LocalNode;
-        node->addConnectionDescription( desc );
-        TEST( node->listen( ));
+        node->addConnectionDescription(desc);
+        TEST(node->listen());
 
         co::NodePtr server = new co::Node;
-        co::ConnectionDescriptionPtr serverDesc =
-            new co::ConnectionDescription;
+        co::ConnectionDescriptionPtr serverDesc = new co::ConnectionDescription;
 
-        _port.waitNE( 0 );
+        _port.waitNE(0);
         serverDesc->port = _port.get();
-        server->addConnectionDescription( serverDesc );
+        server->addConnectionDescription(serverDesc);
 
-        _barrier.waitNE( 0 );
-        TEST( node->connect( server ));
+        _barrier.waitNE(0);
+        TEST(node->connect(server));
 
-        co::Barrier barrier( node, co::ObjectVersion( _barrier.get( )));
-        TEST( barrier.isGood( ));
-        TEST( barrier.getVersion() == co::VERSION_FIRST );
-
-        std::cerr << "Slave enter" << std::endl;
-        TEST( barrier.enter( ));
-        std::cerr << "Slave left" << std::endl;
-
-        barrier.sync( co::VERSION_FIRST + 1 );
-        TEST( barrier.getVersion() == co::VERSION_FIRST + 1 );
+        co::Barrier barrier(node, co::ObjectVersion(_barrier.get()));
+        TEST(barrier.isGood());
+        TEST(barrier.getVersion() == co::VERSION_FIRST);
 
         std::cerr << "Slave enter" << std::endl;
-        TEST( barrier.enter( ));
+        TEST(barrier.enter());
         std::cerr << "Slave left" << std::endl;
 
-        node->unmapObject( &barrier );
+        barrier.sync(co::VERSION_FIRST + 1);
+        TEST(barrier.getVersion() == co::VERSION_FIRST + 1);
+
+        std::cerr << "Slave enter" << std::endl;
+        TEST(barrier.enter());
+        std::cerr << "Slave left" << std::endl;
+
+        node->unmapObject(&barrier);
         node->close();
     }
 };
 
-int main( int argc, char **argv )
+int main(int argc, char** argv)
 {
-    TEST( co::init( argc, argv ));
+    TEST(co::init(argc, argv));
 
     MasterThread master;
     SlaveThread slave;
@@ -116,9 +115,9 @@ int main( int argc, char **argv )
     master.start();
     slave.start();
 
-    _barrier.waitNE( 0 );
+    _barrier.waitNE(0);
     std::cerr << "Main enter" << std::endl;
-    TEST( _barrier->enter( ));
+    TEST(_barrier->enter());
     std::cerr << "Main left" << std::endl;
 
     slave.join();

@@ -21,11 +21,14 @@
 #ifndef CO_OBJECTOCOMMAND_H
 #define CO_OBJECTOCOMMAND_H
 
-#include <co/oCommand.h>   // base class
+#include <co/oCommand.h> // base class
 
 namespace co
 {
-namespace detail { class ObjectOCommand; }
+namespace detail
+{
+class ObjectOCommand;
+}
 
 /**
  * A class for sending commands and data to local & external objects.
@@ -44,9 +47,9 @@ public:
      * @param id the ID of the object to dispatch this command to.
      * @param instanceID the instance of the object to dispatch the command to.
      */
-    CO_API ObjectOCommand( const Connections& receivers, const uint32_t cmd,
-                           const uint32_t type, const uint128_t& id,
-                           const uint32_t instanceID );
+    CO_API ObjectOCommand(const Connections& receivers, const uint32_t cmd,
+                          const uint32_t type, const uint128_t& id,
+                          const uint32_t instanceID);
 
     /** @internal
      * Construct a command which is dispatched locally to a co::Object.
@@ -58,23 +61,23 @@ public:
      * @param id the ID of the object to dispatch this command to.
      * @param instanceID the instance of the object to dispatch the command to.
      */
-    CO_API ObjectOCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
-                           const uint32_t cmd, const uint32_t type,
-                           const uint128_t& id, const uint32_t instanceID );
+    CO_API ObjectOCommand(Dispatcher* const dispatcher, LocalNodePtr localNode,
+                          const uint32_t cmd, const uint32_t type,
+                          const uint128_t& id, const uint32_t instanceID);
 
     /** @internal */
-    CO_API ObjectOCommand( const ObjectOCommand& rhs );
+    CO_API ObjectOCommand(const ObjectOCommand& rhs);
 
     /** Send or dispatch this command during destruction. @version 1.0 */
     CO_API virtual ~ObjectOCommand();
 
 private:
     ObjectOCommand();
-    ObjectOCommand& operator = ( const ObjectOCommand& );
+    ObjectOCommand& operator=(const ObjectOCommand&);
     detail::ObjectOCommand* const _impl;
 
-    void _init( const uint128_t& id, const uint32_t instanceID );
+    void _init(const uint128_t& id, const uint32_t instanceID);
 };
 }
 
-#endif //CO_OBJECTOCOMMAND_H
+#endif // CO_OBJECTOCOMMAND_H

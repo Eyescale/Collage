@@ -21,11 +21,14 @@
 #ifndef CO_SERIALIZABLE_H
 #define CO_SERIALIZABLE_H
 
-#include <co/object.h>        // base class
+#include <co/object.h> // base class
 
 namespace co
 {
-namespace detail { class Serializable; }
+namespace detail
+{
+class Serializable;
+}
 
 /**
  * Base class for distributed, inheritable objects.
@@ -43,11 +46,11 @@ public:
     CO_API bool isDirty() const override;
 
     /** @return true if the given dirty bits are set. @version 1.0 */
-    CO_API virtual bool isDirty( const uint64_t dirtyBits ) const;
+    CO_API virtual bool isDirty(const uint64_t dirtyBits) const;
 
     /** @sa Object::commit() */
-    CO_API uint128_t commit( const uint32_t incarnation = CO_COMMIT_NEXT )
-        override;
+    CO_API uint128_t
+        commit(const uint32_t incarnation = CO_COMMIT_NEXT) override;
 
 protected:
     /** Construct a new Serializable. @version 1.0 */
@@ -57,14 +60,17 @@ protected:
      * Construct an unmapped, unregistered copy of a serializable.
      * @version 1.0
      */
-    CO_API Serializable( const Serializable& );
+    CO_API Serializable(const Serializable&);
 
     /** Destruct the serializable. @version 1.0 */
     CO_API virtual ~Serializable();
 
     /** NOP assignment operator. @version 1.1.1 */
-    Serializable& operator = ( const Serializable& from )
-        { Object::operator = ( from ); return *this; }
+    Serializable& operator=(const Serializable& from)
+    {
+        Object::operator=(from);
+        return *this;
+    }
 
     /**
      * Worker for pack() and getInstanceData().
@@ -77,7 +83,7 @@ protected:
      * need to be transmitted by the overriding method.
      * @version 1.0
      */
-    virtual void serialize( co::DataOStream&, const uint64_t ) = 0;
+    virtual void serialize(co::DataOStream&, const uint64_t) = 0;
 
     /**
      * Worker for unpack() and applyInstanceData().
@@ -89,7 +95,7 @@ protected:
      * @sa serialize()
      * @version 1.0
      */
-    virtual void deserialize( co::DataIStream&, const uint64_t ) = 0;
+    virtual void deserialize(co::DataIStream&, const uint64_t) = 0;
 
     /**
      * The changed parts of the serializable since the last pack().
@@ -99,30 +105,31 @@ protected:
      */
     enum DirtyBits
     {
-        DIRTY_NONE       = 0,
-        DIRTY_CUSTOM     = 1,
-        DIRTY_ALL        = 0xFFFFFFFFFFFFFFFFull
+        DIRTY_NONE = 0,
+        DIRTY_CUSTOM = 1,
+        DIRTY_ALL = 0xFFFFFFFFFFFFFFFFull
     };
 
     /** Add dirty flags to mark data for distribution. @version 1.0 */
-    CO_API virtual void setDirty( const uint64_t bits );
+    CO_API virtual void setDirty(const uint64_t bits);
 
     /** Remove dirty flags to clear data from distribution. @version 1.0 */
-    CO_API virtual void unsetDirty( const uint64_t bits );
+    CO_API virtual void unsetDirty(const uint64_t bits);
 
     /** @sa Object::getChangeType() */
     ChangeType getChangeType() const override { return DELTA; }
-
     /** @sa Object::notifyAttached() */
     CO_API void notifyAttached() override;
 
-    void getInstanceData( co::DataOStream& os ) override
-        { serialize( os, DIRTY_ALL ); }
+    void getInstanceData(co::DataOStream& os) override
+    {
+        serialize(os, DIRTY_ALL);
+    }
 
-    CO_API void applyInstanceData( co::DataIStream& is ) override;
+    CO_API void applyInstanceData(co::DataIStream& is) override;
 
-    CO_API void pack( co::DataOStream& os ) final;
-    CO_API void unpack( co::DataIStream& is ) final;
+    CO_API void pack(co::DataOStream& os) final;
+    CO_API void unpack(co::DataIStream& is) final;
 
 private:
     detail::Serializable* const _impl;

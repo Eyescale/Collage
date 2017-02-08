@@ -21,11 +21,11 @@
 #ifndef CO_OBJECTDATAISTREAM_H
 #define CO_OBJECTDATAISTREAM_H
 
-#include <co/iCommand.h>        // member
-#include <co/dataIStream.h>     // base class
-#include <co/version.h>         // enum
-#include <lunchbox/monitor.h>   // member
-#include <lunchbox/thread.h>    // member
+#include <co/dataIStream.h>   // base class
+#include <co/iCommand.h>      // member
+#include <co/version.h>       // enum
+#include <lunchbox/monitor.h> // member
+#include <lunchbox/thread.h>  // member
 
 #include <deque>
 
@@ -36,22 +36,20 @@ class ObjectDataIStream : public DataIStream
 {
 public:
     ObjectDataIStream();
-    ObjectDataIStream( const ObjectDataIStream& rhs );
+    ObjectDataIStream(const ObjectDataIStream& rhs);
     virtual ~ObjectDataIStream();
 
-    ObjectDataIStream& operator = ( const ObjectDataIStream& rhs );
+    ObjectDataIStream& operator=(const ObjectDataIStream& rhs);
 
-    void addDataCommand( ObjectDataICommand command );
+    void addDataCommand(ObjectDataICommand command);
     size_t getDataSize() const;
 
     uint128_t getVersion() const override { return _version.get(); }
     uint128_t getPendingVersion() const;
 
-    void waitReady() const { _version.waitNE( VERSION_INVALID ); }
+    void waitReady() const { _version.waitNE(VERSION_INVALID); }
     bool isReady() const { return _version != VERSION_INVALID; }
-
     size_t nRemainingBuffers() const override { return _commands.size(); }
-
     void reset() override;
 
     bool hasInstanceData() const;
@@ -60,11 +58,11 @@ public:
     CO_API LocalNodePtr getLocalNode() const override;
 
 protected:
-    bool getNextBuffer( CompressorInfo& compressor, uint32_t& nChunks,
-                        const void*& chunkData, uint64_t& size ) override;
+    bool getNextBuffer(CompressorInfo& compressor, uint32_t& nChunks,
+                       const void*& chunkData, uint64_t& size) override;
 
 private:
-    typedef std::deque< ICommand > CommandDeque;
+    typedef std::deque<ICommand> CommandDeque;
 
     /** All data commands for this istream. */
     CommandDeque _commands;
@@ -72,12 +70,12 @@ private:
     ICommand _usedCommand; //!< Currently used buffer
 
     /** The object version associated with this input stream. */
-    lunchbox::Monitor< uint128_t > _version;
+    lunchbox::Monitor<uint128_t> _version;
 
     void _setReady() { _version = getPendingVersion(); }
     void _reset();
 
-    LB_TS_VAR( _thread );
+    LB_TS_VAR(_thread);
 };
 }
-#endif //CO_OBJECTDATAISTREAM_H
+#endif // CO_OBJECTDATAISTREAM_H

@@ -20,7 +20,7 @@
 #ifndef CO_UNBUFFEREDMASTERCM_H
 #define CO_UNBUFFEREDMASTERCM_H
 
-#include "versionedMasterCM.h"           // base class
+#include "versionedMasterCM.h" // base class
 
 namespace co
 {
@@ -32,19 +32,19 @@ namespace co
 class UnbufferedMasterCM : public VersionedMasterCM
 {
 public:
-    explicit UnbufferedMasterCM( Object* object );
+    explicit UnbufferedMasterCM(Object* object);
     virtual ~UnbufferedMasterCM();
 
     /** @name Versioning */
     //@{
-    uint128_t commit( const uint32_t incarnation ) override;
-    void setAutoObsolete( const uint32_t ) override {}
+    uint128_t commit(const uint32_t incarnation) override;
+    void setAutoObsolete(const uint32_t) override {}
     uint32_t getAutoObsolete() const override { return 0; }
     //@}
 
 private:
     /* The command handlers. */
-    bool _cmdCommit( ICommand& pkg );
+    bool _cmdCommit(ICommand& pkg);
 };
 }
 

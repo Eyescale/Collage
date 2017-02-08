@@ -37,8 +37,14 @@
 
 namespace co
 {
-namespace detail { class DataOStream; }
-namespace DataStreamTest { class Sender; }
+namespace detail
+{
+class DataOStream;
+}
+namespace DataStreamTest
+{
+class Sender;
+}
 
 /**
  * A std::ostream-like interface for object serialization.
@@ -67,11 +73,11 @@ public:
     CO_API const Connections& getConnections() const;
 
     /** @internal Stream the data header (compressor, nChunks). */
-    DataOStream& streamDataHeader( DataOStream& os );
+    DataOStream& streamDataHeader(DataOStream& os);
 
     /** @internal Send the (compressed) data using the given connection. */
-    void sendBody( ConnectionPtr connection, const void* data,
-                   const uint64_t dataSize );
+    void sendBody(ConnectionPtr connection, const void* data,
+                  const uint64_t dataSize);
 
     /** @internal @return the compressed data size, 0 if uncompressed.*/
     uint64_t getCompressedDataSize() const;
@@ -80,48 +86,58 @@ public:
     /** @name Data output */
     //@{
     /** Write a plain data item by copying it to the stream. @version 1.0 */
-    template< class T > DataOStream& operator << ( const T& value )
-        { _write( value, boost::has_trivial_copy< T >( )); return *this; }
+    template <class T>
+    DataOStream& operator<<(const T& value)
+    {
+        _write(value, boost::has_trivial_copy<T>());
+        return *this;
+    }
 
     /** Write a C array. @version 1.0 */
-    template< class T > DataOStream& operator << ( const Array< T > array )
-        { _writeArray( array, boost::has_trivial_copy<T>( )); return *this; }
+    template <class T>
+    DataOStream& operator<<(const Array<T> array)
+    {
+        _writeArray(array, boost::has_trivial_copy<T>());
+        return *this;
+    }
 
     /**
      * Write a lunchbox::RefPtr. Refcount has to managed by caller.
      * @version 1.1
      */
-    template< class T >
-    DataOStream& operator << ( const lunchbox::RefPtr< T >& ptr );
+    template <class T>
+    DataOStream& operator<<(const lunchbox::RefPtr<T>& ptr);
 
     /** Write a lunchbox::Buffer. @version 1.0 */
-    template< class T >
-    DataOStream& operator << ( const lunchbox::Buffer< T >& buffer );
+    template <class T>
+    DataOStream& operator<<(const lunchbox::Buffer<T>& buffer);
 
     /** Transmit a request identifier. @version 1.1.1 */
-    template< class T >
-    DataOStream& operator << ( const lunchbox::Request<T>& request )
-    { return (*this) << request.getID(); }
+    template <class T>
+    DataOStream& operator<<(const lunchbox::Request<T>& request)
+    {
+        return (*this) << request.getID();
+    }
 
     /** Write a std::vector of serializable items. @version 1.0 */
-    template< class T >
-    DataOStream& operator << ( const std::vector< T >& value );
+    template <class T>
+    DataOStream& operator<<(const std::vector<T>& value);
 
     /** Write a std::map of serializable items. @version 1.0 */
-    template< class K, class V >
-    DataOStream& operator << ( const std::map< K, V >& value );
+    template <class K, class V>
+    DataOStream& operator<<(const std::map<K, V>& value);
 
     /** Write a std::set of serializable items. @version 1.0 */
-    template< class T >
-    DataOStream& operator << ( const std::set< T >& value );
+    template <class T>
+    DataOStream& operator<<(const std::set<T>& value);
 
     /** Write a stde::hash_map of serializable items. @version 1.0 */
-    template< class K, class V >
-    DataOStream& operator << ( const stde::hash_map< K, V >& value );
+    template <class K, class V>
+    DataOStream& operator<<(const stde::hash_map<K, V>& value);
 
     /** Write a stde::hash_set of serializable items. @version 1.0 */
-    template< class T >
-    DataOStream& operator << ( const stde::hash_set< T >& value );
+    template <class T>
+    DataOStream& operator<<(const stde::hash_set<T>& value);
 
     /** @internal
      * Serialize child objects.
@@ -129,43 +145,43 @@ public:
      * The DataIStream has a deserialize counterpart to this method. All
      * child objects have to be registered or mapped beforehand.
      */
-    template< typename C >
-    void serializeChildren( const std::vector< C* >& children );
+    template <typename C>
+    void serializeChildren(const std::vector<C*>& children);
     //@}
 
-    CO_API static std::ostream& printStatistics( std::ostream& ); //!< @internal
-    CO_API static void clearStatistics(); //!< @internal
+    CO_API static std::ostream& printStatistics(std::ostream&); //!< @internal
+    CO_API static void clearStatistics();                       //!< @internal
 
 protected:
     CO_API explicit DataOStream(
-            size_t chunkSize = Global::getObjectBufferSize( )); //!< @internal
-    explicit DataOStream( DataOStream& rhs );  //!< @internal
-    virtual CO_API ~DataOStream(); //!< @internal
+        size_t chunkSize = Global::getObjectBufferSize()); //!< @internal
+    explicit DataOStream(DataOStream& rhs);                //!< @internal
+    virtual CO_API ~DataOStream();                         //!< @internal
 
     /** @internal */
     CO_API lunchbox::Bufferb& getBuffer();
 
     /** @internal Initialize the given compressor. */
-    void _setCompressor( const pression::data::CompressorInfo& info );
+    void _setCompressor(const pression::data::CompressorInfo& info);
 
     /** @internal Enable output. */
     CO_API void _enable();
 
     /** @internal Flush remaining data in the buffer. */
-    void flush( const bool last );
+    void flush(const bool last);
 
     /** @internal Set up the connection list for a group of nodes, using
      * multicast where possible.
      */
-    void _setupConnections( const Nodes& receivers );
+    void _setupConnections(const Nodes& receivers);
 
-    void _setupConnections( const Connections& connections );
+    void _setupConnections(const Connections& connections);
 
     /** @internal Set up the connection (list) for one node. */
-    void _setupConnection( NodePtr node, const bool useMulticast );
+    void _setupConnection(NodePtr node, const bool useMulticast);
 
     /** @internal Needed by unit test. */
-    CO_API void _setupConnection( ConnectionPtr connection );
+    CO_API void _setupConnection(ConnectionPtr connection);
     friend class DataStreamTest::Sender;
 
     /** @internal Resend the saved buffer to all enabled connections. */
@@ -176,8 +192,8 @@ protected:
     /** @internal @name Data sending, used by the subclasses */
     //@{
     /** @internal Send a data buffer (command) to the receivers. */
-    virtual void sendData( const void* buffer, const uint64_t size,
-                           const bool last ) = 0;
+    virtual void sendData(const void* buffer, const uint64_t size,
+                          const bool last) = 0;
     //@}
 
     /** @internal Reset the whole stream. */
@@ -187,62 +203,67 @@ private:
     detail::DataOStream* const _impl;
 
     /** Collect compressed data. */
-    CO_API uint64_t _getCompressedData( const uint8_t** chunks,
-                                        uint64_t* chunkSizes ) const;
+    CO_API uint64_t _getCompressedData(const uint8_t** chunks,
+                                       uint64_t* chunkSizes) const;
 
     /** Write a number of bytes from data into the stream. */
-    CO_API void _write( const void* data, uint64_t size );
+    CO_API void _write(const void* data, uint64_t size);
 
     /** Helper function preparing data for sendData() as needed. */
-    void _sendData( const void* data, const uint64_t size );
+    void _sendData(const void* data, const uint64_t size);
 
     /** Reset after sending a buffer. */
     void _resetBuffer();
 
     /** Write a vector of trivial data. */
-    template< class T >
-    DataOStream& _writeFlatVector( const std::vector< T >& value )
+    template <class T>
+    DataOStream& _writeFlatVector(const std::vector<T>& value)
     {
         const uint64_t nElems = value.size();
-        _write( &nElems, sizeof( nElems ));
-        if( nElems > 0 )
-            _write( &value.front(), nElems * sizeof( T ));
+        _write(&nElems, sizeof(nElems));
+        if (nElems > 0)
+            _write(&value.front(), nElems * sizeof(T));
         return *this;
     }
 
     /** Write a plain data item. */
-    template< class T > void _write( const T& value, const boost::true_type& )
-        { _write( &value, sizeof( value )); }
+    template <class T>
+    void _write(const T& value, const boost::true_type&)
+    {
+        _write(&value, sizeof(value));
+    }
 
     /** Write a non-plain data item. */
-    template< class T > void _write( const T& value, const boost::false_type& )
+    template <class T>
+    void _write(const T& value, const boost::false_type&)
     {
-        _writeSerializable( value,
-                            boost::is_base_of< servus::Serializable, T >( ));
+        _writeSerializable(value, boost::is_base_of<servus::Serializable, T>());
     }
 
     /** Write a serializable object. */
-    template< class T>
-    void _writeSerializable( const T& value, const boost::true_type& );
+    template <class T>
+    void _writeSerializable(const T& value, const boost::true_type&);
 
     /** Write an Array of POD data */
-    template< class T >
-    void _writeArray( const Array< T > array, const boost::true_type& )
-        { _write( array.data, array.getNumBytes( )); }
+    template <class T>
+    void _writeArray(const Array<T> array, const boost::true_type&)
+    {
+        _write(array.data, array.getNumBytes());
+    }
 
     /** Write an Array of non-POD data */
-    template< class T >
-    void _writeArray( const Array< T > array, const boost::false_type& )
+    template <class T>
+    void _writeArray(const Array<T> array, const boost::false_type&)
     {
-        for( size_t i = 0; i < array.num; ++i )
-            *this << array.data[ i ];
+        for (size_t i = 0; i < array.num; ++i)
+            *this << array.data[i];
     }
 
     /** Send the trailing data (command) to the receivers */
-    void _sendFooter( const void* buffer, const uint64_t size );
+    void _sendFooter(const void* buffer, const uint64_t size);
 };
 }
 
 #include "dataOStream.ipp" // template implementation
 
-#endif //CO_DATAOSTREAM_H
+#endif // CO_DATAOSTREAM_H

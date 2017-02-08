@@ -16,41 +16,44 @@
  */
 
 // Tests basic connection functionality
-#include <lunchbox/test.h>
 #include <co/buffer.h>
 #include <co/connection.h>
 #include <co/connectionDescription.h>
 #include <co/connectionSet.h>
 #include <co/init.h>
+#include <lunchbox/test.h>
 
+#include <iostream>
 #include <lunchbox/clock.h>
 #include <lunchbox/monitor.h>
-#include <iostream>
 
 #define PACKETSIZE (12345)
-#define NPACKETS   (23456)
+#define NPACKETS (23456)
 #define NCONNECTIONS (10)
 
 namespace
 {
-uint8_t out[ PACKETSIZE ];
+uint8_t out[PACKETSIZE];
 
 class Writer : public lunchbox::Thread
 {
 public:
-    Writer() : runtime( 0.f ) {}
+    Writer()
+        : runtime(0.f)
+    {
+    }
 
-    void startSend( co::ConnectionPtr connection )
+    void startSend(co::ConnectionPtr connection)
     {
         connection_ = connection;
-        TEST( start( ));
+        TEST(start());
     }
 
     void run() override
     {
         lunchbox::Clock clock;
-        for( size_t j = 0; j < NPACKETS; ++j )
-            TEST( connection_->send( out, PACKETSIZE ));
+        for (size_t j = 0; j < NPACKETS; ++j)
+            TEST(connection_->send(out, PACKETSIZE));
         runtime = clock.getTimef();
         connection_ = 0;
     }
@@ -62,70 +65,70 @@ private:
 };
 }
 
-int main( int argc, char **argv )
+int main(int argc, char** argv)
 {
 #ifdef _MSC_VER
     // not implemented yet, https://github.com/Eyescale/Collage/issues/38
     return EXIT_SUCCESS;
 #endif
-    co::init( argc, argv );
+    co::init(argc, argv);
     co::ConnectionDescriptionPtr desc = new co::ConnectionDescription;
-    desc->setHostname( "127.0.0.1" );
+    desc->setHostname("127.0.0.1");
 
-    co::ConnectionPtr listener = co::Connection::create( desc );
-    TEST( listener );
-    TEST( listener->listen( ));
+    co::ConnectionPtr listener = co::Connection::create(desc);
+    TEST(listener);
+    TEST(listener->listen());
 
-    co::ConnectionPtr writers[ NCONNECTIONS ];
-    Writer threads[ NCONNECTIONS ];
+    co::ConnectionPtr writers[NCONNECTIONS];
+    Writer threads[NCONNECTIONS];
     co::ConnectionSet set;
 
-    for( size_t i = 0; i < NCONNECTIONS; ++i )
+    for (size_t i = 0; i < NCONNECTIONS; ++i)
     {
         listener->acceptNB();
 
-        writers[i] = co::Connection::create( desc );
-        TEST( writers[i]->connect( ));
+        writers[i] = co::Connection::create(desc);
+        TEST(writers[i]->connect());
 
         co::ConnectionPtr reader = listener->acceptSync();
-        TEST( reader );
+        TEST(reader);
 
-        set.addConnection( reader );
-        threads[i].startSend( writers[i] );
+        set.addConnection(reader);
+        threads[i].startSend(writers[i]);
     }
 
     co::Buffer buffer;
     co::BufferPtr syncBuffer;
 
-    for( size_t i = 0; i < NPACKETS * NCONNECTIONS ; ++i )
+    for (size_t i = 0; i < NPACKETS * NCONNECTIONS; ++i)
     {
         const co::ConnectionSet::Event result = set.select();
-        TESTINFO( result == co::ConnectionSet::EVENT_DATA, result );
+        TESTINFO(result == co::ConnectionSet::EVENT_DATA, result);
 
         co::ConnectionPtr connection = set.getConnection();
-        connection->recvNB( &buffer, PACKETSIZE );
-        TEST( connection->recvSync( syncBuffer ));
-        TEST( syncBuffer == &buffer );
-        TEST( buffer.getSize() == PACKETSIZE );
-        buffer.setSize( 0 );
+        connection->recvNB(&buffer, PACKETSIZE);
+        TEST(connection->recvSync(syncBuffer));
+        TEST(syncBuffer == &buffer);
+        TEST(buffer.getSize() == PACKETSIZE);
+        buffer.setSize(0);
     }
 
     const float runtime = threads[0].runtime;
     const float delta = runtime / 10.f;
-    for( size_t i = 0; i < NCONNECTIONS; ++i )
+    for (size_t i = 0; i < NCONNECTIONS; ++i)
     {
         threads[i].join();
         writers[i]->close();
-        TESTINFO( std::abs( threads[i].runtime - runtime ) < delta ,
-                  threads[i].runtime << " != " << runtime );
+        TESTINFO(std::abs(threads[i].runtime - runtime) < delta,
+                 threads[i].runtime << " != " << runtime);
     }
 
     const co::Connections& connections = set.getConnections();
-    while( !connections.empty( ))
+    while (!connections.empty())
     {
         co::ConnectionPtr connection = connections.back();
         connection->close();
-        TEST( set.removeConnection( connection ));
+        TEST(set.removeConnection(connection));
     }
 
     co::exit();

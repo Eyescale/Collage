@@ -20,12 +20,15 @@
 #ifndef CO_BUFFER_CONNECTION_H
 #define CO_BUFFER_CONNECTION_H
 
-#include <co/connection.h>  // base class
+#include <co/connection.h> // base class
 #include <lunchbox/types.h>
 
 namespace co
 {
-namespace detail { class BufferConnection; }
+namespace detail
+{
+class BufferConnection;
+}
 
 /** A proxy connection buffering outgoing data into a memory buffer. */
 class BufferConnection : public Connection
@@ -41,7 +44,7 @@ public:
      * Flush the accumulated data, sending it to the given connection.
      * @version 1.0
      */
-    CO_API void sendBuffer( ConnectionPtr connection );
+    CO_API void sendBuffer(ConnectionPtr connection);
 
     /** @return the internal data buffer. @version 1.0 */
     CO_API const lunchbox::Bufferb& getBuffer() const;
@@ -55,21 +58,27 @@ public:
 protected:
     /** @internal */
     //@{
-    void readNB( void*, const uint64_t ) override { LBDONTCALL; }
-    int64_t readSync( void*, const uint64_t, const bool ) override
-        { LBDONTCALL; return -1; }
-    CO_API int64_t write( const void* buffer,
-                                  const uint64_t bytes) override;
+    void readNB(void*, const uint64_t) override { LBDONTCALL; }
+    int64_t readSync(void*, const uint64_t, const bool) override
+    {
+        LBDONTCALL;
+        return -1;
+    }
+    CO_API int64_t write(const void* buffer, const uint64_t bytes) override;
 
-    Notifier getNotifier() const override { LBDONTCALL; return 0; }
+    Notifier getNotifier() const override
+    {
+        LBDONTCALL;
+        return 0;
+    }
     //@}
 
 private:
     detail::BufferConnection* const _impl;
 };
 
-typedef lunchbox::RefPtr< BufferConnection > BufferConnectionPtr;
-typedef lunchbox::RefPtr< const BufferConnection > ConstBufferConnectionPtr;
+typedef lunchbox::RefPtr<BufferConnection> BufferConnectionPtr;
+typedef lunchbox::RefPtr<const BufferConnection> ConstBufferConnectionPtr;
 }
 
 #endif // CO_BUFFER_CONNECTION_H

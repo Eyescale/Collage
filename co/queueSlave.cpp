@@ -24,11 +24,11 @@
 #include "buffer.h"
 #include "commandQueue.h"
 #include "dataIStream.h"
-#include "global.h"
-#include "objectOCommand.h"
-#include "objectICommand.h"
-#include "queueCommand.h"
 #include "exception.h"
+#include "global.h"
+#include "objectICommand.h"
+#include "objectOCommand.h"
+#include "queueCommand.h"
 
 namespace co
 {
@@ -37,15 +37,18 @@ namespace detail
 class QueueSlave
 {
 public:
-    QueueSlave( const uint32_t mark, const uint32_t amount)
-        : masterInstanceID( CO_INSTANCE_ALL )
-        , prefetchMark( mark == LB_UNDEFINED_UINT32 ?
-                    Global::getIAttribute( Global::IATTR_TILE_QUEUE_MIN_SIZE ) :
-                        mark )
-        , prefetchAmount( amount == LB_UNDEFINED_UINT32 ?
-                      Global::getIAttribute( Global::IATTR_TILE_QUEUE_REFILL ) :
-                          amount )
-    {}
+    QueueSlave(const uint32_t mark, const uint32_t amount)
+        : masterInstanceID(CO_INSTANCE_ALL)
+        , prefetchMark(
+              mark == LB_UNDEFINED_UINT32
+                  ? Global::getIAttribute(Global::IATTR_TILE_QUEUE_MIN_SIZE)
+                  : mark)
+        , prefetchAmount(
+              amount == LB_UNDEFINED_UINT32
+                  ? Global::getIAttribute(Global::IATTR_TILE_QUEUE_REFILL)
+                  : amount)
+    {
+    }
 
     co::CommandQueue queue;
     NodePtr master;
@@ -56,69 +59,69 @@ public:
 };
 }
 
-QueueSlave::QueueSlave( const uint32_t prefetchMark,
-                        const uint32_t prefetchAmount )
-        : _impl( new detail::QueueSlave( prefetchMark, prefetchAmount ))
-{}
+QueueSlave::QueueSlave(const uint32_t prefetchMark,
+                       const uint32_t prefetchAmount)
+    : _impl(new detail::QueueSlave(prefetchMark, prefetchAmount))
+{
+}
 
 QueueSlave::~QueueSlave()
 {
     delete _impl;
 }
 
-void QueueSlave::attach( const uint128_t& id, const uint32_t instanceID )
+void QueueSlave::attach(const uint128_t& id, const uint32_t instanceID)
 {
     Object::attach(id, instanceID);
-    registerCommand( CMD_QUEUE_ITEM, CommandFunc<Object>(0, 0), &_impl->queue );
-    registerCommand( CMD_QUEUE_EMPTY, CommandFunc<Object>(0, 0), &_impl->queue);
+    registerCommand(CMD_QUEUE_ITEM, CommandFunc<Object>(0, 0), &_impl->queue);
+    registerCommand(CMD_QUEUE_EMPTY, CommandFunc<Object>(0, 0), &_impl->queue);
 }
 
-void QueueSlave::applyInstanceData( co::DataIStream& is )
+void QueueSlave::applyInstanceData(co::DataIStream& is)
 {
     NodeID masterNodeID;
     is >> _impl->masterInstanceID >> masterNodeID;
 
-    LBASSERT( masterNodeID != 0 );
-    LBASSERT( !_impl->master );
+    LBASSERT(masterNodeID != 0);
+    LBASSERT(!_impl->master);
     LocalNodePtr localNode = getLocalNode();
-    _impl->master = localNode->connect( masterNodeID );
+    _impl->master = localNode->connect(masterNodeID);
 }
 
-ObjectICommand QueueSlave::pop( const uint32_t timeout )
+ObjectICommand QueueSlave::pop(const uint32_t timeout)
 {
     static lunchbox::a_int32_t _request;
     const int32_t request = ++_request;
 
-    while( true )
+    while (true)
     {
         const size_t queueSize = _impl->queue.getSize();
-        if( queueSize <= _impl->prefetchMark )
+        if (queueSize <= _impl->prefetchMark)
         {
-            send( _impl->master, CMD_QUEUE_GET_ITEM, _impl->masterInstanceID )
-                    << _impl->prefetchAmount << getInstanceID() << request;
+            send(_impl->master, CMD_QUEUE_GET_ITEM, _impl->masterInstanceID)
+                << _impl->prefetchAmount << getInstanceID() << request;
         }
 
-        ObjectICommand cmd( _impl->queue.pop( timeout ));
-        if( !cmd.isValid( ))
+        ObjectICommand cmd(_impl->queue.pop(timeout));
+        if (!cmd.isValid())
         {
             LBERROR << "Timeout during QueueSlave::pop()" << std::endl;
-            return ObjectICommand( 0, 0, 0 );
+            return ObjectICommand(0, 0, 0);
         }
 
-        switch( cmd.getCommand( ))
+        switch (cmd.getCommand())
         {
         case CMD_QUEUE_ITEM:
-            return ObjectICommand( cmd );
+            return ObjectICommand(cmd);
 
         default:
             LBUNIMPLEMENTED;
         case CMD_QUEUE_EMPTY:
-            if( cmd.get< int32_t >() == request )
-                return ObjectICommand( 0, 0, 0 );
+            if (cmd.get<int32_t>() == request)
+                return ObjectICommand(0, 0, 0);
             // else left-over or not our empty command, discard and retry
             break;
         }
     }
 }
-
 }

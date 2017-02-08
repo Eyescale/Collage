@@ -24,11 +24,11 @@
 
 namespace co
 {
-    enum BarrierCommand
-    {
-        CMD_BARRIER_ENTER = CMD_OBJECT_CUSTOM,
-        CMD_BARRIER_ENTER_REPLY
-    };
+enum BarrierCommand
+{
+    CMD_BARRIER_ENTER = CMD_OBJECT_CUSTOM,
+    CMD_BARRIER_ENTER_REPLY
+};
 }
 
 #endif // CO_BARRIERCOMMAND_H

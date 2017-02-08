@@ -21,17 +21,19 @@
 #ifndef CO_OBJECTDATAOCOMMAND_H
 #define CO_OBJECTDATAOCOMMAND_H
 
-#include <co/objectOCommand.h>   // base class
-#include <co/objectICommand.h>    // CMD enums
-
+#include <co/objectICommand.h> // CMD enums
+#include <co/objectOCommand.h> // base class
 
 /** @cond IGNORE */
-int testMain( int, char ** );
+int testMain(int, char**);
 /** @endcond */
 
 namespace co
 {
-namespace detail { class ObjectDataOCommand; }
+namespace detail
+{
+class ObjectDataOCommand;
+}
 
 /**
  * @internal
@@ -57,32 +59,30 @@ public:
      * @param isLast true if this is the last command for one object
      * @param stream the stream containing the (possible) compressed object data
      */
-    CO_API ObjectDataOCommand( const Connections& receivers,
-                               const uint32_t cmd, const uint32_t type,
-                               const uint128_t& id, const uint32_t instanceID,
-                               const uint128_t& version,
-                               const uint32_t sequence,
-                               const void* data, const uint64_t size,
-                               const bool isLast,
-                               DataOStream* stream );
+    CO_API ObjectDataOCommand(const Connections& receivers, const uint32_t cmd,
+                              const uint32_t type, const uint128_t& id,
+                              const uint32_t instanceID,
+                              const uint128_t& version, const uint32_t sequence,
+                              const void* data, const uint64_t size,
+                              const bool isLast, DataOStream* stream);
 
     /** @internal */
-    CO_API ObjectDataOCommand( const ObjectDataOCommand& rhs );
+    CO_API ObjectDataOCommand(const ObjectDataOCommand& rhs);
 
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~ObjectDataOCommand();
 
 private:
     ObjectDataOCommand();
-    ObjectDataOCommand& operator = ( const ObjectDataOCommand& );
+    ObjectDataOCommand& operator=(const ObjectDataOCommand&);
     detail::ObjectDataOCommand* const _impl;
 
-    CO_API ObjectDataICommand _getCommand( LocalNodePtr node ); // needed by:
-    friend int ::testMain( int, char ** );
+    CO_API ObjectDataICommand _getCommand(LocalNodePtr node); // needed by:
+    friend int ::testMain(int, char**);
 
-    void _init( const uint128_t& version, const uint32_t sequence,
-                const uint64_t dataSize, const bool isLast );
+    void _init(const uint128_t& version, const uint32_t sequence,
+               const uint64_t dataSize, const bool isLast);
 };
 }
 
-#endif //CO_OBJECTDATAOCOMMAND_H
+#endif // CO_OBJECTDATAOCOMMAND_H

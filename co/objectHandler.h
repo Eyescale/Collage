@@ -41,7 +41,7 @@ public:
      * @return true if the object was registered, false otherwise.
      * @version 1.0
      */
-    virtual bool registerObject( Object* object ) = 0;
+    virtual bool registerObject(Object* object) = 0;
 
     /**
      * Deregister a distributed object.
@@ -49,7 +49,7 @@ public:
      * @param object the object instance.
      * @version 1.0
      */
-    virtual void deregisterObject( Object* object ) = 0;
+    virtual void deregisterObject(Object* object) = 0;
 
     /**
      * Start mapping a distributed object.
@@ -61,18 +61,17 @@ public:
      * @return the request identifier for mapObjectSync().
      * @version 1.0
      */
-    virtual uint32_t mapObjectNB( Object* object, const uint128_t& id,
-                                  const uint128_t& version,
-                                  NodePtr master ) = 0;
+    virtual uint32_t mapObjectNB(Object* object, const uint128_t& id,
+                                 const uint128_t& version, NodePtr master) = 0;
 
     /** Finalize the mapping of a distributed object. @version 1.0 */
-    virtual bool mapObjectSync( const uint32_t requestID ) = 0;
+    virtual bool mapObjectSync(const uint32_t requestID) = 0;
 
     /** Unmap a mapped object. @version 1.0 */
-    virtual void unmapObject( Object* object ) = 0;
+    virtual void unmapObject(Object* object) = 0;
 
     /** Convenience method to deregister or unmap an object. @version 1.0 */
-    CO_API void releaseObject( Object* object );
+    CO_API void releaseObject(Object* object);
 
     /**
      * Synchronize the local object with a remote object.
@@ -94,13 +93,13 @@ public:
      *         the operation on evaluation.
      * @version 1.1.1
      */
-    virtual f_bool_t syncObject( Object* object, const uint128_t& id,
-                                 NodePtr master,
-                                 const uint32_t instanceID=CO_INSTANCE_ALL) = 0;
+    virtual f_bool_t syncObject(
+        Object* object, const uint128_t& id, NodePtr master,
+        const uint32_t instanceID = CO_INSTANCE_ALL) = 0;
+
 protected:
     /** Construct a new object handler. @version 1.0 */
     ObjectHandler() {}
-
     /** Destroy this object handler. @version 1.0 */
     virtual ~ObjectHandler() {}
 };

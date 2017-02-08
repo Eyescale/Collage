@@ -21,7 +21,7 @@
 #ifndef CO_DELTAMASTERCM_H
 #define CO_DELTAMASTERCM_H
 
-#include "fullMasterCM.h"              // base class
+#include "fullMasterCM.h" // base class
 #include "objectDeltaDataOStream.h"
 
 namespace co
@@ -34,7 +34,7 @@ namespace co
 class DeltaMasterCM : public FullMasterCM
 {
 public:
-    explicit DeltaMasterCM( Object* object );
+    explicit DeltaMasterCM(Object* object);
     virtual ~DeltaMasterCM();
 
 protected:
@@ -42,7 +42,7 @@ protected:
 
 private:
     /* The command handlers. */
-    bool _cmdCommit( ICommand& pkg );
+    bool _cmdCommit(ICommand& pkg);
 
     typedef ObjectDeltaDataOStream DeltaData;
     DeltaData _deltaData;

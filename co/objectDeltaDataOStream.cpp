@@ -22,24 +22,25 @@
 #include "objectDeltaDataOStream.h"
 
 #include "object.h"
-#include "objectCommand.h"
 #include "objectCM.h"
+#include "objectCommand.h"
 #include "objectDataOCommand.h"
 
 namespace co
 {
-ObjectDeltaDataOStream::ObjectDeltaDataOStream( const ObjectCM* cm )
-        : ObjectDataOStream( cm )
-{}
-
-ObjectDeltaDataOStream::~ObjectDeltaDataOStream()
-{}
-
-void ObjectDeltaDataOStream::sendData( const void* data, const uint64_t size,
-                                       const bool last )
+ObjectDeltaDataOStream::ObjectDeltaDataOStream(const ObjectCM* cm)
+    : ObjectDataOStream(cm)
 {
-    ObjectDataOStream::send( CMD_OBJECT_DELTA, COMMANDTYPE_OBJECT,
-                             CO_INSTANCE_ALL, data, size, last );
 }
 
+ObjectDeltaDataOStream::~ObjectDeltaDataOStream()
+{
+}
+
+void ObjectDeltaDataOStream::sendData(const void* data, const uint64_t size,
+                                      const bool last)
+{
+    ObjectDataOStream::send(CMD_OBJECT_DELTA, COMMANDTYPE_OBJECT,
+                            CO_INSTANCE_ALL, data, size, last);
+}
 }

@@ -20,18 +20,21 @@
 #ifndef CO_MASTERCMCOMMAND_H
 #define CO_MASTERCMCOMMAND_H
 
-#include <co/iCommand.h>   // base class
+#include <co/iCommand.h> // base class
 
 namespace co
 {
-namespace detail { class MasterCMCommand; }
+namespace detail
+{
+class MasterCMCommand;
+}
 
 /** @internal A command specialization for masterCM commands. */
 class MasterCMCommand : public ICommand
 {
 public:
-    explicit MasterCMCommand( const ICommand& command );
-    MasterCMCommand( const MasterCMCommand& rhs );
+    explicit MasterCMCommand(const ICommand& command);
+    MasterCMCommand(const MasterCMCommand& rhs);
 
     virtual ~MasterCMCommand();
 
@@ -49,12 +52,11 @@ public:
 
 private:
     MasterCMCommand();
-    MasterCMCommand& operator = ( const MasterCMCommand& );
+    MasterCMCommand& operator=(const MasterCMCommand&);
     detail::MasterCMCommand* const _impl;
 
     void _init();
 };
-
 }
 
-#endif //CO_MASTERCMCOMMAND_H
+#endif // CO_MASTERCMCOMMAND_H

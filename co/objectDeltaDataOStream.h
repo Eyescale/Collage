@@ -21,20 +21,20 @@
 #ifndef CO_OBJECTDELTADATAOSTREAM_H
 #define CO_OBJECTDELTADATAOSTREAM_H
 
-#include "objectDataOStream.h"   // base class
+#include "objectDataOStream.h" // base class
 
 namespace co
 {
-    /** The DataOStream for object delta version data. */
-    class ObjectDeltaDataOStream : public ObjectDataOStream
-    {
-    public:
-        explicit ObjectDeltaDataOStream( const ObjectCM* cm );
-        virtual ~ObjectDeltaDataOStream();
+/** The DataOStream for object delta version data. */
+class ObjectDeltaDataOStream : public ObjectDataOStream
+{
+public:
+    explicit ObjectDeltaDataOStream(const ObjectCM* cm);
+    virtual ~ObjectDeltaDataOStream();
 
-    protected:
-        void sendData( const void* buffer, const uint64_t size,
-                               const bool last ) override;
-    };
+protected:
+    void sendData(const void* buffer, const uint64_t size,
+                  const bool last) override;
+};
 }
-#endif //CO_OBJECTDELTADATAOSTREAM_H
+#endif // CO_OBJECTDELTADATAOSTREAM_H

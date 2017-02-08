@@ -23,8 +23,8 @@
 #include <co/api.h>
 #include <co/types.h>
 
-#include <lunchbox/referenced.h> // base class
 #include <boost/noncopyable.hpp>
+#include <lunchbox/referenced.h> // base class
 
 namespace co
 {
@@ -36,7 +36,10 @@ public:
     CO_API void release();
 
 private:
-    explicit SendToken( NodePtr node ) : node_( node ) {}
+    explicit SendToken(NodePtr node)
+        : node_(node)
+    {
+    }
     NodePtr node_;
     friend class LocalNode;
 };

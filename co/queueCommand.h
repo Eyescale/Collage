@@ -24,13 +24,13 @@
 
 namespace co
 {
-    enum QueueCommand
-    {
-        CMD_QUEUE_GET_ITEM = CMD_OBJECT_CUSTOM, // 10
-        CMD_QUEUE_EMPTY,
-        CMD_QUEUE_ITEM,
-        CMD_QUEUE_CUSTOM = 15 //!< Commands for subclasses of queues start here
-    };
+enum QueueCommand
+{
+    CMD_QUEUE_GET_ITEM = CMD_OBJECT_CUSTOM, // 10
+    CMD_QUEUE_EMPTY,
+    CMD_QUEUE_ITEM,
+    CMD_QUEUE_CUSTOM = 15 //!< Commands for subclasses of queues start here
+};
 }
 
 #endif // CO_QUEUECOMMAND_H

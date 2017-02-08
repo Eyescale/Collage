@@ -21,11 +21,14 @@
 #ifndef CO_OBJECTMAP_H
 #define CO_OBJECTMAP_H
 
-#include <co/serializable.h>      // base class
+#include <co/serializable.h> // base class
 
 namespace co
 {
-namespace detail { class ObjectMap; }
+namespace detail
+{
+class ObjectMap;
+}
 
 /**
  * A distributed object registry.
@@ -46,7 +49,7 @@ public:
      * @param factory to create & destroy slave objects
      * @version 1.0
      */
-    CO_API ObjectMap( ObjectHandler& handler, ObjectFactory& factory );
+    CO_API ObjectMap(ObjectHandler& handler, ObjectFactory& factory);
 
     /**
      * Destroy this object map.
@@ -68,7 +71,7 @@ public:
      * @return false on failed ObjectHandler::registerObject, true otherwise
      * @version 1.0
      */
-    CO_API bool register_( Object* object, const uint32_t type );
+    CO_API bool register_(Object* object, const uint32_t type);
 
     /**
      * Remove and deregister an object from this object map.
@@ -81,7 +84,7 @@ public:
      * @return false on if object was not registered, true otherwise
      * @version 1.0
      */
-    CO_API bool deregister( Object* object );
+    CO_API bool deregister(Object* object);
 
     /**
      * Map and return an object.
@@ -99,7 +102,7 @@ public:
      * @return 0 if not registered, the valid instance otherwise
      * @version 1.0
      */
-    CO_API Object* map( const uint128_t& identifier, Object* instance = 0 );
+    CO_API Object* map(const uint128_t& identifier, Object* instance = 0);
 
     /**
      * Unmap an object from the object map.
@@ -112,25 +115,23 @@ public:
      * @return false on if object was not mapped, true otherwise
      * @version 1.0
      */
-    CO_API bool unmap( Object* object );
+    CO_API bool unmap(Object* object);
 
     /** Deregister or unmap all registered and mapped objects. @version 1.0 */
     CO_API void clear();
 
     /** Commit all registered objects. @version 1.0 */
-    CO_API uint128_t commit( const uint32_t incarnation =
-                                     CO_COMMIT_NEXT ) override;
+    CO_API uint128_t
+        commit(const uint32_t incarnation = CO_COMMIT_NEXT) override;
 
 protected:
     CO_API bool isDirty() const override; //!< @internal
 
     /** @internal */
-    CO_API void serialize( DataOStream& os,
-                                   const uint64_t dirtyBits ) override;
+    CO_API void serialize(DataOStream& os, const uint64_t dirtyBits) override;
 
     /** @internal */
-    CO_API void deserialize( DataIStream& is,
-                                     const uint64_t dirtyBits ) override;
+    CO_API void deserialize(DataIStream& is, const uint64_t dirtyBits) override;
     /** @internal */
     ChangeType getChangeType() const override { return DELTA; }
     CO_API void notifyAttached() override; //!< @internal
@@ -138,17 +139,17 @@ protected:
     /** @internal The changed parts of the object since the last serialize(). */
     enum DirtyBits
     {
-        DIRTY_ADDED       = Serializable::DIRTY_CUSTOM << 0, // 1
-        DIRTY_REMOVED     = Serializable::DIRTY_CUSTOM << 1, // 2
-        DIRTY_CHANGED     = Serializable::DIRTY_CUSTOM << 2, // 4
-        DIRTY_CUSTOM      = Serializable::DIRTY_CUSTOM << 3  // 8
+        DIRTY_ADDED = Serializable::DIRTY_CUSTOM << 0,   // 1
+        DIRTY_REMOVED = Serializable::DIRTY_CUSTOM << 1, // 2
+        DIRTY_CHANGED = Serializable::DIRTY_CUSTOM << 2, // 4
+        DIRTY_CUSTOM = Serializable::DIRTY_CUSTOM << 3   // 8
     };
 
 private:
     detail::ObjectMap* const _impl;
 
     /** @internal Commit and note new master versions. */
-    void _commitMasters( const uint32_t incarnation );
+    void _commitMasters(const uint32_t incarnation);
 };
 }
 #endif // CO_OBJECTMAP_H

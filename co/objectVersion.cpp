@@ -24,31 +24,35 @@
 namespace co
 {
 ObjectVersion::ObjectVersion()
-        : version( VERSION_NONE )
-{}
-
-ObjectVersion::ObjectVersion( const uint128_t& id_, const uint128_t& version_ )
-        : identifier( id_ ), version( version_ )
-{}
-
-ObjectVersion::ObjectVersion( const Object* object )
-        : version( VERSION_NONE )
+    : version(VERSION_NONE)
 {
-    if( object && object->isAttached( ))
+}
+
+ObjectVersion::ObjectVersion(const uint128_t& id_, const uint128_t& version_)
+    : identifier(id_)
+    , version(version_)
+{
+}
+
+ObjectVersion::ObjectVersion(const Object* object)
+    : version(VERSION_NONE)
+{
+    if (object && object->isAttached())
     {
         identifier = object->getID();
         version = object->getVersion();
     }
 }
 
-ObjectVersion::ObjectVersion( const Object& object )
-    : identifier( object.getID( ))
-    , version( object.getVersion( ))
-{}
-
-ObjectVersion& ObjectVersion::operator = ( const Object* object )
+ObjectVersion::ObjectVersion(const Object& object)
+    : identifier(object.getID())
+    , version(object.getVersion())
 {
-    if( object )
+}
+
+ObjectVersion& ObjectVersion::operator=(const Object* object)
+{
+    if (object)
     {
         identifier = object->getID();
         version = object->getVersion();
@@ -61,5 +65,4 @@ ObjectVersion& ObjectVersion::operator = ( const Object* object )
 
     return *this;
 }
-
 }

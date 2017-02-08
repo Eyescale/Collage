@@ -47,17 +47,18 @@ lunchbox::a_int32_t nUnusedRelease;
 
 const InstanceCache::Data InstanceCache::Data::NONE;
 
-InstanceCache::InstanceCache( const uint64_t maxSize )
-        : _maxSize( maxSize )
-        , _size( 0 )
-{}
+InstanceCache::InstanceCache(const uint64_t maxSize)
+    : _maxSize(maxSize)
+    , _size(0)
+{
+}
 
 InstanceCache::~InstanceCache()
 {
-    for( ItemHash::iterator i = _items->begin(); i != _items->end(); ++i )
+    for (ItemHash::iterator i = _items->begin(); i != _items->end(); ++i)
     {
         Item& item = i->second;
-        _releaseStreams( item );
+        _releaseStreams(item);
     }
 
     _items->clear();
@@ -65,30 +66,32 @@ InstanceCache::~InstanceCache()
 }
 
 InstanceCache::Data::Data()
-        : masterInstanceID( CO_INSTANCE_INVALID )
-{}
-
-bool InstanceCache::Data::operator != ( const InstanceCache::Data& rhs ) const
+    : masterInstanceID(CO_INSTANCE_INVALID)
 {
-    return ( masterInstanceID != rhs.masterInstanceID ||
-             versions != rhs.versions );
 }
 
-bool InstanceCache::Data::operator == ( const InstanceCache::Data& rhs ) const
+bool InstanceCache::Data::operator!=(const InstanceCache::Data& rhs) const
 {
-    return ( masterInstanceID == rhs.masterInstanceID &&
-             versions == rhs.versions );
+    return (masterInstanceID != rhs.masterInstanceID ||
+            versions != rhs.versions);
+}
+
+bool InstanceCache::Data::operator==(const InstanceCache::Data& rhs) const
+{
+    return (masterInstanceID == rhs.masterInstanceID &&
+            versions == rhs.versions);
 }
 
 InstanceCache::Item::Item()
-        : used( 0 )
-        , access( 0 )
-{}
-
-bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
-                         ICommand& command, const uint32_t usage )
+    : used(0)
+    , access(0)
 {
-    LBASSERTINFO( command.isValid(), command );
+}
+
+bool InstanceCache::add(const ObjectVersion& rev, const uint32_t instanceID,
+                        ICommand& command, const uint32_t usage)
+{
+    LBASSERTINFO(command.isValid(), command);
 
 #ifdef CO_INSTRUMENT_CACHE
     ++nWrite;
@@ -96,38 +99,38 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
 
     const NodeID nodeID = command.getNode()->getNodeID();
 
-    lunchbox::ScopedMutex<> mutex( _items );
-    ItemHash::const_iterator i = _items->find( rev.identifier );
-    if( i == _items->end( ))
+    lunchbox::ScopedMutex<> mutex(_items);
+    ItemHash::const_iterator i = _items->find(rev.identifier);
+    if (i == _items->end())
     {
-        Item& item = _items.data[ rev.identifier ];
+        Item& item = _items.data[rev.identifier];
         item.data.masterInstanceID = instanceID;
         item.from = nodeID;
     }
 
-    Item& item = _items.data[ rev.identifier ] ;
-    if( item.data.masterInstanceID != instanceID || item.from != nodeID )
+    Item& item = _items.data[rev.identifier];
+    if (item.data.masterInstanceID != instanceID || item.from != nodeID)
     {
-        LBASSERT( !item.access ); // same master with different instance ID?!
-        if( item.access != 0 ) // are accessed - don't add
+        LBASSERT(!item.access); // same master with different instance ID?!
+        if (item.access != 0)   // are accessed - don't add
             return false;
         // trash data from different master mapping
-        _releaseStreams( item );
+        _releaseStreams(item);
         item.data.masterInstanceID = instanceID;
         item.from = nodeID;
         item.used = usage;
     }
     else
-        item.used = LB_MAX( item.used, usage );
+        item.used = LB_MAX(item.used, usage);
 
-    if( item.data.versions.empty( ))
+    if (item.data.versions.empty())
     {
-        item.data.versions.push_back( new ObjectDataIStream );
-        item.times.push_back( _clock.getTime64( ));
+        item.data.versions.push_back(new ObjectDataIStream);
+        item.times.push_back(_clock.getTime64());
     }
-    else if( item.data.versions.back()->getPendingVersion() == rev.version )
+    else if (item.data.versions.back()->getPendingVersion() == rev.version)
     {
-        if( item.data.versions.back()->isReady( ))
+        if (item.data.versions.back()->isReady())
         {
 #ifdef CO_INSTRUMENT_CACHE
             ++nWriteReady;
@@ -139,46 +142,46 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
     else
     {
         const ObjectDataIStream* previous = item.data.versions.back();
-        LBASSERT( previous->isReady( ));
+        LBASSERT(previous->isReady());
 
         const uint128_t previousVersion = previous->getPendingVersion();
-        if( previousVersion > rev.version )
+        if (previousVersion > rev.version)
         {
 #ifdef CO_INSTRUMENT_CACHE
             ++nWriteOld;
 #endif
             return false;
         }
-        if( ( previousVersion + 1 ) != rev.version ) // hole
+        if ((previousVersion + 1) != rev.version) // hole
         {
-            LBASSERT( previousVersion < rev.version );
+            LBASSERT(previousVersion < rev.version);
 
-            if( item.access != 0 ) // are accessed - don't add
+            if (item.access != 0) // are accessed - don't add
                 return false;
 
-            _releaseStreams( item );
+            _releaseStreams(item);
         }
         else
         {
-            LBASSERT( previous->isReady( ));
+            LBASSERT(previous->isReady());
         }
-        item.data.versions.push_back( new ObjectDataIStream );
-        item.times.push_back( _clock.getTime64( ));
+        item.data.versions.push_back(new ObjectDataIStream);
+        item.times.push_back(_clock.getTime64());
     }
 
-    LBASSERT( !item.data.versions.empty( ));
+    LBASSERT(!item.data.versions.empty());
     ObjectDataIStream* stream = item.data.versions.back();
 
-    stream->addDataCommand( command );
+    stream->addDataCommand(command);
 
-    if( stream->isReady( ))
+    if (stream->isReady())
         _size += stream->getDataSize();
 
-    _releaseItems( 1 );
-    _releaseItems( 0 );
+    _releaseItems(1);
+    _releaseItems(0);
 
 #ifdef CO_INSTRUMENT_CACHE
-    if( _items->find( rev.identifier ) != _items->end( ))
+    if (_items->find(rev.identifier) != _items->end())
         ++nWriteHit;
     else
         ++nWriteMiss;
@@ -186,45 +189,45 @@ bool InstanceCache::add( const ObjectVersion& rev, const uint32_t instanceID,
     return true;
 }
 
-void InstanceCache::remove( const NodeID& nodeID )
+void InstanceCache::remove(const NodeID& nodeID)
 {
-    std::vector< uint128_t > keys;
+    std::vector<uint128_t> keys;
 
-    lunchbox::ScopedWrite mutex( _items );
-    for( ItemHash::iterator i = _items->begin(); i != _items->end(); ++i )
+    lunchbox::ScopedWrite mutex(_items);
+    for (ItemHash::iterator i = _items->begin(); i != _items->end(); ++i)
     {
         Item& item = i->second;
-        if( item.from != nodeID )
+        if (item.from != nodeID)
             continue;
 
-        LBASSERT( !item.access );
-        if( item.access != 0 )
+        LBASSERT(!item.access);
+        if (item.access != 0)
             continue;
 
-        _releaseStreams( item );
-        keys.push_back( i->first );
+        _releaseStreams(item);
+        keys.push_back(i->first);
     }
 
-    for( std::vector< uint128_t >::const_iterator i = keys.begin();
-         i != keys.end(); ++i )
+    for (std::vector<uint128_t>::const_iterator i = keys.begin();
+         i != keys.end(); ++i)
     {
-        _items->erase( *i );
+        _items->erase(*i);
     }
 }
 
-const InstanceCache::Data& InstanceCache::operator[]( const uint128_t& id )
+const InstanceCache::Data& InstanceCache::operator[](const uint128_t& id)
 {
 #ifdef CO_INSTRUMENT_CACHE
     ++nRead;
 #endif
 
-    lunchbox::ScopedWrite mutex( _items );
-    ItemHash::iterator i = _items->find( id );
-    if( i == _items->end( ))
+    lunchbox::ScopedWrite mutex(_items);
+    ItemHash::iterator i = _items->find(id);
+    if (i == _items->end())
         return Data::NONE;
 
     Item& item = i->second;
-    LBASSERT( !item.data.versions.empty( ));
+    LBASSERT(!item.data.versions.empty());
     ++item.access;
     ++item.used;
 
@@ -234,137 +237,137 @@ const InstanceCache::Data& InstanceCache::operator[]( const uint128_t& id )
     return item.data;
 }
 
-bool InstanceCache::release( const uint128_t& id, const uint32_t count )
+bool InstanceCache::release(const uint128_t& id, const uint32_t count)
 {
-    lunchbox::ScopedWrite mutex( _items );
-    ItemHash::iterator i = _items->find( id );
-    if( i == _items->end( ))
+    lunchbox::ScopedWrite mutex(_items);
+    ItemHash::iterator i = _items->find(id);
+    if (i == _items->end())
         return false;
 
     Item& item = i->second;
-    LBASSERT( !item.data.versions.empty( ));
-    LBASSERT( item.access >= count );
+    LBASSERT(!item.data.versions.empty());
+    LBASSERT(item.access >= count);
 
     item.access -= count;
-    _releaseItems( 1 );
+    _releaseItems(1);
     return true;
 }
 
-bool InstanceCache::erase( const uint128_t& id )
+bool InstanceCache::erase(const uint128_t& id)
 {
-    lunchbox::ScopedWrite mutex( _items );
-    ItemHash::iterator i = _items->find( id );
-    if( i == _items->end( ))
+    lunchbox::ScopedWrite mutex(_items);
+    ItemHash::iterator i = _items->find(id);
+    if (i == _items->end())
         return false;
 
     Item& item = i->second;
-    if( item.access != 0 )
+    if (item.access != 0)
         return false;
 
-    _releaseStreams( item );
-    _items->erase( i );
+    _releaseStreams(item);
+    _items->erase(i);
     return true;
 }
 
-void InstanceCache::expire( const int64_t timeout )
+void InstanceCache::expire(const int64_t timeout)
 {
     const int64_t time = _clock.getTime64() - timeout;
-    if( time <= 0 )
+    if (time <= 0)
         return;
 
-    std::vector< uint128_t > keys;
+    std::vector<uint128_t> keys;
 
-    lunchbox::ScopedWrite mutex( _items );
-    for( ItemHash::iterator i = _items->begin(); i != _items->end(); ++i )
+    lunchbox::ScopedWrite mutex(_items);
+    for (ItemHash::iterator i = _items->begin(); i != _items->end(); ++i)
     {
         Item& item = i->second;
-        if( item.access != 0 )
+        if (item.access != 0)
             continue;
 
-        _releaseStreams( item, time );
-        if( item.data.versions.empty( ))
-            keys.push_back( i->first );
+        _releaseStreams(item, time);
+        if (item.data.versions.empty())
+            keys.push_back(i->first);
     }
 
-    for( std::vector< uint128_t >::const_iterator i = keys.begin();
-         i != keys.end(); ++i )
+    for (std::vector<uint128_t>::const_iterator i = keys.begin();
+         i != keys.end(); ++i)
     {
-        _items->erase( *i );
+        _items->erase(*i);
     }
 }
 
-void InstanceCache::_releaseStreams( InstanceCache::Item& item,
-                                     const int64_t minTime )
+void InstanceCache::_releaseStreams(InstanceCache::Item& item,
+                                    const int64_t minTime)
 {
-    LBASSERT( item.access == 0 );
-    while( !item.data.versions.empty() && item.times.front() <= minTime &&
-           item.data.versions.front()->isReady( ))
+    LBASSERT(item.access == 0);
+    while (!item.data.versions.empty() && item.times.front() <= minTime &&
+           item.data.versions.front()->isReady())
     {
-        _releaseFirstStream( item );
+        _releaseFirstStream(item);
     }
 }
 
-void InstanceCache::_releaseStreams( InstanceCache::Item& item )
+void InstanceCache::_releaseStreams(InstanceCache::Item& item)
 {
-    LBASSERT( item.access == 0 );
-    LBASSERT( !item.data.versions.empty( ));
+    LBASSERT(item.access == 0);
+    LBASSERT(!item.data.versions.empty());
 
-    while( !item.data.versions.empty( ))
+    while (!item.data.versions.empty())
     {
         ObjectDataIStream* stream = item.data.versions.back();
         item.data.versions.pop_back();
-        _deleteStream( stream );
+        _deleteStream(stream);
     }
     item.times.clear();
 }
 
-void InstanceCache::_releaseFirstStream( InstanceCache::Item& item )
+void InstanceCache::_releaseFirstStream(InstanceCache::Item& item)
 {
-    LBASSERT( item.access == 0 );
-    LBASSERT( !item.data.versions.empty( ));
-    if( item.data.versions.empty( ))
+    LBASSERT(item.access == 0);
+    LBASSERT(!item.data.versions.empty());
+    if (item.data.versions.empty())
         return;
 
     ObjectDataIStream* stream = item.data.versions.front();
     item.data.versions.pop_front();
     item.times.pop_front();
-    _deleteStream( stream );
+    _deleteStream(stream);
 }
 
-void InstanceCache::_deleteStream( ObjectDataIStream* stream )
+void InstanceCache::_deleteStream(ObjectDataIStream* stream)
 {
-    LBASSERT( stream->isReady( ));
-    LBASSERT( _size >= stream->getDataSize( ));
+    LBASSERT(stream->isReady());
+    LBASSERT(_size >= stream->getDataSize());
 
     _size -= stream->getDataSize();
     delete stream;
 }
 
-void InstanceCache::_releaseItems( const uint32_t minUsage )
+void InstanceCache::_releaseItems(const uint32_t minUsage)
 {
-    if( _size <= _maxSize )
+    if (_size <= _maxSize)
         return;
 
-    LB_TS_SCOPED( _thread );
+    LB_TS_SCOPED(_thread);
 
-    std::vector< uint128_t > keys;
-    const uint64_t target = uint64_t( float( _maxSize ) * 0.8f );
+    std::vector<uint128_t> keys;
+    const uint64_t target = uint64_t(float(_maxSize) * 0.8f);
 
     // Release used items (first stream)
     bool streamsLeft = false;
-    for( ItemHashIter i = _items->begin();
-         i != _items->end() && _size > target; ++i )
+    for (ItemHashIter i = _items->begin(); i != _items->end() && _size > target;
+         ++i)
     {
         Item& item = i->second;
-        LBASSERT( !item.data.versions.empty( ));
+        LBASSERT(!item.data.versions.empty());
 
-        if( item.access == 0 && item.used >= minUsage )
+        if (item.access == 0 && item.used >= minUsage)
         {
-            _releaseFirstStream( item );
-            if( !item.data.versions.empty( ))
+            _releaseFirstStream(item);
+            if (!item.data.versions.empty())
                 streamsLeft = true;
 
-            keys.push_back( i->first );
+            keys.push_back(i->first);
 #ifdef CO_INSTRUMENT_CACHE
             ++nUsedRelease;
 #endif
@@ -372,20 +375,20 @@ void InstanceCache::_releaseItems( const uint32_t minUsage )
     }
 
     // release used items (second..n streams)
-    while( streamsLeft && _size > target )
+    while (streamsLeft && _size > target)
     {
         streamsLeft = false;
 
-        for( std::vector< uint128_t >::const_iterator i = keys.begin();
-             i != keys.end() && _size > target; ++i )
+        for (std::vector<uint128_t>::const_iterator i = keys.begin();
+             i != keys.end() && _size > target; ++i)
         {
-            Item& item = _items.data[ *i ];
+            Item& item = _items.data[*i];
 
-            if( !item.data.versions.empty() && item.access == 0 &&
-                item.used >= minUsage )
+            if (!item.data.versions.empty() && item.access == 0 &&
+                item.used >= minUsage)
             {
-                _releaseFirstStream( item );
-                if( !item.data.versions.empty( ))
+                _releaseFirstStream(item);
+                if (!item.data.versions.empty())
                     streamsLeft = true;
 #ifdef CO_INSTRUMENT_CACHE
                 ++nUsedRelease;
@@ -394,37 +397,35 @@ void InstanceCache::_releaseItems( const uint32_t minUsage )
         }
     }
 
-    for( std::vector< uint128_t >::const_iterator i = keys.begin();
-         i != keys.end(); ++i )
+    for (std::vector<uint128_t>::const_iterator i = keys.begin();
+         i != keys.end(); ++i)
     {
-        Item& item = _items.data[ *i ];
-        if( item.data.versions.empty( ))
-            _items->erase( *i );
+        Item& item = _items.data[*i];
+        if (item.data.versions.empty())
+            _items->erase(*i);
     }
 
-    if( _size > target && minUsage == 0 )
+    if (_size > target && minUsage == 0)
         LBWARN << "Overfull instance cache, too many pinned items, size "
-               << _size << " target " << target << " max " << _maxSize
-               << " " << _items->size() << " entries"
+               << _size << " target " << target << " max " << _maxSize << " "
+               << _items->size() << " entries"
 #ifdef CO_INSTRUMENT_CACHE
                << ": " << *this
 #endif
                << std::endl;
 }
 
-std::ostream& operator << ( std::ostream& os,
-                            const InstanceCache& instanceCache )
+std::ostream& operator<<(std::ostream& os, const InstanceCache& instanceCache)
 {
     os << "InstanceCache " << instanceCache.getSize() / 1048576 << "/"
        << instanceCache.getMaxSize() / 1048576 << " MB"
 #ifdef CO_INSTRUMENT_CACHE
-       << ", " << nReadHit << "/" << nRead << " reads, " << nWriteHit
-       << "/" << nWrite << " writes (" << nWriteMiss << " misses, " << nWriteOld
+       << ", " << nReadHit << "/" << nRead << " reads, " << nWriteHit << "/"
+       << nWrite << " writes (" << nWriteMiss << " misses, " << nWriteOld
        << " old, " << nWriteReady << " dups) " << nUsedRelease << " used, "
        << nUnusedRelease << " unused releases"
 #endif
         ;
     return os;
 }
-
 }

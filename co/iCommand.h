@@ -22,13 +22,15 @@
 #define CO_ICOMMAND_H
 
 #include <co/api.h>
-#include <co/commands.h>        // for enum CommandType
-#include <co/dataIStream.h>     // base class
-
+#include <co/commands.h>    // for enum CommandType
+#include <co/dataIStream.h> // base class
 
 namespace co
 {
-namespace detail { class ICommand; }
+namespace detail
+{
+class ICommand;
+}
 
 /**
  * A class managing received commands.
@@ -44,13 +46,13 @@ class ICommand : public DataIStream
 {
 public:
     CO_API ICommand(); //!< @internal
-    CO_API ICommand( LocalNodePtr local, NodePtr remote,
-                     ConstBufferPtr buffer ); //!<@internal
-    CO_API ICommand( const ICommand& rhs ); //!< @internal
+    CO_API ICommand(LocalNodePtr local, NodePtr remote,
+                    ConstBufferPtr buffer); //!<@internal
+    CO_API ICommand(const ICommand& rhs);   //!< @internal
 
     CO_API virtual ~ICommand(); //!< @internal
 
-    CO_API ICommand& operator = ( const ICommand& rhs ); //!< @internal
+    CO_API ICommand& operator=(const ICommand& rhs); //!< @internal
 
     CO_API void clear(); //!< @internal
 
@@ -66,11 +68,14 @@ public:
     CO_API uint64_t getSize() const;
 
     /** @deprecated use read() */
-    template< typename T > T get() { return read< T >(); }
+    template <typename T>
+    T get()
+    {
+        return read<T>();
+    }
 
     /** @deprecated use getRemoteNode() */
     NodePtr getNode() const { return getRemoteNode(); }
-
     /** @return the sending node proxy instance. @version 1.1.1 */
     CO_API NodePtr getRemoteNode() const override;
 
@@ -87,13 +92,13 @@ public:
     /** @internal @name Command dispatch */
     //@{
     /** @internal Change the command type for subsequent dispatching. */
-    CO_API void setType( const CommandType type );
+    CO_API void setType(const CommandType type);
 
     /** @internal Change the command for subsequent dispatching. */
-    CO_API void setCommand( const uint32_t cmd );
+    CO_API void setCommand(const uint32_t cmd);
 
     /** @internal Set the function to which the command is dispatched. */
-    void setDispatchFunction( const Dispatcher::Func& func );
+    void setDispatchFunction(const Dispatcher::Func& func);
 
     /** @internal Invoke and clear the command function. */
     CO_API bool operator()();
@@ -102,19 +107,19 @@ public:
 private:
     detail::ICommand* const _impl;
 
-    friend CO_API std::ostream& operator << (std::ostream&,const ICommand&);
+    friend CO_API std::ostream& operator<<(std::ostream&, const ICommand&);
 
     /** @internal @name DataIStream functions */
     //@{
     CO_API size_t nRemainingBuffers() const override;
     CO_API uint128_t getVersion() const override;
-    CO_API bool getNextBuffer( CompressorInfo&, uint32_t&, const void*&,
-                               uint64_t& ) override;
+    CO_API bool getNextBuffer(CompressorInfo&, uint32_t&, const void*&,
+                              uint64_t&) override;
     //@}
 
     void _skipHeader(); //!< @internal
 };
 
-CO_API std::ostream& operator << ( std::ostream& os, const ICommand& );
+CO_API std::ostream& operator<<(std::ostream& os, const ICommand&);
 }
 #endif // CO_ICOMMAND_H

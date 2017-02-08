@@ -59,7 +59,8 @@
 * The following Figure depicts the UML class diagram of the major Collage
 * classes:
 *
-* <img src="http://www.equalizergraphics.com/documents/design/images/collage.png">
+* <img
+src="http://www.equalizergraphics.com/documents/design/images/collage.png">
 
 */
 

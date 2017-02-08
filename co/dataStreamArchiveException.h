@@ -20,9 +20,8 @@
 #ifndef CO_DATASTREAMARCHIVEEXCEPTION_H
 #define CO_DATASTREAMARCHIVEEXCEPTION_H
 
-#include <boost/lexical_cast.hpp>
 #include <boost/archive/archive_exception.hpp>
-
+#include <boost/lexical_cast.hpp>
 
 namespace co
 {
@@ -52,7 +51,7 @@ class DataStreamArchiveException : public boost::archive::archive_exception
 
 public:
     //! type size is not large enough for deserialized number
-    explicit DataStreamArchiveException( const signed char invalid_size )
+    explicit DataStreamArchiveException(const signed char invalid_size)
         : boost::archive::archive_exception(other_exception)
         , msg("requested integer size exceeds type size: ")
     {
@@ -68,7 +67,7 @@ public:
 
     //! serialization of inf, nan and denormals
     template <typename T>
-    explicit DataStreamArchiveException( const T& abnormal )
+    explicit DataStreamArchiveException(const T& abnormal)
         : boost::archive::archive_exception(other_exception)
         , msg("serialization of illegal floating point value: ")
     {
@@ -79,7 +78,6 @@ public:
     const char* what() const throw() { return msg.c_str(); }
     ~DataStreamArchiveException() throw() {}
 };
-
 }
 
-#endif //CO_DATAOSTREAMARCHIVE_H
+#endif // CO_DATAOSTREAMARCHIVE_H

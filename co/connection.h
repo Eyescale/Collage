@@ -24,17 +24,20 @@
 #include <co/api.h>
 #include <co/types.h>
 
+#include <boost/noncopyable.hpp>   // base class
 #include <lunchbox/bitOperation.h> // used inline
 #include <lunchbox/referenced.h>   // base class
-#include <boost/noncopyable.hpp>   // base class
 
-#include <sys/types.h>
 #include <string.h>
+#include <sys/types.h>
 #include <vector>
 
 namespace co
 {
-namespace detail { class Connection; }
+namespace detail
+{
+class Connection;
+}
 
 /**
  * An interface definition for communication between hosts.
@@ -75,7 +78,7 @@ public:
      * @return the connection.
      * @version 1.0
      */
-    CO_API static ConnectionPtr create( ConnectionDescriptionPtr desc );
+    CO_API static ConnectionPtr create(ConnectionDescriptionPtr desc);
 
     /** @name Data Access */
     //@{
@@ -84,16 +87,12 @@ public:
 
     /** @return true if the connection is closed. @version 1.0 */
     bool isClosed() const { return getState() == STATE_CLOSED; }
-
     /** @return true if the connection is about to close. @version 1.0 */
     bool isClosing() const { return getState() == STATE_CLOSING; }
-
     /** @return true if the connection is connected. @version 1.0 */
     bool isConnected() const { return getState() == STATE_CONNECTED; }
-
     /** @return true if the connection is listening. @version 1.0 */
     bool isListening() const { return getState() == STATE_LISTENING; }
-
     /** @return true if this is a multicast connection. @version 1.0 */
     CO_API bool isMulticast() const;
 
@@ -101,7 +100,7 @@ public:
     CO_API ConstConnectionDescriptionPtr getDescription() const;
 
     /** @internal */
-    bool operator == ( const Connection& rhs ) const;
+    bool operator==(const Connection& rhs) const;
     //@}
 
     /** @name Connection State Changes */
@@ -117,7 +116,6 @@ public:
      * @version 1.0
      */
     virtual bool connect() { return false; }
-
     /**
      * Put the connection into the listening state.
      *
@@ -129,7 +127,6 @@ public:
      * @version 1.0
      */
     virtual bool listen() { return false; }
-
     /** Close a connected or listening connection. @version 1.0 */
     virtual void close() {}
     //@}
@@ -137,10 +134,10 @@ public:
     /** @internal @name Listener Interface */
     //@{
     /** @internal Add a listener for connection state changes. */
-    void addListener( ConnectionListener* listener );
+    void addListener(ConnectionListener* listener);
 
     /** @internal Remove a listener for connection state changes. */
-    void removeListener( ConnectionListener* listener );
+    void removeListener(ConnectionListener* listener);
     //@}
 
     /** @name Asynchronous accept */
@@ -157,14 +154,17 @@ public:
      * @version 1.0
      */
     virtual void acceptNB() { LBUNIMPLEMENTED; }
-
     /**
      * Complete an accept operation.
      *
      * @return the new connection, 0 on error.
      * @version 1.0
      */
-    virtual ConnectionPtr acceptSync() { LBUNIMPLEMENTED; return 0; }
+    virtual ConnectionPtr acceptSync()
+    {
+        LBUNIMPLEMENTED;
+        return 0;
+    }
     //@}
 
     /** @name Asynchronous read */
@@ -183,7 +183,7 @@ public:
      * @sa recvSync()
      * @version 1.0
      */
-    CO_API void recvNB( BufferPtr buffer, const uint64_t bytes );
+    CO_API void recvNB(BufferPtr buffer, const uint64_t bytes);
 
     /**
      * Finish reading data from the connection.
@@ -200,7 +200,7 @@ public:
      * @return true if all requested data has been read, false otherwise.
      * @version 1.0
      */
-    CO_API bool recvSync( BufferPtr& buffer, const bool block = true );
+    CO_API bool recvSync(BufferPtr& buffer, const bool block = true);
 
     BufferPtr resetRecvData(); //!< @internal
     //@}
@@ -222,8 +222,8 @@ public:
      * @sa lockSend(), unlockSend()
      * @version 1.0
      */
-    CO_API bool send( const void* buffer, const uint64_t bytes,
-                      const bool isLocked = false );
+    CO_API bool send(const void* buffer, const uint64_t bytes,
+                     const bool isLocked = false);
 
     /** Lock the connection, no other thread can send data. @version 1.0 */
     CO_API void lockSend() const;
@@ -233,12 +233,12 @@ public:
 
     /** @internal Finish all pending send operations. */
     virtual void finish() {}
-    //@}
+//@}
 
-    /**
-     * The Notifier used by the ConnectionSet to detect readiness of a
-     * Connection.
-     */
+/**
+ * The Notifier used by the ConnectionSet to detect readiness of a
+ * Connection.
+ */
 #ifdef _WIN32
     typedef void* Notifier;
 #else
@@ -259,7 +259,7 @@ protected:
     enum ReadStatus //!< error codes for readSync()
     {
         READ_TIMEOUT = -2,
-        READ_ERROR   = -1
+        READ_ERROR = -1
         // >= 0: nBytes read
     };
 
@@ -277,7 +277,7 @@ protected:
      * @param bytes the number of bytes to read.
      * @sa readSync()
      */
-    virtual void readNB( void* buffer, const uint64_t bytes ) = 0;
+    virtual void readNB(void* buffer, const uint64_t bytes) = 0;
 
     /**
      * Finish reading data from the connection.
@@ -291,8 +291,8 @@ protected:
      *              unless you know exactly why not.
      * @return the number of bytes read, or -1 upon error.
      */
-    virtual int64_t readSync( void* buffer, const uint64_t bytes,
-                              const bool block ) = 0;
+    virtual int64_t readSync(void* buffer, const uint64_t bytes,
+                             const bool block) = 0;
 
     /**
      * Write data to the connection.
@@ -304,15 +304,15 @@ protected:
      * @param bytes the number of bytes to write.
      * @return the number of bytes written, or -1 upon error.
      */
-    virtual int64_t write( const void* buffer, const uint64_t bytes ) = 0;
+    virtual int64_t write(const void* buffer, const uint64_t bytes) = 0;
     //@}
 
     /** @internal @name State Changes */
     //@{
     /** @internal Set the connection parameter description. */
-    CO_API void _setDescription( ConnectionDescriptionPtr description );
+    CO_API void _setDescription(ConnectionDescriptionPtr description);
 
-    CO_API void _setState( const State state ); //!< @internal
+    CO_API void _setState(const State state); //!< @internal
 
     /** @return the description for this connection. */
     CO_API ConnectionDescriptionPtr _getDescription();
@@ -322,7 +322,7 @@ private:
     detail::Connection* const _impl;
 };
 
-CO_API std::ostream& operator << ( std::ostream&, const Connection& );
+CO_API std::ostream& operator<<(std::ostream&, const Connection&);
 }
 
-#endif //CO_CONNECTION_H
+#endif // CO_CONNECTION_H

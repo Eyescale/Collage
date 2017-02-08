@@ -28,20 +28,21 @@ namespace detail
 class Buffer
 {
 public:
-    explicit Buffer( BufferListener* listener_ )
-        : listener( listener_ )
-        , free( true )
-    {}
+    explicit Buffer(BufferListener* listener_)
+        : listener(listener_)
+        , free(true)
+    {
+    }
 
     BufferListener* const listener;
     bool free;
 };
 }
 
-Buffer::Buffer( BufferListener* listener )
+Buffer::Buffer(BufferListener* listener)
     : lunchbox::Bufferb()
     , lunchbox::Referenced()
-    , _impl( new detail::Buffer( listener ))
+    , _impl(new detail::Buffer(listener))
 {
 }
 
@@ -52,8 +53,8 @@ Buffer::~Buffer()
 
 void Buffer::notifyFree()
 {
-    if( _impl->listener )
-        _impl->listener->notifyFree( this );
+    if (_impl->listener)
+        _impl->listener->notifyFree(this);
     _impl->free = true;
 }
 
@@ -67,11 +68,11 @@ void Buffer::setUsed()
     _impl->free = false;
 }
 
-std::ostream& operator << ( std::ostream& os, const Buffer& buffer )
+std::ostream& operator<<(std::ostream& os, const Buffer& buffer)
 {
     os << lunchbox::disableFlush << "Buffer[" << buffer.getRefCount() << "@"
        << &buffer << "]";
-    buffer.printHolders( os );
+    buffer.printHolders(os);
     return os << lunchbox::enableFlush;
 }
 }

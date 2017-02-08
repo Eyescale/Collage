@@ -29,41 +29,41 @@
 
 namespace co
 {
-
-UnbufferedMasterCM::UnbufferedMasterCM( Object* object )
-        : VersionedMasterCM( object )
+UnbufferedMasterCM::UnbufferedMasterCM(Object* object)
+    : VersionedMasterCM(object)
 {
     _version = VERSION_FIRST;
-    LBASSERT( object );
-    LBASSERT( object->getLocalNode( ));
+    LBASSERT(object);
+    LBASSERT(object->getLocalNode());
 }
 
 UnbufferedMasterCM::~UnbufferedMasterCM()
-{}
+{
+}
 
-uint128_t UnbufferedMasterCM::commit( const uint32_t )
+uint128_t UnbufferedMasterCM::commit(const uint32_t)
 {
 #if 0
     LBLOG( LOG_OBJECTS ) << "commit v" << _version << " " << command
                          << std::endl;
 #endif
-    if( !_object->isDirty( ))
+    if (!_object->isDirty())
         return _version;
 
-    _maxVersion.waitGE( _version.low() + 1 );
-    Mutex mutex( _slaves );
-    if( _slaves->empty( ))
+    _maxVersion.waitGE(_version.low() + 1);
+    Mutex mutex(_slaves);
+    if (_slaves->empty())
         return _version;
 
-    ObjectDeltaDataOStream os( this );
-    os.enableCommit( _version + 1, *_slaves );
-    _object->pack( os );
+    ObjectDeltaDataOStream os(this);
+    os.enableCommit(_version + 1, *_slaves);
+    _object->pack(os);
     os.disable();
 
-    if( os.hasSentData( ))
+    if (os.hasSentData())
     {
         ++_version;
-        LBASSERT( _version != VERSION_NONE );
+        LBASSERT(_version != VERSION_NONE);
 #if 0
         LBLOG( LOG_OBJECTS ) << "Committed v" << _version << ", id "
                              << _object->getID() << std::endl;
@@ -72,5 +72,4 @@ uint128_t UnbufferedMasterCM::commit( const uint32_t )
 
     return _version;
 }
-
 }

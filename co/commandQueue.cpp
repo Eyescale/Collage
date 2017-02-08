@@ -19,8 +19,8 @@
 
 #include "commandQueue.h"
 
-#include "iCommand.h"
 #include "exception.h"
+#include "iCommand.h"
 #include "log.h"
 #include "node.h"
 
@@ -33,15 +33,18 @@ namespace detail
 class CommandQueue
 {
 public:
-    explicit CommandQueue( const size_t maxSize ) : commands( maxSize ) {}
+    explicit CommandQueue(const size_t maxSize)
+        : commands(maxSize)
+    {
+    }
 
     /** Thread-safe buffer queue. */
-    lunchbox::MTQueue< co::ICommand > commands;
+    lunchbox::MTQueue<co::ICommand> commands;
 };
 }
 
-CommandQueue::CommandQueue( const size_t maxSize )
-    : _impl( new detail::CommandQueue( maxSize ))
+CommandQueue::CommandQueue(const size_t maxSize)
+    : _impl(new detail::CommandQueue(maxSize))
 {
 }
 
@@ -53,8 +56,8 @@ CommandQueue::~CommandQueue()
 
 void CommandQueue::flush()
 {
-    if( !isEmpty( ))
-        LBLOG( LOG_BUG ) << "Flushing non-empty command queue" << std::endl;
+    if (!isEmpty())
+        LBLOG(LOG_BUG) << "Flushing non-empty command queue" << std::endl;
 
     _impl->commands.clear();
 }
@@ -69,37 +72,36 @@ size_t CommandQueue::getSize() const
     return _impl->commands.getSize();
 }
 
-void CommandQueue::push( const ICommand& command )
+void CommandQueue::push(const ICommand& command)
 {
-    _impl->commands.push( command );
+    _impl->commands.push(command);
 }
 
-void CommandQueue::pushFront( const ICommand& command )
+void CommandQueue::pushFront(const ICommand& command)
 {
-    LBASSERT( command.isValid( ));
-    _impl->commands.pushFront( command );
+    LBASSERT(command.isValid());
+    _impl->commands.pushFront(command);
 }
 
-ICommand CommandQueue::pop( const uint32_t timeout )
+ICommand CommandQueue::pop(const uint32_t timeout)
 {
-    LB_TS_THREAD( _thread );
+    LB_TS_THREAD(_thread);
 
     ICommand command;
-    _impl->commands.timedPop( timeout, command );
+    _impl->commands.timedPop(timeout, command);
     return command;
 }
 
-ICommands CommandQueue::popAll( const uint32_t timeout )
+ICommands CommandQueue::popAll(const uint32_t timeout)
 {
-    return _impl->commands.timedPopRange( timeout );
+    return _impl->commands.timedPopRange(timeout);
 }
 
 ICommand CommandQueue::tryPop()
 {
-    LB_TS_THREAD( _thread );
+    LB_TS_THREAD(_thread);
     ICommand command;
-    _impl->commands.tryPop( command );
+    _impl->commands.tryPop(command);
     return command;
 }
-
 }

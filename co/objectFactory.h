@@ -21,37 +21,40 @@
 #ifndef CO_OBJECTFACTORY_H
 #define CO_OBJECTFACTORY_H
 
-#include <co/object.h>       // deleted inline
+#include <co/object.h> // deleted inline
 
 namespace co
 {
-    enum ObjectType
+enum ObjectType
+{
+    OBJECTTYPE_NONE,       //!< @internal
+    OBJECTTYPE_CUSTOM = 16 //!< Application-defined objects
+};
+
+/** The interface to create objects, used by ObjectMap. */
+class ObjectFactory
+{
+public:
+    /** @internal Construct a new object factory. */
+    ObjectFactory() {}
+    /** @internal Destruct this object factory. */
+    virtual ~ObjectFactory() {}
+    /**
+     * @return a new object instance of the given type.
+     * @version 1.0
+     * @sa ObjectType, Config::getObject(), Renderer::getObject()
+     */
+    virtual co::Object* createObject(const uint32_t /*type*/)
     {
-        OBJECTTYPE_NONE, //!< @internal
-        OBJECTTYPE_CUSTOM = 16 //!< Application-defined objects
-    };
+        LBUNIMPLEMENTED;
+        return 0;
+    }
 
-    /** The interface to create objects, used by ObjectMap. */
-    class ObjectFactory
+    /** Delete the given object of the given type. @version 1.0 */
+    virtual void destroyObject(co::Object* object, const uint32_t /*type*/)
     {
-    public:
-        /** @internal Construct a new object factory. */
-        ObjectFactory(){}
-
-        /** @internal Destruct this object factory. */
-        virtual ~ObjectFactory(){}
-
-        /**
-         * @return a new object instance of the given type.
-         * @version 1.0
-         * @sa ObjectType, Config::getObject(), Renderer::getObject()
-         */
-        virtual co::Object* createObject( const uint32_t /*type*/ )
-            { LBUNIMPLEMENTED; return 0; }
-
-        /** Delete the given object of the given type. @version 1.0 */
-        virtual void destroyObject( co::Object* object, const uint32_t /*type*/ )
-            { delete object; }
-    };
+        delete object;
+    }
+};
 }
 #endif // CO_OBJECTFACTORY_H

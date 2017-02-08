@@ -20,31 +20,30 @@
 
 #include "masterCMCommand.h"
 
-
 namespace co
 {
-
 namespace detail
 {
-
 class MasterCMCommand
 {
 public:
     MasterCMCommand()
-        : maxVersion( 0 )
-        , requestID( 0 )
-        , instanceID( CO_INSTANCE_INVALID )
-        , masterInstanceID( CO_INSTANCE_INVALID )
-        , useCache( false )
-    {}
+        : maxVersion(0)
+        , requestID(0)
+        , instanceID(CO_INSTANCE_INVALID)
+        , masterInstanceID(CO_INSTANCE_INVALID)
+        , useCache(false)
+    {
+    }
 
-    MasterCMCommand( const MasterCMCommand& )
-        : maxVersion( 0 )
-        , requestID( 0 )
-        , instanceID( CO_INSTANCE_INVALID )
-        , masterInstanceID( CO_INSTANCE_INVALID )
-        , useCache( false )
-    {}
+    MasterCMCommand(const MasterCMCommand&)
+        : maxVersion(0)
+        , requestID(0)
+        , instanceID(CO_INSTANCE_INVALID)
+        , masterInstanceID(CO_INSTANCE_INVALID)
+        , useCache(false)
+    {
+    }
 
     uint128_t requestedVersion;
     uint128_t minCachedVersion;
@@ -56,30 +55,29 @@ public:
     uint32_t masterInstanceID;
     bool useCache;
 };
-
 }
 
-MasterCMCommand::MasterCMCommand( const ICommand& command )
-    : ICommand( command )
-    , _impl( new detail::MasterCMCommand )
+MasterCMCommand::MasterCMCommand(const ICommand& command)
+    : ICommand(command)
+    , _impl(new detail::MasterCMCommand)
 {
     _init();
 }
 
-MasterCMCommand::MasterCMCommand( const MasterCMCommand& rhs )
-    : ICommand( rhs )
-    , _impl( new detail::MasterCMCommand( *rhs._impl ))
+MasterCMCommand::MasterCMCommand(const MasterCMCommand& rhs)
+    : ICommand(rhs)
+    , _impl(new detail::MasterCMCommand(*rhs._impl))
 {
     _init();
 }
 
 void MasterCMCommand::_init()
 {
-    if( isValid( ))
-        *this >> _impl->requestedVersion >> _impl->minCachedVersion
-              >> _impl->maxCachedVersion >> _impl->objectID >> _impl->maxVersion
-              >> _impl->requestID >> _impl->instanceID
-              >> _impl->masterInstanceID >> _impl->useCache;
+    if (isValid())
+        *this >> _impl->requestedVersion >> _impl->minCachedVersion >>
+            _impl->maxCachedVersion >> _impl->objectID >> _impl->maxVersion >>
+            _impl->requestID >> _impl->instanceID >> _impl->masterInstanceID >>
+            _impl->useCache;
 }
 
 MasterCMCommand::~MasterCMCommand()
@@ -131,5 +129,4 @@ bool MasterCMCommand::useCache() const
 {
     return _impl->useCache;
 }
-
 }

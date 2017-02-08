@@ -17,9 +17,9 @@
 
 #include <lunchbox/test.h>
 
-#include <lunchbox/thread.h>
 #include <co/buffer.h>
 #include <co/init.h>
+#include <lunchbox/thread.h>
 
 #include <iostream>
 
@@ -28,47 +28,47 @@
 class Server : public lunchbox::Thread
 {
 public:
-    void launch( co::ConnectionPtr connection )
-        {
-            _connection = connection;
-            lunchbox::Thread::start();
-        }
+    void launch(co::ConnectionPtr connection)
+    {
+        _connection = connection;
+        lunchbox::Thread::start();
+    }
 
 protected:
     virtual void run()
-        {
-            TEST( _connection.isValid( ));
-            TEST( _connection->getState() ==
-                  co::Connection::STATE_CONNECTED );
+    {
+        TEST(_connection.isValid());
+        TEST(_connection->getState() == co::Connection::STATE_CONNECTED);
 
-            co::Buffer buffer;
-            _connection->recvNB( &buffer, 5 );
+        co::Buffer buffer;
+        _connection->recvNB(&buffer, 5);
 
-            co::BufferPtr syncBuffer;
-            TEST( _connection->recvSync( syncBuffer ));
-            TEST( syncBuffer == &buffer );
-            TEST( strcmp( "buh!", (char*)buffer.getData( )) == 0 );
+        co::BufferPtr syncBuffer;
+        TEST(_connection->recvSync(syncBuffer));
+        TEST(syncBuffer == &buffer);
+        TEST(strcmp("buh!", (char *)buffer.getData()) == 0);
 
-            _connection->close();
-            _connection = 0;
-        }
+        _connection->close();
+        _connection = 0;
+    }
+
 private:
     co::ConnectionPtr _connection;
 };
 
-int main( int argc, char **argv )
+int main(int argc, char **argv)
 {
-    co::init( argc, argv );
+    co::init(argc, argv);
     co::PipeConnectionPtr connection = new co::PipeConnection;
-    TEST( connection->connect( ));
+    TEST(connection->connect());
 
     Server server;
-    server.launch( connection->acceptSync( ));
+    server.launch(connection->acceptSync());
 
     const char message[] = "buh!";
-    const size_t nChars  = strlen( message ) + 1;
+    const size_t nChars = strlen(message) + 1;
 
-    TEST( connection->send( message, nChars ));
+    TEST(connection->send(message, nChars));
 
     server.join();
 

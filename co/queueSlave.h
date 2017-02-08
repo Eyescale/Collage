@@ -28,7 +28,10 @@
 
 namespace co
 {
-namespace detail { class QueueSlave; }
+namespace detail
+{
+class QueueSlave;
+}
 
 /**
  * The consumer end of a distributed queue.
@@ -54,8 +57,8 @@ public:
      *                       LB_UNDEFINED_UINT32 to use the Global default.
      * @version 1.0
      */
-    CO_API QueueSlave( const uint32_t prefetchMark = LB_UNDEFINED_UINT32,
-                       const uint32_t prefetchAmount = LB_UNDEFINED_UINT32 );
+    CO_API QueueSlave(const uint32_t prefetchMark = LB_UNDEFINED_UINT32,
+                      const uint32_t prefetchAmount = LB_UNDEFINED_UINT32);
 
     /** Destruct this queue consumer. @version 1.0 */
     virtual CO_API ~QueueSlave();
@@ -71,18 +74,17 @@ public:
      *         queue is empty or the operation timed out.
      * @version 1.0
      */
-    CO_API ObjectICommand pop( const uint32_t timeout = LB_TIMEOUT_INDEFINITE );
+    CO_API ObjectICommand pop(const uint32_t timeout = LB_TIMEOUT_INDEFINITE);
 
 protected:
     ChangeType getChangeType() const override { return STATIC; }
-    void getInstanceData( co::DataOStream& ) override { LBDONTCALL }
-    void applyInstanceData( co::DataIStream& is ) override;
+    void getInstanceData(co::DataOStream&) override { LBDONTCALL }
+    void applyInstanceData(co::DataIStream& is) override;
 
 private:
     detail::QueueSlave* const _impl;
 
-    CO_API void attach( const uint128_t& id,
-                        const uint32_t instanceID ) override;
+    CO_API void attach(const uint128_t& id, const uint32_t instanceID) override;
 };
 
 } // co

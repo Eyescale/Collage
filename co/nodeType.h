@@ -24,18 +24,18 @@
 
 namespace co
 {
-    /** Node types to identify connecting nodes. @version 1.0 */
-    enum NodeType
-    {
-        NODETYPE_INVALID,         //!< Invalid type
-        NODETYPE_NODE,            //!< A plain co::Node
-        NODETYPE_USER = 0x100     //!< Application-specific types
-    };
+/** Node types to identify connecting nodes. @version 1.0 */
+enum NodeType
+{
+    NODETYPE_INVALID,     //!< Invalid type
+    NODETYPE_NODE,        //!< A plain co::Node
+    NODETYPE_USER = 0x100 //!< Application-specific types
+};
 
-    inline std::ostream& operator << ( std::ostream& os, const NodeType& type )
-    {
-        return os << static_cast< unsigned >( type );
-    }
+inline std::ostream& operator<<(std::ostream& os, const NodeType& type)
+{
+    return os << static_cast<unsigned>(type);
+}
 }
 
 #endif // CO_NODETYPE_H

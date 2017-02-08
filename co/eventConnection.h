@@ -20,7 +20,7 @@
 #ifndef CO_EVENT_CONNECTION_H
 #define CO_EVENT_CONNECTION_H
 
-#include <co/connection.h>   // base class
+#include <co/connection.h> // base class
 
 #include "buffer.h"
 #include "pipeConnection.h"
@@ -43,18 +43,23 @@ public:
 
     CO_API bool connect() override;
     CO_API void close() override { _close(); }
-
     CO_API void set();
     CO_API void reset();
 
     CO_API Notifier getNotifier() const override;
 
 protected:
-    void readNB( void*, const uint64_t ) override { LBDONTCALL; }
-    int64_t readSync( void*, const uint64_t, const bool ) override
-        { LBDONTCALL; return -1; }
-    CO_API int64_t write( const void*, const uint64_t ) override
-        { LBDONTCALL; return -1; }
+    void readNB(void*, const uint64_t) override { LBDONTCALL; }
+    int64_t readSync(void*, const uint64_t, const bool) override
+    {
+        LBDONTCALL;
+        return -1;
+    }
+    CO_API int64_t write(const void*, const uint64_t) override
+    {
+        LBDONTCALL;
+        return -1;
+    }
 
 private:
 #ifdef _WIN32
@@ -71,4 +76,4 @@ private:
 };
 }
 
-#endif //CO_EVENT_CONNECTION_H
+#endif // CO_EVENT_CONNECTION_H

@@ -35,35 +35,48 @@ using co::uint128_t;
 namespace
 {
 static const std::string message =
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut eget felis sed leo tincidunt dictum eu eu felis. Aenean aliquam augue nec elit tristique tempus. Pellentesque dignissim adipiscing tellus, ut porttitor nisl lacinia vel. Donec malesuada lobortis velit, nec lobortis metus consequat ac. Ut dictum rutrum dui. Pellentesque quis risus at lectus bibendum laoreet. Suspendisse tristique urna quis urna faucibus et auctor risus ultricies. Morbi vitae mi vitae nisi adipiscing ultricies ac in nulla. Nam mattis venenatis nulla, non posuere felis tempus eget. Cras dapibus ultrices arcu vel dapibus. Nam hendrerit lacinia consectetur. Donec ullamcorper nibh nisl, id aliquam nisl. Nunc at tortor a lacus tincidunt gravida vitae nec risus. Suspendisse potenti. Fusce tristique dapibus ipsum, sit amet posuere turpis fermentum nec. Nam nec ante dolor.";
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut eget felis "
+    "sed leo tincidunt dictum eu eu felis. Aenean aliquam augue nec elit "
+    "tristique tempus. Pellentesque dignissim adipiscing tellus, ut porttitor "
+    "nisl lacinia vel. Donec malesuada lobortis velit, nec lobortis metus "
+    "consequat ac. Ut dictum rutrum dui. Pellentesque quis risus at lectus "
+    "bibendum laoreet. Suspendisse tristique urna quis urna faucibus et auctor "
+    "risus ultricies. Morbi vitae mi vitae nisi adipiscing ultricies ac in "
+    "nulla. Nam mattis venenatis nulla, non posuere felis tempus eget. Cras "
+    "dapibus ultrices arcu vel dapibus. Nam hendrerit lacinia consectetur. "
+    "Donec ullamcorper nibh nisl, id aliquam nisl. Nunc at tortor a lacus "
+    "tincidunt gravida vitae nec risus. Suspendisse potenti. Fusce tristique "
+    "dapibus ipsum, sit amet posuere turpis fermentum nec. Nam nec ante dolor.";
 
 class Object : public co::Object
 {
 public:
     Object() {}
-
 protected:
     ChangeType getChangeType() const final { return UNBUFFERED; }
     uint64_t getMaxVersions() const final { return 1; }
-    void getInstanceData( co::DataOStream& os ) final { os << message; }
-    void applyInstanceData( co::DataIStream& is ) final
+    void getInstanceData(co::DataOStream& os) final { os << message; }
+    void applyInstanceData(co::DataIStream& is) final
     {
         std::string msg;
         is >> msg;
-        TEST( message == msg );
+        TEST(message == msg);
     }
 };
 
 class Thread : public lunchbox::Thread
 {
 public:
-    explicit Thread( Object& object ) : _object( object ) {}
+    explicit Thread(Object& object)
+        : _object(object)
+    {
+    }
 
     void run() final
     {
-        lunchbox::sleep( 110 /*ms*/ );
-        _object.sync( uint128_t( 3 ));
-        TESTINFO( _object.getVersion() == 3, _object.getVersion( ));
+        lunchbox::sleep(110 /*ms*/);
+        _object.sync(uint128_t(3));
+        TESTINFO(_object.getVersion() == 3, _object.getVersion());
     }
 
 private:
@@ -71,65 +84,65 @@ private:
 };
 }
 
-int main( int argc, char **argv )
+int main(int argc, char** argv)
 {
-    co::init( argc, argv );
+    co::init(argc, argv);
     co::LocalNodePtr server = new co::LocalNode;
     co::ConnectionDescriptionPtr connDesc = new co::ConnectionDescription;
 
     connDesc->type = co::CONNECTIONTYPE_TCPIP;
-    connDesc->setHostname( "localhost" );
+    connDesc->setHostname("localhost");
 
-    server->addConnectionDescription( connDesc );
-    TEST( server->listen( ));
+    server->addConnectionDescription(connDesc);
+    TEST(server->listen());
 
     co::NodePtr serverProxy = new co::Node;
-    serverProxy->addConnectionDescription( connDesc );
+    serverProxy->addConnectionDescription(connDesc);
 
     connDesc = new co::ConnectionDescription;
     connDesc->type = co::CONNECTIONTYPE_TCPIP;
-    connDesc->setHostname( "localhost" );
+    connDesc->setHostname("localhost");
 
     co::LocalNodePtr client = new co::LocalNode;
-    client->addConnectionDescription( connDesc );
-    TEST( client->listen( ));
-    TEST( client->connect( serverProxy ));
+    client->addConnectionDescription(connDesc);
+    TEST(client->listen());
+    TEST(client->connect(serverProxy));
 
     {
         Object master;
-        TEST( client->registerObject( &master ));
+        TEST(client->registerObject(&master));
 
         Object slave;
-        TEST( server->mapObject( &slave, master.getID( )));
+        TEST(server->mapObject(&slave, master.getID()));
 
-        Thread thread( slave );
+        Thread thread(slave);
 
         lunchbox::Clock clock;
-        TEST( thread.start( ));
+        TEST(thread.start());
         master.commit();
         master.commit(); // should block
         const float time = clock.getTimef();
 
-        TESTINFO( master.getVersion() == 3, master.getVersion( ));
-        TESTINFO( time > 100.f, time );
+        TESTINFO(master.getVersion() == 3, master.getVersion());
+        TESTINFO(time > 100.f, time);
 
         thread.join();
-        server->unmapObject( &slave );
-        client->deregisterObject( &master );
+        server->unmapObject(&slave);
+        client->deregisterObject(&master);
     }
 
-    TEST( client->disconnect( serverProxy ));
-    TEST( client->close( ));
-    TEST( server->close( ));
+    TEST(client->disconnect(serverProxy));
+    TEST(client->close());
+    TEST(server->close());
 
-    serverProxy->printHolders( std::cerr );
-    TESTINFO( serverProxy->getRefCount() == 1, serverProxy->getRefCount( ));
-    TESTINFO( client->getRefCount() == 1, client->getRefCount( ));
-    TESTINFO( server->getRefCount() == 1, server->getRefCount( ));
+    serverProxy->printHolders(std::cerr);
+    TESTINFO(serverProxy->getRefCount() == 1, serverProxy->getRefCount());
+    TESTINFO(client->getRefCount() == 1, client->getRefCount());
+    TESTINFO(server->getRefCount() == 1, server->getRefCount());
 
     serverProxy = 0;
-    client      = 0;
-    server      = 0;
+    client = 0;
+    server = 0;
 
     co::exit();
     return EXIT_SUCCESS;

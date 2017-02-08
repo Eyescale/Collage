@@ -23,7 +23,7 @@
 #include "connectionDescription.h"
 #include "node.h"
 #ifdef _WIN32
-#  include "namedPipeConnection.h"
+#include "namedPipeConnection.h"
 #endif
 
 #include <lunchbox/log.h>
@@ -33,7 +33,6 @@
 
 namespace co
 {
-
 PipeConnection::PipeConnection()
 {
     ConnectionDescriptionPtr description = _getDescription();
@@ -51,23 +50,23 @@ PipeConnection::~PipeConnection()
 //----------------------------------------------------------------------
 bool PipeConnection::connect()
 {
-    LBASSERT( getDescription()->type == CONNECTIONTYPE_PIPE );
+    LBASSERT(getDescription()->type == CONNECTIONTYPE_PIPE);
 
-    if( !isClosed( ))
+    if (!isClosed())
         return false;
 
-    _setState( STATE_CONNECTING );
+    _setState(STATE_CONNECTING);
     _sibling = new PipeConnection;
     _sibling->_sibling = this;
 
-    if( !_createPipes( ))
+    if (!_createPipes())
     {
         close();
         return false;
     }
 
-    _setState( STATE_CONNECTED );
-    _sibling->_setState( STATE_CONNECTED );
+    _setState(STATE_CONNECTED);
+    _sibling->_setState(STATE_CONNECTED);
     _connected = true;
     return true;
 }
@@ -76,7 +75,7 @@ bool PipeConnection::connect()
 
 Connection::Notifier PipeConnection::getNotifier() const
 {
-    if( !_namedPipe )
+    if (!_namedPipe)
         return 0;
     return _namedPipe->getNotifier();
 }
@@ -88,30 +87,30 @@ bool PipeConnection::_createPipes()
 
     ConnectionDescriptionPtr desc = new ConnectionDescription;
     desc->type = CONNECTIONTYPE_NAMEDPIPE;
-    desc->setFilename( pipeName.str( ));
+    desc->setFilename(pipeName.str());
 
-    ConnectionPtr connection = Connection::create( desc );
-    _namedPipe = static_cast< NamedPipeConnection* >( connection.get( ));
-    if( !_namedPipe->listen( ))
+    ConnectionPtr connection = Connection::create(desc);
+    _namedPipe = static_cast<NamedPipeConnection*>(connection.get());
+    if (!_namedPipe->listen())
         return false;
     _namedPipe->acceptNB();
 
-    connection = Connection::create( desc );
+    connection = Connection::create(desc);
     _sibling->_namedPipe = static_cast<NamedPipeConnection*>(connection.get());
-    if( !_sibling->_namedPipe->connect( ))
+    if (!_sibling->_namedPipe->connect())
     {
         _sibling->_namedPipe = 0;
         return false;
     }
 
     connection = _namedPipe->acceptSync();
-    _namedPipe = static_cast< NamedPipeConnection* >(connection.get( ));
+    _namedPipe = static_cast<NamedPipeConnection*>(connection.get());
     return true;
 }
 
 void PipeConnection::_close()
 {
-    if( isClosed( ))
+    if (isClosed())
         return;
 
     _connected = false;
@@ -119,91 +118,90 @@ void PipeConnection::_close()
     _namedPipe = 0;
     _sibling = 0;
 
-    _setState( STATE_CLOSED );
+    _setState(STATE_CLOSED);
 }
 
-void PipeConnection::readNB( void* buffer, const uint64_t bytes )
+void PipeConnection::readNB(void* buffer, const uint64_t bytes)
 {
-    if( isClosed( ))
+    if (isClosed())
         return;
-    _namedPipe->readNB( buffer, bytes );
+    _namedPipe->readNB(buffer, bytes);
 }
 
-int64_t PipeConnection::readSync( void* buffer, const uint64_t bytes,
-                                       const bool ignored )
+int64_t PipeConnection::readSync(void* buffer, const uint64_t bytes,
+                                 const bool ignored)
 {
-    if( isClosed( ))
+    if (isClosed())
         return -1;
 
-    const int64_t bytesRead = _namedPipe->readSync( buffer, bytes, ignored );
+    const int64_t bytesRead = _namedPipe->readSync(buffer, bytes, ignored);
 
-    if( bytesRead == -1 )
+    if (bytesRead == -1)
         close();
 
     return bytesRead;
 }
 
-int64_t PipeConnection::write( const void* buffer, const uint64_t bytes )
+int64_t PipeConnection::write(const void* buffer, const uint64_t bytes)
 {
-    if( !isConnected( ))
+    if (!isConnected())
         return -1;
 
-    return _namedPipe->write( buffer, bytes );
+    return _namedPipe->write(buffer, bytes);
 }
 
-#else // !_WIN32
+#else  // !_WIN32
 
 bool PipeConnection::_createPipes()
 {
     int pipeFDs[2];
-    if( ::pipe( pipeFDs ) == -1 )
+    if (::pipe(pipeFDs) == -1)
     {
-        LBERROR << "Could not create pipe: " << strerror( errno );
+        LBERROR << "Could not create pipe: " << strerror(errno);
         close();
         return false;
     }
 
-    _readFD  = pipeFDs[0];
+    _readFD = pipeFDs[0];
     _sibling->_writeFD = pipeFDs[1];
 
-    if( ::pipe( pipeFDs ) == -1 )
+    if (::pipe(pipeFDs) == -1)
     {
-        LBERROR << "Could not create pipe: " << strerror( errno );
+        LBERROR << "Could not create pipe: " << strerror(errno);
         close();
         return false;
     }
 
-    _sibling->_readFD  = pipeFDs[0];
+    _sibling->_readFD = pipeFDs[0];
     _writeFD = pipeFDs[1];
     return true;
 }
 
 void PipeConnection::_close()
 {
-    if( isClosed( ))
+    if (isClosed())
         return;
 
-    if( _writeFD > 0 )
+    if (_writeFD > 0)
     {
-        ::close( _writeFD );
+        ::close(_writeFD);
         _writeFD = 0;
     }
-    if( _readFD > 0 )
+    if (_readFD > 0)
     {
-        ::close( _readFD );
-        _readFD  = 0;
+        ::close(_readFD);
+        _readFD = 0;
     }
 
     _connected = false;
-    _setState( STATE_CLOSED );
+    _setState(STATE_CLOSED);
     _sibling = 0;
 }
 #endif // else _WIN32
 
 ConnectionPtr PipeConnection::acceptSync()
 {
-    _connected.waitEQ( true );
+    _connected.waitEQ(true);
     return _sibling;
 }
-
 }

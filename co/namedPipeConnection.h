@@ -28,56 +28,54 @@
 #include <lunchbox/thread.h> // for LB_TS_VAR
 
 #ifndef _WIN32
-#  error NamedPipeConnection only supported on Windows
+#error NamedPipeConnection only supported on Windows
 #endif
 
 namespace co
 {
-    /** An inter-process connection using a named pipe. */
-    class NamedPipeConnection : public Connection
-    {
-    public:
-        NamedPipeConnection();
+/** An inter-process connection using a named pipe. */
+class NamedPipeConnection : public Connection
+{
+public:
+    NamedPipeConnection();
 
-        bool connect() override;
-        bool listen() override;
-        void acceptNB() override;
-        ConnectionPtr acceptSync() override;
+    bool connect() override;
+    bool listen() override;
+    void acceptNB() override;
+    ConnectionPtr acceptSync() override;
 
-        void close() override { _close(); }
+    void close() override { _close(); }
+    virtual Notifier getNotifier() const override { return _read.hEvent; }
+    void readNB(void* buffer, const uint64_t bytes) override;
+    int64_t readSync(void* buffer, const uint64_t bytes,
+                     const bool ignored) override;
+    int64_t write(const void* buffer, const uint64_t bytes) override;
 
-        virtual Notifier getNotifier() const override { return _read.hEvent; }
+protected:
+    virtual ~NamedPipeConnection();
 
-        void readNB( void* buffer, const uint64_t bytes ) override;
-        int64_t readSync( void* buffer, const uint64_t bytes,
-            const bool ignored ) override;
-        int64_t write( const void* buffer,
-                               const uint64_t bytes ) override;
-    protected:
-        virtual ~NamedPipeConnection();
+    void _initAIOAccept();
+    void _exitAIOAccept();
+    void _initAIORead();
+    void _exitAIORead();
 
-        void _initAIOAccept();
-        void _exitAIOAccept();
-        void _initAIORead();
-        void _exitAIORead();
+private:
+    HANDLE _fd;
 
-    private:
-        HANDLE _fd;
+    // overlapped data structures
+    OVERLAPPED _read;
+    DWORD _readDone;
+    OVERLAPPED _write;
 
-        // overlapped data structures
-        OVERLAPPED _read;
-        DWORD      _readDone;
-        OVERLAPPED _write;
+    LB_TS_VAR(_recvThread);
 
-        LB_TS_VAR( _recvThread );
-
-        bool _connectToNewClient( HANDLE hPipe ) ;
-        std::string _getFilename() const;
-        bool _createNamedPipe();
-        bool _connectNamedPipe();
-        void _close();
-    };
-    typedef lunchbox::RefPtr< NamedPipeConnection > NamedPipeConnectionPtr;
+    bool _connectToNewClient(HANDLE hPipe);
+    std::string _getFilename() const;
+    bool _createNamedPipe();
+    bool _connectNamedPipe();
+    void _close();
+};
+typedef lunchbox::RefPtr<NamedPipeConnection> NamedPipeConnectionPtr;
 }
 
-#endif //CO_NAMEDPIPECONNECTION_H
+#endif // CO_NAMEDPIPECONNECTION_H

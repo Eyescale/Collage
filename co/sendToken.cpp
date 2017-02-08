@@ -26,8 +26,8 @@ namespace co
 {
 void SendToken::release()
 {
-    if( node_ )
-        node_->send( CMD_NODE_RELEASE_SEND_TOKEN );
+    if (node_)
+        node_->send(CMD_NODE_RELEASE_SEND_TOKEN);
     node_ = 0;
 }
 }

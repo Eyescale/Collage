@@ -24,39 +24,35 @@
 
 namespace co
 {
-
 /** A generic file descriptor-based connection, to be subclassed. */
 class FDConnection : public Connection
 {
 public:
     Notifier getNotifier() const final { return _readFD; }
-
 protected:
     FDConnection();
     virtual ~FDConnection() {}
+    void readNB(void*, const uint64_t) override { /* NOP */}
+    int64_t readSync(void* buffer, const uint64_t bytes,
+                     const bool ignored) override;
+    int64_t write(const void* buffer, const uint64_t bytes) override;
 
-    void readNB( void*, const uint64_t ) override { /* NOP */ }
-    int64_t readSync( void* buffer, const uint64_t bytes,
-                      const bool ignored ) override;
-    int64_t write( const void* buffer,
-                   const uint64_t bytes ) override;
+    int _readFD;  //!< The read file descriptor.
+    int _writeFD; //!< The write file descriptor.
 
-    int   _readFD;     //!< The read file descriptor.
-    int   _writeFD;    //!< The write file descriptor.
+    friend inline std::ostream& operator<<(std::ostream& os,
+                                           const FDConnection* connection);
 
-    friend inline std::ostream& operator << ( std::ostream& os,
-                                              const FDConnection* connection );
 private:
     int _getTimeOut();
-
 };
 
-inline std::ostream& operator << ( std::ostream& os,
-                                   const FDConnection* connection )
+inline std::ostream& operator<<(std::ostream& os,
+                                const FDConnection* connection)
 {
-    return os << static_cast< const Connection* >( connection ) << " readFD "
+    return os << static_cast<const Connection*>(connection) << " readFD "
               << connection->_readFD << " writeFD " << connection->_writeFD;
 }
 }
 
-#endif //CO_FDCONNECTION_H
+#endif // CO_FDCONNECTION_H

@@ -34,16 +34,16 @@ public:
 }
 
 BufferConnection::BufferConnection()
-        : _impl( new detail::BufferConnection )
+    : _impl(new detail::BufferConnection)
 {
-    _setState( STATE_CONNECTED );
+    _setState(STATE_CONNECTED);
     LBVERB << "New BufferConnection @" << (void*)this << std::endl;
 }
 
 BufferConnection::~BufferConnection()
 {
-    _setState( STATE_CLOSED );
-    if( !_impl->buffer.isEmpty( ))
+    _setState(STATE_CLOSED);
+    if (!_impl->buffer.isEmpty())
         LBWARN << "Deleting BufferConnection with buffered data" << std::endl;
     delete _impl;
 }
@@ -63,26 +63,24 @@ uint64_t BufferConnection::getSize() const
     return _impl->buffer.getSize();
 }
 
-int64_t BufferConnection::write( const void* buffer, const uint64_t bytes )
+int64_t BufferConnection::write(const void* buffer, const uint64_t bytes)
 {
-    _impl->buffer.append( reinterpret_cast< const uint8_t* >( buffer ), bytes );
+    _impl->buffer.append(reinterpret_cast<const uint8_t*>(buffer), bytes);
     return bytes;
 }
 
-void BufferConnection::sendBuffer( ConnectionPtr connection )
+void BufferConnection::sendBuffer(ConnectionPtr connection)
 {
-    if( _impl->buffer.isEmpty( ))
+    if (_impl->buffer.isEmpty())
         return;
 
-    if( !connection )
+    if (!connection)
     {
         LBWARN << "NULL connection during buffer write" << std::endl;
         return;
     }
 
-    LBCHECK( connection->send( _impl->buffer.getData(),
-                               _impl->buffer.getSize() ));
-    _impl->buffer.setSize( 0 );
+    LBCHECK(connection->send(_impl->buffer.getData(), _impl->buffer.getSize()));
+    _impl->buffer.setSize(0);
 }
-
 }

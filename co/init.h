@@ -21,13 +21,13 @@
 #define CO_INIT_H
 
 #include <co/api.h>
-#include <co/version.h>  // used inline
+#include <co/version.h>   // used inline
 #include <lunchbox/log.h> // used inline
 
 namespace co
 {
 /** @internal */
-CO_API bool _init( const int argc, char** argv );
+CO_API bool _init(const int argc, char** argv);
 
 /**
  * Initialize the Collage network library.
@@ -39,10 +39,10 @@ CO_API bool _init( const int argc, char** argv );
  * @return true if the library was successfully initialised, false otherwise
  * @version 1.0
  */
-inline bool init( const int argc, char** argv )
+inline bool init(const int argc, char** argv)
 {
-    if( CO_VERSION_ABI == Version::getABI( ))
-        return co::_init( argc, argv );
+    if (CO_VERSION_ABI == Version::getABI())
+        return co::_init(argc, argv);
     LBWARN << "Collage shared library v" << Version::getABI()
            << " not binary compatible with application v" << CO_VERSION_ABI
            << std::endl;

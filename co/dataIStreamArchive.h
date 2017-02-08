@@ -33,22 +33,22 @@
 #include <co/types.h>
 
 #include <boost/version.hpp>
-#pragma warning( push )
-#pragma warning( disable: 4800 )
+#pragma warning(push)
+#pragma warning(disable : 4800)
 #include <boost/archive/basic_binary_iarchive.hpp>
-#pragma warning( pop )
+#pragma warning(pop)
 #include <boost/archive/detail/register_archive.hpp>
 #if BOOST_VERSION < 105600
-#  include <boost/archive/shared_ptr_helper.hpp>
+#include <boost/archive/shared_ptr_helper.hpp>
 #endif
 #include <boost/serialization/is_bitwise_serializable.hpp>
 
 #include <boost/spirit/home/support/detail/endian.hpp>
 #include <boost/spirit/home/support/detail/math/fpclassify.hpp>
 
+#include <boost/type_traits/is_floating_point.hpp>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/is_unsigned.hpp>
-#include <boost/type_traits/is_floating_point.hpp>
 
 #include <boost/utility/enable_if.hpp>
 
@@ -56,30 +56,32 @@ namespace co
 {
 /** A boost.serialization input archive reading from a co::DataIStream. */
 class DataIStreamArchive
-    : public boost::archive::basic_binary_iarchive< DataIStreamArchive >
+    : public boost::archive::basic_binary_iarchive<DataIStreamArchive>
 #if BOOST_VERSION < 105600
-    , public boost::archive::detail::shared_ptr_helper
+      ,
+      public boost::archive::detail::shared_ptr_helper
 #endif
 {
-    typedef boost::archive::basic_binary_iarchive< DataIStreamArchive > Super;
+    typedef boost::archive::basic_binary_iarchive<DataIStreamArchive> Super;
 
 public:
     /** Construct a new deserialization archive. @version 1.0 */
-    CO_API explicit DataIStreamArchive( DataIStream& stream );
+    CO_API explicit DataIStreamArchive(DataIStream& stream);
 
     /** @internal archives are expected to support this function */
-    CO_API void load_binary( void* data, std::size_t size );
+    CO_API void load_binary(void* data, std::size_t size);
 
     /** @internal use optimized load for arrays. */
-    template< typename T >
-    void load_array( boost::serialization::array< T >& a, unsigned int );
+    template <typename T>
+    void load_array(boost::serialization::array<T>& a, unsigned int);
 
     /** @internal enable serialization optimization for arrays. */
     struct use_array_optimization
     {
-        template< class T >
-        struct apply
-            : public boost::serialization::is_bitwise_serializable< T > {};
+        template <class T>
+        struct apply : public boost::serialization::is_bitwise_serializable<T>
+        {
+        };
     };
 
 private:
@@ -92,11 +94,11 @@ private:
      * types - this is somewhat redundant but simply treating bool as integer
      * type generates lots of warnings.
      */
-    CO_API void load( bool& b );
+    CO_API void load(bool& b);
 
     /** Load string types. */
-    template< class C, class T, class A >
-    void load( std::basic_string< C, T, A >& s );
+    template <class C, class T, class A>
+    void load(std::basic_string<C, T, A>& s);
 
     /**
      * Load integer types.
@@ -105,8 +107,8 @@ private:
      * hold the actual data. Then we retrieve the data and transform it
      * to the original value by using load_little_endian.
      */
-    template< typename T >
-    typename boost::enable_if< boost::is_integral<T> >::type load( T& t );
+    template <typename T>
+    typename boost::enable_if<boost::is_integral<T> >::type load(T& t);
 
     /**
      * Load floating point types.
@@ -135,25 +137,24 @@ private:
      * then your floating point numbers will be truncated. This will introduce
      * small rounding off errors.
      */
-    template< typename T >
-    typename boost::enable_if< boost::is_floating_point<T> >::type load( T& t );
+    template <typename T>
+    typename boost::enable_if<boost::is_floating_point<T> >::type load(T& t);
 
 #if BOOST_VERSION >= 104400
     // in boost 1.44 version_type was splitted into library_version_type and
     // item_version_type, plus a whole bunch of additional strong typedefs
-    CO_API void load( boost::archive::library_version_type& version );
-    CO_API void load( boost::archive::class_id_type& class_id );
-    CO_API void load( boost::serialization::item_version_type& version );
-    CO_API void load( boost::serialization::collection_size_type& version );
-    CO_API void load( boost::archive::object_id_type& object_id );
-    CO_API void load( boost::archive::version_type& version );
+    CO_API void load(boost::archive::library_version_type& version);
+    CO_API void load(boost::archive::class_id_type& class_id);
+    CO_API void load(boost::serialization::item_version_type& version);
+    CO_API void load(boost::serialization::collection_size_type& version);
+    CO_API void load(boost::archive::object_id_type& object_id);
+    CO_API void load(boost::archive::version_type& version);
 #endif
 
     CO_API signed char _loadSignedChar();
 
     DataIStream& _stream;
 };
-
 }
 
 #include "dataIStreamArchive.ipp" // template implementation
@@ -164,4 +165,4 @@ private:
 BOOST_SERIALIZATION_REGISTER_ARCHIVE(co::DataIStreamArchive)
 BOOST_SERIALIZATION_USE_ARRAY_OPTIMIZATION(co::DataIStreamArchive)
 
-#endif //CO_DATAISTREAMARCHIVE_H
+#endif // CO_DATAISTREAMARCHIVE_H

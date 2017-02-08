@@ -27,7 +27,10 @@
 
 namespace co
 {
-namespace detail { class QueueMaster; }
+namespace detail
+{
+class QueueMaster;
+}
 
 /**
  * The producer end of a distributed queue.
@@ -63,15 +66,13 @@ public:
 private:
     detail::QueueMaster* const _impl;
 
-    CO_API void attach( const uint128_t& id,
-                        const uint32_t instanceID ) override;
+    CO_API void attach(const uint128_t& id, const uint32_t instanceID) override;
 
     ChangeType getChangeType() const override { return STATIC; }
-    void getInstanceData( co::DataOStream& os ) override;
-    void applyInstanceData( co::DataIStream& ) override { LBDONTCALL }
-
+    void getInstanceData(co::DataOStream& os) override;
+    void applyInstanceData(co::DataIStream&) override { LBDONTCALL }
     friend class QueueItem;
-    void _addItem( QueueItem& item );
+    void _addItem(QueueItem& item);
 };
 
 } // co

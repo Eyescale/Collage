@@ -25,101 +25,93 @@
 
 namespace co
 {
-
 namespace detail
 {
-
 class ObjectDataOCommand
 {
 public:
-    ObjectDataOCommand( co::DataOStream* stream_, const void* data_,
-                        const uint64_t size_ )
-        : data( data_ )
-        , size( 0 )
-        , stream( stream_ )
+    ObjectDataOCommand(co::DataOStream* stream_, const void* data_,
+                       const uint64_t size_)
+        : data(data_)
+        , size(0)
+        , stream(stream_)
     {
-        if( stream )
+        if (stream)
         {
             size = stream->getCompressedDataSize();
-            if( size == 0 )
+            if (size == 0)
                 size = size_;
         }
     }
 
-    ObjectDataOCommand( const ObjectDataOCommand& rhs )
-        : data( rhs.data )
-        , size( rhs.size )
-        , stream( rhs.stream )
-    {}
+    ObjectDataOCommand(const ObjectDataOCommand& rhs)
+        : data(rhs.data)
+        , size(rhs.size)
+        , stream(rhs.stream)
+    {
+    }
 
     const void* const data;
     uint64_t size;
     co::DataOStream* stream;
 };
-
 }
 
-ObjectDataOCommand::ObjectDataOCommand( const Connections& receivers,
-                                        const uint32_t cmd, const uint32_t type,
-                                        const uint128_t& id,
-                                        const uint32_t instanceID,
-                                        const uint128_t& version,
-                                        const uint32_t sequence,
-                                        const void* data,
-                                        const uint64_t size,
-                                        const bool isLast,
-                                        DataOStream* stream )
-    : ObjectOCommand( receivers, cmd, type, id, instanceID )
-    , _impl( new detail::ObjectDataOCommand( stream, data, size ))
+ObjectDataOCommand::ObjectDataOCommand(
+    const Connections& receivers, const uint32_t cmd, const uint32_t type,
+    const uint128_t& id, const uint32_t instanceID, const uint128_t& version,
+    const uint32_t sequence, const void* data, const uint64_t size,
+    const bool isLast, DataOStream* stream)
+    : ObjectOCommand(receivers, cmd, type, id, instanceID)
+    , _impl(new detail::ObjectDataOCommand(stream, data, size))
 {
-    _init( version, sequence, size, isLast );
+    _init(version, sequence, size, isLast);
 }
 
-ObjectDataOCommand::ObjectDataOCommand( const ObjectDataOCommand& rhs )
-    : ObjectOCommand( rhs )
-    , _impl( new detail::ObjectDataOCommand( *rhs._impl ))
+ObjectDataOCommand::ObjectDataOCommand(const ObjectDataOCommand& rhs)
+    : ObjectOCommand(rhs)
+    , _impl(new detail::ObjectDataOCommand(*rhs._impl))
 {
 }
 
-void ObjectDataOCommand::_init( const uint128_t& version,
-                                const uint32_t sequence,
-                                const uint64_t size, const bool isLast )
+void ObjectDataOCommand::_init(const uint128_t& version,
+                               const uint32_t sequence, const uint64_t size,
+                               const bool isLast)
 {
     *this << version << size << sequence << isLast;
 
-    if( _impl->stream )
-        _impl->stream->streamDataHeader( *this );
+    if (_impl->stream)
+        _impl->stream->streamDataHeader(*this);
     else
         *this << std::string() << uint32_t(0); // compressor, nChunks
 }
 
 ObjectDataOCommand::~ObjectDataOCommand()
 {
-    if( _impl->stream && _impl->size > 0 )
+    if (_impl->stream && _impl->size > 0)
     {
-        sendHeader( _impl->size );
+        sendHeader(_impl->size);
         const Connections& connections = getConnections();
-        for( ConnectionsCIter i = connections.begin(); i != connections.end();
-             ++i )
+        for (ConnectionsCIter i = connections.begin(); i != connections.end();
+             ++i)
         {
             ConnectionPtr conn = *i;
-            _impl->stream->sendBody( conn, _impl->data, _impl->size );
+            _impl->stream->sendBody(conn, _impl->data, _impl->size);
         }
     }
 
     delete _impl;
 }
 
-ObjectDataICommand ObjectDataOCommand::_getCommand( LocalNodePtr node )
+ObjectDataICommand ObjectDataOCommand::_getCommand(LocalNodePtr node)
 {
     lunchbox::Bufferb& outBuffer = getBuffer();
     // cppcheck-suppress unreadVariable
     uint8_t* bytes = outBuffer.getData();
-    reinterpret_cast< uint64_t* >( bytes )[ 0 ] = outBuffer.getSize();
+    reinterpret_cast<uint64_t*>(bytes)[0] = outBuffer.getSize();
 
-    BufferPtr inBuffer = node->allocBuffer( outBuffer.getSize( ));
-    inBuffer->swap( outBuffer );
-    return ObjectDataICommand( node, node, inBuffer );
+    BufferPtr inBuffer = node->allocBuffer(outBuffer.getSize());
+    inBuffer->swap(outBuffer);
+    return ObjectDataICommand(node, node, inBuffer);
 }
-
 }

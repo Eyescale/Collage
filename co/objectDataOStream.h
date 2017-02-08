@@ -21,8 +21,8 @@
 #ifndef CO_OBJECTDATAOSTREAM_H
 #define CO_OBJECTDATAOSTREAM_H
 
-#include <co/dataOStream.h>   // base class
-#include <co/version.h>       // enum
+#include <co/dataOStream.h> // base class
+#include <co/version.h>     // enum
 
 namespace co
 {
@@ -30,26 +30,22 @@ namespace co
 class ObjectDataOStream : public DataOStream
 {
 public:
-    explicit ObjectDataOStream( const ObjectCM* cm );
-    virtual ~ObjectDataOStream(){}
-
+    explicit ObjectDataOStream(const ObjectCM* cm);
+    virtual ~ObjectDataOStream() {}
     void reset() override;
 
     /** Set up commit of the given version to the receivers. */
-    virtual void enableCommit( const uint128_t& version,
-                               const Nodes& receivers );
+    virtual void enableCommit(const uint128_t& version, const Nodes& receivers);
 
     uint128_t getVersion() const { return _version; }
-
 protected:
-    ObjectDataOCommand send( const uint32_t cmd, const uint32_t type,
-                             const uint32_t instanceID,
-                             const void* data, const uint64_t size,
-                             const bool last );
+    ObjectDataOCommand send(const uint32_t cmd, const uint32_t type,
+                            const uint32_t instanceID, const void* data,
+                            const uint64_t size, const bool last);
 
     const ObjectCM* _cm;
     uint128_t _version;
     uint32_t _sequence;
 };
 }
-#endif //CO_OBJECTDATAOSTREAM_H
+#endif // CO_OBJECTDATAOSTREAM_H

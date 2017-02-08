@@ -18,88 +18,87 @@
 #include <co/defines.h>
 #include <lunchbox/test.h>
 
+#include <boost/bind.hpp>
 #include <co/co.h>
 #include <lunchbox/monitor.h>
-#include <boost/bind.hpp>
 
-const co::uint128_t cmdID1( servus::make_uint128( "ch.eyescale.collage.test.c1" ));
-const co::uint128_t cmdID2( servus::make_uint128( "ch.eyescale.collage.test.c2" ));
+const co::uint128_t cmdID1(servus::make_uint128("ch.eyescale.collage.test.c1"));
+const co::uint128_t cmdID2(servus::make_uint128("ch.eyescale.collage.test.c2"));
 lunchbox::Monitor<bool> gotCmd1;
 lunchbox::Monitor<bool> gotCmd2;
 
 class MyLocalNode : public co::LocalNode
 {
 public:
-    bool cmdCustom1( co::CustomICommand& command )
+    bool cmdCustom1(co::CustomICommand& command)
     {
-        TEST( command.getCommandID() == cmdID1 );
+        TEST(command.getCommandID() == cmdID1);
         gotCmd1 = true;
         return true;
     }
 
-    bool cmdCustom2( co::CustomICommand& command )
+    bool cmdCustom2(co::CustomICommand& command)
     {
-        TEST( command.getCommandID() == cmdID2 );
+        TEST(command.getCommandID() == cmdID2);
         gotCmd2 = true;
-        TEST( command.get< std::string >() == "hello" );
+        TEST(command.get<std::string>() == "hello");
         return true;
     }
 };
 
-typedef lunchbox::RefPtr< MyLocalNode > MyLocalNodePtr;
+typedef lunchbox::RefPtr<MyLocalNode> MyLocalNodePtr;
 
-int main( int argc, char **argv )
+int main(int argc, char** argv)
 {
-    TEST( co::init( argc, argv ) );
+    TEST(co::init(argc, argv));
 
     co::ConnectionDescriptionPtr connDesc = new co::ConnectionDescription;
     connDesc->type = co::CONNECTIONTYPE_TCPIP;
-    connDesc->setHostname( "localhost" );
+    connDesc->setHostname("localhost");
 
     MyLocalNodePtr server = new MyLocalNode;
-    server->addConnectionDescription( connDesc );
-    TEST( server->listen( ));
+    server->addConnectionDescription(connDesc);
+    TEST(server->listen());
 
     co::NodePtr serverProxy = new co::Node;
-    serverProxy->addConnectionDescription( connDesc );
+    serverProxy->addConnectionDescription(connDesc);
 
     connDesc = new co::ConnectionDescription;
     connDesc->type = co::CONNECTIONTYPE_TCPIP;
-    connDesc->setHostname( "localhost" );
+    connDesc->setHostname("localhost");
 
     co::LocalNodePtr client = new co::LocalNode;
-    client->addConnectionDescription( connDesc );
-    TEST( client->listen( ));
-    TEST( client->connect( serverProxy ));
+    client->addConnectionDescription(connDesc);
+    TEST(client->listen());
+    TEST(client->connect(serverProxy));
 
-    server->registerCommandHandler( cmdID1,
-                                    boost::bind( &MyLocalNode::cmdCustom1,
-                                                 server.get(), _1 ),
-                                    server->getCommandThreadQueue( ));
-    server->registerCommandHandler( cmdID2,
-                                    boost::bind( &MyLocalNode::cmdCustom2,
-                                                 server.get(), _1 ), 0 );
+    server->registerCommandHandler(cmdID1, boost::bind(&MyLocalNode::cmdCustom1,
+                                                       server.get(), _1),
+                                   server->getCommandThreadQueue());
+    server->registerCommandHandler(cmdID2, boost::bind(&MyLocalNode::cmdCustom2,
+                                                       server.get(), _1),
+                                   0);
 
-    serverProxy->send( cmdID1 );
-    serverProxy->send( cmdID2 ) << std::string( "hello" );
+    serverProxy->send(cmdID1);
+    serverProxy->send(cmdID2) << std::string("hello");
 
-    TEST( gotCmd1.timedWaitEQ( true, 1000 ));
-    TEST( gotCmd2.timedWaitEQ( true, 1000 ));
+    TEST(gotCmd1.timedWaitEQ(true, 1000));
+    TEST(gotCmd2.timedWaitEQ(true, 1000));
 
-    TEST( client->disconnect( serverProxy ));
-    TEST( client->close( ));
-    TEST( server->close( ));
+    TEST(client->disconnect(serverProxy));
+    TEST(client->close());
+    TEST(server->close());
 
-    serverProxy->printHolders( std::cerr );
-    TESTINFO( serverProxy->getRefCount() == 1, serverProxy->getRefCount( ));
-    TESTINFO( client->getRefCount() == 1, client->getRefCount( ));
-    TESTINFO( server->getRefCount() == 1, server->getRefCount( ));
+    serverProxy->printHolders(std::cerr);
+    TESTINFO(serverProxy->getRefCount() == 1, serverProxy->getRefCount());
+    TESTINFO(client->getRefCount() == 1, client->getRefCount());
+    TESTINFO(server->getRefCount() == 1, server->getRefCount());
 
     serverProxy = 0;
-    client      = 0;
-    server      = 0;
+    client = 0;
+    server = 0;
 
-    TEST( co::exit( ));
+    TEST(co::exit());
 
     return EXIT_SUCCESS;
 }

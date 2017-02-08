@@ -21,13 +21,13 @@
 #ifndef CO_VERSIONEDSLAVECM_H
 #define CO_VERSIONEDSLAVECM_H
 
-#include "objectCM.h"            // base class
+#include "objectCM.h"               // base class
 #include "objectDataIStream.h"      // member
 #include "objectSlaveDataOStream.h" // member
 
-#include <lunchbox/mtQueue.h>     // member
-#include <lunchbox/pool.h>        // member
-#include <lunchbox/thread.h>      // thread-safety macro
+#include <lunchbox/mtQueue.h> // member
+#include <lunchbox/pool.h>    // member
+#include <lunchbox/thread.h>  // thread-safety macro
 
 namespace co
 {
@@ -39,34 +39,33 @@ class Node;
 class VersionedSlaveCM : public ObjectCM
 {
 public:
-    VersionedSlaveCM( Object* object, uint32_t masterInstanceID );
+    VersionedSlaveCM(Object* object, uint32_t masterInstanceID);
     virtual ~VersionedSlaveCM();
 
     void init() override {}
-
     /** @name Versioning */
     //@{
-    uint128_t commit( const uint32_t incarnation ) override;
-    uint128_t sync( const uint128_t& version ) override;
+    uint128_t commit(const uint32_t incarnation) override;
+    uint128_t sync(const uint128_t& version) override;
 
     uint128_t getHeadVersion() const override;
     uint128_t getVersion() const override { return _version; }
     //@}
 
     bool isMaster() const override { return false; }
-
-    uint32_t getMasterInstanceID() const override
-        { return _masterInstanceID; }
-    void setMasterNode( NodePtr node ) override { _master = node; }
+    uint32_t getMasterInstanceID() const override { return _masterInstanceID; }
+    void setMasterNode(NodePtr node) override { _master = node; }
     NodePtr getMasterNode() override { return _master; }
+    bool addSlave(const MasterCMCommand&) override
+    {
+        LBDONTCALL;
+        return false;
+    }
+    void removeSlaves(NodePtr) override {}
+    void applyMapData(const uint128_t& version) override;
+    void addInstanceDatas(const ObjectDataIStreamDeque&,
+                          const uint128_t& startVersion) override;
 
-    bool addSlave( const MasterCMCommand& ) override
-        { LBDONTCALL; return false; }
-    void removeSlaves( NodePtr ) override {}
-
-    void applyMapData( const uint128_t& version ) override;
-    void addInstanceDatas( const ObjectDataIStreamDeque&,
-                           const uint128_t& startVersion ) override;
 private:
     /** The current version. */
     uint128_t _version;
@@ -75,10 +74,10 @@ private:
     ObjectDataIStream* _currentIStream;
 
     /** The change queue. */
-    lunchbox::MTQueue< ObjectDataIStream* > _queuedVersions;
+    lunchbox::MTQueue<ObjectDataIStream*> _queuedVersions;
 
     /** Cached input streams (+decompressor) */
-    lunchbox::Pool< ObjectDataIStream, true > _iStreamCache;
+    lunchbox::Pool<ObjectDataIStream, true> _iStreamCache;
 
     /** The output stream for slave object commits. */
     ObjectSlaveDataOStream _ostream;
@@ -90,17 +89,17 @@ private:
     uint32_t _masterInstanceID;
 
     void _syncToHead();
-    void _releaseStream( ObjectDataIStream* stream );
+    void _releaseStream(ObjectDataIStream* stream);
     void _sendAck();
 
     /** Apply the data in the input stream to the object */
-    void _unpackOneVersion( ObjectDataIStream* is );
+    void _unpackOneVersion(ObjectDataIStream* is);
 
     /* The command handlers. */
-    bool _cmdData( ICommand& command );
+    bool _cmdData(ICommand& command);
 
-    LB_TS_VAR( _cmdThread );
-    LB_TS_VAR( _rcvThread );
+    LB_TS_VAR(_cmdThread);
+    LB_TS_VAR(_rcvThread);
 };
 }
 

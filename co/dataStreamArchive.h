@@ -26,4 +26,4 @@ namespace co
 const signed char magicByte = 'c' | 'o';
 }
 
-#endif //CO_DATASTREAMARCHIVE_H
+#endif // CO_DATASTREAMARCHIVE_H

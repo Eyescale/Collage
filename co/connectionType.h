@@ -20,45 +20,51 @@
 #ifndef CO_CONNECTIONTYPE_H
 #define CO_CONNECTIONTYPE_H
 
-#include <lunchbox/debug.h>
 #include <iostream>
+#include <lunchbox/debug.h>
 
 namespace co
 {
-    /** The supported network protocols. */
-    enum ConnectionType
-    {
-        CONNECTIONTYPE_NONE = 0,
-        CONNECTIONTYPE_TCPIP,     //!< TCP/IP sockets
-        CONNECTIONTYPE_PIPE,      //!< pipe() based uni-directional connection
-        CONNECTIONTYPE_NAMEDPIPE, //!< Named pipe based bidirectional connection
-        CONNECTIONTYPE_IB,        //!< @deprecated Win XP Infiniband RDMA
-        CONNECTIONTYPE_RDMA,      //!< Infiniband RDMA CM
-        CONNECTIONTYPE_UDT,       //!< UDT connection
-        CONNECTIONTYPE_MULTICAST = 0x100, //!< @internal MC types after this:
-        CONNECTIONTYPE_RSP        //!< UDP-based reliable stream protocol
-    };
+/** The supported network protocols. */
+enum ConnectionType
+{
+    CONNECTIONTYPE_NONE = 0,
+    CONNECTIONTYPE_TCPIP,     //!< TCP/IP sockets
+    CONNECTIONTYPE_PIPE,      //!< pipe() based uni-directional connection
+    CONNECTIONTYPE_NAMEDPIPE, //!< Named pipe based bidirectional connection
+    CONNECTIONTYPE_IB,        //!< @deprecated Win XP Infiniband RDMA
+    CONNECTIONTYPE_RDMA,      //!< Infiniband RDMA CM
+    CONNECTIONTYPE_UDT,       //!< UDT connection
+    CONNECTIONTYPE_MULTICAST = 0x100, //!< @internal MC types after this:
+    CONNECTIONTYPE_RSP                //!< UDP-based reliable stream protocol
+};
 
-    /** @internal */
-    inline std::ostream& operator << ( std::ostream& os,
-                                       const ConnectionType& type )
+/** @internal */
+inline std::ostream& operator<<(std::ostream& os, const ConnectionType& type)
+{
+    switch (type)
     {
-        switch( type )
-        {
-            case CONNECTIONTYPE_TCPIP: return os << "TCPIP";
-            case CONNECTIONTYPE_PIPE: return os << "ANON_PIPE";
-            case CONNECTIONTYPE_NAMEDPIPE: return os << "PIPE";
-            case CONNECTIONTYPE_RSP: return os << "RSP";
-            case CONNECTIONTYPE_NONE: return os << "NONE";
-            case CONNECTIONTYPE_RDMA: return os << "RDMA";
-            case CONNECTIONTYPE_UDT: return os << "UDT";
+    case CONNECTIONTYPE_TCPIP:
+        return os << "TCPIP";
+    case CONNECTIONTYPE_PIPE:
+        return os << "ANON_PIPE";
+    case CONNECTIONTYPE_NAMEDPIPE:
+        return os << "PIPE";
+    case CONNECTIONTYPE_RSP:
+        return os << "RSP";
+    case CONNECTIONTYPE_NONE:
+        return os << "NONE";
+    case CONNECTIONTYPE_RDMA:
+        return os << "RDMA";
+    case CONNECTIONTYPE_UDT:
+        return os << "UDT";
 
-            default:
-                LBASSERTINFO( false, "Not implemented" );
-                return os << "ERROR";
-        }
-        return os;
+    default:
+        LBASSERTINFO(false, "Not implemented");
+        return os << "ERROR";
     }
+    return os;
+}
 }
 
 #endif // CO_CONNECTIONTYPE_H

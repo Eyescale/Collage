@@ -22,26 +22,27 @@
 
 namespace co
 {
-template< class Q > void WorkerThread< Q >::run()
+template <class Q>
+void WorkerThread<Q>::run()
 {
-    while( !stopRunning( ))
+    while (!stopRunning())
     {
-        while( _commands.isEmpty( ))
-            if( !notifyIdle( )) // nothing to do
+        while (_commands.isEmpty())
+            if (!notifyIdle()) // nothing to do
                 break;
 
         const ICommands& commands = _commands.popAll();
-        LBASSERT( !commands.empty( ));
+        LBASSERT(!commands.empty());
 
-        for( ICommandsCIter i = commands.begin(); i != commands.end(); ++i )
+        for (ICommandsCIter i = commands.begin(); i != commands.end(); ++i)
         {
             // We want to avoid a non-const copy of commands, hence the cast...
-            ICommand& command = const_cast< ICommand& >( *i );
-            if( !command( ))
+            ICommand& command = const_cast<ICommand&>(*i);
+            if (!command())
             {
-                LBABORT( "Error handling " << command );
+                LBABORT("Error handling " << command);
             }
-            if( stopRunning( ))
+            if (stopRunning())
                 break;
 
             _commands.pump();
@@ -49,8 +50,7 @@ template< class Q > void WorkerThread< Q >::run()
     }
 
     _commands.flush();
-    LBDEBUG << "Leaving worker thread " << lunchbox::className( this )
+    LBDEBUG << "Leaving worker thread " << lunchbox::className(this)
             << std::endl;
 }
-
 }

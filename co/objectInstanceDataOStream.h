@@ -21,7 +21,7 @@
 #ifndef CO_OBJECTINSTANCEDATAOSTREAM_H
 #define CO_OBJECTINSTANCEDATAOSTREAM_H
 
-#include "objectDataOStream.h"   // base class
+#include "objectDataOStream.h" // base class
 
 namespace co
 {
@@ -29,41 +29,41 @@ namespace co
 class ObjectInstanceDataOStream : public ObjectDataOStream
 {
 public:
-    explicit ObjectInstanceDataOStream( const ObjectCM* cm );
+    explicit ObjectInstanceDataOStream(const ObjectCM* cm);
     virtual ~ObjectInstanceDataOStream();
 
     void reset() override;
 
     /** Set up commit of the given version to the receivers. */
-    void enableCommit( const uint128_t& version,
-                       const Nodes& receivers ) override;
+    void enableCommit(const uint128_t& version,
+                      const Nodes& receivers) override;
 
     /** Set up push of the given version to the receivers. */
-    void enablePush( const uint128_t& version, const Nodes& receivers );
+    void enablePush(const uint128_t& version, const Nodes& receivers);
 
     /** Set up sync of the given version to the receivers. */
-    void enableSync( const uint128_t& version, const MasterCMCommand& command );
+    void enableSync(const uint128_t& version, const MasterCMCommand& command);
 
     /** Push a stored instance data. */
-    void push( const Nodes& receivers, const uint128_t& objectID,
-               const uint128_t& groupID, const uint128_t& typeID );
+    void push(const Nodes& receivers, const uint128_t& objectID,
+              const uint128_t& groupID, const uint128_t& typeID);
 
     /** Synchronize a stored instance data. */
-    void sync( const MasterCMCommand& command );
+    void sync(const MasterCMCommand& command);
 
     /** Set up mapping of the given version to the given node. */
-    void enableMap( const uint128_t& version, NodePtr node,
-                    const uint32_t instanceID );
+    void enableMap(const uint128_t& version, NodePtr node,
+                   const uint32_t instanceID);
 
     /** Send-on-register instance data to all receivers. */
-    void sendInstanceData( const Nodes& receivers );
+    void sendInstanceData(const Nodes& receivers);
 
     /** Send mapping data to the node, using multicast if available. */
-    void sendMapData( NodePtr node, const uint32_t instanceID );
+    void sendMapData(NodePtr node, const uint32_t instanceID);
 
 protected:
-    void sendData( const void* buffer, const uint64_t size,
-                   const bool last ) override;
+    void sendData(const void* buffer, const uint64_t size,
+                  const bool last) override;
 
 private:
     NodeID _nodeID;
@@ -71,4 +71,4 @@ private:
     uint32_t _command;
 };
 }
-#endif //CO_OBJECTINSTANCEDATAOSTREAM_H
+#endif // CO_OBJECTINSTANCEDATAOSTREAM_H

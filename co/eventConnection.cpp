@@ -24,40 +24,40 @@
 
 namespace co
 {
-
 EventConnection::EventConnection()
 #ifdef _WIN32
-    : _event( CreateEvent( 0, TRUE, FALSE, 0 ))
+    : _event(CreateEvent(0, TRUE, FALSE, 0))
 
 #else
-    : _connection( new PipeConnection )
-    , _set( false )
+    : _connection(new PipeConnection)
+    , _set(false)
 #endif
-{}
+{
+}
 
 EventConnection::~EventConnection()
 {
     _close();
 
 #ifdef _WIN32
-    if( _event )
-        CloseHandle( _event );
+    if (_event)
+        CloseHandle(_event);
 #endif
 }
 
 bool EventConnection::connect()
 {
-    if( !isClosed( ))
+    if (!isClosed())
         return false;
 
-    _setState( STATE_CONNECTING );
+    _setState(STATE_CONNECTING);
 
 #ifndef _WIN32
-    LBCHECK( _connection->connect( ));
+    LBCHECK(_connection->connect());
     _set = false;
 #endif
 
-    _setState( STATE_CONNECTED );
+    _setState(STATE_CONNECTED);
     return true;
 }
 
@@ -66,37 +66,37 @@ void EventConnection::_close()
 #ifndef _WIN32
     _connection->close();
 #endif
-    _setState( STATE_CLOSED );
+    _setState(STATE_CLOSED);
 }
 
 void EventConnection::set()
 {
 #ifdef _WIN32
-    SetEvent( _event );
+    SetEvent(_event);
 #else
-    lunchbox::ScopedWrite mutex( _lock );
-    if( _set )
+    lunchbox::ScopedWrite mutex(_lock);
+    if (_set)
         return;
 
     const char c = 42;
-    _connection->acceptSync()->send( &c, 1, true );
+    _connection->acceptSync()->send(&c, 1, true);
     _set = true;
 #endif
 }
 void EventConnection::reset()
 {
 #ifdef _WIN32
-    ResetEvent( _event );
+    ResetEvent(_event);
 #else
-    lunchbox::ScopedWrite mutex( _lock );
-    if( !_set )
+    lunchbox::ScopedWrite mutex(_lock);
+    if (!_set)
         return;
 
-    _buffer.setSize( 0 );
-    _connection->recvNB( &_buffer, 1 );
+    _buffer.setSize(0);
+    _connection->recvNB(&_buffer, 1);
 
     BufferPtr buffer;
-    _connection->recvSync( buffer );
+    _connection->recvSync(buffer);
     _set = false;
 #endif
 }
@@ -109,5 +109,4 @@ Connection::Notifier EventConnection::getNotifier() const
     return _connection->getNotifier();
 #endif
 }
-
 }

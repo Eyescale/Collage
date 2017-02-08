@@ -20,11 +20,14 @@
 #ifndef CO_CUSTOMOCOMMAND_H
 #define CO_CUSTOMOCOMMAND_H
 
-#include <co/oCommand.h>    // base class
+#include <co/oCommand.h> // base class
 
 namespace co
 {
-namespace detail { class CustomOCommand; }
+namespace detail
+{
+class CustomOCommand;
+}
 
 /**
  * A class for sending custom commands and data to nodes.
@@ -40,8 +43,8 @@ public:
      * @param receivers list of connections where to send the command to.
      * @param commandID the custom command identifier
      */
-    CO_API CustomOCommand( const Connections& receivers,
-                           const uint128_t& commandID );
+    CO_API CustomOCommand(const Connections& receivers,
+                          const uint128_t& commandID);
 
     /** @internal
      * Construct a command dispatched to a local custom command handler.
@@ -49,20 +52,20 @@ public:
      * @param localNode the local node that holds the command cache.
      * @param commandID the custom command identifier
      */
-    CO_API CustomOCommand( LocalNodePtr localNode, const uint128_t& commandID );
+    CO_API CustomOCommand(LocalNodePtr localNode, const uint128_t& commandID);
 
-    CO_API CustomOCommand( const CustomOCommand& rhs ); //!< @internal
+    CO_API CustomOCommand(const CustomOCommand& rhs); //!< @internal
 
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~CustomOCommand();
 
 private:
     CustomOCommand();
-    CustomOCommand& operator = ( const CustomOCommand& );
+    CustomOCommand& operator=(const CustomOCommand&);
     detail::CustomOCommand* const _impl;
 
     void _init();
 };
 }
 
-#endif //CO_CUSTOMOCOMMAND_H
+#endif // CO_CUSTOMOCOMMAND_H

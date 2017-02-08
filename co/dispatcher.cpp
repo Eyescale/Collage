@@ -34,20 +34,22 @@ class Dispatcher
 {
 public:
     /** The command handler function table. */
-    std::vector< co::Dispatcher::Func > fTable;
+    std::vector<co::Dispatcher::Func> fTable;
 
     /** Defines a queue to which commands are dispatched from the recv. */
-    std::vector< co::CommandQueue* > qTable;
+    std::vector<co::CommandQueue*> qTable;
 };
 }
 
 Dispatcher::Dispatcher()
-        : _impl( new detail::Dispatcher )
-{}
+    : _impl(new detail::Dispatcher)
+{
+}
 
-Dispatcher::Dispatcher( const Dispatcher& )
-        : _impl( new detail::Dispatcher )
-{}
+Dispatcher::Dispatcher(const Dispatcher&)
+    : _impl(new detail::Dispatcher)
+{
+}
 
 Dispatcher::~Dispatcher()
 {
@@ -57,23 +59,23 @@ Dispatcher::~Dispatcher()
 //===========================================================================
 // command handling
 //===========================================================================
-void Dispatcher::_registerCommand( const uint32_t command, const Func& func,
-                                   CommandQueue* destinationQueue )
+void Dispatcher::_registerCommand(const uint32_t command, const Func& func,
+                                  CommandQueue* destinationQueue)
 {
-    LBASSERT( _impl->fTable.size() == _impl->qTable.size( ));
+    LBASSERT(_impl->fTable.size() == _impl->qTable.size());
 
-    if( _impl->fTable.size() <= command )
+    if (_impl->fTable.size() <= command)
     {
-        while( _impl->fTable.size() < command )
+        while (_impl->fTable.size() < command)
         {
-            _impl->fTable.push_back( Func( this, &Dispatcher::_cmdUnknown ));
-            _impl->qTable.push_back( 0 );
+            _impl->fTable.push_back(Func(this, &Dispatcher::_cmdUnknown));
+            _impl->qTable.push_back(0);
         }
 
-        _impl->fTable.push_back( func );
-        _impl->qTable.push_back( destinationQueue );
+        _impl->fTable.push_back(func);
+        _impl->qTable.push_back(destinationQueue);
 
-        LBASSERT( _impl->fTable.size() == command + 1 );
+        LBASSERT(_impl->fTable.size() == command + 1);
     }
     else
     {
@@ -82,45 +84,44 @@ void Dispatcher::_registerCommand( const uint32_t command, const Func& func,
     }
 }
 
-
-bool Dispatcher::dispatchCommand( ICommand& command )
+bool Dispatcher::dispatchCommand(ICommand& command)
 {
-    LBASSERT( command.isValid( ));
+    LBASSERT(command.isValid());
 
-    LBVERB << "dispatch " << command << " on " << lunchbox::className( this )
+    LBVERB << "dispatch " << command << " on " << lunchbox::className(this)
            << std::endl;
 
     const uint32_t which = command.getCommand();
 #ifndef NDEBUG
-    if( which >= _impl->qTable.size( ))
+    if (which >= _impl->qTable.size())
     {
-        LBABORT( "ICommand " << command
-                 << " higher than number of registered command handlers ("
-                 << _impl->qTable.size() << ") for object of type "
-                 << lunchbox::className( this ) << std::endl );
+        LBABORT("ICommand "
+                << command
+                << " higher than number of registered command handlers ("
+                << _impl->qTable.size() << ") for object of type "
+                << lunchbox::className(this) << std::endl);
         return false;
     }
 #endif
 
-    CommandQueue* queue = _impl->qTable[ which ];
-    if( queue )
+    CommandQueue* queue = _impl->qTable[which];
+    if (queue)
     {
-        command.setDispatchFunction( _impl->fTable[ which ] );
-        queue->push( command );
+        command.setDispatchFunction(_impl->fTable[which]);
+        queue->push(command);
         return true;
     }
     // else
 
-    LBCHECK( _impl->fTable[ which ]( command ));
+    LBCHECK(_impl->fTable[which](command));
     return true;
 }
 
-bool Dispatcher::_cmdUnknown( ICommand& command )
+bool Dispatcher::_cmdUnknown(ICommand& command)
 {
-    LBERROR << "Unknown " << command << " for " << lunchbox::className( this )
+    LBERROR << "Unknown " << command << " for " << lunchbox::className(this)
             << lunchbox::backtrace << std::endl;
     LBUNREACHABLE;
     return false;
 }
-
 }

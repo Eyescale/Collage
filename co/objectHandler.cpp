@@ -23,15 +23,15 @@
 
 namespace co
 {
-void ObjectHandler::releaseObject( Object* object )
+void ObjectHandler::releaseObject(Object* object)
 {
-    LBASSERT( object );
-    if( !object || !object->isAttached( ))
+    LBASSERT(object);
+    if (!object || !object->isAttached())
         return;
 
-    if( object->isMaster( ))
-        deregisterObject( object );
+    if (object->isMaster())
+        deregisterObject(object);
     else
-        unmapObject( object );
+        unmapObject(object);
 }
 }

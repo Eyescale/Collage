@@ -20,14 +20,17 @@
 #ifndef CO_CONNECTION_SET_H
 #define CO_CONNECTION_SET_H
 
+#include <boost/noncopyable.hpp>
 #include <co/api.h>
 #include <co/types.h>
 #include <lunchbox/thread.h> // for LB_TS_VAR
-#include <boost/noncopyable.hpp>
 
 namespace co
 {
-namespace detail { class ConnectionSet; }
+namespace detail
+{
+class ConnectionSet;
+}
 
 /** Handles events on a set of connections. */
 class ConnectionSet : public boost::noncopyable
@@ -35,15 +38,15 @@ class ConnectionSet : public boost::noncopyable
 public:
     enum Event //!< Event types for select()
     {
-        EVENT_NONE = 0,        //!< No event has occurred
-        EVENT_CONNECT,         //!< A new connection
-        EVENT_DISCONNECT,      //!< A disconnect
-        EVENT_DATA,            //!< Data can be read
-        EVENT_TIMEOUT,         //!< The selection request timed out
-        EVENT_INTERRUPT,       //!< ConnectionSet::interrupt was called
-        EVENT_ERROR,           //!< A connection signaled an error
-        EVENT_SELECT_ERROR,    //!< An error occurred during select()
-        EVENT_INVALID_HANDLE,  //!< A connection is not select'able
+        EVENT_NONE = 0,       //!< No event has occurred
+        EVENT_CONNECT,        //!< A new connection
+        EVENT_DISCONNECT,     //!< A disconnect
+        EVENT_DATA,           //!< Data can be read
+        EVENT_TIMEOUT,        //!< The selection request timed out
+        EVENT_INTERRUPT,      //!< ConnectionSet::interrupt was called
+        EVENT_ERROR,          //!< A connection signaled an error
+        EVENT_SELECT_ERROR,   //!< An error occurred during select()
+        EVENT_INVALID_HANDLE, //!< A connection is not select'able
         EVENT_ALL
     };
 
@@ -56,10 +59,10 @@ public:
     /** @name Managing connections */
     //@{
     /** Add the connection to this set. Thread-safe. @version 1.0 */
-    CO_API void addConnection( ConnectionPtr connection );
+    CO_API void addConnection(ConnectionPtr connection);
 
     /** Remove the connection from this set. Thread-safe. @version 1.0 */
-    CO_API bool removeConnection( ConnectionPtr connection );
+    CO_API bool removeConnection(ConnectionPtr connection);
 
     /** @return the number of managed connections. Thread-safe. @version 1.0 */
     CO_API size_t getSize() const;
@@ -87,7 +90,7 @@ public:
      * @sa getConnection(), getError()
      * @version 1.0
      */
-    CO_API Event select( const uint32_t timeout = LB_TIMEOUT_INDEFINITE );
+    CO_API Event select(const uint32_t timeout = LB_TIMEOUT_INDEFINITE);
 
     /** Interrupt the current or next select call. @version 1.0 */
     CO_API void interrupt();
@@ -115,16 +118,16 @@ private:
     bool _setupFDSet();
     bool _buildFDSet();
 
-    Event _getSelectResult( const uint32_t index );
-    Event   _parseSelect( const uint32_t index );
-    LB_TS_VAR( _selectThread );
+    Event _getSelectResult(const uint32_t index);
+    Event _parseSelect(const uint32_t index);
+    LB_TS_VAR(_selectThread);
 };
 
 /** @internal */
-CO_API std::ostream& operator << ( std::ostream&, const ConnectionSet& );
+CO_API std::ostream& operator<<(std::ostream&, const ConnectionSet&);
 
 /** @internal */
-CO_API std::ostream& operator << (std::ostream&,const ConnectionSet::Event);
+CO_API std::ostream& operator<<(std::ostream&, const ConnectionSet::Event);
 }
 
 #endif // CO_CONNECTION_SET_H

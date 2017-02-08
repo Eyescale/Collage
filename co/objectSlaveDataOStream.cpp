@@ -22,38 +22,39 @@
 #include "objectSlaveDataOStream.h"
 
 #include "log.h"
-#include "versionedMasterCM.h"
 #include "object.h"
 #include "objectCommand.h"
 #include "objectDataIStream.h"
 #include "objectDataOCommand.h"
+#include "versionedMasterCM.h"
 
 namespace co
 {
-ObjectSlaveDataOStream::ObjectSlaveDataOStream( const ObjectCM* cm )
-    : ObjectDataOStream( cm )
-    ,  _commit( lunchbox::make_UUID( ))
+ObjectSlaveDataOStream::ObjectSlaveDataOStream(const ObjectCM* cm)
+    : ObjectDataOStream(cm)
+    , _commit(lunchbox::make_UUID())
 {
 }
 
 ObjectSlaveDataOStream::~ObjectSlaveDataOStream()
-{}
+{
+}
 
-void ObjectSlaveDataOStream::enableSlaveCommit( NodePtr node )
+void ObjectSlaveDataOStream::enableSlaveCommit(NodePtr node)
 {
     _version = lunchbox::make_UUID();
-    _setupConnection( node, false /* useMulticast */ );
+    _setupConnection(node, false /* useMulticast */);
     _enable();
 }
 
-void ObjectSlaveDataOStream::sendData( const void* data, const uint64_t size,
-                                       const bool last )
+void ObjectSlaveDataOStream::sendData(const void* data, const uint64_t size,
+                                      const bool last)
 {
-    send( CMD_OBJECT_SLAVE_DELTA, COMMANDTYPE_OBJECT,
-          _cm->getObject()->getMasterInstanceID(), data, size, last ) <<_commit;
+    send(CMD_OBJECT_SLAVE_DELTA, COMMANDTYPE_OBJECT,
+         _cm->getObject()->getMasterInstanceID(), data, size, last)
+        << _commit;
 
-    if( last )
+    if (last)
         _commit = lunchbox::make_UUID();
 }
-
 }

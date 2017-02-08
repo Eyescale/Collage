@@ -22,9 +22,9 @@
 #ifndef CO_LOCALNODE_H
 #define CO_LOCALNODE_H
 
-#include <co/node.h>            // base class
-#include <co/objectHandler.h>   // base class
-#include <co/objectVersion.h>   // VERSION_FOO used inline
+#include <co/node.h>                 // base class
+#include <co/objectHandler.h>        // base class
+#include <co/objectVersion.h>        // VERSION_FOO used inline
 #include <lunchbox/requestHandler.h> // base class
 
 #include <boost/function/function1.hpp>
@@ -32,7 +32,12 @@
 
 namespace co
 {
-namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
+namespace detail
+{
+class LocalNode;
+class ReceiverThread;
+class CommandThread;
+}
 
 /**
  * Node specialization for a local node.
@@ -41,7 +46,8 @@ namespace detail { class LocalNode; class ReceiverThread; class CommandThread; }
  * and provide Object registration, mapping and command dispatch. Typically each
  * process uses one local node to communicate with other processes.
  */
-class LocalNode : public lunchbox::RequestHandler, public Node,
+class LocalNode : public lunchbox::RequestHandler,
+                  public Node,
                   public ObjectHandler
 {
 public:
@@ -52,11 +58,11 @@ public:
     enum Counter
     {
         COUNTER_MAP_OBJECT_REMOTE, //!< Num of mapObjects served for other nodes
-        COUNTER_ALL // must be last
+        COUNTER_ALL                // must be last
     };
 
     /** Construct a new local node of the given type. @version 1.0 */
-    CO_API explicit LocalNode( const uint32_t type = co::NODETYPE_NODE );
+    CO_API explicit LocalNode(const uint32_t type = co::NODETYPE_NODE);
 
     /**
      * @name State Changes
@@ -88,7 +94,7 @@ public:
      * @return true if the client was successfully initialized, false otherwise.
      * @version 1.0
      */
-    CO_API virtual bool initLocal( const int argc, char** argv );
+    CO_API virtual bool initLocal(const int argc, char** argv);
 
     /**
      * Open all connections and put this node into the listening state.
@@ -117,7 +123,6 @@ public:
 
     /** Close a listening node. @version 1.0 */
     virtual bool exitLocal() { return close(); }
-
     /**
      * Connect a remote node (proxy) to this listening node.
      *
@@ -134,7 +139,7 @@ public:
      * @return true if this node was connected, false otherwise.
      * @version 1.0
      */
-    CO_API bool connect( NodePtr node );
+    CO_API bool connect(NodePtr node);
 
     /**
      * Create and connect a node given by an identifier.
@@ -148,7 +153,7 @@ public:
      *         not be connected.
      * @version 1.0
      */
-    CO_API NodePtr connect( const NodeID& nodeID );
+    CO_API NodePtr connect(const NodeID& nodeID);
 
     /**
      * Find and connect the node where the given object is registered.
@@ -162,7 +167,7 @@ public:
      * @sa registerObject(), connect()
      * @version 1.1.1
      */
-    CO_API NodePtr connectObjectMaster( const uint128_t& id );
+    CO_API NodePtr connectObjectMaster(const uint128_t& id);
 
     /**
      * Disconnect a connected node.
@@ -171,7 +176,7 @@ public:
      * @return true if the node was disconnected correctly, false otherwise.
      * @version 1.0
      */
-    CO_API virtual bool disconnect( NodePtr node );
+    CO_API virtual bool disconnect(NodePtr node);
     //@}
 
     /** @name Launching a remote node */
@@ -192,14 +197,14 @@ public:
      *
      * @return true if the launch process execution was successful.
      */
-    CO_API bool launch( NodePtr node, const std::string& command );
+    CO_API bool launch(NodePtr node, const std::string& command);
 
     /**
      * Wait for a launched node to connect.
      *
      * @return the remote node handle, or 0 on timeout.
      */
-    CO_API NodePtr syncLaunch( const uint128_t& nodeID, int64_t timeout );
+    CO_API NodePtr syncLaunch(const uint128_t& nodeID, int64_t timeout);
     //@}
 
     /** @name Object Registry */
@@ -216,7 +221,7 @@ public:
      * @return true if the object was registered, false otherwise.
      * @version 1.0
      */
-    CO_API bool registerObject( Object* object ) override;
+    CO_API bool registerObject(Object* object) override;
 
     /**
      * Deregister a distributed object.
@@ -227,7 +232,7 @@ public:
      * @param object the object instance.
      * @version 1.0
      */
-    CO_API void deregisterObject( Object* object ) override;
+    CO_API void deregisterObject(Object* object) override;
 
     /**
      * Map a distributed object.
@@ -273,30 +278,34 @@ public:
      * @sa registerObject
      * @version 1.0
      */
-    CO_API f_bool_t mapObject( Object* object, const uint128_t& id,
-                               NodePtr master,
-                               const uint128_t& version = VERSION_OLDEST );
+    CO_API f_bool_t mapObject(Object* object, const uint128_t& id,
+                              NodePtr master,
+                              const uint128_t& version = VERSION_OLDEST);
 
     /** Convenience wrapper for mapObject(). @version 1.0 */
-    f_bool_t mapObject( Object* object, const ObjectVersion& v )
-        { return mapObject( object, v.identifier, 0, v.version ); }
+    f_bool_t mapObject(Object* object, const ObjectVersion& v)
+    {
+        return mapObject(object, v.identifier, 0, v.version);
+    }
 
     /** @deprecated */
-    f_bool_t mapObject( Object* object, const uint128_t& id,
-                        const uint128_t& version = VERSION_OLDEST )
-        { return mapObject( object, id, 0, version ); }
+    f_bool_t mapObject(Object* object, const uint128_t& id,
+                       const uint128_t& version = VERSION_OLDEST)
+    {
+        return mapObject(object, id, 0, version);
+    }
 
     /** @deprecated use mapObject() */
-    CO_API uint32_t mapObjectNB( Object* object, const uint128_t& id,
-                                 const uint128_t& version = VERSION_OLDEST );
+    CO_API uint32_t mapObjectNB(Object* object, const uint128_t& id,
+                                const uint128_t& version = VERSION_OLDEST);
 
     /** @deprecated use mapObject() */
-    CO_API uint32_t mapObjectNB( Object* object, const uint128_t& id,
-                                 const uint128_t& version,
-                                 NodePtr master ) override;
+    CO_API uint32_t mapObjectNB(Object* object, const uint128_t& id,
+                                const uint128_t& version,
+                                NodePtr master) override;
 
     /** @deprecated use mapObject() */
-    CO_API bool mapObjectSync( const uint32_t requestID ) override;
+    CO_API bool mapObjectSync(const uint32_t requestID) override;
 
     /**
      * Synchronize the local object with a remote object.
@@ -318,22 +327,22 @@ public:
      *         the operation on evaluation.
      * @version 1.1.1
      */
-    CO_API f_bool_t syncObject( Object* object, const uint128_t& id,
-                                NodePtr master,
-                         const uint32_t instanceID = CO_INSTANCE_ALL ) override;
+    CO_API f_bool_t
+        syncObject(Object* object, const uint128_t& id, NodePtr master,
+                   const uint32_t instanceID = CO_INSTANCE_ALL) override;
     /**
      * Unmap a mapped object.
      *
      * @param object the mapped object.
      * @version 1.0
      */
-    CO_API void unmapObject( Object* object ) override;
+    CO_API void unmapObject(Object* object) override;
 
     /** Disable the instance cache of a stopped local node. @version 1.0 */
     CO_API void disableInstanceCache();
 
     /** @internal */
-    CO_API void expireInstanceData( const int64_t age );
+    CO_API void expireInstanceData(const int64_t age);
 
     /**
      * Enable sending instance data after registration.
@@ -377,16 +386,17 @@ public:
      * @param istream the input data stream containing the instance data.
      * @version 1.0
      */
-    CO_API virtual void objectPush( const uint128_t& groupID,
-                                    const uint128_t& objectType,
-                                    const uint128_t& objectID,
-                                    DataIStream& istream );
+    CO_API virtual void objectPush(const uint128_t& groupID,
+                                   const uint128_t& objectType,
+                                   const uint128_t& objectID,
+                                   DataIStream& istream);
 
     /** Function signature for push handlers. @version 1.0 */
-    typedef boost::function< void( const uint128_t&, //!< groupID
-                                   const uint128_t&, //!< objectType
-                                   const uint128_t&, //!< objectID
-                                   DataIStream& ) > PushHandler;
+    typedef boost::function<void(const uint128_t&, //!< groupID
+                                 const uint128_t&, //!< objectType
+                                 const uint128_t&, //!< objectID
+                                 DataIStream&)>
+        PushHandler;
     /**
      * Register a custom handler for Object::push operations
      *
@@ -397,12 +407,11 @@ public:
      * @param handler The handler function called for a registered groupID
      * @version 1.0
      */
-    CO_API void registerPushHandler( const uint128_t& groupID,
-                                     const PushHandler& handler );
-
+    CO_API void registerPushHandler(const uint128_t& groupID,
+                                    const PushHandler& handler);
 
     /** Function signature for custom command handlers. @version 1.0 */
-    typedef boost::function< bool( CustomICommand& ) > CommandHandler;
+    typedef boost::function<bool(CustomICommand&)> CommandHandler;
 
     /**
      * Register a custom command handler handled by this node.
@@ -418,13 +427,13 @@ public:
      * @return true on successful registering, false otherwise
      * @version 1.0
      */
-    CO_API bool registerCommandHandler( const uint128_t& command,
-                                        const CommandHandler& func,
-                                        CommandQueue* queue );
+    CO_API bool registerCommandHandler(const uint128_t& command,
+                                       const CommandHandler& func,
+                                       CommandQueue* queue);
 
     /** @internal swap the existing object by a new object and keep
         the cm, id and instanceID. */
-    CO_API void swapObject( Object* oldObject, Object* newObject );
+    CO_API void swapObject(Object* oldObject, Object* newObject);
     //@}
 
     /** @name Data Access */
@@ -438,10 +447,10 @@ public:
      * @return the node.
      * @version 1.0
      */
-    CO_API NodePtr getNode( const NodeID& id ) const;
+    CO_API NodePtr getNode(const NodeID& id) const;
 
     /** @return a vector of the currently connected nodes. @version 1.0 */
-    CO_API Nodes getNodes( const bool addSelf = true ) const;
+    CO_API Nodes getNodes(const bool addSelf = true) const;
 
     /** Return the command queue to the command thread. @version 1.0 */
     CO_API CommandQueue* getCommandThreadQueue();
@@ -456,8 +465,8 @@ public:
     /** @return the non-Collage command line options passed to initLocal(). */
     CO_API const Strings& getCommandLine() const;
 
-    CO_API int64_t getTime64() const; //!< @internal
-    CO_API ssize_t getCounter( const Counter counter ) const; //!< @internal
+    CO_API int64_t getTime64() const;                       //!< @internal
+    CO_API ssize_t getCounter(const Counter counter) const; //!< @internal
     //@}
 
     /** @name Operations */
@@ -466,13 +475,13 @@ public:
      * Add a listening connection to this listening node.
      * @return the listening connection, or 0 upon error.
      */
-    CO_API ConnectionPtr addListener( ConnectionDescriptionPtr desc );
+    CO_API ConnectionPtr addListener(ConnectionDescriptionPtr desc);
 
     /** Add a listening connection to this listening node. */
-    CO_API void addListener( ConnectionPtr connection );
+    CO_API void addListener(ConnectionPtr connection);
 
     /** Remove listening connections from this listening node.*/
-    CO_API void removeListeners( const Connections& connections );
+    CO_API void removeListeners(const Connections& connections);
 
     /** @internal
      * Flush all pending commands on this listening node.
@@ -483,7 +492,7 @@ public:
     CO_API void flushCommands();
 
     /** @internal Allocate a command buffer from the receiver thread. */
-    CO_API BufferPtr allocBuffer( const uint64_t size );
+    CO_API BufferPtr allocBuffer(const uint64_t size);
 
     /**
      * Dispatches a command to the registered command queue.
@@ -496,11 +505,10 @@ public:
      * @sa ICommand::invoke
      * @version 1.0
      */
-    CO_API bool dispatchCommand( ICommand& command ) override;
-
+    CO_API bool dispatchCommand(ICommand& command) override;
 
     /** A handle for a send token acquired by acquireSendToken(). */
-    typedef lunchbox::RefPtr< co::SendToken > SendToken;
+    typedef lunchbox::RefPtr<co::SendToken> SendToken;
 
     /**
      * Acquire a send token from the given node.
@@ -510,20 +518,20 @@ public:
      *
      * @return The send token.
      */
-    CO_API SendToken acquireSendToken( NodePtr toNode );
+    CO_API SendToken acquireSendToken(NodePtr toNode);
 
     /** @deprecated Token will auto-release when leaving scope. */
-    CO_API void releaseSendToken( SendToken token );
+    CO_API void releaseSendToken(SendToken token);
 
     /** @return a Zeroconf communicator handle for this node. @version 1.0*/
     CO_API Zeroconf getZeroconf();
     //@}
 
     /** @internal Ack an operation to the sender. */
-    CO_API void ackRequest( NodePtr node, const uint32_t requestID );
+    CO_API void ackRequest(NodePtr node, const uint32_t requestID);
 
     /** Request keep-alive update from the remote node. */
-    CO_API void ping( NodePtr remoteNode );
+    CO_API void ping(NodePtr remoteNode);
 
     /**
      * Request updates from all nodes above keep-alive timeout.
@@ -536,10 +544,10 @@ public:
      * Bind this, the receiver and the command thread to the given
      * lunchbox::Thread affinity.
      */
-    CO_API void setAffinity( const int32_t affinity );
+    CO_API void setAffinity(const int32_t affinity);
 
     /** @internal */
-    CO_API void addConnection( ConnectionPtr connection );
+    CO_API void addConnection(ConnectionPtr connection);
 
 protected:
     /** Destruct this local node. @version 1.0 */
@@ -557,14 +565,12 @@ protected:
      * @return true if the node was connected correctly,
      *         false otherwise.
      */
-    CO_API bool connect( NodePtr node, ConnectionPtr connection );
+    CO_API bool connect(NodePtr node, ConnectionPtr connection);
 
     /** @internal Notify remote node connection. */
-    virtual void notifyConnect( NodePtr ) {}
-
+    virtual void notifyConnect(NodePtr) {}
     /** @internal Notify remote node disconnection. */
-    virtual void notifyDisconnect( NodePtr ) {}
-
+    virtual void notifyDisconnect(NodePtr) {}
     /**
      * Factory method to create a new node.
      *
@@ -573,85 +579,85 @@ protected:
      * @sa ctor type parameter
      * @version 1.0
      */
-    CO_API virtual NodePtr createNode( const uint32_t type );
+    CO_API virtual NodePtr createNode(const uint32_t type);
 
 private:
     detail::LocalNode* const _impl;
 
     friend class detail::ReceiverThread;
-    bool _startCommandThread( const int32_t threadID );
+    bool _startCommandThread(const int32_t threadID);
     void _runReceiverThread();
 
     friend class detail::CommandThread;
     bool _notifyCommandThreadIdle();
 
     void _cleanup();
-    void _closeNode( NodePtr node );
-    void _addConnection( ConnectionPtr connection );
-    void _removeConnection( ConnectionPtr connection );
+    void _closeNode(NodePtr node);
+    void _addConnection(ConnectionPtr connection);
+    void _removeConnection(ConnectionPtr connection);
 
-    lunchbox::Request< void > _removeListener( ConnectionPtr connection );
+    lunchbox::Request<void> _removeListener(ConnectionPtr connection);
 
-    uint32_t _connect( NodePtr node );
-    NodePtr _connect( const NodeID& nodeID );
-    uint32_t _connect( NodePtr node, ConnectionPtr connection );
-    NodePtr _connect( const NodeID& nodeID, NodePtr peer );
-    NodePtr _connectFromZeroconf( const NodeID& nodeID );
+    uint32_t _connect(NodePtr node);
+    NodePtr _connect(const NodeID& nodeID);
+    uint32_t _connect(NodePtr node, ConnectionPtr connection);
+    NodePtr _connect(const NodeID& nodeID, NodePtr peer);
+    NodePtr _connectFromZeroconf(const NodeID& nodeID);
     bool _connectSelf();
 
-    bool _setupPeer( const std::string& setupOpts );
+    bool _setupPeer(const std::string& setupOpts);
 
     void _handleConnect();
     void _handleDisconnect();
     bool _handleData();
-    BufferPtr _readHead( ConnectionPtr connection );
-    ICommand _setupCommand( ConnectionPtr, ConstBufferPtr );
-    bool _readTail( ICommand&, BufferPtr, ConnectionPtr );
+    BufferPtr _readHead(ConnectionPtr connection);
+    ICommand _setupCommand(ConnectionPtr, ConstBufferPtr);
+    bool _readTail(ICommand&, BufferPtr, ConnectionPtr);
     void _initService();
     void _exitService();
 
     friend class ObjectStore;
-    template< typename T >
-    void _registerCommand( const uint32_t command, const CommandFunc< T >& func,
-                           CommandQueue* destinationQueue )
+    template <typename T>
+    void _registerCommand(const uint32_t command, const CommandFunc<T>& func,
+                          CommandQueue* destinationQueue)
     {
-        registerCommand( command, func, destinationQueue );
+        registerCommand(command, func, destinationQueue);
     }
 
-    void _dispatchCommand( ICommand& command );
+    void _dispatchCommand(ICommand& command);
     void _redispatchCommands();
 
     /** The command functions. */
-    bool _cmdAckRequest( ICommand& command );
-    bool _cmdStopRcv( ICommand& command );
-    bool _cmdStopCmd( ICommand& command );
-    bool _cmdSetAffinity( ICommand& command );
-    bool _cmdConnect( ICommand& command );
-    bool _cmdConnectReply( ICommand& command );
-    bool _cmdConnectAck( ICommand& command );
-    bool _cmdID( ICommand& command );
-    bool _cmdDisconnect( ICommand& command );
-    bool _cmdGetNodeData( ICommand& command );
-    bool _cmdGetNodeDataReply( ICommand& command );
-    bool _cmdAcquireSendToken( ICommand& command );
-    bool _cmdAcquireSendTokenReply( ICommand& command );
-    bool _cmdReleaseSendToken( ICommand& command );
-    bool _cmdAddListener( ICommand& command );
-    bool _cmdRemoveListener( ICommand& command );
-    bool _cmdPing( ICommand& command );
-    bool _cmdCommand( ICommand& command );
-    bool _cmdCommandAsync( ICommand& command );
-    bool _cmdAddConnection( ICommand& command );
-    bool _cmdDiscard( ICommand& ) { return true; }
+    bool _cmdAckRequest(ICommand& command);
+    bool _cmdStopRcv(ICommand& command);
+    bool _cmdStopCmd(ICommand& command);
+    bool _cmdSetAffinity(ICommand& command);
+    bool _cmdConnect(ICommand& command);
+    bool _cmdConnectReply(ICommand& command);
+    bool _cmdConnectAck(ICommand& command);
+    bool _cmdID(ICommand& command);
+    bool _cmdDisconnect(ICommand& command);
+    bool _cmdGetNodeData(ICommand& command);
+    bool _cmdGetNodeDataReply(ICommand& command);
+    bool _cmdAcquireSendToken(ICommand& command);
+    bool _cmdAcquireSendTokenReply(ICommand& command);
+    bool _cmdReleaseSendToken(ICommand& command);
+    bool _cmdAddListener(ICommand& command);
+    bool _cmdRemoveListener(ICommand& command);
+    bool _cmdPing(ICommand& command);
+    bool _cmdCommand(ICommand& command);
+    bool _cmdCommandAsync(ICommand& command);
+    bool _cmdAddConnection(ICommand& command);
+    bool _cmdDiscard(ICommand&) { return true; }
     //@}
 
-    LB_TS_VAR( _cmdThread )
-    LB_TS_VAR( _rcvThread )
+    LB_TS_VAR(_cmdThread)
+    LB_TS_VAR(_rcvThread)
 };
 
-inline std::ostream& operator << ( std::ostream& os, const LocalNode& node )
+inline std::ostream& operator<<(std::ostream& os, const LocalNode& node)
 {
-    os << static_cast< const Node& >( node );
+    os << static_cast<const Node&>(node);
     return os;
 }
 }

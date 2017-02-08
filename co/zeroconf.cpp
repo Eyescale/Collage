@@ -19,8 +19,8 @@
 
 #include "zeroconf.h"
 
-#include <servus/servus.h>
 #include <map>
+#include <servus/servus.h>
 
 namespace co
 {
@@ -28,73 +28,72 @@ static const std::string empty_;
 
 namespace detail
 {
-typedef std::map< std::string, std::string > ValueMap;
-typedef std::map< std::string, ValueMap > InstanceMap;
+typedef std::map<std::string, std::string> ValueMap;
+typedef std::map<std::string, ValueMap> InstanceMap;
 typedef ValueMap::const_iterator ValueMapCIter;
 typedef InstanceMap::const_iterator InstanceMapCIter;
 
 class Zeroconf
 {
 public:
-    explicit Zeroconf( servus::Servus& service )
-        : service_( service )
+    explicit Zeroconf(servus::Servus& service)
+        : service_(service)
     {
-        service_.getData( instanceMap_ );
+        service_.getData(instanceMap_);
     }
 
-    void set( const std::string& key, const std::string& value )
+    void set(const std::string& key, const std::string& value)
     {
-        service_.set( key, value );
+        service_.set(key, value);
     }
 
     Strings getInstances() const
     {
         Strings instances;
-        for( InstanceMapCIter i = instanceMap_.begin();
-             i != instanceMap_.end(); ++i )
+        for (InstanceMapCIter i = instanceMap_.begin(); i != instanceMap_.end();
+             ++i)
         {
-            instances.push_back( i->first );
+            instances.push_back(i->first);
         }
         return instances;
     }
 
-    Strings getKeys( const std::string& instance ) const
+    Strings getKeys(const std::string& instance) const
     {
         Strings keys;
-        InstanceMapCIter i = instanceMap_.find( instance );
-        if( i == instanceMap_.end( ))
+        InstanceMapCIter i = instanceMap_.find(instance);
+        if (i == instanceMap_.end())
             return keys;
 
         const ValueMap& values = i->second;
-        for( ValueMapCIter j = values.begin(); j != values.end(); ++j )
-            keys.push_back( j->first );
+        for (ValueMapCIter j = values.begin(); j != values.end(); ++j)
+            keys.push_back(j->first);
         return keys;
     }
 
-    bool containsKey( const std::string& instance,
-                      const std::string& key ) const
+    bool containsKey(const std::string& instance, const std::string& key) const
     {
-        InstanceMapCIter i = instanceMap_.find( instance );
-        if( i == instanceMap_.end( ))
+        InstanceMapCIter i = instanceMap_.find(instance);
+        if (i == instanceMap_.end())
             return false;
 
         const ValueMap& values = i->second;
-        ValueMapCIter j = values.find( key );
-        if( j == values.end( ))
+        ValueMapCIter j = values.find(key);
+        if (j == values.end())
             return false;
         return true;
     }
 
-    const std::string& get( const std::string& instance,
-                            const std::string& key ) const
+    const std::string& get(const std::string& instance,
+                           const std::string& key) const
     {
-        InstanceMapCIter i = instanceMap_.find( instance );
-        if( i == instanceMap_.end( ))
+        InstanceMapCIter i = instanceMap_.find(instance);
+        if (i == instanceMap_.end())
             return empty_;
 
         const ValueMap& values = i->second;
-        ValueMapCIter j = values.find( key );
-        if( j == values.end( ))
+        ValueMapCIter j = values.find(key);
+        if (j == values.end())
             return empty_;
         return j->second;
     }
@@ -105,12 +104,13 @@ private:
 };
 }
 
-Zeroconf::Zeroconf( servus::Servus& service )
-        : _impl( new detail::Zeroconf( service ))
-{}
+Zeroconf::Zeroconf(servus::Servus& service)
+    : _impl(new detail::Zeroconf(service))
+{
+}
 
-Zeroconf::Zeroconf( const Zeroconf& from )
-        : _impl( new detail::Zeroconf( *from._impl ))
+Zeroconf::Zeroconf(const Zeroconf& from)
+    : _impl(new detail::Zeroconf(*from._impl))
 {
 }
 
@@ -119,19 +119,19 @@ Zeroconf::~Zeroconf()
     delete _impl;
 }
 
-Zeroconf& Zeroconf::operator = ( const Zeroconf& rhs )
+Zeroconf& Zeroconf::operator=(const Zeroconf& rhs)
 {
-    if( this != &rhs )
+    if (this != &rhs)
     {
         delete _impl;
-        _impl = new detail::Zeroconf( *rhs._impl );
+        _impl = new detail::Zeroconf(*rhs._impl);
     }
     return *this;
 }
 
-void Zeroconf::set( const std::string& key, const std::string& value )
+void Zeroconf::set(const std::string& key, const std::string& value)
 {
-    _impl->set( key, value );
+    _impl->set(key, value);
 }
 
 Strings Zeroconf::getInstances() const
@@ -139,21 +139,20 @@ Strings Zeroconf::getInstances() const
     return _impl->getInstances();
 }
 
-Strings Zeroconf::getKeys( const std::string& instance ) const
+Strings Zeroconf::getKeys(const std::string& instance) const
 {
-    return _impl->getKeys( instance );
+    return _impl->getKeys(instance);
 }
 
-bool Zeroconf::containsKey( const std::string& instance,
-                            const std::string& key ) const
+bool Zeroconf::containsKey(const std::string& instance,
+                           const std::string& key) const
 {
-    return _impl->containsKey( instance, key );
+    return _impl->containsKey(instance, key);
 }
 
-const std::string& Zeroconf::get( const std::string& instance,
-                                  const std::string& key ) const
+const std::string& Zeroconf::get(const std::string& instance,
+                                 const std::string& key) const
 {
-    return _impl->get( instance, key );
+    return _impl->get(instance, key);
 }
-
 }

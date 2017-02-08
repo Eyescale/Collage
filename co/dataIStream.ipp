@@ -25,66 +25,66 @@ namespace co
 /** @name Specialized input operators */
 //@{
 /** Read a std::string. */
-template<> inline DataIStream& DataIStream::operator >> ( std::string& str )
+template <>
+inline DataIStream& DataIStream::operator>>(std::string& str)
 {
     uint64_t nElems = 0;
     *this >> nElems;
     const uint64_t maxElems = getRemainingBufferSize();
-    LBASSERTINFO( nElems <= maxElems,
-                  nElems << " > " << maxElems );
-    if( nElems == 0 )
+    LBASSERTINFO(nElems <= maxElems, nElems << " > " << maxElems);
+    if (nElems == 0)
         str.clear();
-    else if( nElems <= maxElems )
-        str.assign( static_cast< const char* >( getRemainingBuffer(nElems)),
-                    size_t( nElems ));
+    else if (nElems <= maxElems)
+        str.assign(static_cast<const char*>(getRemainingBuffer(nElems)),
+                   size_t(nElems));
     else
-        str.assign(
-            static_cast< const char* >( getRemainingBuffer(maxElems)),
-                size_t( maxElems ));
+        str.assign(static_cast<const char*>(getRemainingBuffer(maxElems)),
+                   size_t(maxElems));
     return *this;
 }
 
 /** Deserialize an object (id+version). */
-template<> inline DataIStream& DataIStream::operator >> ( Object*& object )
+template <>
+inline DataIStream& DataIStream::operator>>(Object*& object)
 {
     ObjectVersion data;
     *this >> data;
-    LBASSERT( object->getID() == data.identifier );
-    object->sync( data.version );
+    LBASSERT(object->getID() == data.identifier);
+    object->sync(data.version);
     return *this;
 }
 
 /** Deserialize an inline serializable object. */
-template< class T >
-void DataIStream::_readSerializable( T& object, const boost::true_type& )
+template <class T>
+void DataIStream::_readSerializable(T& object, const boost::true_type&)
 {
-    const size_t size = read< size_t >();
-    object.fromBinary( getRemainingBuffer( size ), size );
+    const size_t size = read<size_t>();
+    object.fromBinary(getRemainingBuffer(size), size);
 }
 
 /** @cond IGNORE */
-template< class T >
-void DataIStream::_readArray( Array< T > array, const boost::true_type& )
+template <class T>
+void DataIStream::_readArray(Array<T> array, const boost::true_type&)
 {
-    _read( array.data, array.getNumBytes( ));
+    _read(array.data, array.getNumBytes());
 }
 
 /** Read an Array of non-POD data */
-template< class T >
-void DataIStream::_readArray( Array< T > array, const boost::false_type& )
+template <class T>
+void DataIStream::_readArray(Array<T> array, const boost::false_type&)
 {
-    for( size_t i = 0; i < array.num; ++i )
-        *this >> array.data[ i ];
+    for (size_t i = 0; i < array.num; ++i)
+        *this >> array.data[i];
 }
 
-template<> inline
-void DataIStream::_readArray( Array< void > array, const boost::false_type& )
+template <>
+inline void DataIStream::_readArray(Array<void> array, const boost::false_type&)
 {
-    _read( array.data, array.getNumBytes( ));
+    _read(array.data, array.getNumBytes());
 }
 
-template< class T > inline DataIStream&
-DataIStream::operator >> ( lunchbox::RefPtr< T >& ptr )
+template <class T>
+inline DataIStream& DataIStream::operator>>(lunchbox::RefPtr<T>& ptr)
 {
     T* object = 0;
     *this >> object;
@@ -92,87 +92,86 @@ DataIStream::operator >> ( lunchbox::RefPtr< T >& ptr )
     return *this;
 }
 
-template< class T > inline DataIStream&
-DataIStream::operator >> ( lunchbox::Buffer< T >& buffer )
+template <class T>
+inline DataIStream& DataIStream::operator>>(lunchbox::Buffer<T>& buffer)
 {
     uint64_t nElems = 0;
     *this >> nElems;
-    LBASSERTINFO( nElems < LB_BIT48,
-                  "Out-of-sync co::DataIStream: " << nElems << " elements?" );
-    buffer.resize( nElems );
-    return *this >> Array< T >( buffer.getData(), nElems );
+    LBASSERTINFO(nElems < LB_BIT48,
+                 "Out-of-sync co::DataIStream: " << nElems << " elements?");
+    buffer.resize(nElems);
+    return *this >> Array<T>(buffer.getData(), nElems);
 }
 
-
-template< class T > inline DataIStream&
-DataIStream::operator >> ( std::vector< T >& value )
+template <class T>
+inline DataIStream& DataIStream::operator>>(std::vector<T>& value)
 {
     uint64_t nElems = 0;
     *this >> nElems;
-    value.resize( nElems );
-    for( uint64_t i = 0; i < nElems; ++i )
+    value.resize(nElems);
+    for (uint64_t i = 0; i < nElems; ++i)
         *this >> value[i];
     return *this;
 }
 
-template< class K, class V > inline DataIStream&
-DataIStream::operator >> ( std::map< K, V >& map )
+template <class K, class V>
+inline DataIStream& DataIStream::operator>>(std::map<K, V>& map)
 {
     map.clear();
     uint64_t nElems = 0;
     *this >> nElems;
-    for( uint64_t i = 0; i < nElems; ++i )
+    for (uint64_t i = 0; i < nElems; ++i)
     {
-        typename std::map< K, V >::key_type key;
-        typename std::map< K, V >::mapped_type value;
+        typename std::map<K, V>::key_type key;
+        typename std::map<K, V>::mapped_type value;
         *this >> key >> value;
-        map.insert( std::make_pair( key, value ));
+        map.insert(std::make_pair(key, value));
     }
     return *this;
 }
 
-template< class T > inline DataIStream&
-DataIStream::operator >> ( std::set< T >& value )
+template <class T>
+inline DataIStream& DataIStream::operator>>(std::set<T>& value)
 {
     value.clear();
     uint64_t nElems = 0;
     *this >> nElems;
-    for( uint64_t i = 0; i < nElems; ++i )
+    for (uint64_t i = 0; i < nElems; ++i)
     {
         T item;
         *this >> item;
-        value.insert( item );
+        value.insert(item);
     }
     return *this;
 }
 
-template< class K, class V > inline DataIStream&
-DataIStream::operator >> ( stde::hash_map< K, V >& map )
+template <class K, class V>
+inline DataIStream& DataIStream::operator>>(stde::hash_map<K, V>& map)
 {
     map.clear();
     uint64_t nElems = 0;
     *this >> nElems;
-    for( uint64_t i = 0; i < nElems; ++i )
+    for (uint64_t i = 0; i < nElems; ++i)
     {
-        typename stde::hash_map< K, V >::key_type key;
-        typename stde::hash_map< K, V >::mapped_type value;
+        typename stde::hash_map<K, V>::key_type key;
+        typename stde::hash_map<K, V>::mapped_type value;
         *this >> key >> value;
-        map.insert( std::make_pair( key, value ));
+        map.insert(std::make_pair(key, value));
     }
     return *this;
 }
 
-template< class T > inline DataIStream&
-DataIStream::operator >> ( stde::hash_set< T >& value )
+template <class T>
+inline DataIStream& DataIStream::operator>>(stde::hash_set<T>& value)
 {
     value.clear();
     uint64_t nElems = 0;
     *this >> nElems;
-    for( uint64_t i = 0; i < nElems; ++i )
+    for (uint64_t i = 0; i < nElems; ++i)
     {
         T item;
         *this >> item;
-        value.insert( item );
+        value.insert(item);
     }
     return *this;
 }
@@ -182,128 +181,150 @@ namespace
 class ObjectFinder
 {
 public:
-    explicit ObjectFinder( const uint128_t& id ) : _id( id ) {}
-    bool operator()( co::Object* candidate )
-        { return candidate->getID() == _id; }
-
+    explicit ObjectFinder(const uint128_t& id)
+        : _id(id)
+    {
+    }
+    bool operator()(co::Object* candidate) { return candidate->getID() == _id; }
 private:
     const uint128_t _id;
 };
 }
 
-template< typename O, typename C > inline void
-DataIStream::deserializeChildren( O* object, const std::vector< C* >& old_,
-                                  std::vector< C* >& result )
+template <typename O, typename C>
+inline void DataIStream::deserializeChildren(O* object,
+                                             const std::vector<C*>& old_,
+                                             std::vector<C*>& result)
 {
     ObjectVersions versions;
     *this >> versions;
-    std::vector< C* > old = old_;
+    std::vector<C*> old = old_;
 
     // rebuild vector from serialized list
     result.clear();
-    for( ObjectVersions::const_iterator i = versions.begin();
-         i != versions.end(); ++i )
+    for (ObjectVersions::const_iterator i = versions.begin();
+         i != versions.end(); ++i)
     {
         const ObjectVersion& version = *i;
 
-        if( version.identifier == uint128_t( ))
+        if (version.identifier == uint128_t())
         {
-            result.push_back( 0 );
+            result.push_back(0);
             continue;
         }
 
-        typename std::vector< C* >::iterator j =
-            lunchbox::find_if( old, ObjectFinder( version.identifier ));
+        typename std::vector<C*>::iterator j =
+            lunchbox::find_if(old, ObjectFinder(version.identifier));
 
-        if( j == old.end( )) // previously unknown child
+        if (j == old.end()) // previously unknown child
         {
             C* child = 0;
-            object->create( &child );
+            object->create(&child);
             LocalNodePtr localNode = object->getLocalNode();
-            LBASSERT( child );
-            LBASSERT( !object->isMaster( ));
+            LBASSERT(child);
+            LBASSERT(!object->isMaster());
 
-            LBCHECK( localNode->mapObject( child, version ));
-            result.push_back( child );
+            LBCHECK(localNode->mapObject(child, version));
+            result.push_back(child);
         }
         else
         {
             C* child = *j;
-            old.erase( j );
-            if( object->isMaster( ))
-                child->sync( VERSION_HEAD );
+            old.erase(j);
+            if (object->isMaster())
+                child->sync(VERSION_HEAD);
             else
-                child->sync( version.version );
+                child->sync(version.version);
 
-            result.push_back( child );
+            result.push_back(child);
         }
     }
 
-    while( !old.empty( )) // removed children
+    while (!old.empty()) // removed children
     {
         C* child = old.back();
         old.pop_back();
-        if( !child )
+        if (!child)
             continue;
 
-        if( child->isAttached() && !child->isMaster( ))
+        if (child->isAttached() && !child->isMaster())
         {
             LocalNodePtr localNode = object->getLocalNode();
-            localNode->unmapObject( child );
+            localNode->unmapObject(child);
         }
-        object->release( child );
+        object->release(child);
     }
 }
 /** @endcond */
 
 /** Optimized specialization to read a std::vector of uint8_t. */
-template<> inline DataIStream&
-DataIStream::operator >> ( std::vector< uint8_t >& value )
-{ return _readFlatVector( value );}
+template <>
+inline DataIStream& DataIStream::operator>>(std::vector<uint8_t>& value)
+{
+    return _readFlatVector(value);
+}
 
 /** Optimized specialization to read a std::vector of uint16_t. */
-template<> inline DataIStream&
-DataIStream::operator >> ( std::vector< uint16_t >& value )
-{ return _readFlatVector( value ); }
+template <>
+inline DataIStream& DataIStream::operator>>(std::vector<uint16_t>& value)
+{
+    return _readFlatVector(value);
+}
 
 /** Optimized specialization to read a std::vector of int16_t. */
-template<> inline DataIStream&
-DataIStream::operator >> ( std::vector< int16_t >& value )
-{ return _readFlatVector( value ); }
+template <>
+inline DataIStream& DataIStream::operator>>(std::vector<int16_t>& value)
+{
+    return _readFlatVector(value);
+}
 
 /** Optimized specialization to read a std::vector of uint32_t. */
-template<> inline DataIStream&
-DataIStream::operator >> ( std::vector< uint32_t >& value )
-{ return _readFlatVector( value ); }
+template <>
+inline DataIStream& DataIStream::operator>>(std::vector<uint32_t>& value)
+{
+    return _readFlatVector(value);
+}
 
 /** Optimized specialization to read a std::vector of int32_t. */
-template<> inline DataIStream&
-DataIStream::operator >> ( std::vector< int32_t >& value )
-{ return _readFlatVector( value ); }
+template <>
+inline DataIStream& DataIStream::operator>>(std::vector<int32_t>& value)
+{
+    return _readFlatVector(value);
+}
 
 /** Optimized specialization to read a std::vector of uint64_t. */
-template<> inline DataIStream&
-DataIStream::operator >> ( std::vector< uint64_t>& value )
-{ return _readFlatVector( value ); }
+template <>
+inline DataIStream& DataIStream::operator>>(std::vector<uint64_t>& value)
+{
+    return _readFlatVector(value);
+}
 
 /** Optimized specialization to read a std::vector of int64_t. */
-template<> inline DataIStream&
-DataIStream::operator >> ( std::vector< int64_t >& value )
-{ return _readFlatVector( value ); }
+template <>
+inline DataIStream& DataIStream::operator>>(std::vector<int64_t>& value)
+{
+    return _readFlatVector(value);
+}
 
 /** Optimized specialization to read a std::vector of float. */
-template<> inline DataIStream&
-DataIStream::operator >> ( std::vector< float >& value )
-{ return _readFlatVector( value ); }
+template <>
+inline DataIStream& DataIStream::operator>>(std::vector<float>& value)
+{
+    return _readFlatVector(value);
+}
 
 /** Optimized specialization to read a std::vector of double. */
-template<> inline DataIStream&
-DataIStream::operator >> ( std::vector< double >& value )
-{ return _readFlatVector( value ); }
+template <>
+inline DataIStream& DataIStream::operator>>(std::vector<double>& value)
+{
+    return _readFlatVector(value);
+}
 
 /** Optimized specialization to read a std::vector of ObjectVersion. */
-template<> inline DataIStream&
-DataIStream::operator >> ( std::vector< ObjectVersion >& value )
-{ return _readFlatVector( value ); }
+template <>
+inline DataIStream& DataIStream::operator>>(std::vector<ObjectVersion>& value)
+{
+    return _readFlatVector(value);
+}
 //@}
 }

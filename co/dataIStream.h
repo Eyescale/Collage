@@ -35,7 +35,10 @@
 
 namespace co
 {
-namespace detail { class DataIStream; }
+namespace detail
+{
+class DataIStream;
+}
 
 /** A std::istream-like input data stream for binary data. */
 class DataIStream
@@ -47,48 +50,66 @@ public:
     virtual size_t nRemainingBuffers() const = 0;
 
     virtual uint128_t getVersion() const = 0; //!< @internal
-    virtual void reset() { _reset(); } //!< @internal
+    virtual void reset() { _reset(); }        //!< @internal
     //@}
 
     /** @name Data input */
     //@{
     /** @return a value from the stream. @version 1.0 */
-    template< typename T > T read()
-        { T value; *this >> value; return value; }
+    template <typename T>
+    T read()
+    {
+        T value;
+        *this >> value;
+        return value;
+    }
 
     /** Read a plain data item. @version 1.0 */
-    template< class T > DataIStream& operator >> ( T& value )
-        { _read( value, boost::has_trivial_copy< T >( )); return *this; }
+    template <class T>
+    DataIStream& operator>>(T& value)
+    {
+        _read(value, boost::has_trivial_copy<T>());
+        return *this;
+    }
 
     /** Read a C array. @version 1.0 */
-    template< class T > DataIStream& operator >> ( Array< T > array )
-        { _readArray( array, boost::has_trivial_copy< T >( )); return *this; }
+    template <class T>
+    DataIStream& operator>>(Array<T> array)
+    {
+        _readArray(array, boost::has_trivial_copy<T>());
+        return *this;
+    }
 
     /**
      * Read a lunchbox::RefPtr. Refcount has to managed by caller.
      * @version 1.1
      */
-    template< class T > DataIStream& operator >> ( lunchbox::RefPtr< T >& );
+    template <class T>
+    DataIStream& operator>>(lunchbox::RefPtr<T>&);
 
     /** Read a lunchbox::Buffer. @version 1.0 */
-    template< class T > DataIStream& operator >> ( lunchbox::Buffer< T >& );
+    template <class T>
+    DataIStream& operator>>(lunchbox::Buffer<T>&);
 
     /** Read a std::vector of serializable items. @version 1.0 */
-    template< class T > DataIStream& operator >> ( std::vector< T >& );
+    template <class T>
+    DataIStream& operator>>(std::vector<T>&);
 
     /** Read a std::map of serializable items. @version 1.0 */
-    template< class K, class V >
-    DataIStream& operator >> ( std::map< K, V >& );
+    template <class K, class V>
+    DataIStream& operator>>(std::map<K, V>&);
 
     /** Read a std::set of serializable items. @version 1.0 */
-    template< class T > DataIStream& operator >> ( std::set< T >& );
+    template <class T>
+    DataIStream& operator>>(std::set<T>&);
 
     /** Read a stde::hash_map of serializable items. @version 1.0 */
-    template< class K, class V >
-    DataIStream& operator >> ( stde::hash_map< K, V >& );
+    template <class K, class V>
+    DataIStream& operator>>(stde::hash_map<K, V>&);
 
     /** Read a stde::hash_set of serializable items. @version 1.0 */
-    template< class T > DataIStream& operator >> ( stde::hash_set< T >& );
+    template <class T>
+    DataIStream& operator>>(stde::hash_set<T>&);
 
     /** @internal
      * Deserialize child objects.
@@ -101,9 +122,9 @@ public:
      * result. The old and result vector can be the same object, the result
      * vector is cleared and rebuild completely.
      */
-    template< typename O, typename C >
-    void deserializeChildren( O* object, const std::vector< C* >& old,
-                              std::vector< C* >& result );
+    template <typename O, typename C>
+    void deserializeChildren(O* object, const std::vector<C*>& old,
+                             std::vector<C*>& result);
 
     /** @deprecated
      * Get the pointer to the remaining data in the current buffer.
@@ -124,7 +145,7 @@ public:
      * @param size the number of bytes to advance the buffer
      * @version 1.0
      */
-    CO_API const void* getRemainingBuffer( const uint64_t size );
+    CO_API const void* getRemainingBuffer(const uint64_t size);
 
     /**
      * @return the size of the remaining data in the current buffer.
@@ -137,7 +158,6 @@ public:
 
     /** @return true if not all data has been read. @version 1.0 */
     bool hasData() { return _checkBuffer(); }
-
     /** @return the provider of the istream. */
     CO_API virtual NodePtr getRemoteNode() const = 0;
 
@@ -151,15 +171,15 @@ protected:
     CO_API DataIStream();
     CO_API virtual ~DataIStream();
 
-    virtual bool getNextBuffer( CompressorInfo& info, uint32_t& nChunks,
-                                const void*& chunkData, uint64_t& size ) = 0;
+    virtual bool getNextBuffer(CompressorInfo& info, uint32_t& nChunks,
+                               const void*& chunkData, uint64_t& size) = 0;
     //@}
 
 private:
     detail::DataIStream* const _impl;
 
     /** Read a number of bytes from the stream into a buffer. */
-    CO_API void _read( void* data, uint64_t size );
+    CO_API void _read(void* data, uint64_t size);
 
     /**
      * Check that the current buffer has data left, get the next buffer is
@@ -168,42 +188,51 @@ private:
     CO_API bool _checkBuffer();
     CO_API void _reset();
 
-    const uint8_t* _decompress( const void* data, const CompressorInfo& info,
-                                uint32_t nChunks, uint64_t dataSize );
+    const uint8_t* _decompress(const void* data, const CompressorInfo& info,
+                               uint32_t nChunks, uint64_t dataSize);
 
     /** Read a vector of trivial data. */
-    template< class T >
-    DataIStream& _readFlatVector ( std::vector< T >& value )
+    template <class T>
+    DataIStream& _readFlatVector(std::vector<T>& value)
     {
         uint64_t nElems = 0;
         *this >> nElems;
-        LBASSERTINFO( nElems < LB_BIT48,
-                      "Out-of-sync DataIStream: " << nElems << " elements?" );
-        value.resize( size_t( nElems ));
-        if( nElems > 0 )
-            *this >> Array< T >( &value.front(), nElems );
+        LBASSERTINFO(nElems < LB_BIT48,
+                     "Out-of-sync DataIStream: " << nElems << " elements?");
+        value.resize(size_t(nElems));
+        if (nElems > 0)
+            *this >> Array<T>(&value.front(), nElems);
         return *this;
     }
 
     /** Read a plain data item. */
-    template< class T > void _read( T& value, const boost::true_type& )
-        { _read( &value, sizeof( value )); }
+    template <class T>
+    void _read(T& value, const boost::true_type&)
+    {
+        _read(&value, sizeof(value));
+    }
 
     /** Read a non-plain data item. */
-    template< class T > void _read( T& value, const boost::false_type& )
-    { _readSerializable( value, boost::is_base_of< servus::Serializable, T >( ));}
+    template <class T>
+    void _read(T& value, const boost::false_type&)
+    {
+        _readSerializable(value, boost::is_base_of<servus::Serializable, T>());
+    }
 
     /** Read a serializable object. */
-    template< class T > void _readSerializable(T& value, const boost::true_type&);
+    template <class T>
+    void _readSerializable(T& value, const boost::true_type&);
 
     /** Read an Array of POD data */
-    template< class T > void _readArray( Array< T >, const boost::true_type& );
+    template <class T>
+    void _readArray(Array<T>, const boost::true_type&);
 
     /** Read an Array of non-POD data */
-    template< class T > void _readArray( Array< T >, const boost::false_type& );
+    template <class T>
+    void _readArray(Array<T>, const boost::false_type&);
 };
 }
 
 #include "dataIStream.ipp" // template implementation
 
-#endif //CO_DATAISTREAM_H
+#endif // CO_DATAISTREAM_H

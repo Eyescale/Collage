@@ -20,7 +20,7 @@
 #ifndef CO_OBJECTSLAVEDATAOSTREAM_H
 #define CO_OBJECTSLAVEDATAOSTREAM_H
 
-#include "objectDataOStream.h"   // base class
+#include "objectDataOStream.h" // base class
 
 namespace co
 {
@@ -28,17 +28,17 @@ namespace co
 class ObjectSlaveDataOStream : public ObjectDataOStream
 {
 public:
-    explicit ObjectSlaveDataOStream( const ObjectCM* cm );
+    explicit ObjectSlaveDataOStream(const ObjectCM* cm);
     virtual ~ObjectSlaveDataOStream();
 
-    void enableSlaveCommit( NodePtr node );
+    void enableSlaveCommit(NodePtr node);
 
 protected:
-    void sendData( const void* buffer, const uint64_t size,
-                   const bool last ) override;
+    void sendData(const void* buffer, const uint64_t size,
+                  const bool last) override;
 
 private:
     uint128_t _commit;
 };
 }
-#endif //CO_OBJECTSLAVEDATAOSTREAM_H
+#endif // CO_OBJECTSLAVEDATAOSTREAM_H

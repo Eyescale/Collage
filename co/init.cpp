@@ -34,28 +34,28 @@ namespace
 static int32_t _checkVersion()
 {
     static std::string version = Version::getString();
-    if( version != Version::getString( ))
+    if (version != Version::getString())
         LBWARN << "Duplicate DSO loading, Collage v" << version
                << " already loaded while loading v" << Version::getString()
                << std::endl;
     return 0;
 }
 
-static lunchbox::a_int32_t _initialized( _checkVersion( ));
+static lunchbox::a_int32_t _initialized(_checkVersion());
 }
 
-bool _init( const int argc, char** argv )
+bool _init(const int argc, char** argv)
 {
-    if( ++_initialized > 1 ) // not first
+    if (++_initialized > 1) // not first
         return true;
 
-    if( !lunchbox::init( argc, argv ))
+    if (!lunchbox::init(argc, argv))
         return false;
 
 #ifdef _WIN32
-    WORD    wsVersion = MAKEWORD( 2, 0 );
+    WORD wsVersion = MAKEWORD(2, 0);
     WSADATA wsData;
-    if( WSAStartup( wsVersion, &wsData ) != 0 )
+    if (WSAStartup(wsVersion, &wsData) != 0)
     {
         LBERROR << "Initialization of Windows Sockets failed"
                 << lunchbox::sysError << std::endl;
@@ -68,15 +68,15 @@ bool _init( const int argc, char** argv )
 
 bool exit()
 {
-    if( --_initialized > 0 ) // not last
+    if (--_initialized > 0) // not last
         return true;
-    LBASSERT( _initialized == 0 );
+    LBASSERT(_initialized == 0);
 
 #ifdef _WIN32
-    if( WSACleanup() != 0 )
+    if (WSACleanup() != 0)
     {
-        LBERROR << "Cleanup of Windows Sockets failed"
-                << lunchbox::sysError << std::endl;
+        LBERROR << "Cleanup of Windows Sockets failed" << lunchbox::sysError
+                << std::endl;
         return false;
     }
 #endif
@@ -85,5 +85,4 @@ bool exit()
     DataOStream::clearStatistics();
     return lunchbox::exit();
 }
-
 }

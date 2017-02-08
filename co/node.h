@@ -22,14 +22,17 @@
 #ifndef CO_NODE_H
 #define CO_NODE_H
 
-#include <co/dispatcher.h>        // base class
-#include <co/connection.h>        // used in inline template method
-#include <co/nodeType.h>          // for NODETYPE_NODE enum
+#include <co/connection.h> // used in inline template method
+#include <co/dispatcher.h> // base class
+#include <co/nodeType.h>   // for NODETYPE_NODE enum
 #include <co/types.h>
 
 namespace co
 {
-namespace detail { class Node; }
+namespace detail
+{
+class Node;
+}
 
 /**
  * Proxy node representing a remote LocalNode.
@@ -48,7 +51,7 @@ public:
      * @param type the type of the node, used during connect().
      * @version 1.0
      */
-    CO_API explicit Node( const uint32_t type = co::NODETYPE_NODE );
+    CO_API explicit Node(const uint32_t type = co::NODETYPE_NODE);
 
     /** @name Data Access */
     //@{
@@ -67,7 +70,7 @@ public:
     /** @return the type of the node. @version 1.0 */
     CO_API uint32_t getType() const;
 
-    bool operator == ( const Node* n ) const; //!< @internal
+    bool operator==(const Node* n) const; //!< @internal
 
     /** @return true if the node can send/receive messages. @version 1.0 */
     CO_API bool isReachable() const;
@@ -89,7 +92,6 @@ public:
     //@{
     /** @return true if the node is local (listening). @version 1.0 */
     bool isLocal() const { return isListening(); }
-
     /**
      * Add a new description how this node can be reached.
      *
@@ -98,7 +100,7 @@ public:
      * @param cd the connection description.
      * @version 1.0
      */
-    CO_API void addConnectionDescription( ConnectionDescriptionPtr cd );
+    CO_API void addConnectionDescription(ConnectionDescriptionPtr cd);
 
     /**
      * Removes a connection description.
@@ -109,7 +111,7 @@ public:
      * @return true if the connection description was removed, false otherwise.
      * @version 1.0
      */
-    CO_API bool removeConnectionDescription( ConnectionDescriptionPtr cd );
+    CO_API bool removeConnectionDescription(ConnectionDescriptionPtr cd);
 
     /** @return the connection descriptions. @version 1.0 */
     CO_API ConnectionDescriptions getConnectionDescriptions() const;
@@ -121,7 +123,7 @@ public:
      * @return an active connection to this node.
      * @version 1.0
      */
-    CO_API ConnectionPtr getConnection( const bool multicast = false );
+    CO_API ConnectionPtr getConnection(const bool multicast = false);
     //@}
 
     /** @name Messaging API */
@@ -138,7 +140,7 @@ public:
      * @return the command object to append additional data.
      * @version 1.0
      */
-    CO_API OCommand send( const uint32_t cmd, const bool multicast = false);
+    CO_API OCommand send(const uint32_t cmd, const bool multicast = false);
 
     /**
      * Send a custom command with optional data to the node.
@@ -155,14 +157,14 @@ public:
      * @return the command object to append additional data.
      * @version 1.0
      */
-    CO_API CustomOCommand send( const uint128_t& commandID,
-                                const bool multicast = false );
+    CO_API CustomOCommand send(const uint128_t& commandID,
+                               const bool multicast = false);
     //@}
 
     /** @name Launch parameters */
     //@{
     /** Set the host name for the launch command. */
-    CO_API void setHostname( const std::string& host );
+    CO_API void setHostname(const std::string& host);
 
     /** @return the host name for the launch command. */
     CO_API const std::string& getHostname() const;
@@ -180,16 +182,16 @@ public:
     /** @internal Serialize the node's information. */
     CO_API std::string serialize() const;
     /** @internal Deserialize the node information, consumes given data. */
-    CO_API bool deserialize( std::string& data );
+    CO_API bool deserialize(std::string& data);
 
 protected:
     /** Destruct this node. @version 1.0 */
     CO_API virtual ~Node();
 
     /** @internal */
-    void _addConnectionDescription( ConnectionDescriptionPtr cd );
+    void _addConnectionDescription(ConnectionDescriptionPtr cd);
     /** @internal */
-    bool _removeConnectionDescription( ConnectionDescriptionPtr cd );
+    bool _removeConnectionDescription(ConnectionDescriptionPtr cd);
 
     /** @internal @return the active multicast connection to this node. */
     ConnectionPtr _getMulticast() const;
@@ -208,28 +210,28 @@ protected:
 
 private:
     detail::Node* const _impl;
-    CO_API friend std::ostream& operator << ( std::ostream&, const Node& );
+    CO_API friend std::ostream& operator<<(std::ostream&, const Node&);
 
     /** Ensures the connectivity of this node. */
-    ConnectionPtr _getConnection( const bool preferMulticast );
+    ConnectionPtr _getConnection(const bool preferMulticast);
 
     /** @internal @name Methods for LocalNode */
     //@{
-    void _addMulticast( NodePtr node, ConnectionPtr connection );
-    void _removeMulticast( ConnectionPtr connection );
-    void _connectMulticast( NodePtr node );
-    void _connectMulticast( NodePtr node, ConnectionPtr connection );
+    void _addMulticast(NodePtr node, ConnectionPtr connection);
+    void _removeMulticast(ConnectionPtr connection);
+    void _connectMulticast(NodePtr node);
+    void _connectMulticast(NodePtr node, ConnectionPtr connection);
     void _setListening();
     void _setClosing();
     void _setClosed();
-    void _connect( ConnectionPtr connection );
+    void _connect(ConnectionPtr connection);
     void _disconnect();
-    void _setLastReceive( const int64_t time );
+    void _setLastReceive(const int64_t time);
     friend class LocalNode;
     //@}
 };
 
-CO_API std::ostream& operator << ( std::ostream& os, const Node& node );
+CO_API std::ostream& operator<<(std::ostream& os, const Node& node);
 }
 
 #endif // CO_NODE_H

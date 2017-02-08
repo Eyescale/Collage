@@ -44,7 +44,7 @@ namespace co
 class UDTConnection : public Connection
 {
 public:
-    UDTConnection( );
+    UDTConnection();
 
     bool connect() override;
     bool listen() override;
@@ -54,23 +54,22 @@ public:
     ConnectionPtr acceptSync() override;
 
 public:
-    void    readNB  ( void* buffer, const uint64_t bytes ) override;
-    int64_t readSync( void* buffer, const uint64_t bytes,
-                              const bool ignored ) override;
-    int64_t write( const void* buffer, const uint64_t bytes ) override;
+    void readNB(void* buffer, const uint64_t bytes) override;
+    int64_t readSync(void* buffer, const uint64_t bytes,
+                     const bool ignored) override;
+    int64_t write(const void* buffer, const uint64_t bytes) override;
 
 public:
     Notifier getNotifier() const override { return _notifier; };
-
 protected:
     virtual ~UDTConnection();
 
 private:
-    bool initialize( );
-    void wake( );
+    bool initialize();
+    void wake();
 
-    bool tuneSocket( );
-    bool setSockOpt( UDT::SOCKOPT optname, const void *optval, int optlen );
+    bool tuneSocket();
+    bool setSockOpt(UDT::SOCKOPT optname, const void* optval, int optlen);
 
 private:
     UDTSOCKET _udt;
@@ -78,9 +77,10 @@ private:
     Notifier _notifier;
 
     class UDTConnectionThread;
-    UDTConnectionThread *_poller;
+    UDTConnectionThread* _poller;
 
     lunchbox::Monitor<bool> _app_block;
-    lunchbox::Lock _app_mutex; // Blocks connection thread until app handles event
-}; // UDTConnection
+    lunchbox::Lock _app_mutex; // Blocks connection thread until app handles
+                               // event
+};                             // UDTConnection
 } // namespace co

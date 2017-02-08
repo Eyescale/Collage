@@ -30,7 +30,6 @@ enum ObjectCommand
     CMD_OBJECT_MAX_VERSION
     // check that not more then CMD_OBJECT_CUSTOM have been defined!
 };
-
 }
 
-#endif //CO_OBJECTCOMMAND_H
+#endif // CO_OBJECTCOMMAND_H

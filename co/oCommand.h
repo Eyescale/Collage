@@ -21,14 +21,15 @@
 #ifndef CO_OCOMMAND_H
 #define CO_OCOMMAND_H
 
-#include <co/commands.h>       // for COMMANDTYPE_NODE
-#include <co/dataOStream.h>    // base class
-
+#include <co/commands.h>    // for COMMANDTYPE_NODE
+#include <co/dataOStream.h> // base class
 
 namespace co
 {
-
-namespace detail { class OCommand; }
+namespace detail
+{
+class OCommand;
+}
 
 /**
  * A class for sending commands with data to local and external nodes.
@@ -47,8 +48,8 @@ public:
      * @param cmd the command.
      * @param type the command type for dispatching.
      */
-    CO_API OCommand( const Connections& receivers, const uint32_t cmd,
-                     const uint32_t type = COMMANDTYPE_NODE );
+    CO_API OCommand(const Connections& receivers, const uint32_t cmd,
+                    const uint32_t type = COMMANDTYPE_NODE);
 
     /** @internal
      * Construct a command which is dispatched locally typically to a co::Node.
@@ -58,11 +59,11 @@ public:
      * @param cmd the command.
      * @param type the command type for dispatching.
      */
-    CO_API OCommand( Dispatcher* const dispatcher, LocalNodePtr localNode,
-                     const uint32_t cmd, const uint32_t type=COMMANDTYPE_NODE );
+    CO_API OCommand(Dispatcher* const dispatcher, LocalNodePtr localNode,
+                    const uint32_t cmd, const uint32_t type = COMMANDTYPE_NODE);
 
     /** @internal */
-    CO_API OCommand( const OCommand& rhs );
+    CO_API OCommand(const OCommand& rhs);
 
     /** Send or dispatch this command during destruction. */
     CO_API virtual ~OCommand();
@@ -75,22 +76,22 @@ public:
      *
      * @param additionalSize size in bytes of additional data after header.
      */
-    CO_API void sendHeader( const uint64_t additionalSize );
+    CO_API void sendHeader(const uint64_t additionalSize);
 
     /** @internal @return the static base header size of this command. */
     CO_API static size_t getSize();
 
 protected:
     /** @internal */
-    CO_API void sendData( const void* buffer, const uint64_t size,
-                                  const bool last ) override;
+    CO_API void sendData(const void* buffer, const uint64_t size,
+                         const bool last) override;
 
 private:
-    OCommand& operator = ( const OCommand& );
+    OCommand& operator=(const OCommand&);
     detail::OCommand* const _impl;
 
-    void _init( const uint32_t cmd, const uint32_t type );
+    void _init(const uint32_t cmd, const uint32_t type);
 };
 }
 
-#endif //CO_OCOMMAND_H
+#endif // CO_OCOMMAND_H

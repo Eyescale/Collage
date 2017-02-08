@@ -20,25 +20,24 @@
 
 namespace co
 {
-
-template< typename T >
-void DataIStreamArchive::load_array( boost::serialization::array< T >& a,
-                                     unsigned int )
+template <typename T>
+void DataIStreamArchive::load_array(boost::serialization::array<T>& a,
+                                    unsigned int)
 {
-    _stream >> Array< T >( a.address(), a.count( ));
+    _stream >> Array<T>(a.address(), a.count());
 }
 
-template< class C, class T, class A >
-void DataIStreamArchive::load( std::basic_string< C, T, A >& s )
+template <class C, class T, class A>
+void DataIStreamArchive::load(std::basic_string<C, T, A>& s)
 {
     // implementation only valid for narrow string
-    BOOST_STATIC_ASSERT( sizeof(C) == sizeof(char));
+    BOOST_STATIC_ASSERT(sizeof(C) == sizeof(char));
     _stream >> s;
 }
 
-template< typename T >
-typename boost::enable_if< boost::is_integral<T> >::type
-DataIStreamArchive::load( T& t )
+template <typename T>
+typename boost::enable_if<boost::is_integral<T> >::type
+    DataIStreamArchive::load(T& t)
 {
 #if BOOST_VERSION < 104800
     namespace bs = boost::detail;
@@ -47,32 +46,32 @@ DataIStreamArchive::load( T& t )
 #endif
 
     // get the number of bytes in the stream
-    if( signed char size = _loadSignedChar( ))
+    if (signed char size = _loadSignedChar())
     {
         // check for negative value in unsigned type
-        if( size < 0 && boost::is_unsigned<T>::value )
+        if (size < 0 && boost::is_unsigned<T>::value)
             throw DataStreamArchiveException();
 
         // check that our type T is large enough
-        else if( (unsigned)abs(size) > sizeof(T))
-            throw DataStreamArchiveException( size );
+        else if ((unsigned)abs(size) > sizeof(T))
+            throw DataStreamArchiveException(size);
 
         // reconstruct the value
         T temp = size < 0 ? -1 : 0;
-        load_binary( &temp, abs(size));
+        load_binary(&temp, abs(size));
 
         // load the value from little endian - is is then converted
         // to the target type T and fits it because size <= sizeof(T)
-        t = bs::load_little_endian<T, sizeof(T)>( &temp );
+        t = bs::load_little_endian<T, sizeof(T)>(&temp);
     }
     else
         // zero optimization
         t = 0;
 }
 
-template< typename T >
+template <typename T>
 typename boost::enable_if<boost::is_floating_point<T> >::type
-DataIStreamArchive::load( T& t )
+    DataIStreamArchive::load(T& t)
 {
     namespace fp = boost::spirit::math;
     typedef typename fp::detail::fp_traits<T>::type traits;
@@ -84,24 +83,23 @@ DataIStreamArchive::load( T& t )
     // after reading the note above you still might decide to
     // deactivate this static assert and try if it works out.
     typename traits::bits bits;
-    BOOST_STATIC_ASSERT( sizeof(bits) == sizeof(T));
-    BOOST_STATIC_ASSERT( std::numeric_limits<T>::is_iec559 );
+    BOOST_STATIC_ASSERT(sizeof(bits) == sizeof(T));
+    BOOST_STATIC_ASSERT(std::numeric_limits<T>::is_iec559);
 
-    load( bits );
-    traits::set_bits( t, bits );
+    load(bits);
+    traits::set_bits(t, bits);
 
     // if the no_infnan flag is set we must throw here
-    if( get_flags() & serialization::no_infnan && !fp::isfinite( t ))
-        throw DataStreamArchiveException( t );
+    if (get_flags() & serialization::no_infnan && !fp::isfinite(t))
+        throw DataStreamArchiveException(t);
 
     // if you end here your floating point type does not support
     // denormalized numbers. this might be the case even though
     // your type conforms to IEC 559 (and thus to IEEE 754)
-    if( std::numeric_limits<T>::has_denorm == std::denorm_absent &&
-        fp::fpclassify(t) == (int)FP_SUBNORMAL ) // GCC4
+    if (std::numeric_limits<T>::has_denorm == std::denorm_absent &&
+        fp::fpclassify(t) == (int)FP_SUBNORMAL) // GCC4
     {
-        throw DataStreamArchiveException( t );
+        throw DataStreamArchiveException(t);
     }
 }
-
 }

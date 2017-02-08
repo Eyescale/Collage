@@ -30,22 +30,26 @@ namespace detail
 class Serializable
 {
 public:
-    Serializable() : dirty( co::Serializable::DIRTY_NONE ) {}
+    Serializable()
+        : dirty(co::Serializable::DIRTY_NONE)
+    {
+    }
     ~Serializable() {}
-
     /** The current dirty bits. */
     uint64_t dirty;
 };
 }
 
 Serializable::Serializable()
-        : _impl( new detail::Serializable )
-{}
+    : _impl(new detail::Serializable)
+{
+}
 
-Serializable::Serializable( const Serializable& )
+Serializable::Serializable(const Serializable&)
     : co::Object()
-    , _impl( new detail::Serializable )
-{}
+    , _impl(new detail::Serializable)
+{
+}
 
 Serializable::~Serializable()
 {
@@ -59,62 +63,61 @@ uint64_t Serializable::getDirty() const
 
 bool Serializable::isDirty() const
 {
-    return ( _impl->dirty != DIRTY_NONE );
+    return (_impl->dirty != DIRTY_NONE);
 }
 
-bool Serializable::isDirty( const uint64_t dirtyBits ) const
+bool Serializable::isDirty(const uint64_t dirtyBits) const
 {
     return (_impl->dirty & dirtyBits) == dirtyBits;
 }
 
-uint128_t Serializable::commit( const uint32_t incarnation )
+uint128_t Serializable::commit(const uint32_t incarnation)
 {
-    const uint128_t& version = co::Object::commit( incarnation );
+    const uint128_t& version = co::Object::commit(incarnation);
     _impl->dirty = DIRTY_NONE;
     return version;
 }
 
-void Serializable::setDirty( const uint64_t bits )
+void Serializable::setDirty(const uint64_t bits)
 {
     _impl->dirty |= bits;
 }
 
-void Serializable::unsetDirty( const uint64_t bits )
+void Serializable::unsetDirty(const uint64_t bits)
 {
     _impl->dirty &= ~bits;
 }
 
 void Serializable::notifyAttached()
 {
-    if( isMaster( ))
+    if (isMaster())
         _impl->dirty = DIRTY_NONE;
 }
 
-void Serializable::applyInstanceData( co::DataIStream& is )
+void Serializable::applyInstanceData(co::DataIStream& is)
 {
-    if( !is.hasData( ))
+    if (!is.hasData())
         return;
-    deserialize( is, DIRTY_ALL );
+    deserialize(is, DIRTY_ALL);
 }
 
-void Serializable::pack( co::DataOStream& os )
+void Serializable::pack(co::DataOStream& os)
 {
-    if( _impl->dirty == DIRTY_NONE )
+    if (_impl->dirty == DIRTY_NONE)
         return;
 
     os << _impl->dirty;
-    serialize( os, _impl->dirty );
+    serialize(os, _impl->dirty);
 }
 
-void Serializable::unpack( co::DataIStream& is )
+void Serializable::unpack(co::DataIStream& is)
 {
-    LBASSERT( is.hasData( ));
-    if( !is.hasData( ))
+    LBASSERT(is.hasData());
+    if (!is.hasData())
         return;
 
     uint64_t dirty;
     is >> dirty;
-    deserialize( is, dirty );
+    deserialize(is, dirty);
 }
-
 }

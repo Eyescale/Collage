@@ -28,17 +28,17 @@ namespace co
 {
 namespace detail
 {
-
 class ObjectDataICommand
 {
 public:
     ObjectDataICommand()
-        : version( 0, 0 )
-        , datasize( 0 )
-        , sequence( 0 )
-        , chunks( 1 )
-        , isLast( false )
-    {}
+        : version(0, 0)
+        , datasize(0)
+        , sequence(0)
+        , chunks(1)
+        , isLast(false)
+    {
+    }
 
     uint128_t version;
     uint64_t datasize;
@@ -47,37 +47,35 @@ public:
     uint32_t chunks;
     bool isLast;
 };
-
 }
 
-ObjectDataICommand::ObjectDataICommand( const ICommand& command )
-    : ObjectICommand( command )
-    , _impl( new detail::ObjectDataICommand )
+ObjectDataICommand::ObjectDataICommand(const ICommand& command)
+    : ObjectICommand(command)
+    , _impl(new detail::ObjectDataICommand)
 {
     _init();
 }
 
-ObjectDataICommand::ObjectDataICommand( LocalNodePtr local, NodePtr remote,
-                                        ConstBufferPtr buffer )
-    : ObjectICommand( local, remote, buffer )
-    , _impl( new detail::ObjectDataICommand )
+ObjectDataICommand::ObjectDataICommand(LocalNodePtr local, NodePtr remote,
+                                       ConstBufferPtr buffer)
+    : ObjectICommand(local, remote, buffer)
+    , _impl(new detail::ObjectDataICommand)
 {
     _init();
 }
 
-
-ObjectDataICommand::ObjectDataICommand( const ObjectDataICommand& rhs )
-    : ObjectICommand( rhs )
-    , _impl( new detail::ObjectDataICommand( *rhs._impl ))
+ObjectDataICommand::ObjectDataICommand(const ObjectDataICommand& rhs)
+    : ObjectICommand(rhs)
+    , _impl(new detail::ObjectDataICommand(*rhs._impl))
 {
     _init();
 }
 
 void ObjectDataICommand::_init()
 {
-    if( isValid( ))
-        *this >> _impl->version >> _impl->datasize >> _impl->sequence
-              >> _impl->isLast >> _impl->compressorName >> _impl->chunks;
+    if (isValid())
+        *this >> _impl->version >> _impl->datasize >> _impl->sequence >>
+            _impl->isLast >> _impl->compressorName >> _impl->chunks;
 }
 
 ObjectDataICommand::~ObjectDataICommand()
@@ -102,7 +100,7 @@ uint64_t ObjectDataICommand::getDataSize() const
 
 CompressorInfo ObjectDataICommand::getCompressorInfo() const
 {
-    return pression::data::Registry::getInstance().find( _impl->compressorName);
+    return pression::data::Registry::getInstance().find(_impl->compressorName);
 }
 
 uint32_t ObjectDataICommand::getChunks() const
@@ -115,15 +113,14 @@ bool ObjectDataICommand::isLast() const
     return _impl->isLast;
 }
 
-std::ostream& operator << ( std::ostream& os, const ObjectDataICommand& command )
+std::ostream& operator<<(std::ostream& os, const ObjectDataICommand& command)
 {
-    os << static_cast< const ObjectICommand& >( command );
-    if( command.isValid( ))
+    os << static_cast<const ObjectICommand&>(command);
+    if (command.isValid())
     {
         os << " v" << command.getVersion() << " size " << command.getDataSize()
            << " seq " << command.getSequence() << " last " << command.isLast();
     }
     return os;
 }
-
 }

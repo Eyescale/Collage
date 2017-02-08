@@ -21,8 +21,8 @@
 #ifndef CO_FULLMASTERCM_H
 #define CO_FULLMASTERCM_H
 
-#include "versionedMasterCM.h"        // base class
 #include "objectInstanceDataOStream.h" // member
+#include "versionedMasterCM.h"         // base class
 
 #include <deque>
 
@@ -38,42 +38,44 @@ class ObjectDataIStream;
 class FullMasterCM : public VersionedMasterCM
 {
 public:
-    explicit FullMasterCM( Object* object );
+    explicit FullMasterCM(Object* object);
     virtual ~FullMasterCM();
 
     void init() override;
-    uint128_t commit( const uint32_t incarnation ) override;
-    void push( const uint128_t& groupID, const uint128_t& typeID,
-               const Nodes& nodes ) override;
-    bool sendSync( const MasterCMCommand& command ) override;
+    uint128_t commit(const uint32_t incarnation) override;
+    void push(const uint128_t& groupID, const uint128_t& typeID,
+              const Nodes& nodes) override;
+    bool sendSync(const MasterCMCommand& command) override;
 
     /** @name Versioning */
     //@{
-    void setAutoObsolete( const uint32_t count ) override;
+    void setAutoObsolete(const uint32_t count) override;
     uint32_t getAutoObsolete() const override { return _nVersions; }
     //@}
 
     /** Speculatively send instance data to all nodes. */
-    void sendInstanceData( const Nodes& nodes ) override;
+    void sendInstanceData(const Nodes& nodes) override;
 
 protected:
     struct InstanceData
     {
-        explicit InstanceData( const VersionedMasterCM* cm )
-            : os( cm ), commitCount( 0 ) {}
+        explicit InstanceData(const VersionedMasterCM* cm)
+            : os(cm)
+            , commitCount(0)
+        {
+        }
 
         ObjectInstanceDataOStream os;
         uint32_t commitCount;
     };
 
-    bool _initSlave( const MasterCMCommand&, const uint128_t&,
-                     bool ) override;
+    bool _initSlave(const MasterCMCommand&, const uint128_t&, bool) override;
 
     InstanceData* _newInstanceData();
-    void _addInstanceData( InstanceData* data );
-    void _releaseInstanceData( InstanceData* data );
+    void _addInstanceData(InstanceData* data);
+    void _releaseInstanceData(InstanceData* data);
 
-    void _updateCommitCount( const uint32_t incarnation );
+    void _updateCommitCount(const uint32_t incarnation);
     void _obsolete();
     void _checkConsistency() const;
 
@@ -87,17 +89,17 @@ private:
     /** The number of old versions to retain. */
     uint32_t _nVersions;
 
-    typedef std::deque< InstanceData* > InstanceDataDeque;
-    typedef std::vector< InstanceData* > InstanceDatas;
+    typedef std::deque<InstanceData*> InstanceDataDeque;
+    typedef std::vector<InstanceData*> InstanceDatas;
 
     /** The list of full instance datas, head version last. */
     InstanceDataDeque _instanceDatas;
     InstanceDatas _instanceDataCache;
 
     /* The command handlers. */
-    bool _cmdCommit( ICommand& command );
-    bool _cmdObsolete( ICommand& command );
-    bool _cmdPush( ICommand& command );
+    bool _cmdCommit(ICommand& command);
+    bool _cmdObsolete(ICommand& command);
+    bool _cmdPush(ICommand& command);
 };
 }
 

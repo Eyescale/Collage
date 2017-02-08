@@ -30,17 +30,17 @@
 
 namespace co
 {
-typedef CommandFunc< StaticSlaveCM > CmdFunc;
+typedef CommandFunc<StaticSlaveCM> CmdFunc;
 
-StaticSlaveCM::StaticSlaveCM( Object* object )
-        : ObjectCM( object )
-        , _currentIStream( new ObjectDataIStream )
+StaticSlaveCM::StaticSlaveCM(Object* object)
+    : ObjectCM(object)
+    , _currentIStream(new ObjectDataIStream)
 {
-    LBASSERT( _object );
-    LBASSERT( object->getLocalNode( ));
+    LBASSERT(_object);
+    LBASSERT(object->getLocalNode());
 
-    object->registerCommand( CMD_OBJECT_INSTANCE,
-                             CmdFunc( this, &StaticSlaveCM::_cmdInstance ), 0 );
+    object->registerCommand(CMD_OBJECT_INSTANCE,
+                            CmdFunc(this, &StaticSlaveCM::_cmdInstance), 0);
 }
 
 StaticSlaveCM::~StaticSlaveCM()
@@ -49,72 +49,68 @@ StaticSlaveCM::~StaticSlaveCM()
     _currentIStream = 0;
 }
 
-void StaticSlaveCM::applyMapData( const uint128_t& version LB_UNUSED )
+void StaticSlaveCM::applyMapData(const uint128_t& version LB_UNUSED)
 {
-    LBASSERT( _currentIStream );
-    LBASSERTINFO( version == VERSION_FIRST || version == VERSION_NONE,
-                  version );
+    LBASSERT(_currentIStream);
+    LBASSERTINFO(version == VERSION_FIRST || version == VERSION_NONE, version);
     _currentIStream->waitReady();
 
-    LBASSERT( _object );
-    LBASSERTINFO( _currentIStream->getVersion() == VERSION_FIRST ||
-                  _currentIStream->getVersion() == VERSION_NONE,
-                  _currentIStream->getVersion( ));
-    LBASSERT( _currentIStream->hasInstanceData( ));
+    LBASSERT(_object);
+    LBASSERTINFO(_currentIStream->getVersion() == VERSION_FIRST ||
+                     _currentIStream->getVersion() == VERSION_NONE,
+                 _currentIStream->getVersion());
+    LBASSERT(_currentIStream->hasInstanceData());
 
-    if( _currentIStream->hasData( )) // not VERSION_NONE
-        _object->applyInstanceData( *_currentIStream );
+    if (_currentIStream->hasData()) // not VERSION_NONE
+        _object->applyInstanceData(*_currentIStream);
 
-    LBASSERTINFO( !_currentIStream->hasData(),
-                  "Object " << typeid( *_object ).name() <<
-                  " did not unpack all data" );
+    LBASSERTINFO(!_currentIStream->hasData(),
+                 "Object " << typeid(*_object).name()
+                           << " did not unpack all data");
 
     delete _currentIStream;
     _currentIStream = 0;
 
-    LBLOG( LOG_OBJECTS ) << "Mapped initial data for " << _object->getID()
-                         << "." << _object->getInstanceID() << " ready"
-                         << std::endl;
+    LBLOG(LOG_OBJECTS) << "Mapped initial data for " << _object->getID() << "."
+                       << _object->getInstanceID() << " ready" << std::endl;
 }
 
-void StaticSlaveCM::addInstanceDatas( const ObjectDataIStreamDeque& cache,
-                                      const uint128_t& /* start */ )
+void StaticSlaveCM::addInstanceDatas(const ObjectDataIStreamDeque& cache,
+                                     const uint128_t& /* start */)
 {
-    LB_TS_THREAD( _rcvThread );
-    LBASSERT( _currentIStream );
-    LBASSERT( _currentIStream->getDataSize() == 0 );
-    LBASSERT( cache.size() == 1 );
-    if( cache.empty( ))
+    LB_TS_THREAD(_rcvThread);
+    LBASSERT(_currentIStream);
+    LBASSERT(_currentIStream->getDataSize() == 0);
+    LBASSERT(cache.size() == 1);
+    if (cache.empty())
         return;
 
     ObjectDataIStream* stream = cache.front();
-    LBASSERT( stream );
-    LBASSERT( stream->isReady( ));
-    LBASSERT( stream->getVersion() == VERSION_FIRST );
+    LBASSERT(stream);
+    LBASSERT(stream->isReady());
+    LBASSERT(stream->getVersion() == VERSION_FIRST);
 
-    if( !stream->isReady() || stream->getVersion() != VERSION_FIRST )
+    if (!stream->isReady() || stream->getVersion() != VERSION_FIRST)
         return;
 
-    LBLOG( LOG_OBJECTS ) << "Adding cached instance data" << std::endl;
+    LBLOG(LOG_OBJECTS) << "Adding cached instance data" << std::endl;
     delete _currentIStream;
-    _currentIStream = new ObjectDataIStream( *stream );
+    _currentIStream = new ObjectDataIStream(*stream);
 }
 
 //---------------------------------------------------------------------------
 // command handlers
 //---------------------------------------------------------------------------
-bool StaticSlaveCM::_cmdInstance( ICommand& command )
+bool StaticSlaveCM::_cmdInstance(ICommand& command)
 {
-    LB_TS_THREAD( _rcvThread );
-    LBASSERT( _currentIStream );
-    _currentIStream->addDataCommand( command );
+    LB_TS_THREAD(_rcvThread);
+    LBASSERT(_currentIStream);
+    _currentIStream->addDataCommand(command);
 
-    if( _currentIStream->isReady( ))
-        LBLOG( LOG_OBJECTS ) << "id " << _object->getID() << "."
-                             << _object->getInstanceID() << " ready"
-                             << std::endl;
+    if (_currentIStream->isReady())
+        LBLOG(LOG_OBJECTS) << "id " << _object->getID() << "."
+                           << _object->getInstanceID() << " ready" << std::endl;
 
     return true;
 }
-
 }

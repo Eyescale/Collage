@@ -29,77 +29,86 @@
 
 namespace co
 {
+/**
+ * A wrapper to register a function callback on an object instance.
+ *
+ * This wrapper is used by the Dispatcher to register and save callback
+ * methods of derived classes.
+ */
+template <typename T>
+class CommandFunc
+{
+public:
     /**
-     * A wrapper to register a function callback on an object instance.
-     *
-     * This wrapper is used by the Dispatcher to register and save callback
-     * methods of derived classes.
+     * Create a new callback to the method on the given object.
+     * @version 1.0
      */
-    template< typename T > class CommandFunc
+    CommandFunc(T* object, bool (T::*func)(ICommand&))
+        : _object(object)
+        , _func(func)
     {
-    public:
-        /**
-         * Create a new callback to the method on the given object.
-         * @version 1.0
-         */
-        CommandFunc( T* object, bool (T::*func)( ICommand& ))
-            : _object( object ), _func( func ) {}
-
-        /**
-         * Create a copy of a callback to a different base class.
-         * @version 1.0
-         */
-        template< typename O > CommandFunc( const CommandFunc< O >& from )
-                : _object( _convertThis< O >( from._object )),
-                  _func( static_cast<bool (T::*)( ICommand& )>(from._func))
-            {}
-
-        /** @internal Invoke the callback. */
-        bool operator()( ICommand& command )
-        {
-            LBASSERT( _object );
-            LBASSERT( _func );
-            return (_object->*_func)( command );
-        }
-
-        /** @internal */
-        //@{
-        /** @internal reset the callback. */
-        void clear() { _object = 0; _func = 0; }
-        /** @internal @return true if the callback is valid. */
-        bool isValid() const { return _object && _func; }
-
-        // Can't make private because copy constructor needs access. Can't
-        // declare friend because C++ does not allow generic template friends in
-        // template classes.
-        //private:
-        T* _object; //!< @internal
-        bool (T::*_func)( ICommand& ); //!< @internal
-        //@}
-
-    private:
-        template< class F > T* _convertThis( F* ptr )
-        {
-#ifdef _MSC_VER
-            // https://github.com/Eyescale/Equalizer/issues/100
-            return reinterpret_cast< T* >( ptr );
-#else
-            return ptr;
-#endif
-        }
-    };
-
-    /** Output the given CommandFunc. */
-    template< typename T >
-    inline std::ostream& operator << ( std::ostream& os,
-                                       const CommandFunc<T>& func )
-    {
-        if( func.isValid( ))
-            os << "CommandFunc of " << lunchbox::className( func._object );
-        else
-            os << "NULL CommandFunc";
-        return os;
     }
+
+    /**
+     * Create a copy of a callback to a different base class.
+     * @version 1.0
+     */
+    template <typename O>
+    CommandFunc(const CommandFunc<O>& from)
+        : _object(_convertThis<O>(from._object))
+        , _func(static_cast<bool (T::*)(ICommand&)>(from._func))
+    {
+    }
+
+    /** @internal Invoke the callback. */
+    bool operator()(ICommand& command)
+    {
+        LBASSERT(_object);
+        LBASSERT(_func);
+        return (_object->*_func)(command);
+    }
+
+    /** @internal */
+    //@{
+    /** @internal reset the callback. */
+    void clear()
+    {
+        _object = 0;
+        _func = 0;
+    }
+    /** @internal @return true if the callback is valid. */
+    bool isValid() const { return _object && _func; }
+    // Can't make private because copy constructor needs access. Can't
+    // declare friend because C++ does not allow generic template friends in
+    // template classes.
+    // private:
+    T* _object;                  //!< @internal
+    bool (T::*_func)(ICommand&); //!< @internal
+    //@}
+
+private:
+    template <class F>
+    T* _convertThis(F* ptr)
+    {
+#ifdef _MSC_VER
+        // https://github.com/Eyescale/Equalizer/issues/100
+        return reinterpret_cast<T*>(ptr);
+#else
+        return ptr;
+#endif
+    }
+};
+
+/** Output the given CommandFunc. */
+template <typename T>
+inline std::ostream& operator<<(std::ostream& os, const CommandFunc<T>& func)
+{
+    if (func.isValid())
+        os << "CommandFunc of " << lunchbox::className(func._object);
+    else
+        os << "NULL CommandFunc";
+    return os;
+}
 }
 
-#endif //CO_COMMANDFUNC_H
+#endif // CO_COMMANDFUNC_H

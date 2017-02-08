@@ -33,32 +33,30 @@ class ICommand
 {
 public:
     ICommand()
-        : func( 0, 0 )
-        , buffer( 0 )
-        , size( 0 )
-        , type( COMMANDTYPE_INVALID )
-        , cmd( CMD_INVALID )
-        , consumed( false )
-    {}
-
-    ICommand( LocalNodePtr local_, NodePtr remote_, ConstBufferPtr buffer_ )
-        : local( local_ )
-        , remote( remote_ )
-        , func( 0, 0 )
-        , buffer( buffer_ )
-        , size( 0 )
-        , type( COMMANDTYPE_INVALID )
-        , cmd( CMD_INVALID )
-        , consumed( false )
-    {}
-
-    void clear()
+        : func(0, 0)
+        , buffer(0)
+        , size(0)
+        , type(COMMANDTYPE_INVALID)
+        , cmd(CMD_INVALID)
+        , consumed(false)
     {
-        *this = ICommand();
     }
 
+    ICommand(LocalNodePtr local_, NodePtr remote_, ConstBufferPtr buffer_)
+        : local(local_)
+        , remote(remote_)
+        , func(0, 0)
+        , buffer(buffer_)
+        , size(0)
+        , type(COMMANDTYPE_INVALID)
+        , cmd(CMD_INVALID)
+        , consumed(false)
+    {
+    }
+
+    void clear() { *this = ICommand(); }
     LocalNodePtr local; //!< The node receiving the command
-    NodePtr remote; //!< The node sending the command
+    NodePtr remote;     //!< The node sending the command
     co::Dispatcher::Func func;
     ConstBufferPtr buffer;
     uint64_t size;
@@ -70,34 +68,35 @@ public:
 
 ICommand::ICommand()
     : DataIStream()
-    , _impl( new detail::ICommand )
+    , _impl(new detail::ICommand)
 {
 }
 
-ICommand::ICommand( LocalNodePtr local, NodePtr remote, ConstBufferPtr buffer )
+ICommand::ICommand(LocalNodePtr local, NodePtr remote, ConstBufferPtr buffer)
     : DataIStream()
-    , _impl( new detail::ICommand( local, remote, buffer ))
+    , _impl(new detail::ICommand(local, remote, buffer))
 {
-    if( _impl->buffer )
+    if (_impl->buffer)
     {
-        LBASSERT( buffer->getSize() >= sizeof( _impl->size ) +
-                  sizeof( _impl->type ) + sizeof( _impl->cmd ));
+        LBASSERT(buffer->getSize() >= sizeof(_impl->size) +
+                                          sizeof(_impl->type) +
+                                          sizeof(_impl->cmd));
 
         *this >> _impl->size >> _impl->type >> _impl->cmd;
     }
 }
 
-ICommand::ICommand( const ICommand& rhs )
+ICommand::ICommand(const ICommand& rhs)
     : DataIStream()
-    , _impl( new detail::ICommand( *rhs._impl ))
+    , _impl(new detail::ICommand(*rhs._impl))
 {
     _impl->consumed = false;
     _skipHeader();
 }
 
-ICommand& ICommand::operator = ( const ICommand& rhs )
+ICommand& ICommand::operator=(const ICommand& rhs)
 {
-    if( this != &rhs )
+    if (this != &rhs)
     {
         *_impl = *rhs._impl;
         _impl->consumed = false;
@@ -118,10 +117,10 @@ void ICommand::clear()
 
 void ICommand::_skipHeader()
 {
-    const size_t headerSize = sizeof( _impl->size ) + sizeof( _impl->type ) +
-                              sizeof( _impl->cmd );
-    if( isValid() && getRemainingBufferSize() >= headerSize )
-        getRemainingBuffer( headerSize );
+    const size_t headerSize =
+        sizeof(_impl->size) + sizeof(_impl->type) + sizeof(_impl->cmd);
+    if (isValid() && getRemainingBufferSize() >= headerSize)
+        getRemainingBuffer(headerSize);
 }
 
 uint32_t ICommand::getType() const
@@ -139,24 +138,24 @@ uint64_t ICommand::getSize() const
     return _impl->size;
 }
 
-void ICommand::setType( const CommandType type )
+void ICommand::setType(const CommandType type)
 {
     _impl->type = type;
 }
 
-void ICommand::setCommand( const uint32_t cmd )
+void ICommand::setCommand(const uint32_t cmd)
 {
     _impl->cmd = cmd;
 }
 
-void ICommand::setDispatchFunction( const Dispatcher::Func& func )
+void ICommand::setDispatchFunction(const Dispatcher::Func& func)
 {
     _impl->func = func;
 }
 
 ConstBufferPtr ICommand::getBuffer() const
 {
-    LBASSERT( _impl->buffer );
+    LBASSERT(_impl->buffer);
     return _impl->buffer;
 }
 
@@ -170,18 +169,18 @@ uint128_t ICommand::getVersion() const
     return VERSION_NONE;
 }
 
-bool ICommand::getNextBuffer( CompressorInfo& info, uint32_t& nChunks,
-                              const void*& chunkData, uint64_t& size )
+bool ICommand::getNextBuffer(CompressorInfo& info, uint32_t& nChunks,
+                             const void*& chunkData, uint64_t& size)
 {
-    if( _impl->consumed ) // 2nd call
+    if (_impl->consumed) // 2nd call
         _impl->buffer = 0;
 
-    if( !_impl->buffer )
+    if (!_impl->buffer)
         return false;
 
     _impl->consumed = true;
     chunkData = _impl->buffer->getData();
-    size = reinterpret_cast< const uint64_t* >( chunkData )[ 0 ];
+    size = reinterpret_cast<const uint64_t*>(chunkData)[0];
     info = CompressorInfo();
     nChunks = 1;
     return true;
@@ -206,25 +205,25 @@ bool ICommand::isValid() const
 
 bool ICommand::operator()()
 {
-    LBASSERT( _impl->func.isValid( ));
+    LBASSERT(_impl->func.isValid());
     Dispatcher::Func func = _impl->func;
     _impl->func.clear();
-    return func( *this );
+    return func(*this);
 }
 
-std::ostream& operator << ( std::ostream& os, const ICommand& command )
+std::ostream& operator<<(std::ostream& os, const ICommand& command)
 {
     ConstBufferPtr buffer = command.getBuffer();
-    if( buffer )
+    if (buffer)
         os << lunchbox::disableFlush << "command< type "
-           << uint32_t( command.getType( )) << " cmd " << command.getCommand()
+           << uint32_t(command.getType()) << " cmd " << command.getCommand()
            << " size " << command.getSize() << '/' << buffer->getSize() << '/'
            << buffer->getMaxSize() << " from " << command.getNode() << " to "
            << command.getLocalNode() << " >" << lunchbox::enableFlush;
     else
         os << "command< empty >";
 
-    if( command._impl->func.isValid( ))
+    if (command._impl->func.isValid())
         os << ' ' << command._impl->func << std::endl;
     return os;
 }

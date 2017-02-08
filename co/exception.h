@@ -28,49 +28,52 @@
 
 namespace co
 {
-    /** A base Exception class for Collage operations. */
-    class Exception : public std::exception
+/** A base Exception class for Collage operations. */
+class Exception : public std::exception
+{
+public:
+    /** The exception type. @version 1.0 */
+    enum Type
     {
-    public:
-        /** The exception type. @version 1.0 */
-        enum Type
-        {
-            TIMEOUT_WRITE,   //!< A write timeout operation
-            TIMEOUT_READ,    //!< A read timeout operation
-            CUSTOM      = 20 //!< Application-specific exceptions
-        };
-
-        /** Construct a new Exception. @version 1.0 */
-        explicit Exception( const uint32_t type ) : _type( type ) {}
-
-        /** Destruct this exception. @version 1.0 */
-        virtual ~Exception() throw() {}
-
-        /** @return the type of this exception @version 1.0 */
-        virtual uint32_t getType() const { return _type; }
-
-        /** Output the exception in human-readable form. @version 1.0 */
-        const char* what() const throw() override
-        {
-            switch( _type )
-            {
-              case Exception::TIMEOUT_WRITE:
-                  return " Timeout on write operation";
-              case Exception::TIMEOUT_READ:
-                  return " Timeout on read operation";
-              default:
-                  return  " Unknown Exception";
-            }
-        }
-
-    private:
-        /** The type of this eception instance **/
-        const uint32_t _type;
+        TIMEOUT_WRITE, //!< A write timeout operation
+        TIMEOUT_READ,  //!< A read timeout operation
+        CUSTOM = 20    //!< Application-specific exceptions
     };
 
+    /** Construct a new Exception. @version 1.0 */
+    explicit Exception(const uint32_t type)
+        : _type(type)
+    {
+    }
+
+    /** Destruct this exception. @version 1.0 */
+    virtual ~Exception() throw() {}
+    /** @return the type of this exception @version 1.0 */
+    virtual uint32_t getType() const { return _type; }
     /** Output the exception in human-readable form. @version 1.0 */
-    inline std::ostream& operator << ( std::ostream& os, const Exception& e )
-        { return os << e.what(); }
+    const char* what() const throw() override
+    {
+        switch (_type)
+        {
+        case Exception::TIMEOUT_WRITE:
+            return " Timeout on write operation";
+        case Exception::TIMEOUT_READ:
+            return " Timeout on read operation";
+        default:
+            return " Unknown Exception";
+        }
+    }
+
+private:
+    /** The type of this eception instance **/
+    const uint32_t _type;
+};
+
+/** Output the exception in human-readable form. @version 1.0 */
+inline std::ostream& operator<<(std::ostream& os, const Exception& e)
+{
+    return os << e.what();
+}
 }
 
 #endif // CO_EXCEPTION_H

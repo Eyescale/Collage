@@ -39,43 +39,42 @@
 #include <boost/archive/detail/register_archive.hpp>
 #include <boost/serialization/is_bitwise_serializable.hpp>
 #if BOOST_VERSION >= 104400
-#  include <boost/serialization/item_version_type.hpp>
+#include <boost/serialization/item_version_type.hpp>
 #endif
 
 #include <boost/spirit/home/support/detail/endian.hpp>
 #include <boost/spirit/home/support/detail/math/fpclassify.hpp>
 
+#include <boost/type_traits/is_floating_point.hpp>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/is_signed.hpp>
-#include <boost/type_traits/is_floating_point.hpp>
-
 
 namespace co
 {
-
 /** A boost.serialization output archive writing to a co::DataOStream. */
 class DataOStreamArchive
-    : public boost::archive::basic_binary_oarchive< DataOStreamArchive >
+    : public boost::archive::basic_binary_oarchive<DataOStreamArchive>
 {
-    typedef boost::archive::basic_binary_oarchive< DataOStreamArchive > Super;
+    typedef boost::archive::basic_binary_oarchive<DataOStreamArchive> Super;
 
 public:
     /** Construct a new serialization archive. @version 1.0 */
-    CO_API explicit DataOStreamArchive( DataOStream& stream );
+    CO_API explicit DataOStreamArchive(DataOStream& stream);
 
     /** @internal archives are expected to support this function. */
-    CO_API void save_binary( const void* data, std::size_t size );
+    CO_API void save_binary(const void* data, std::size_t size);
 
     /** @internal use optimized save for arrays. */
-    template< typename T >
-    void save_array( const boost::serialization::array< T >& a, unsigned int );
+    template <typename T>
+    void save_array(const boost::serialization::array<T>& a, unsigned int);
 
     /** @internal enable serialization optimization for arrays. */
     struct use_array_optimization
     {
-        template< class T >
-        struct apply
-            : public boost::serialization::is_bitwise_serializable< T > {};
+        template <class T>
+        struct apply : public boost::serialization::is_bitwise_serializable<T>
+        {
+        };
     };
 
 private:
@@ -87,11 +86,11 @@ private:
      * Saving bool directly, not by const reference because of tracking_type's
      * operator (bool).
      */
-    CO_API void save( bool b );
+    CO_API void save(bool b);
 
     /** Save string types. */
-    template< class C, class T, class A >
-    void save( const std::basic_string< C, T, A >& s );
+    template <class C, class T, class A>
+    void save(const std::basic_string<C, T, A>& s);
 
     /**
      * Save integer types.
@@ -100,8 +99,8 @@ private:
      * actual data. We subsequently transform the data using store_little_endian
      * and store non-zero bytes to the stream.
      */
-    template< typename T >
-    typename boost::enable_if< boost::is_integral<T> >::type save( const T& t );
+    template <typename T>
+    typename boost::enable_if<boost::is_integral<T> >::type save(const T& t);
 
     /**
      * Save floating point types.
@@ -130,32 +129,31 @@ private:
      * then your floating point numbers will be truncated. This will introduce
      * small rounding off errors.
      */
-    template< typename T >
-    typename boost::enable_if< boost::is_floating_point<T> >::type
-    save( const T& t );
+    template <typename T>
+    typename boost::enable_if<boost::is_floating_point<T> >::type save(
+        const T& t);
 
 #if BOOST_VERSION >= 104400
     // in boost 1.44 version_type was splitted into library_version_type and
     // item_version_type, plus a whole bunch of additional strong typedefs
-    CO_API void save( const boost::archive::library_version_type& version );
-    CO_API void save( const boost::archive::class_id_type& class_id );
-    CO_API void save( const boost::serialization::item_version_type& class_id );
+    CO_API void save(const boost::archive::library_version_type& version);
+    CO_API void save(const boost::archive::class_id_type& class_id);
+    CO_API void save(const boost::serialization::item_version_type& class_id);
     CO_API
-    void save( const boost::serialization::collection_size_type& class_id );
-    CO_API void save( const boost::archive::object_id_type& object_id );
-    CO_API void save( const boost::archive::version_type& version );
+    void save(const boost::serialization::collection_size_type& class_id);
+    CO_API void save(const boost::archive::object_id_type& object_id);
+    CO_API void save(const boost::archive::version_type& version);
 #endif
 
-    CO_API void _saveSignedChar( const signed char& c );
+    CO_API void _saveSignedChar(const signed char& c);
 
     DataOStream& _stream;
 };
 
 #include "dataOStreamArchive.ipp" // template implementation
-
 }
 
 BOOST_SERIALIZATION_REGISTER_ARCHIVE(co::DataOStreamArchive)
 BOOST_SERIALIZATION_USE_ARRAY_OPTIMIZATION(co::DataOStreamArchive)
 
-#endif //CO_DATAOSTREAMARCHIVE_H
+#endif // CO_DATAOSTREAMARCHIVE_H

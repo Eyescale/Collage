@@ -20,14 +20,13 @@
 #ifndef CO_DISTRIBUTABLE_H
 #define CO_DISTRIBUTABLE_H
 
-#include <co/object.h>      // default base class
-#include <co/dataIStream.h> // used inline
-#include <co/dataOStream.h> // used inline
+#include <co/dataIStream.h>      // used inline
+#include <co/dataOStream.h>      // used inline
+#include <co/object.h>           // default base class
 #include <servus/serializable.h> //used inline
 
 namespace co
 {
-
 /**
  * Distributable Collage object for any servus::Serializable object.
  *
@@ -36,25 +35,33 @@ namespace co
  * call an abstract change notification method "virtual void notifyChanged() =
  * 0;" (Zerobuf does this).
  */
-template< class T, class S = Object, typename... Args > class Distributable : public T, public S
+template <class T, class S = Object, typename... Args>
+class Distributable : public T, public S
 {
 public:
     /** Construct a new distributable object. @version 1.4 */
-    Distributable( Args... args ) : T(), S( args... ), _dirty( false ) {}
+    Distributable(Args... args)
+        : T()
+        , S(args...)
+        , _dirty(false)
+    {
+    }
 
     /** Copy-construct a distributable object. @version 1.4 */
-    Distributable( const Distributable& rhs )
-        : T( rhs ), S( rhs ), _dirty( false ) {}
+    Distributable(const Distributable& rhs)
+        : T(rhs)
+        , S(rhs)
+        , _dirty(false)
+    {
+    }
 
     virtual ~Distributable() {}
-
     /** @sa Object::dirty() */
     bool isDirty() const final { return S::isDirty() || _dirty; }
-
     /** @sa Object::commit() */
-    uint128_t commit( const uint32_t incarnation = CO_COMMIT_NEXT ) final
+    uint128_t commit(const uint32_t incarnation = CO_COMMIT_NEXT) final
     {
-        const uint128_t& version = S::commit( incarnation );
+        const uint128_t& version = S::commit(incarnation);
         _dirty = false;
         return version;
     }
@@ -63,34 +70,34 @@ public:
     void notifyChanged() override
     {
         T::notifyChanged();
-        if( S::isMaster( ))
+        if (S::isMaster())
             _dirty = true;
     }
 
 private:
     typename S::ChangeType getChangeType() const final { return S::INSTANCE; }
-
-    void getInstanceData( co::DataOStream& os ) override
+    void getInstanceData(co::DataOStream& os) override
     {
-        S::getInstanceData( os );
+        S::getInstanceData(os);
         const auto& data = T::toBinary();
-        os << data.size << Array< const void >( data.ptr.get(), data.size );
+        os << data.size << Array<const void>(data.ptr.get(), data.size);
     }
 
-    void applyInstanceData( co::DataIStream& is ) override
+    void applyInstanceData(co::DataIStream& is) override
     {
-        S::applyInstanceData( is );
-        const size_t size = is.read< size_t >();
-        T::fromBinary( is.getRemainingBuffer( size ), size );
+        S::applyInstanceData(is);
+        const size_t size = is.read<size_t>();
+        T::fromBinary(is.getRemainingBuffer(size), size);
     }
 
     bool _dirty;
 };
 
-template< class T > inline
-std::ostream& operator << ( std::ostream& os, const Distributable< T >& object )
+template <class T>
+inline std::ostream& operator<<(std::ostream& os,
+                                const Distributable<T>& object)
 {
-    return os << static_cast< const T& >( object );
+    return os << static_cast<const T&>(object);
 }
 }
 

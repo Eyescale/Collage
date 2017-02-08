@@ -20,4 +20,4 @@
 #include "worker.ipp"
 #include "commandQueue.h"
 
-template class co::WorkerThread< co::CommandQueue >;
+template class co::WorkerThread<co::CommandQueue>;

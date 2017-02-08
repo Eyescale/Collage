@@ -22,14 +22,13 @@
 
 namespace co
 {
-    /** A listener interface to buffer state changes. */
-    class BufferListener
-    {
-    public:
-        virtual ~BufferListener() {}
-
-        virtual void notifyFree( Buffer* ) = 0; //!< No references left
-    };
+/** A listener interface to buffer state changes. */
+class BufferListener
+{
+public:
+    virtual ~BufferListener() {}
+    virtual void notifyFree(Buffer*) = 0; //!< No references left
+};
 }
 
 #endif // CO_BUFFER_LISTENER_H

@@ -32,51 +32,52 @@
 namespace co
 {
 FDConnection::FDConnection()
-        : _readFD( 0 ),
-          _writeFD( 0 )
-{}
+    : _readFD(0)
+    , _writeFD(0)
+{
+}
 
 int FDConnection::_getTimeOut()
 {
     const uint32_t timeout = Global::getTimeout();
-    return timeout == LB_TIMEOUT_INDEFINITE ? -1 : int( timeout );
+    return timeout == LB_TIMEOUT_INDEFINITE ? -1 : int(timeout);
 }
 
 //----------------------------------------------------------------------
 // read
 //----------------------------------------------------------------------
-int64_t FDConnection::readSync( void* buffer, const uint64_t bytes, const bool )
+int64_t FDConnection::readSync(void* buffer, const uint64_t bytes, const bool)
 {
-    if( _readFD < 1 )
+    if (_readFD < 1)
         return -1;
 
-    ssize_t bytesRead = ::read( _readFD, buffer, bytes );
-    if( bytesRead > 0 )
+    ssize_t bytesRead = ::read(_readFD, buffer, bytes);
+    if (bytesRead > 0)
         return bytesRead;
 
-    if( bytesRead == 0 || errno == EWOULDBLOCK || errno == EAGAIN )
+    if (bytesRead == 0 || errno == EWOULDBLOCK || errno == EAGAIN)
     {
         struct pollfd fds[1];
         fds[0].fd = _readFD;
         fds[0].events = POLLIN;
 
-        const int res = poll( fds, 1, _getTimeOut( ));
-        if( res < 0 )
+        const int res = poll(fds, 1, _getTimeOut());
+        if (res < 0)
         {
-            LBWARN << "Error during read : " << strerror( errno ) << std::endl;
+            LBWARN << "Error during read : " << strerror(errno) << std::endl;
             return -1;
         }
 
-        if( res == 0 )
-            throw Exception( Exception::TIMEOUT_READ );
+        if (res == 0)
+            throw Exception(Exception::TIMEOUT_READ);
 
-        bytesRead = ::read( _readFD, buffer, bytes );
+        bytesRead = ::read(_readFD, buffer, bytes);
     }
 
-    if( bytesRead > 0 )
+    if (bytesRead > 0)
         return bytesRead;
 
-    if( bytesRead == 0 ) // EOF
+    if (bytesRead == 0) // EOF
     {
         LBDEBUG << "Got EOF, closing " << getDescription()->toString()
                 << std::endl;
@@ -84,12 +85,12 @@ int64_t FDConnection::readSync( void* buffer, const uint64_t bytes, const bool )
         return -1;
     }
 
-    LBASSERT( bytesRead == -1 ); // error
+    LBASSERT(bytesRead == -1); // error
 
-    if( errno == EINTR ) // if interrupted, try again
+    if (errno == EINTR) // if interrupted, try again
         return 0;
 
-    LBWARN << "Error during read: " << strerror( errno ) << ", " << bytes
+    LBWARN << "Error during read: " << strerror(errno) << ", " << bytes
            << "b on fd " << _readFD << std::endl;
     return -1;
 }
@@ -97,39 +98,39 @@ int64_t FDConnection::readSync( void* buffer, const uint64_t bytes, const bool )
 //----------------------------------------------------------------------
 // write
 //----------------------------------------------------------------------
-int64_t FDConnection::write( const void* buffer, const uint64_t bytes )
+int64_t FDConnection::write(const void* buffer, const uint64_t bytes)
 {
-    if( !isConnected() || _writeFD < 1 )
+    if (!isConnected() || _writeFD < 1)
         return -1;
 
-    ssize_t bytesWritten = ::write( _writeFD, buffer, bytes );
-    if( bytesWritten > 0 )
+    ssize_t bytesWritten = ::write(_writeFD, buffer, bytes);
+    if (bytesWritten > 0)
         return bytesWritten;
 
-    if( bytesWritten == 0 || errno == EWOULDBLOCK || errno == EAGAIN )
+    if (bytesWritten == 0 || errno == EWOULDBLOCK || errno == EAGAIN)
     {
         struct pollfd fds[1];
         fds[0].fd = _writeFD;
         fds[0].events = POLLOUT;
-        const int res = poll( fds, 1, _getTimeOut( ));
+        const int res = poll(fds, 1, _getTimeOut());
         if (res < 0)
         {
             LBWARN << "Write error: " << lunchbox::sysError << std::endl;
             return -1;
         }
 
-        if( res == 0)
-            throw Exception( Exception::TIMEOUT_WRITE );
+        if (res == 0)
+            throw Exception(Exception::TIMEOUT_WRITE);
 
-        bytesWritten = ::write( _writeFD, buffer, bytes );
+        bytesWritten = ::write(_writeFD, buffer, bytes);
     }
 
-    if( bytesWritten > 0 )
+    if (bytesWritten > 0)
         return bytesWritten;
 
-    if( bytesWritten == -1 ) // error
+    if (bytesWritten == -1) // error
     {
-        if( errno == EINTR ) // if interrupted, try again
+        if (errno == EINTR) // if interrupted, try again
             return 0;
 
         LBWARN << "Error during write: " << lunchbox::sysError << std::endl;

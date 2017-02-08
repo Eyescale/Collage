@@ -20,48 +20,47 @@
 #ifndef CO_WORKER_H
 #define CO_WORKER_H
 
-#include <co/api.h>          // CO_API definition
+#include <co/api.h> // CO_API definition
 #include <co/types.h>
-#include <lunchbox/thread.h>  // base class
 #include <limits.h>
+#include <lunchbox/thread.h> // base class
 
 #ifdef COLLAGE_SHARED
-#  define CO_WORKER_API CO_API
+#define CO_WORKER_API CO_API
 #else
-#  define CO_WORKER_API
+#define CO_WORKER_API
 #endif
 
 namespace co
 {
 /** A worker thread processing items out of a CommandQueue. */
-template< class Q > class WorkerThread : public lunchbox::Thread
+template <class Q>
+class WorkerThread : public lunchbox::Thread
 {
 public:
     /** Construct a new worker thread. @version 1.0 */
-    explicit WorkerThread( const size_t maxSize = ULONG_MAX )
-        : _commands( maxSize ) {}
+    explicit WorkerThread(const size_t maxSize = ULONG_MAX)
+        : _commands(maxSize)
+    {
+    }
 
     /** Destruct the worker. @version 1.0 */
     virtual ~WorkerThread() {}
-
     /** @return the queue to the worker thread. @version 1.0 */
     Q* getWorkerQueue() { return &_commands; }
-
 protected:
     /** @sa lunchbox::Thread::run() */
     CO_WORKER_API void run() override;
 
     /** @return true to stop the worker thread. @version 1.0 */
     virtual bool stopRunning() { return false; }
-
     /** @return true to indicate pending idle tasks. @version 1.0 */
     virtual bool notifyIdle() { return false; }
-
 private:
     /** The receiver->worker thread command queue. */
     Q _commands;
 };
 
-typedef WorkerThread< CommandQueue > Worker; // instantiated in worker.cpp
+typedef WorkerThread<CommandQueue> Worker; // instantiated in worker.cpp
 }
-#endif //CO_WORKER_H
+#endif // CO_WORKER_H

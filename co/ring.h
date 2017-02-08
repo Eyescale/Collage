@@ -33,219 +33,249 @@
 
 #include <sys/types.h>
 
-template< typename T > class RingPtr
+template <typename T>
+class RingPtr
 {
 public:
-    inline T value() const {return ptrVal;};
-    inline T ptr(T num) const {return ((ptrVal % num) + ptrAdjust) % num;};
-    inline T ptr(T num,T off) const {return ((ptrVal % num) + ptrAdjust + off) % num;};
+    inline T value() const { return ptrVal; };
+    inline T ptr(T num) const { return ((ptrVal % num) + ptrAdjust) % num; };
+    inline T ptr(T num, T off) const
+    {
+        return ((ptrVal % num) + ptrAdjust + off) % num;
+    };
 
-    void incr(T num,T amount)
-        {
-            T optrVal = ptrVal;
-            ptrVal += amount;
-            /* Since the length of the ring is not a power of two we need to
-               correct when there is a wrap around. This scheme puts the bulk of
-               the cost of that calculation at incr time, not at access time.*/
-            if (ptrVal < optrVal)
-                ptrAdjust = (ptrAdjust + ((T)(-1) % num) + 1) % num;
-        }
-    inline void clear() {ptrVal = 0; ptrAdjust = 0;};
+    void incr(T num, T amount)
+    {
+        T optrVal = ptrVal;
+        ptrVal += amount;
+        /* Since the length of the ring is not a power of two we need to
+           correct when there is a wrap around. This scheme puts the bulk of
+           the cost of that calculation at incr time, not at access time.*/
+        if (ptrVal < optrVal)
+            ptrAdjust = (ptrAdjust + ((T)(-1) % num) + 1) % num;
+    }
+    inline void clear()
+    {
+        ptrVal = 0;
+        ptrAdjust = 0;
+    };
 
-    inline RingPtr() : ptrVal(0), ptrAdjust(0) {};
+    inline RingPtr()
+        : ptrVal(0)
+        , ptrAdjust(0){};
 
 private:
     T ptrVal;
     T ptrAdjust;
 };
 
-template< typename T, unsigned int NUM > class Ring
+template <typename T, unsigned int NUM>
+class Ring
 {
 public:
+    enum
+    {
+        HEAD = 0,
+        MIDDLE = NUM / 2,
+        TAIL = NUM - 1
+    };
 
-    enum {HEAD = 0, MIDDLE = NUM/2, TAIL = NUM-1};
+    inline T size() const { return num; };
+    inline bool isEmpty(unsigned int ID1, unsigned int ID2) const
+    {
+        return ptrs[ID1].value() == ptrs[ID2].value();
+    };
+    inline bool isFull(unsigned int ID1, unsigned int ID2) const
+    {
+        return available(ID1, ID2) == num;
+    };
+    inline T available(unsigned int ID1, unsigned int ID2) const
+    {
+        return ptrs[ID1].value() - ptrs[ID2].value();
+    };
+    inline T negAvailable(unsigned int ID1, unsigned int ID2) const
+    {
+        return num - available(ID1, ID2);
+    };
+    inline bool isEqual(unsigned int ID1, unsigned int ID2) const
+    {
+        return ptrs[ID1].value() == ptrs[ID2].value();
+    };
 
-    inline T size() const {return num;};
-    inline bool isEmpty(unsigned int ID1,unsigned int ID2) const
-        {return ptrs[ID1].value() == ptrs[ID2].value();};
-    inline bool isFull(unsigned int ID1,unsigned int ID2) const
-        {return available(ID1,ID2) == num;};
-    inline T available(unsigned int ID1,unsigned int ID2) const
-        {return ptrs[ID1].value() - ptrs[ID2].value();};
-    inline T negAvailable(unsigned int ID1,unsigned int ID2) const
-        {return num - available(ID1,ID2);};
-    inline bool isEqual(unsigned int ID1,unsigned int ID2) const
-        {return ptrs[ID1].value() == ptrs[ID2].value();};
-
-    inline void incr(unsigned int ID,T amount = 1) {ptrs[ID].incr(num,amount);};
-    inline T ptr(unsigned int ID,T off = 0) const {return ptrs[ID].ptr(num,off);};
-    inline T value(unsigned int ID) const {return ptrs[ID].value();};
-
+    inline void incr(unsigned int ID, T amount = 1)
+    {
+        ptrs[ID].incr(num, amount);
+    };
+    inline T ptr(unsigned int ID, T off = 0) const
+    {
+        return ptrs[ID].ptr(num, off);
+    };
+    inline T value(unsigned int ID) const { return ptrs[ID].value(); };
     /* This moves the pointer to a new value. The new pointer is thought of as
        ahead of the old one, and buffer indicies are adjusted
        appropriately. */
-    inline void moveValue(unsigned int ID,T val) {incr(ID,val - value(ID));}
-
+    inline void moveValue(unsigned int ID, T val) { incr(ID, val - value(ID)); }
     // Simple accessors for the head/tail
-    inline bool isEmpty() const {return isEmpty(HEAD,TAIL);};
-    inline bool isFull() const {return isFull(HEAD,TAIL);};
-    inline T available() const {return available(HEAD,TAIL);};
-    inline T negAvailable() const {return negAvailable(HEAD,TAIL);};
-
-    inline T head(T off = 0) const {return ptr(HEAD,off);};
-    inline void incrHead(T amount = 1) {incr(HEAD,amount);};
-    inline T tail(T off = 0) const {return ptr(TAIL,off);};
-    inline void incrTail(T amount = 1) {incr(TAIL,amount);};
-
+    inline bool isEmpty() const { return isEmpty(HEAD, TAIL); };
+    inline bool isFull() const { return isFull(HEAD, TAIL); };
+    inline T available() const { return available(HEAD, TAIL); };
+    inline T negAvailable() const { return negAvailable(HEAD, TAIL); };
+    inline T head(T off = 0) const { return ptr(HEAD, off); };
+    inline void incrHead(T amount = 1) { incr(HEAD, amount); };
+    inline T tail(T off = 0) const { return ptr(TAIL, off); };
+    inline void incrTail(T amount = 1) { incr(TAIL, amount); };
     /* Return the number of consecutive entries between ID1 and ID2, such that
        bptr(ID2) + linearSize() does not pass ID1 or the end of the buffer. */
-    T linearSize(unsigned int ID1,unsigned int ID2) const
-        {
-            T avail = available(ID1,ID2);
-            T id2 = ptr(ID2);
-            T left = size() - id2;
-            if (avail < left)
-                return avail;
-            return left;
-        }
+    T linearSize(unsigned int ID1, unsigned int ID2) const
+    {
+        T avail = available(ID1, ID2);
+        T id2 = ptr(ID2);
+        T left = size() - id2;
+        if (avail < left)
+            return avail;
+        return left;
+    }
 
     /* linearSize is the entries between the pointers (to get from ID2 to ID1)
        while negLinearSize is the entries outside the pointers (to get from ID1
        to ID2). linearSize is for reading, negLinearSize is for writing. */
-    T negLinearSize(unsigned int ID1,unsigned int ID2) const
-        {
-            T avail = size() - available(ID1,ID2);
-            T id1 = ptr(ID1);
-            T left = size() - id1;
-            if (avail < left)
-                return avail;
-            return left;
-        }
+    T negLinearSize(unsigned int ID1, unsigned int ID2) const
+    {
+        T avail = size() - available(ID1, ID2);
+        T id1 = ptr(ID1);
+        T left = size() - id1;
+        if (avail < left)
+            return avail;
+        return left;
+    }
 
     // Makes ptr(ID) % a == 0
-    inline void align(unsigned int ID,T a)
-        {
-            incr(ID,(a - (ptr(ID) % a)) % a);
-        }
+    inline void align(unsigned int ID, T a)
+    {
+        incr(ID, (a - (ptr(ID) % a)) % a);
+    }
 
     /* One usage model is to have the tail pointer be set to the lowest
        of several tail pointers. This is usefull if the progress of the
        other tails is unrelated. */
     void updateTail()
+    {
+        T avail = 0;
+        for (unsigned int I = 1; I < TAIL; I++)
         {
-            T avail = 0;
-            for (unsigned int I = 1; I < TAIL; I++)
-            {
-                T tmp = available(HEAD,I);
-                if (tmp > avail)
-                    avail = tmp;
-            }
-            incrTail(available() - avail);
+            T tmp = available(HEAD, I);
+            if (tmp > avail)
+                avail = tmp;
         }
+        incrTail(available() - avail);
+    }
 
-    void clear(T newNum )
-        {
-            for (unsigned int I = 0; I != NUM; I++)
-                ptrs[I].clear();
-            num = newNum;
-        }
+    void clear(T newNum)
+    {
+        for (unsigned int I = 0; I != NUM; I++)
+            ptrs[I].clear();
+        num = newNum;
+    }
 
-    inline Ring(T num_) : num(num_) {};
+    inline Ring(T num_)
+        : num(num_){};
 
 private:
     T num;
     RingPtr<T> ptrs[NUM];
 };
 
-template <typename BT,typename RT = size_t,unsigned int NUM = 2>
-class BufferQ : public Ring<RT,NUM>
+template <typename BT, typename RT = size_t, unsigned int NUM = 2>
+class BufferQ : public Ring<RT, NUM>
 {
     typedef RT T;
     typedef BT buffer_t;
-    typedef Ring<RT,NUM> RING;
+    typedef Ring<RT, NUM> RING;
 
 protected:
-
     buffer_t *buffer;
 
-    inline BufferQ(buffer_t *buffer_,T num_) : Ring<RT,NUM>(num_), buffer(buffer_) {};
+    inline BufferQ(buffer_t *buffer_, T num_)
+        : Ring<RT, NUM>(num_)
+        , buffer(buffer_){};
 
 public:
+    enum
+    {
+        HEAD = 0,
+        MIDDLE = NUM / 2,
+        TAIL = NUM - 1
+    };
 
-    enum {HEAD = 0, MIDDLE = NUM/2, TAIL = NUM-1};
-
-    inline const buffer_t *bptr(unsigned int ID,T off = 0) const {return buffer + ptr(ID,off);}
-    inline const buffer_t *bhead(T off = 0) const {return bptr(HEAD,off);}
-    inline const buffer_t *btail(T off = 0) const {return bptr(TAIL,off);}
-
-    inline buffer_t *bptr(unsigned int ID,T off = 0) {return buffer + this->ptr(ID,off);}
-    inline buffer_t *bhead(T off = 0) {return bptr(HEAD,off);}
-    inline buffer_t *btail(T off = 0) {return bptr(TAIL,off);}
-
+    inline const buffer_t *bptr(unsigned int ID, T off = 0) const
+    {
+        return buffer + ptr(ID, off);
+    }
+    inline const buffer_t *bhead(T off = 0) const { return bptr(HEAD, off); }
+    inline const buffer_t *btail(T off = 0) const { return bptr(TAIL, off); }
+    inline buffer_t *bptr(unsigned int ID, T off = 0)
+    {
+        return buffer + this->ptr(ID, off);
+    }
+    inline buffer_t *bhead(T off = 0) { return bptr(HEAD, off); }
+    inline buffer_t *btail(T off = 0) { return bptr(TAIL, off); }
     inline buffer_t &get()
-        {
-            buffer_t *res = bhead();
-            RING::incrHead();
-            return *res;
-        };
+    {
+        buffer_t *res = bhead();
+        RING::incrHead();
+        return *res;
+    };
     inline void put(const buffer_t &val)
-        {
-            *btail() = val;
-            RING::incrTail();
-        };
+    {
+        *btail() = val;
+        RING::incrTail();
+    };
 
-    inline buffer_t *bufferPtr() const {return buffer;};
-
+    inline buffer_t *bufferPtr() const { return buffer; };
     void clear(T newNum = RING::size())
+    {
+        if (newNum != RING::size())
         {
-            if (newNum != RING::size())
-            {
-                delete [] buffer;
-                buffer = new buffer_t[newNum];
-            }
-            return RING::clear(newNum);
+            delete[] buffer;
+            buffer = new buffer_t[newNum];
         }
+        return RING::clear(newNum);
+    }
 
-    inline BufferQ(T num_) : Ring<RT,NUM>(num_)
-        {
-            buffer = new buffer_t[num_];
-        }
-    inline ~BufferQ()
-        {
-            delete [] buffer;
-        }
+    inline BufferQ(T num_)
+        : Ring<RT, NUM>(num_)
+    {
+        buffer = new buffer_t[num_];
+    }
+    inline ~BufferQ() { delete[] buffer; }
 };
 
 /* The track version of BufferQ extends an existing BufferQ with an additional
    set of pointers, but they still share the same memory region. */
-template <typename BT,typename RT = size_t,unsigned int NUM = 2>
-class BufferQTrack : public BufferQ<BT,RT,NUM>
+template <typename BT, typename RT = size_t, unsigned int NUM = 2>
+class BufferQTrack : public BufferQ<BT, RT, NUM>
 {
     typedef RT T;
     typedef BT buffer_t;
-    typedef Ring<RT,NUM> RING;
-    typedef BufferQ<BT,RT,NUM> BUFFERQ;
+    typedef Ring<RT, NUM> RING;
+    typedef BufferQ<BT, RT, NUM> BUFFERQ;
 
     void clear(T newNum);
 
 public:
+    template <unsigned int T>
+    inline void clear(const BufferQ<BT, RT, T> &parent)
+    {
+        BUFFERQ::buffer = parent.bufferPtr();
+        RING::clear(parent.size());
+    }
 
     template <unsigned int T>
-    inline void clear(const BufferQ<BT,RT,T> &parent)
-        {
-            BUFFERQ::buffer = parent.bufferPtr();
-            RING::clear(parent.size());
-        }
-
-    template <unsigned int T>
-    inline BufferQTrack(const BufferQ<BT,RT,T> &parent) :
-            BufferQ<BT,RT,NUM>(parent.bufferPtr(),parent.size())
-        {
-        }
-    inline ~BufferQTrack()
-        {
-            BUFFERQ::buffer = 0;
-        }
+    inline BufferQTrack(const BufferQ<BT, RT, T> &parent)
+        : BufferQ<BT, RT, NUM>(parent.bufferPtr(), parent.size())
+    {
+    }
+    inline ~BufferQTrack() { BUFFERQ::buffer = 0; }
 };
 
 #endif // CO_RING_H

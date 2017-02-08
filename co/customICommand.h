@@ -20,12 +20,14 @@
 #ifndef CO_CUSTOMICOMMAND_H
 #define CO_CUSTOMICOMMAND_H
 
-#include <co/iCommand.h>   // base class
+#include <co/iCommand.h> // base class
 
 namespace co
 {
-
-namespace detail { class CustomICommand; }
+namespace detail
+{
+class CustomICommand;
+}
 
 /**
  * An input command specialization for custom commands.
@@ -35,10 +37,10 @@ class CustomICommand : public ICommand
 {
 public:
     /** @internal */
-    CO_API explicit CustomICommand( const ICommand& command );
+    CO_API explicit CustomICommand(const ICommand& command);
 
     /** Copy-construct a custom command. */
-    CO_API CustomICommand( const CustomICommand& rhs );
+    CO_API CustomICommand(const CustomICommand& rhs);
 
     /** Destruct a custom command. */
     CO_API virtual ~CustomICommand();
@@ -48,14 +50,13 @@ public:
 
 private:
     CustomICommand();
-    CustomICommand& operator = ( const CustomICommand& );
+    CustomICommand& operator=(const CustomICommand&);
     detail::CustomICommand* const _impl;
 
     void _init();
 };
 
-CO_API std::ostream& operator << ( std::ostream& os, const CustomICommand& );
-
+CO_API std::ostream& operator<<(std::ostream& os, const CustomICommand&);
 }
 
-#endif //CO_CUSTOMICOMMAND_H
+#endif // CO_CUSTOMICOMMAND_H

@@ -27,9 +27,9 @@
 #include <co/queueMaster.h>
 #include <co/queueSlave.h>
 
-int main( int argc, char **argv )
+int main(int argc, char** argv)
 {
-    TEST( co::init( argc, argv ));
+    TEST(co::init(argc, argv));
 
     co::LocalNodePtr node = new co::LocalNode;
     node->initLocal(argc, argv);
@@ -42,7 +42,7 @@ int main( int argc, char **argv )
 
     qm->push();
     qm->push() << 42u;
-    qm->push() << std::string( "hallo" );
+    qm->push() << std::string("hallo");
     qm->push() << 1.5f << false << co::VERSION_FIRST;
 
     {
@@ -52,20 +52,20 @@ int main( int argc, char **argv )
         co::ObjectICommand c4 = qs->pop();
         co::ObjectICommand c5 = qs->pop();
 
-        TEST( c1.isValid( ));
-        TEST( c2.isValid( ));
-        TEST( c2.get< uint32_t >() == 42u )
-        TEST( c3.isValid( ));
-        TEST( c3.get< std::string >() == "hallo" )
-        TEST( c4.isValid( ));
-        TEST( c4.get< float >() == 1.5f )
-        TEST( c4.get< bool >() == false )
-        TEST( c4.get< co::uint128_t >() == co::VERSION_FIRST )
-        TEST( !c5.isValid( ));
+        TEST(c1.isValid());
+        TEST(c2.isValid());
+        TEST(c2.get<uint32_t>() == 42u)
+        TEST(c3.isValid());
+        TEST(c3.get<std::string>() == "hallo")
+        TEST(c4.isValid());
+        TEST(c4.get<float>() == 1.5f)
+        TEST(c4.get<bool>() == false)
+        TEST(c4.get<co::uint128_t>() == co::VERSION_FIRST)
+        TEST(!c5.isValid());
     }
 
-    node->unmapObject( qs );
-    node->deregisterObject( qm );
+    node->unmapObject(qs);
+    node->deregisterObject(qm);
 
     delete qs;
     delete qm;
@@ -75,4 +75,3 @@ int main( int argc, char **argv )
     co::exit();
     return EXIT_SUCCESS;
 }
-

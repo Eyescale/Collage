@@ -26,85 +26,85 @@
 namespace co
 {
 DataIStreamQueue::DataIStreamQueue()
-{}
+{
+}
 
 DataIStreamQueue::~DataIStreamQueue()
 {
-    LBASSERTINFO( _pending.empty(), "Incomplete commits pending" );
-    LBASSERTINFO( _queued.isEmpty(), _queued.getSize() << " unapplied commits" )
+    LBASSERTINFO(_pending.empty(), "Incomplete commits pending");
+    LBASSERTINFO(_queued.isEmpty(), _queued.getSize() << " unapplied commits")
 
-    for( PendingStreamsCIter i = _pending.begin(); i != _pending.end(); ++i )
+    for (PendingStreamsCIter i = _pending.begin(); i != _pending.end(); ++i)
         delete i->second;
     _pending.clear();
 
     QueuedStream stream;
-    while( _queued.tryPop( stream ))
+    while (_queued.tryPop(stream))
         delete stream.second;
 }
 
 ObjectDataIStream* DataIStreamQueue::tryPop()
 {
-    QueuedStream stream( uint128_t(), (ObjectDataIStream*)0 );
-    _queued.tryPop( stream );
+    QueuedStream stream(uint128_t(), (ObjectDataIStream*)0);
+    _queued.tryPop(stream);
     return stream.second;
 }
 
-ObjectDataIStream* DataIStreamQueue::pull( const uint128_t& key )
+ObjectDataIStream* DataIStreamQueue::pull(const uint128_t& key)
 {
     ObjectDataIStream* is = 0;
     QueuedStreams unusedStreams;
-    while( !is )
+    while (!is)
     {
         QueuedStream candidate = _queued.pop();
-        if( candidate.first == key )
+        if (candidate.first == key)
             is = candidate.second;
         else
-            unusedStreams.push_back( candidate );
+            unusedStreams.push_back(candidate);
     }
 
-    _queued.pushFront( unusedStreams );
+    _queued.pushFront(unusedStreams);
     return is;
 }
 
-void DataIStreamQueue::recycle( ObjectDataIStream* stream )
+void DataIStreamQueue::recycle(ObjectDataIStream* stream)
 {
 #ifdef CO_AGGRESSIVE_CACHING
     stream->reset();
-    _iStreamCache.release( stream );
+    _iStreamCache.release(stream);
 #else
     delete stream;
 #endif
 }
 
-bool DataIStreamQueue::addDataCommand( const uint128_t& key, ICommand& command )
+bool DataIStreamQueue::addDataCommand(const uint128_t& key, ICommand& command)
 {
-    LB_TS_THREAD( _thread );
-    LBASSERTINFO( _pending.size() < 100, "More than 100 pending commits");
+    LB_TS_THREAD(_thread);
+    LBASSERTINFO(_pending.size() < 100, "More than 100 pending commits");
 
     ObjectDataIStream* is = 0;
-    PendingStreams::iterator i = _pending.find( key );
-    if( i == _pending.end( ))
+    PendingStreams::iterator i = _pending.find(key);
+    if (i == _pending.end())
         is = _iStreamCache.alloc();
     else
         is = i->second;
 
-    is->addDataCommand( command );
-    if( is->isReady( ))
+    is->addDataCommand(command);
+    if (is->isReady())
     {
-        if( i != _pending.end( ))
-            _pending.erase( i );
+        if (i != _pending.end())
+            _pending.erase(i);
 
-        _queued.push( QueuedStream( key, is ));
+        _queued.push(QueuedStream(key, is));
         return true;
     }
 
-    if( i == _pending.end( ))
+    if (i == _pending.end())
     {
-        _pending[ key ] = is;
+        _pending[key] = is;
         return false;
     }
 
     return false;
 }
-
 }

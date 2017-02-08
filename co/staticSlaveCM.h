@@ -21,7 +21,7 @@
 #ifndef CO_STATICSLAVECM_H
 #define CO_STATICSLAVECM_H
 
-#include "objectCM.h"     // base class
+#include "objectCM.h"         // base class
 #include <co/objectVersion.h> // VERSION_FOO values
 #include <lunchbox/thread.h>  // thread-safety check
 
@@ -33,11 +33,10 @@ namespace co
 class StaticSlaveCM : public ObjectCM
 {
 public:
-    explicit StaticSlaveCM( Object* object );
+    explicit StaticSlaveCM(Object* object);
     virtual ~StaticSlaveCM();
 
     void init() override {}
-
     /** @name Versioning */
     //@{
     uint128_t getHeadVersion() const override { return VERSION_FIRST; }
@@ -46,23 +45,28 @@ public:
 
     bool isMaster() const override { return false; }
     uint32_t getMasterInstanceID() const override
-    { return CO_INSTANCE_INVALID; }
+    {
+        return CO_INSTANCE_INVALID;
+    }
 
-    bool addSlave( const MasterCMCommand& ) override
-    { LBDONTCALL; return false; }
-    void removeSlaves( NodePtr ) override {}
+    bool addSlave(const MasterCMCommand&) override
+    {
+        LBDONTCALL;
+        return false;
+    }
+    void removeSlaves(NodePtr) override {}
+    void applyMapData(const uint128_t& version) override;
+    void addInstanceDatas(const ObjectDataIStreamDeque&,
+                          const uint128_t& startVersion) override;
 
-    void applyMapData( const uint128_t& version ) override;
-    void addInstanceDatas( const ObjectDataIStreamDeque&,
-                           const uint128_t& startVersion ) override;
 protected:
     /** input stream for receiving the current version */
     ObjectDataIStream* _currentIStream;
 
 private:
     /* The command handlers. */
-    bool _cmdInstance( ICommand& command );
-    LB_TS_VAR( _rcvThread );
+    bool _cmdInstance(ICommand& command);
+    LB_TS_VAR(_rcvThread);
 };
 }
 

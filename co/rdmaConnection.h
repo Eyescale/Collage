@@ -19,13 +19,13 @@
  */
 #pragma once
 
-#include <co/connection.h>
 #include "ring.h"
+#include <co/connection.h>
 
-#include <lunchbox/thread.h>
 #include <lunchbox/monitor.h>
 #include <lunchbox/scopedMutex.h>
 #include <lunchbox/spinLock.h>
+#include <lunchbox/thread.h>
 
 #include <bitset>
 
@@ -33,7 +33,7 @@
 #include <rdma/rdma_cma.h>
 
 #ifndef _WIN32
-#  include <netdb.h>
+#include <netdb.h>
 #endif
 
 namespace co
@@ -45,29 +45,30 @@ namespace co
 class BufferPool
 {
 public:
-    BufferPool( size_t buffer_size );
-    ~BufferPool( );
+    BufferPool(size_t buffer_size);
+    ~BufferPool();
 
-    ibv_mr *getMR( ) const { return _mr; }
-    size_t getBufferSize( ) const { return _buffer_size; }
-    void *getBuffer( )
+    ibv_mr *getMR() const { return _mr; }
+    size_t getBufferSize() const { return _buffer_size; }
+    void *getBuffer()
     {
-        lunchbox::ScopedWrite mutex( _buffer_lock );
+        lunchbox::ScopedWrite mutex(_buffer_lock);
 
-        return (void *)( (uintptr_t)_buffer + ( _ring.get( ) * _buffer_size ));
+        return (void *)((uintptr_t)_buffer + (_ring.get() * _buffer_size));
     }
-    void freeBuffer( void *buf )
+    void freeBuffer(void *buf)
     {
-        lunchbox::ScopedWrite mutex( _buffer_lock );
+        lunchbox::ScopedWrite mutex(_buffer_lock);
 
-        ::memset( buf, 0xff, _buffer_size ); // Paranoid
+        ::memset(buf, 0xff, _buffer_size); // Paranoid
 
-        _ring.put((uint32_t)(( (uintptr_t)buf - (uintptr_t)_buffer ) /
-            _buffer_size ));
+        _ring.put(
+            (uint32_t)(((uintptr_t)buf - (uintptr_t)_buffer) / _buffer_size));
     }
 
-    void clear( );
-    bool resize( ibv_pd *pd, uint32_t num_bufs );
+    void clear();
+    bool resize(ibv_pd *pd, uint32_t num_bufs);
+
 private:
     const size_t _buffer_size;
     uint32_t _num_bufs;
@@ -85,24 +86,24 @@ private:
 class RingBuffer
 {
 public:
-    RingBuffer( int access = 0 );
-    ~RingBuffer( );
+    RingBuffer(int access = 0);
+    ~RingBuffer();
 
-    ibv_mr *getMR( ) const { return _mr; }
-    size_t getSize( ) const { return _size; }
-    void *getBase( ) const { return _map; }
+    ibv_mr *getMR() const { return _mr; }
+    size_t getSize() const { return _size; }
+    void *getBase() const { return _map; }
+    void clear();
+    bool resize(ibv_pd *pd, size_t size);
 
-    void clear( );
-    bool resize( ibv_pd *pd, size_t size );
 private:
     const int _access;
     size_t _size;
-    void* _map;
+    void *_map;
     struct ibv_mr *_mr;
 #ifdef _WIN32
     HANDLE _mapping;
-    void* determineViableAddr( size_t size );
-    void  allocAt( size_t size, void* desiredAddr );
+    void *determineViableAddr(size_t size);
+    void allocAt(size_t size, void *desiredAddr);
 #endif
 }; // RingBuffer
 
@@ -112,7 +113,12 @@ private:
   */
 struct RDMAConnParamData
 {
-    RDMAConnParamData() : magic( 0 ), version( 0 ), depth( 0 ) {}
+    RDMAConnParamData()
+        : magic(0)
+        , version(0)
+        , depth(0)
+    {
+    }
     uint16_t magic;
     uint16_t version;
     uint32_t depth;
@@ -163,20 +169,19 @@ class EventConnection;
 class RDMAConnection : public Connection
 {
 public:
-    RDMAConnection( );
+    RDMAConnection();
 
     bool connect() override;
     bool listen() override;
-    void close() override { _close( ); }
-
+    void close() override { _close(); }
     void acceptNB() override;
     ConnectionPtr acceptSync() override;
 
 protected:
-    void    readNB  ( void* buffer, const uint64_t bytes ) override;
-    int64_t readSync( void* buffer, const uint64_t bytes,
-                              const bool block ) override;
-    int64_t write( const void* buffer, const uint64_t bytes ) override;
+    void readNB(void *buffer, const uint64_t bytes) override;
+    int64_t readSync(void *buffer, const uint64_t bytes,
+                     const bool block) override;
+    int64_t write(const void *buffer, const uint64_t bytes) override;
 
 public:
     Notifier getNotifier() const override;
@@ -186,84 +191,84 @@ protected:
 
 private:
     /* Teardown */
-    void _close( );
-    void _cleanup( );
+    void _close();
+    void _cleanup();
 
     /* Setup */
-    bool _finishAccept( struct rdma_cm_id *new_cm_id,
-        const RDMAConnParamData &cpd );
+    bool _finishAccept(struct rdma_cm_id *new_cm_id,
+                       const RDMAConnParamData &cpd);
 
-    bool _lookupAddress( const bool passive );
-    void _updateInfo( struct sockaddr *addr );
+    bool _lookupAddress(const bool passive);
+    void _updateInfo(struct sockaddr *addr);
 
-    bool _createEventChannel( );
-    bool _createId( );
+    bool _createEventChannel();
+    bool _createId();
 
-    bool _initVerbs( );
-    bool _createQP( );
-    bool _initBuffers( );
+    bool _initVerbs();
+    bool _createQP();
+    bool _initBuffers();
 
-    bool _resolveAddress( );
-    bool _resolveRoute( );
-    bool _connect( );
+    bool _resolveAddress();
+    bool _resolveRoute();
+    bool _connect();
 
-    bool _bindAddress( );
-    bool _listen( int backlog );
-    bool _migrateId( );
-    bool _accept( );
-    bool _reject( );
+    bool _bindAddress();
+    bool _listen(int backlog);
+    bool _migrateId();
+    bool _accept();
+    bool _reject();
 
     /* Protocol */
-    bool _initProtocol( int32_t depth );
+    bool _initProtocol(int32_t depth);
 
-    inline bool _needFC( );
+    inline bool _needFC();
 
-    bool _postReceives( const uint32_t count );
+    bool _postReceives(const uint32_t count);
 
-    inline void _recvRDMAWrite( const uint32_t imm_data );
-    inline uint32_t _makeImm( const uint32_t b );
-    bool _postRDMAWrite( );
+    inline void _recvRDMAWrite(const uint32_t imm_data);
+    inline uint32_t _makeImm(const uint32_t b);
+    bool _postRDMAWrite();
 
-    bool _postMessage( const RDMAMessage &message );
-    void _recvMessage( const RDMAMessage &message );
-    inline void _recvFC( const RDMAFCPayload &fc );
+    bool _postMessage(const RDMAMessage &message);
+    void _recvMessage(const RDMAMessage &message);
+    inline void _recvFC(const RDMAFCPayload &fc);
     bool _postFC();
-    void _recvSetup( const RDMASetupPayload &setup );
-    bool _postSetup( );
+    void _recvSetup(const RDMASetupPayload &setup);
+    bool _postSetup();
 
-    bool _waitRecvSetup( );
+    bool _waitRecvSetup();
 
 private:
     enum Events
     {
-        CM_EVENT  = 0,
-        CQ_EVENT  = 1,
+        CM_EVENT = 0,
+        CQ_EVENT = 1,
         BUF_EVENT = 2,
     };
     typedef std::bitset<3> eventset;
 
-    bool _createNotifier( );
+    bool _createNotifier();
     void _updateNotifier();
-    bool _checkEvents( eventset &events );
+    bool _checkEvents(eventset &events);
 
     /* Connection manager events */
-    bool _checkDisconnected( eventset &events );
-    bool _waitForCMEvent( enum rdma_cm_event_type expected );
-    bool _doCMEvent( enum rdma_cm_event_type expected );
+    bool _checkDisconnected(eventset &events);
+    bool _waitForCMEvent(enum rdma_cm_event_type expected);
+    bool _doCMEvent(enum rdma_cm_event_type expected);
 
     /* Completion queue events */
-    bool _rearmCQ( );
-    bool _checkCQ( bool drain );
+    bool _rearmCQ();
+    bool _checkCQ(bool drain);
 
     /* Available byte events */
-    bool _createBytesAvailableFD( );
-    bool _incrAvailableBytes( const uint64_t b );
-    uint64_t _getAvailableBytes( );
+    bool _createBytesAvailableFD();
+    bool _incrAvailableBytes(const uint64_t b);
+    uint64_t _getAvailableBytes();
 
 #ifdef _WIN32
-    static void _triggerNotifierCQ( RDMAConnection* conn );
-    static void _triggerNotifierCM( RDMAConnection* conn );
-    void _triggerNotifierWorker( Events event );
+    static void _triggerNotifierCQ(RDMAConnection *conn);
+    static void _triggerNotifierCM(RDMAConnection *conn);
+    void _triggerNotifierWorker(Events event);
 #endif
 
 private:
@@ -289,7 +294,7 @@ private:
     struct ibv_comp_channel *_cc;
     struct ibv_cq *_cq;
     struct ibv_pd *_pd;
-    struct ibv_wc* _wcs;
+    struct ibv_wc *_wcs;
 
 #ifndef _WIN32
     int _pipe_fd[2];
@@ -304,9 +309,9 @@ private:
     struct RDMAConnParamData _cpd;
     bool _established;
 
-    int32_t _depth;               // Maximum sends in flight (RDMA & FC)
-    lunchbox::a_int32_t _writes;  // Number of unacked RDMA writes received
-    lunchbox::a_int32_t _fcs;     // Number of unacked FC messages received
+    int32_t _depth;                // Maximum sends in flight (RDMA & FC)
+    lunchbox::a_int32_t _writes;   // Number of unacked RDMA writes received
+    lunchbox::a_int32_t _fcs;      // Number of unacked FC messages received
     lunchbox::a_int32_t _wcredits; // Number of RDMA write credits available
     lunchbox::a_int32_t _fcredits; // Number of FC message credits available
 
@@ -318,38 +323,38 @@ private:
     /* source RDMA MR */
     RingBuffer _sourcebuf;
     Ring<uint32_t, 3> _sourceptr;
-        //        : initialized during connect/accept
-        // HEAD   : advanced after copying buffer (fill) on local write
-        //          - write thread only
-        // MIDDLE : advanced before posting RDMA write
-        //          - write thread only
-        // TAIL   : advanced after completing RDMA write
-        //          - write & read threads (in pollCQ)
+    //        : initialized during connect/accept
+    // HEAD   : advanced after copying buffer (fill) on local write
+    //          - write thread only
+    // MIDDLE : advanced before posting RDMA write
+    //          - write thread only
+    // TAIL   : advanced after completing RDMA write
+    //          - write & read threads (in pollCQ)
 
     /* sink RDMA MR */
     RingBuffer _sinkbuf;
     Ring<uint32_t, 2> _sinkptr;
-        //        : initialized during connect/accept
-        // HEAD   : advanced on receipt of RDMA WRITE
-        //          - write & read threads (in pollCQ)
-        // TAIL   : advanced after copying buffer (drain) on local read
-        //          - read thread only
+    //        : initialized during connect/accept
+    // HEAD   : advanced on receipt of RDMA WRITE
+    //          - write & read threads (in pollCQ)
+    // TAIL   : advanced after copying buffer (drain) on local read
+    //          - read thread only
 
     /* local "view" of remote sink MR */
     Ring<uint32_t, 2> _rptr;
-        //        : initialized on receipt of setup message
-        // HEAD   : advanced before posting RDMA write
-        //          - write thread only
-        // TAIL   : advanced on receipt of FC
-        //          - write & read threads (in pollCQ)
+    //        : initialized on receipt of setup message
+    // HEAD   : advanced before posting RDMA write
+    //          - write thread only
+    // TAIL   : advanced on receipt of FC
+    //          - write & read threads (in pollCQ)
 
     /* remote sink MR parameters */
     uint64_t _rbase, _rkey;
 
     /* copy bytes out of the sink buffer */
-    inline uint32_t _drain( void *buffer, const uint32_t bytes );
+    inline uint32_t _drain(void *buffer, const uint32_t bytes);
     /* copy bytes in to the source buffer */
-    inline uint32_t _fill( const void *buffer, const uint32_t bytes );
+    inline uint32_t _fill(const void *buffer, const uint32_t bytes);
 
 #ifdef WIN32
     HANDLE _ccWaitObj;
@@ -359,14 +364,15 @@ private:
 private:
     struct stats
     {
-        stats( )
-            : reads( 0ULL )
-            , buffer_empty( 0ULL )
-            , no_credits_fc( 0ULL )
-            , writes( 0ULL )
-            , buffer_full( 0ULL )
-            , no_credits_rdma( 0ULL )
-        { }
+        stats()
+            : reads(0ULL)
+            , buffer_empty(0ULL)
+            , no_credits_fc(0ULL)
+            , writes(0ULL)
+            , buffer_full(0ULL)
+            , no_credits_rdma(0ULL)
+        {
+        }
 
         uint64_t reads;
         uint64_t buffer_empty;
@@ -376,6 +382,6 @@ private:
         uint64_t no_credits_rdma;
     } _stats;
 
-    void _showStats( );
+    void _showStats();
 }; // RDMAConnection
 } // namespace co

@@ -21,37 +21,33 @@
 
 namespace co
 {
-
 namespace detail
 {
-
 class CustomICommand
 {
 public:
     CustomICommand() {}
-
     uint128_t commandID;
 };
-
 }
 
-CustomICommand::CustomICommand( const ICommand& command )
-    : ICommand( command )
-    , _impl( new detail::CustomICommand )
+CustomICommand::CustomICommand(const ICommand& command)
+    : ICommand(command)
+    , _impl(new detail::CustomICommand)
 {
     _init();
 }
 
-CustomICommand::CustomICommand( const CustomICommand& rhs )
-    : ICommand( rhs )
-    , _impl( new detail::CustomICommand )
+CustomICommand::CustomICommand(const CustomICommand& rhs)
+    : ICommand(rhs)
+    , _impl(new detail::CustomICommand)
 {
     _init();
 }
 
 void CustomICommand::_init()
 {
-    if( isValid( ))
+    if (isValid())
         *this >> _impl->commandID;
 }
 
@@ -65,12 +61,11 @@ const uint128_t& CustomICommand::getCommandID() const
     return _impl->commandID;
 }
 
-std::ostream& operator << ( std::ostream& os, const CustomICommand& command )
+std::ostream& operator<<(std::ostream& os, const CustomICommand& command)
 {
-    os << static_cast< const ICommand& >( command );
-    if( command.isValid( ))
+    os << static_cast<const ICommand&>(command);
+    if (command.isValid())
         os << " custom command " << command.getCommandID();
     return os;
 }
-
 }
