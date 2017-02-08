@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -42,7 +42,6 @@
 #endif
 
 #include <lunchbox/scopedMutex.h>
-#include <lunchbox/stdExt.h>
 
 #define STATISTICS
 namespace co
@@ -226,8 +225,8 @@ void Connection::recvNB(BufferPtr buffer, const uint64_t bytes)
     LBASSERT(_impl->bytes == 0);
     LBASSERT(buffer);
     LBASSERT(bytes > 0);
-    LBASSERTINFO(bytes < LB_BIT48, "Out-of-sync network stream: read size "
-                                       << bytes << "?");
+    LBASSERTINFO(bytes < LB_BIT48,
+                 "Out-of-sync network stream: read size " << bytes << "?");
 
     _impl->buffer = buffer;
     _impl->bytes = bytes;
@@ -237,8 +236,8 @@ void Connection::recvNB(BufferPtr buffer, const uint64_t bytes)
 
 bool Connection::recvSync(BufferPtr& outBuffer, const bool block)
 {
-    LBASSERTINFO(_impl->buffer, "No pending receive on "
-                                    << getDescription()->toString());
+    LBASSERTINFO(_impl->buffer,
+                 "No pending receive on " << getDescription()->toString());
 
     // reset async IO data
     outBuffer = _impl->buffer;
@@ -248,8 +247,8 @@ bool Connection::recvSync(BufferPtr& outBuffer, const bool block)
 
     if (_impl->state != STATE_CONNECTED || !outBuffer || bytes == 0)
         return false;
-    LBASSERTINFO(bytes < LB_BIT48, "Out-of-sync network stream: read size "
-                                       << bytes << "?");
+    LBASSERTINFO(bytes < LB_BIT48,
+                 "Out-of-sync network stream: read size " << bytes << "?");
 #ifdef STATISTICS
     _impl->inBytes += bytes;
 #endif
@@ -305,8 +304,8 @@ bool Connection::recvSync(BufferPtr& outBuffer, const bool block)
         }
 
         // read done
-        LBASSERTINFO(static_cast<uint64_t>(got) == bytesLeft, got << " != "
-                                                                  << bytesLeft);
+        LBASSERTINFO(static_cast<uint64_t>(got) == bytesLeft,
+                     got << " != " << bytesLeft);
 
         outBuffer->resize(outBuffer->getSize() + bytes);
 #ifndef NDEBUG

@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2006-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2011, Cedric Stalder <cedric.stalder@gmail.com>
- *               2012-2014, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2006-2017, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Cedric Stalder <cedric.stalder@gmail.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -33,7 +33,6 @@
 #include "objectOCommand.h"
 
 #include <lunchbox/monitor.h>
-#include <lunchbox/stdExt.h>
 
 #include <unordered_map>
 
@@ -301,7 +300,7 @@ bool Barrier::_cmdEnter(ICommand& cmd)
     LBLOG(LOG_BARRIER) << "Barrier reached " << getID() << " v" << version
                        << std::endl;
 
-    stde::usort(nodes);
+    lunchbox::usort(nodes);
 
     for (NodesIter i = nodes.begin(); i != nodes.end(); ++i)
         _sendNotify(version, *i);

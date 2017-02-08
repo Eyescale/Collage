@@ -26,11 +26,12 @@
 #include <co/types.h>
 #include <lunchbox/array.h> // used inline
 #include <lunchbox/bitOperation.h>
-#include <lunchbox/stdExt.h>
 
 #include <boost/type_traits.hpp>
 #include <map>
 #include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace co
@@ -103,13 +104,13 @@ public:
     template <class T>
     DataIStream& operator>>(std::set<T>&);
 
-    /** Read a stde::hash_map of serializable items. @version 1.0 */
+    /** Read an unordered_map of serializable items. @version 1.0 */
     template <class K, class V>
-    DataIStream& operator>>(stde::hash_map<K, V>&);
+    DataIStream& operator>>(std::unordered_map<K, V>&);
 
-    /** Read a stde::hash_set of serializable items. @version 1.0 */
+    /** Read an unordered_set of serializable items. @version 1.0 */
     template <class T>
-    DataIStream& operator>>(stde::hash_set<T>&);
+    DataIStream& operator>>(std::unordered_set<T>&);
 
     /** @internal
      * Deserialize child objects.

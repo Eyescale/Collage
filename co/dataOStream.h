@@ -27,12 +27,13 @@
 #include <co/types.h>
 
 #include <lunchbox/array.h> // used inline
-#include <lunchbox/stdExt.h>
 
 #include <boost/noncopyable.hpp>
 #include <boost/type_traits.hpp>
 #include <map>
 #include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace co
@@ -131,13 +132,13 @@ public:
     template <class T>
     DataOStream& operator<<(const std::set<T>& value);
 
-    /** Write a stde::hash_map of serializable items. @version 1.0 */
+    /** Write an unordered_map of serializable items. @version 1.0 */
     template <class K, class V>
-    DataOStream& operator<<(const stde::hash_map<K, V>& value);
+    DataOStream& operator<<(const std::unordered_map<K, V>& value);
 
-    /** Write a stde::hash_set of serializable items. @version 1.0 */
+    /** Write an unordered_set of serializable items. @version 1.0 */
     template <class T>
-    DataOStream& operator<<(const stde::hash_set<T>& value);
+    DataOStream& operator<<(const std::unordered_set<T>& value);
 
     /** @internal
      * Serialize child objects.

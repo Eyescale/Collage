@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2010-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -27,7 +27,6 @@
 
 #include <lunchbox/mtQueue.h> // member
 #include <lunchbox/pool.h>    // member
-#include <lunchbox/stdExt.h>  // member
 #include <lunchbox/thread.h>  // thread-safety check
 
 namespace co

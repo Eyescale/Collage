@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2012-2017, Daniel Nachbaur <danielnachbaur@gmail.com>
  *                          Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -118,28 +118,23 @@ inline DataOStream& DataOStream::operator<<(const std::set<T>& value)
 }
 
 template <class K, class V>
-inline DataOStream& DataOStream::operator<<(const stde::hash_map<K, V>& value)
+inline DataOStream& DataOStream::operator<<(
+    const std::unordered_map<K, V>& value)
 {
     const uint64_t nElems = value.size();
     *this << nElems;
-    for (typename stde::hash_map<K, V>::const_iterator it = value.begin();
-         it != value.end(); ++it)
-    {
-        *this << it->first << it->second;
-    }
+    for (const auto& elem : value)
+        *this << elem.first << elem.second;
     return *this;
 }
 
 template <class T>
-inline DataOStream& DataOStream::operator<<(const stde::hash_set<T>& value)
+inline DataOStream& DataOStream::operator<<(const std::unordered_set<T>& value)
 {
     const uint64_t nElems = value.size();
     *this << nElems;
-    for (typename stde::hash_set<T>::const_iterator it = value.begin();
-         it != value.end(); ++it)
-    {
-        *this << *it;
-    }
+    for (const auto& elem : value)
+        *this << elem;
     return *this;
 }
 

@@ -48,7 +48,7 @@ class Object
 {
 public:
     Object()
-        : id(lunchbox::make_UUID())
+        : id(servus::make_UUID())
         , instanceID(CO_INSTANCE_INVALID)
         , cm(ObjectCM::ZERO)
     {

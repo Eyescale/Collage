@@ -1,7 +1,7 @@
 
-/* Copyright (c) 2007-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2010, Cedric Stalder  <cedric.stalder@gmail.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2007-2017, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Cedric Stalder  <cedric.stalder@gmail.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -32,7 +32,7 @@ namespace co
 {
 ObjectSlaveDataOStream::ObjectSlaveDataOStream(const ObjectCM* cm)
     : ObjectDataOStream(cm)
-    , _commit(lunchbox::make_UUID())
+    , _commit(servus::make_UUID())
 {
 }
 
@@ -42,7 +42,7 @@ ObjectSlaveDataOStream::~ObjectSlaveDataOStream()
 
 void ObjectSlaveDataOStream::enableSlaveCommit(NodePtr node)
 {
-    _version = lunchbox::make_UUID();
+    _version = servus::make_UUID();
     _setupConnection(node, false /* useMulticast */);
     _enable();
 }
@@ -55,6 +55,6 @@ void ObjectSlaveDataOStream::sendData(const void* data, const uint64_t size,
         << _commit;
 
     if (last)
-        _commit = lunchbox::make_UUID();
+        _commit = servus::make_UUID();
 }
 }

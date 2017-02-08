@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011-2013, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2017, Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -43,8 +43,9 @@ namespace co
 inline Connections gatherConnections(const Nodes& nodes)
 {
     Connections result;
-    typedef stde::hash_map<ConstConnectionDescriptionPtr, NodePtr,
-                           lunchbox::hashRefPtr<const ConnectionDescription> >
+    typedef std::unordered_map<
+        ConstConnectionDescriptionPtr, NodePtr,
+        lunchbox::hashRefPtr<const ConnectionDescription> >
         MCNodes;
     MCNodes mcNodes; // first node using a multicast connection
 

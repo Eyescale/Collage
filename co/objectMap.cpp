@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2016, Daniel Nachbaur <danielnachbaur@googlemail.com>
+/* Copyright (c) 2012-2017, Daniel Nachbaur <danielnachbaur@googlemail.com>
  *                          Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -53,7 +53,7 @@ struct Entry //!< One object map item
     bool own;          //!< The object is created by us, delete it
 };
 
-typedef stde::hash_map<uint128_t, Entry> Map;
+typedef std::unordered_map<uint128_t, Entry> Map;
 typedef Map::iterator MapIter;
 typedef Map::const_iterator MapCIter;
 typedef std::vector<uint128_t> IDVector;

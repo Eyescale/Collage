@@ -72,12 +72,12 @@ typedef std::list<ICommand> CommandList;
 typedef lunchbox::RefPtrHash<Connection, NodePtr> ConnectionNodeHash;
 typedef ConnectionNodeHash::const_iterator ConnectionNodeHashCIter;
 typedef ConnectionNodeHash::iterator ConnectionNodeHashIter;
-typedef stde::hash_map<uint128_t, NodePtr> NodeHash;
+typedef std::unordered_map<uint128_t, NodePtr> NodeHash;
 typedef NodeHash::const_iterator NodeHashCIter;
-typedef stde::hash_map<uint128_t, LocalNode::PushHandler> HandlerHash;
+typedef std::unordered_map<uint128_t, LocalNode::PushHandler> HandlerHash;
 typedef HandlerHash::const_iterator HandlerHashCIter;
 typedef std::pair<LocalNode::CommandHandler, CommandQueue*> CommandPair;
-typedef stde::hash_map<uint128_t, CommandPair> CommandHash;
+typedef std::unordered_map<uint128_t, CommandPair> CommandHash;
 typedef CommandHash::const_iterator CommandHashCIter;
 typedef lunchbox::FutureFunction<bool> FuturebImpl;
 }
@@ -101,6 +101,7 @@ public:
     }
 
     void run() override { _localNode->_runReceiverThread(); }
+
 private:
     co::LocalNode* const _localNode;
 };
@@ -1728,8 +1729,8 @@ bool LocalNode::_cmdConnect(ICommand& command)
     if (!peer->deserialize(data))
         LBWARN << "Error during node initialization" << std::endl;
     LBASSERTINFO(data.empty(), data);
-    LBASSERTINFO(peer->getNodeID() == nodeID, peer->getNodeID() << "!="
-                                                                << nodeID);
+    LBASSERTINFO(peer->getNodeID() == nodeID,
+                 peer->getNodeID() << "!=" << nodeID);
     LBASSERT(peer->getType() == nodeType);
 
     _impl->connectionNodes[connection] = peer;
@@ -1808,8 +1809,8 @@ bool LocalNode::_cmdConnectReply(ICommand& command)
         return true;
     }
 
-    LBASSERTINFO(peer->getType() == nodeType, peer->getType() << " != "
-                                                              << nodeType);
+    LBASSERTINFO(peer->getType() == nodeType,
+                 peer->getType() << " != " << nodeType);
     LBASSERT(peer->isClosed());
 
     if (!peer->deserialize(data))
@@ -1899,8 +1900,8 @@ bool LocalNode::_cmdID(ICommand& command)
             node = i->second;
     }
     LBASSERT(node);
-    LBASSERTINFO(node->getNodeID() == nodeID, node->getNodeID() << "!="
-                                                                << nodeID);
+    LBASSERTINFO(node->getNodeID() == nodeID,
+                 node->getNodeID() << "!=" << nodeID);
 
     _connectMulticast(node, connection);
     _impl->connectionNodes[connection] = node;

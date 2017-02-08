@@ -24,7 +24,6 @@
 #include <co/types.h>
 #include <iostream>
 #include <lunchbox/bitOperation.h>
-#include <lunchbox/stdExt.h>
 
 namespace co
 {
@@ -114,19 +113,8 @@ inline std::ostream& operator<<(std::ostream& os, const ObjectVersion& ov)
 }
 }
 
-LB_STDEXT_NAMESPACE_OPEN
-#ifdef LB_STDEXT_MSVC
-/** ObjectVersion hash function. */
-template <>
-inline size_t hash_compare<co::ObjectVersion>::operator()(
-    const co::ObjectVersion& key) const
+namespace std
 {
-    const size_t hashVersion = hash_value(key.version);
-    const size_t hashID = hash_value(key.identifier);
-
-    return hash_value(hashVersion ^ hashID);
-}
-#else
 /** ObjectVersion hash function. */
 template <>
 struct hash<co::ObjectVersion>
@@ -138,7 +126,5 @@ struct hash<co::ObjectVersion>
                                 hash_value(key.identifier));
     }
 };
-#endif
-LB_STDEXT_NAMESPACE_CLOSE
-
+}
 #endif // CO_OBJECT_H

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Cedric Stalder <cedric.stalder@gmail.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
@@ -27,7 +27,6 @@
 
 #include <lunchbox/lockable.h> // member
 #include <lunchbox/spinLock.h> // member
-#include <lunchbox/stdExt.h>   // member
 
 #include "dataIStreamQueue.h" // member
 
@@ -185,7 +184,7 @@ private:
     /** enableSendOnRegister() invocations. */
     lunchbox::a_int32_t _sendOnRegister;
 
-    typedef stde::hash_map<uint128_t, Objects> ObjectsHash;
+    typedef std::unordered_map<uint128_t, Objects> ObjectsHash;
     typedef ObjectsHash::const_iterator ObjectsHashCIter;
 
     /** All registered and mapped objects.

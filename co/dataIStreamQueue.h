@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2011, Stefan Eilemann <eile@eyescale.ch>
+/* Copyright (c) 2011-2017, Stefan Eilemann <eile@eyescale.ch>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -24,7 +24,6 @@
 
 #include <lunchbox/mtQueue.h> // member
 #include <lunchbox/pool.h>    // member
-#include <lunchbox/stdExt.h>  // member
 #include <lunchbox/thread.h>  // thread-safety check
 
 #include "objectDataIStream.h" // pooled object
@@ -49,7 +48,7 @@ public:
     void recycle(ObjectDataIStream* stream);
 
 protected:
-    typedef stde::hash_map<uint128_t, ObjectDataIStream*> PendingStreams;
+    typedef std::unordered_map<uint128_t, ObjectDataIStream*> PendingStreams;
     typedef PendingStreams::const_iterator PendingStreamsCIter;
 
     /** Not yet ready streams. */

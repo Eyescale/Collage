@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2009-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *                    2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2009-2017, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -27,11 +27,11 @@
 #include <lunchbox/clock.h>     // member
 #include <lunchbox/lock.h>      // member
 #include <lunchbox/lockable.h>  // member
-#include <lunchbox/stdExt.h>    // member
 #include <lunchbox/thread.h>    // member
 #include <lunchbox/uint128_t.h> // member
 
 #include <iostream>
+#include <unordered_map>
 
 namespace co
 {
@@ -114,6 +114,7 @@ public:
     void expire(const int64_t age);
 
     bool isEmpty() { return _items->empty(); }
+
 private:
     struct Item
     {
@@ -127,7 +128,7 @@ private:
         TimeDeque times;
     };
 
-    typedef stde::hash_map<uint128_t, Item> ItemHash;
+    typedef std::unordered_map<uint128_t, Item> ItemHash;
     typedef ItemHash::iterator ItemHashIter;
     lunchbox::Lockable<ItemHash> _items;
 

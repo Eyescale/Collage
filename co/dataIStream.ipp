@@ -18,6 +18,7 @@
 
 #include <co/object.h>
 #include <co/objectVersion.h>
+#include <lunchbox/algorithm.h>  // find_if
 #include <servus/serializable.h> // used inline
 
 namespace co
@@ -146,33 +147,24 @@ inline DataIStream& DataIStream::operator>>(std::set<T>& value)
 }
 
 template <class K, class V>
-inline DataIStream& DataIStream::operator>>(stde::hash_map<K, V>& map)
+inline DataIStream& DataIStream::operator>>(std::unordered_map<K, V>& map)
 {
     map.clear();
     uint64_t nElems = 0;
     *this >> nElems;
     for (uint64_t i = 0; i < nElems; ++i)
-    {
-        typename stde::hash_map<K, V>::key_type key;
-        typename stde::hash_map<K, V>::mapped_type value;
-        *this >> key >> value;
-        map.insert(std::make_pair(key, value));
-    }
+        map.insert({read<K>(), read<V>()});
     return *this;
 }
 
 template <class T>
-inline DataIStream& DataIStream::operator>>(stde::hash_set<T>& value)
+inline DataIStream& DataIStream::operator>>(std::unordered_set<T>& value)
 {
     value.clear();
     uint64_t nElems = 0;
     *this >> nElems;
     for (uint64_t i = 0; i < nElems; ++i)
-    {
-        T item;
-        *this >> item;
-        value.insert(item);
-    }
+        value.insert(read<T>());
     return *this;
 }
 
@@ -186,6 +178,7 @@ public:
     {
     }
     bool operator()(co::Object* candidate) { return candidate->getID() == _id; }
+
 private:
     const uint128_t _id;
 };

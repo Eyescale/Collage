@@ -93,7 +93,7 @@ public:
     int64_t lastReceive;
 
     explicit Node(const uint32_t type_)
-        : id(lunchbox::make_UUID())
+        : id(servus::make_UUID())
         , type(type_)
         , state(STATE_CLOSED)
         , lastReceive(0)
