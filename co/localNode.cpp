@@ -42,9 +42,9 @@
 #include "zeroconf.h"
 
 #include <lunchbox/clock.h>
+#include <lunchbox/fork.h>
 #include <lunchbox/futureFunction.h>
 #include <lunchbox/hash.h>
-#include <lunchbox/launcher.h>
 #include <lunchbox/lockable.h>
 #include <lunchbox/request.h>
 #include <lunchbox/rng.h>
@@ -214,7 +214,7 @@ public:
 
     a_ssize_t counters[co::LocalNode::COUNTER_ALL]; //!< Performance counters
 
-    Strings args; //!< Command line arguments for remote node launch()
+    Strings args; //!< Command line arguments for remote node launch
 };
 }
 
@@ -1147,7 +1147,7 @@ bool LocalNode::launch(NodePtr node, const std::string& command)
     cmd += command.substr(lastPos) + launchOptions;
 
     LBDEBUG << "Launching: " << cmd << std::endl;
-    if (lunchbox::Launcher::run(cmd))
+    if (lunchbox::fork(cmd))
         return true;
 
     LBWARN << "Could not launch node using '" << cmd << "'" << std::endl;

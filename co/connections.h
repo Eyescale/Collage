@@ -23,8 +23,8 @@
 #include <co/connection.h>
 #include <co/node.h>
 #include <co/types.h>
-#include <lunchbox/hash.h>
 
+#include <lunchbox/hash.h>
 #include <set>
 
 namespace co
