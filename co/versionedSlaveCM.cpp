@@ -58,10 +58,6 @@ VersionedSlaveCM::~VersionedSlaveCM()
 
     LBASSERT(!_currentIStream);
     delete _currentIStream;
-    _currentIStream = 0;
-
-    _version = VERSION_NONE;
-    _master = 0;
 }
 
 uint128_t VersionedSlaveCM::commit(const uint32_t)

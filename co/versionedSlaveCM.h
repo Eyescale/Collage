@@ -48,8 +48,8 @@ public:
     uint128_t commit(const uint32_t incarnation) override;
     uint128_t sync(const uint128_t& version) override;
 
-    uint128_t getHeadVersion() const override;
-    uint128_t getVersion() const override { return _version; }
+    uint128_t getHeadVersion() const final;
+    uint128_t getVersion() const final { return _version; }
     //@}
 
     bool isMaster() const override { return false; }

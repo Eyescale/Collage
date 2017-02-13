@@ -502,8 +502,9 @@ ConnectionSet::Event ConnectionSet::_parseSelect(const uint32_t)
 
         if (pollEvents & POLLERR)
         {
-            LBINFO << "Error during poll(): " << lunchbox::sysError
-                   << std::endl;
+            LBINFO << "Error during poll: " << lunchbox::sysError << " on "
+                   << _impl->connection << std::endl;
+            errno = 0;
             return EVENT_ERROR;
         }
 

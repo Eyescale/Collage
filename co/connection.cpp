@@ -366,7 +366,7 @@ bool Connection::send(const void* buffer, const uint64_t bytes,
             if (wrote == -1) // error
             {
                 LBERROR << "Error during write after " << bytes - bytesLeft
-                        << " bytes, closing connection" << std::endl;
+                        << " bytes, closing " << *this << std::endl;
                 close();
                 return false;
             }

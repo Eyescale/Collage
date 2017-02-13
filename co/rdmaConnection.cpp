@@ -424,7 +424,7 @@ bool RDMAConnection::listen()
     if( ::rdma_set_option( _cm_id, RDMA_OPTION_ID, RDMA_OPTION_ID_REUSEADDR,
             (void *)&ONE, sizeof(ONE) ))
     {
-        LBERROR << "rdma_set_option : " << lunchbox::sysError << std::endl;
+        LBERROR << "rdma_set_option: " << lunchbox::sysError << std::endl;
         goto err;
     }
 #endif
@@ -833,7 +833,7 @@ bool RDMAConnection::_finishAccept(struct rdma_cm_id *new_cm_id,
     _cm_id = new_cm_id;
 
     {
-        // FIXME : RDMA CM appears to send up invalid addresses when receiving
+        // FIXME: RDMA CM appears to send up invalid addresses when receiving
         // connections that use a different protocol than what was bound.  E.g.
         // if an IPv6 listener gets an IPv4 connection then the sa_family
         // will be AF_INET6 but the actual data is struct sockaddr_in.  Example:
@@ -1020,7 +1020,7 @@ bool RDMAConnection::_lookupAddress(const bool passive)
 
     if ((NULL != node) && ::rdma_getaddrinfo(node, service, &hints, &_rai))
     {
-        LBERROR << "rdma_getaddrinfo : " << lunchbox::sysError << std::endl;
+        LBERROR << "rdma_getaddrinfo: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1109,7 +1109,7 @@ bool RDMAConnection::_createEventChannel()
                                      WAITORTIMERCALLBACK(&_triggerNotifierCM),
                                      this, INFINITE, WT_EXECUTEINWAITTHREAD))
     {
-        LBERROR << "RegisterWaitForSingleObject : " << co::base::sysError
+        LBERROR << "RegisterWaitForSingleObject: " << co::base::sysError
                 << std::endl;
         return false;
     }
@@ -1124,7 +1124,7 @@ bool RDMAConnection::_createEventChannel()
     evctl.data.fd = _cm->fd;
     if (::epoll_ctl(_notifier, EPOLL_CTL_ADD, evctl.data.fd, &evctl))
     {
-        LBERROR << "epoll_ctl : " << lunchbox::sysError << std::endl;
+        LBERROR << "epoll_ctl: " << lunchbox::sysError << std::endl;
         return false;
     }
 #endif
@@ -1139,7 +1139,7 @@ bool RDMAConnection::_createId()
 
     if (::rdma_create_id(_cm, &_cm_id, NULL, RDMA_PS_TCP))
     {
-        LBERROR << "rdma_create_id : " << lunchbox::sysError << std::endl;
+        LBERROR << "rdma_create_id: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1157,7 +1157,7 @@ bool RDMAConnection::_initVerbs()
     _pd = ::ibv_alloc_pd(_cm_id->verbs);
     if (NULL == _pd)
     {
-        LBERROR << "ibv_alloc_pd : " << lunchbox::sysError << std::endl;
+        LBERROR << "ibv_alloc_pd: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1191,7 +1191,7 @@ bool RDMAConnection::_initVerbs()
     evctl.data.fd = _cc->fd;
     if (::epoll_ctl(_notifier, EPOLL_CTL_ADD, evctl.data.fd, &evctl))
     {
-        LBERROR << "epoll_ctl : " << lunchbox::sysError << std::endl;
+        LBERROR << "epoll_ctl: " << lunchbox::sysError << std::endl;
         return false;
     }
 #endif
@@ -1202,14 +1202,14 @@ bool RDMAConnection::_initVerbs()
     _cq = ::ibv_create_cq(_cm_id->verbs, _depth * 2, NULL, _cc, 0);
     if (NULL == _cq)
     {
-        LBERROR << "ibv_create_cq : " << lunchbox::sysError << std::endl;
+        LBERROR << "ibv_create_cq: " << lunchbox::sysError << std::endl;
         return false;
     }
 
     // Request IBV_SEND_SOLICITED events only (i.e. RDMA writes, not FC)
     if (::rdma_seterrno(::ibv_req_notify_cq(_cq, 1)))
     {
-        LBERROR << "ibv_req_notify_cq : " << lunchbox::sysError << std::endl;
+        LBERROR << "ibv_req_notify_cq: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1239,7 +1239,7 @@ bool RDMAConnection::_createQP()
     // Create queue pair.
     if (::rdma_create_qp(_cm_id, _pd, &init_attr))
     {
-        LBERROR << "rdma_create_qp : " << lunchbox::sysError << std::endl;
+        LBERROR << "rdma_create_qp: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1298,7 +1298,7 @@ bool RDMAConnection::_resolveAddress()
     if (::rdma_resolve_addr(_cm_id, _addrinfo->ai_src_addr,
                             _addrinfo->ai_dst_addr, _timeout))
     {
-        LBERROR << "rdma_resolve_addr : " << lunchbox::sysError << std::endl;
+        LBERROR << "rdma_resolve_addr: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1320,13 +1320,13 @@ bool RDMAConnection::_resolveRoute()
 #endif
                               _addrinfo->ai_route, _addrinfo->ai_route_len))
         {
-            LBERROR << "rdma_set_option : " << lunchbox::sysError << std::endl;
+            LBERROR << "rdma_set_option: " << lunchbox::sysError << std::endl;
             return false;
         }
     }
     else if (::rdma_resolve_route(_cm_id, _timeout))
     {
-        LBERROR << "rdma_resolve_route : " << lunchbox::sysError << std::endl;
+        LBERROR << "rdma_resolve_route: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1362,7 +1362,7 @@ bool RDMAConnection::_connect()
 
     if (::rdma_connect(_cm_id, &conn_param))
     {
-        LBERROR << "rdma_connect : " << lunchbox::sysError << std::endl;
+        LBERROR << "rdma_connect: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1395,7 +1395,7 @@ bool RDMAConnection::_bindAddress()
                              ? _addrinfo->ai_src_addr
                              : reinterpret_cast<struct sockaddr *>(&sin)))
     {
-        LBERROR << "rdma_bind_addr : " << lunchbox::sysError << std::endl;
+        LBERROR << "rdma_bind_addr: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1413,7 +1413,7 @@ bool RDMAConnection::_listen(int backlog)
 
     if (::rdma_listen(_cm_id, backlog))
     {
-        LBERROR << "rdma_listen : " << lunchbox::sysError << std::endl;
+        LBERROR << "rdma_listen: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1427,7 +1427,7 @@ bool RDMAConnection::_migrateId()
 
     if (::rdma_migrate_id(_cm_id, _cm))
     {
-        LBERROR << "rdma_migrate_id : " << lunchbox::sysError << std::endl;
+        LBERROR << "rdma_migrate_id: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1462,7 +1462,7 @@ bool RDMAConnection::_accept()
 
     if (::rdma_accept(_cm_id, &accept_param))
     {
-        LBERROR << "rdma_accept : " << lunchbox::sysError << std::endl;
+        LBERROR << "rdma_accept: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1476,7 +1476,7 @@ bool RDMAConnection::_reject()
 
     if (::rdma_reject(_cm_id, NULL, 0))
     {
-        LBERROR << "rdma_reject : " << lunchbox::sysError << std::endl;
+        LBERROR << "rdma_reject: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1801,7 +1801,7 @@ bool RDMAConnection::_createNotifier()
     _notifier = ::epoll_create(1);
     if (_notifier < 0)
     {
-        LBERROR << "epoll_create1 : " << lunchbox::sysError << std::endl;
+        LBERROR << "epoll_create1: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1842,7 +1842,7 @@ bool RDMAConnection::_checkEvents(eventset &events)
     int nfds = TEMP_FAILURE_RETRY(::epoll_wait(_notifier, evts, 3, 0));
     if (nfds < 0)
     {
-        LBERROR << "epoll_wait : " << lunchbox::sysError << std::endl;
+        LBERROR << "epoll_wait: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -1905,7 +1905,7 @@ bool RDMAConnection::_createBytesAvailableFD()
     evctl.data.fd = _pipe_fd[0];
     if (::epoll_ctl(_notifier, EPOLL_CTL_ADD, evctl.data.fd, &evctl))
     {
-        LBERROR << "epoll_ctl : " << lunchbox::sysError << std::endl;
+        LBERROR << "epoll_ctl: " << lunchbox::sysError << std::endl;
         return false;
     }
 #endif
@@ -1921,7 +1921,7 @@ bool RDMAConnection::_incrAvailableBytes(const uint64_t b)
 #else
     if (::write(_pipe_fd[1], (const void *)&b, sizeof(b)) != sizeof(b))
     {
-        LBERROR << "write : " << lunchbox::sysError << std::endl;
+        LBERROR << "write: " << lunchbox::sysError << std::endl;
         return false;
     }
 #endif
@@ -1952,14 +1952,14 @@ uint64_t RDMAConnection::_getAvailableBytes()
         pfd.revents = 0;
         if (::poll(&pfd, 1, 0) == -1)
         {
-            LBERROR << "poll : " << lunchbox::sysError << std::endl;
+            LBERROR << "poll: " << lunchbox::sysError << std::endl;
             return 0ULL;
         }
     } while (pfd.revents > 0);
 
     if (count == -1)
     {
-        LBERROR << "read : " << lunchbox::sysError << std::endl;
+        LBERROR << "read: " << lunchbox::sysError << std::endl;
         return 0ULL;
     }
 
@@ -2018,7 +2018,7 @@ bool RDMAConnection::_doCMEvent(enum rdma_cm_event_type expected)
 
     if (::rdma_get_cm_event(_cm, &event))
     {
-        LBERROR << "rdma_get_cm_event : " << lunchbox::sysError << std::endl;
+        LBERROR << "rdma_get_cm_event: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -2088,7 +2088,7 @@ bool RDMAConnection::_rearmCQ()
 #endif
     if (::ibv_get_cq_event(_cc, &ev_cq, &ev_ctx))
     {
-        LBERROR << "ibv_get_cq_event : " << lunchbox::sysError << std::endl;
+        LBERROR << "ibv_get_cq_event: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -2103,7 +2103,7 @@ bool RDMAConnection::_rearmCQ()
     // Solicited only!
     if (::rdma_seterrno(::ibv_req_notify_cq(_cq, 1)))
     {
-        LBERROR << "ibv_req_notify_cq : " << lunchbox::sysError << std::endl;
+        LBERROR << "ibv_req_notify_cq: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -2125,7 +2125,7 @@ repoll:
     count = ::ibv_poll_cq(_cq, _depth, _wcs);
     if (count < 0)
     {
-        LBERROR << "ibv_poll_cq : " << lunchbox::sysError << std::endl;
+        LBERROR << "ibv_poll_cq: " << lunchbox::sysError << std::endl;
         return false;
     }
 
@@ -2304,7 +2304,7 @@ bool BufferPool::resize(ibv_pd *pd, uint32_t num_bufs)
             boost::interprocess::mapped_region::get_page_size());
         if (!_buffer)
         {
-            LBERROR << "_aligned_malloc : Couldn't allocate aligned memory. "
+            LBERROR << "_aligned_malloc: Couldn't allocate aligned memory. "
                     << lunchbox::sysError << std::endl;
             return false;
         }
@@ -2312,7 +2312,7 @@ bool BufferPool::resize(ibv_pd *pd, uint32_t num_bufs)
         if (::posix_memalign(&_buffer, (size_t)::getpagesize(),
                              (size_t)(_num_bufs * _buffer_size)))
         {
-            LBERROR << "posix_memalign : " << lunchbox::sysError << std::endl;
+            LBERROR << "posix_memalign: " << lunchbox::sysError << std::endl;
             return false;
         }
 #endif
@@ -2321,7 +2321,7 @@ bool BufferPool::resize(ibv_pd *pd, uint32_t num_bufs)
                            IBV_ACCESS_LOCAL_WRITE);
         if (NULL == _mr)
         {
-            LBERROR << "ibv_reg_mr : " << lunchbox::sysError << std::endl;
+            LBERROR << "ibv_reg_mr: " << lunchbox::sysError << std::endl;
             return false;
         }
 
@@ -2417,19 +2417,19 @@ bool RingBuffer::resize(ibv_pd *pd, size_t size)
         fd = ::mkstemp(path);
         if (fd < 0)
         {
-            LBERROR << "mkstemp : " << lunchbox::sysError << std::endl;
+            LBERROR << "mkstemp: " << lunchbox::sysError << std::endl;
             goto out;
         }
 
         if (::unlink(path))
         {
-            LBERROR << "unlink : " << lunchbox::sysError << std::endl;
+            LBERROR << "unlink: " << lunchbox::sysError << std::endl;
             goto out;
         }
 
         if (::ftruncate(fd, _size))
         {
-            LBERROR << "ftruncate : " << lunchbox::sysError << std::endl;
+            LBERROR << "ftruncate: " << lunchbox::sysError << std::endl;
             goto out;
         }
 
@@ -2437,7 +2437,7 @@ bool RingBuffer::resize(ibv_pd *pd, size_t size)
                       -1, 0);
         if (MAP_FAILED == _map)
         {
-            LBERROR << "mmap : " << lunchbox::sysError << std::endl;
+            LBERROR << "mmap: " << lunchbox::sysError << std::endl;
             goto out;
         }
 
@@ -2445,7 +2445,7 @@ bool RingBuffer::resize(ibv_pd *pd, size_t size)
                        MAP_FIXED | MAP_SHARED, fd, 0);
         if (MAP_FAILED == addr1)
         {
-            LBERROR << "mmap : " << lunchbox::sysError << std::endl;
+            LBERROR << "mmap: " << lunchbox::sysError << std::endl;
             goto out;
         }
 
@@ -2453,7 +2453,7 @@ bool RingBuffer::resize(ibv_pd *pd, size_t size)
                        PROT_READ | PROT_WRITE, MAP_FIXED | MAP_SHARED, fd, 0);
         if (MAP_FAILED == addr2)
         {
-            LBERROR << "mmap : " << lunchbox::sysError << std::endl;
+            LBERROR << "mmap: " << lunchbox::sysError << std::endl;
             goto out;
         }
 
@@ -2469,7 +2469,7 @@ bool RingBuffer::resize(ibv_pd *pd, size_t size)
 
         if (NULL == _mr)
         {
-            LBERROR << "ibv_reg_mr : " << lunchbox::sysError << std::endl;
+            LBERROR << "ibv_reg_mr: " << lunchbox::sysError << std::endl;
             goto out;
         }
 
