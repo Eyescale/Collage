@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2012-2016, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2012-2017, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -42,7 +42,7 @@ typedef lunchbox::Lockable<co::Nodes, lunchbox::SpinLock> ConnectedNodes;
 typedef lunchbox::Buffer<uint64_t> Buffer;
 
 ConnectedNodes nodes_;
-lunchbox::Lock print_;
+std::mutex print_;
 static co::uint128_t _objectID(0x25625429A197D730ull, 0x79F60861189007D5ull);
 template <class C>
 bool commandHandler(C command, Buffer& buffer, const uint64_t seed);

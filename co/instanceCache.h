@@ -25,7 +25,6 @@
 #include <co/types.h>
 
 #include <lunchbox/clock.h>     // member
-#include <lunchbox/lock.h>      // member
 #include <lunchbox/lockable.h>  // member
 #include <lunchbox/thread.h>    // member
 #include <lunchbox/uint128_t.h> // member

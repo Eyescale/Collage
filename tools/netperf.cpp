@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2006-2014, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2006-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -22,7 +22,6 @@
 
 #include <co/co.h>
 #include <lunchbox/clock.h>
-#include <lunchbox/lock.h>
 #include <lunchbox/monitor.h>
 #include <lunchbox/sleep.h>
 #pragma warning(disable : 4275)
@@ -40,7 +39,7 @@ namespace
 {
 co::ConnectionSet _connectionSet;
 lunchbox::a_int32_t _nClients;
-lunchbox::Lock _mutexPrint;
+std::mutex _mutexPrint;
 uint32_t _delay = 0;
 enum
 {

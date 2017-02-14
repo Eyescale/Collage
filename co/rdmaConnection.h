@@ -75,7 +75,7 @@ private:
     void *_buffer;
     struct ibv_mr *_mr;
     BufferQ<uint32_t> _ring;
-    lunchbox::Lock _buffer_lock;
+    std::mutex _buffer_lock;
 }; // BufferPool
 
 /**
@@ -275,7 +275,7 @@ private:
     Notifier _notifier;
 
     /* Protect RDMA/Verbs vars from multiple threads */
-    lunchbox::Lock _poll_lock;
+    std::mutex _poll_lock;
 
     /* Timeout for resolving RDMA address & route */
     const int32_t _timeout;

@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2005-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2005-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -107,7 +107,7 @@ class ConnectionSet : public ConnectionListener
 {
 public:
     /** Mutex protecting changes to the set. */
-    lunchbox::Lock lock;
+    std::mutex lock;
 
     /** The connections of this set */
     Connections allConnections;
@@ -174,6 +174,7 @@ public:
     }
 
     void interrupt() { selfConnection->set(); }
+
 private:
     virtual void notifyStateChanged(co::Connection*) { setDirty(); }
 };
@@ -603,7 +604,7 @@ bool ConnectionSet::_setupFDSet()
     _impl->fdSetResult.append(result);
 
     // add regular connections
-    _impl->lock.set();
+    _impl->lock.lock();
     for (ConnectionPtr connection : _impl->allConnections)
     {
         fd.fd = connection->getNotifier();
@@ -614,7 +615,7 @@ bool ConnectionSet::_setupFDSet()
                     << ", connection " << lunchbox::className(connection.get())
                     << " doesn't have a file descriptor" << std::endl;
             _impl->connection = connection;
-            _impl->lock.unset();
+            _impl->lock.unlock();
             return false;
         }
 
@@ -626,7 +627,7 @@ bool ConnectionSet::_setupFDSet()
         result.connection = connection.get();
         _impl->fdSetResult.append(result);
     }
-    _impl->lock.unset();
+    _impl->lock.unlock();
     _impl->fdSetCopy = _impl->fdSet;
 #endif
 

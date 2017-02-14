@@ -187,7 +187,7 @@ public:
     ObjectStore* objectStore;
 
     /** Needed for thread-safety during nodeID-based connect() */
-    lunchbox::Lock connectLock;
+    std::mutex connectLock;
 
     /** The node for each connection. */
     ConnectionNodeHash connectionNodes; // read and write: recv only
@@ -202,7 +202,7 @@ public:
     lunchbox::Clock clock;
 
     /** The registered push handlers. */
-    lunchbox::Lockable<HandlerHash, lunchbox::Lock> pushHandlers;
+    lunchbox::Lockable<HandlerHash, std::mutex> pushHandlers;
 
     /** The registered custom command handlers. */
     lunchbox::Lockable<CommandHash, lunchbox::SpinLock> commandHandlers;

@@ -55,7 +55,7 @@ public:
     ConnectionDescriptionPtr description; //!< The connection parameters
 
     /** The lock used to protect concurrent write calls. */
-    mutable lunchbox::Lock sendLock;
+    mutable std::mutex sendLock;
 
     BufferPtr buffer; //!< Current async read buffer
     uint64_t bytes;   //!< Current read request size
@@ -195,12 +195,12 @@ void Connection::_setState(const State state)
 
 void Connection::lockSend() const
 {
-    _impl->sendLock.set();
+    _impl->sendLock.lock();
 }
 
 void Connection::unlockSend() const
 {
-    _impl->sendLock.unset();
+    _impl->sendLock.unlock();
 }
 
 void Connection::addListener(ConnectionListener* listener)

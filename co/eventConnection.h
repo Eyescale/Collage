@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2010-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2010-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -24,8 +24,6 @@
 
 #include "buffer.h"
 #include "pipeConnection.h"
-
-#include <lunchbox/lock.h>
 
 namespace co
 {
@@ -66,7 +64,7 @@ private:
     void* _event;
 #else
     PipeConnectionPtr _connection;
-    lunchbox::Lock _lock;
+    std::mutex _lock;
     bool _set;
 #endif
 

@@ -80,7 +80,7 @@ private:
     UDTConnectionThread* _poller;
 
     lunchbox::Monitor<bool> _app_block;
-    lunchbox::Lock _app_mutex; // Blocks connection thread until app handles
-                               // event
-};                             // UDTConnection
+    std::mutex _app_mutex; // Blocks connection thread until app handles
+                           // event
+};                         // UDTConnection
 } // namespace co

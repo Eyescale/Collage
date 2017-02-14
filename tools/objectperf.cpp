@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2013-2016, Stefan.Eilemann@epfl.ch
+/* Copyright (c) 2013-2017, Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License version 2.1 as published
@@ -22,7 +22,6 @@
 #include <co/co.h>
 #include <co/connections.h>
 #include <lunchbox/clock.h>
-#include <lunchbox/lock.h>
 #include <lunchbox/monitor.h>
 #include <lunchbox/mtQueue.h>
 #pragma warning(disable : 4275)

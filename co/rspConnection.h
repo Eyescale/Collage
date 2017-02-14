@@ -209,8 +209,8 @@ private:
     int64_t _sendRate;
 
     Thread* _thread;
-    lunchbox::Lock _mutexConnection;
-    lunchbox::Lock _mutexEvent;
+    std::mutex _mutexConnection;
+    std::mutex _mutexEvent;
     uint16_t _acked; // sequence ID of last confirmed ack
 
     typedef lunchbox::Bufferb Buffer;
