@@ -418,8 +418,7 @@ bool LocalNode::close()
     }
 #endif
 
-    LBASSERTINFO(!hasPendingRequests(),
-                 *static_cast<lunchbox::RequestHandler*>(this));
+    LBASSERT(!hasPendingRequests());
     return true;
 }
 
