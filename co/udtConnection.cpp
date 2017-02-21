@@ -419,7 +419,7 @@ void UDTConnection::close()
     UDTConnectionThread *poller = NULL;
 
     {
-        lunchbox::ScopedMutex<> mutex(_app_mutex);
+        lunchbox::ScopedWrite mutex(_app_mutex);
 
         if (!isClosed())
         {
@@ -506,7 +506,7 @@ err:
 
 out:
     // Let the event thread continue polling
-    lunchbox::ScopedMutex<> mutex(_app_mutex);
+    lunchbox::ScopedWrite mutex(_app_mutex);
 
     _app_block.set(true);
 
@@ -547,7 +547,7 @@ int64_t UDTConnection::readSync(void *buffer, const uint64_t bytes, const bool)
     else
     {
         // Let the event thread continue polling
-        lunchbox::ScopedMutex<> mutex(_app_mutex);
+        lunchbox::ScopedWrite mutex(_app_mutex);
         _app_block.set(true);
     }
 
@@ -610,7 +610,7 @@ void UDTConnection::wake()
     bool notifyAndWait = false;
 
     {
-        lunchbox::ScopedMutex<> mutex(_app_mutex);
+        lunchbox::ScopedWrite mutex(_app_mutex);
 
         // Only block if we're not shutting down
         if (isListening() || isConnected())
