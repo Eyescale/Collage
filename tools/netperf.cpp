@@ -85,7 +85,7 @@ public:
 
         _clock.reset();
         co::ConstConnectionDescriptionPtr desc = _connection->getDescription();
-        const lunchbox::ScopedMutex<> mutex(_mutexPrint);
+        const lunchbox::ScopedWrite mutex(_mutexPrint);
         std::cerr << "Recv perf: " << _mBytesSec / time * _nSamples << "MB/s ("
                   << _nSamples / time * 1000.f << "pps) from "
                   << desc->toString() << std::endl;
@@ -406,7 +406,7 @@ int main(int argc, char** argv)
             const float time = clock.getTimef();
             if (time > 1000.f)
             {
-                const lunchbox::ScopedMutex<> mutex(_mutexPrint);
+                const lunchbox::ScopedWrite mutex(_mutexPrint);
                 const size_t nSamples = lastOutput - nPackets;
                 std::cerr << "Send perf: " << mBytesSec / time * nSamples
                           << "MB/s (" << nSamples / time * 1000.f << "pps)"
@@ -422,7 +422,7 @@ int main(int argc, char** argv)
         const size_t nSamples = lastOutput - nPackets;
         if (nSamples != 0)
         {
-            const lunchbox::ScopedMutex<> mutex(_mutexPrint);
+            const lunchbox::ScopedWrite mutex(_mutexPrint);
             std::cerr << "Send perf: " << mBytesSec / time * nSamples
                       << "MB/s (" << nSamples / time * 1000.f << "pps)"
                       << std::endl;

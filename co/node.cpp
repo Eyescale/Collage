@@ -144,7 +144,7 @@ ConnectionPtr Node::getMulticast()
     if (connection && !connection->isClosed())
         return connection;
 
-    lunchbox::ScopedMutex<> mutex(_impl->outMulticast);
+    lunchbox::ScopedWrite mutex(_impl->outMulticast);
     if (_impl->multicasts.empty())
         return 0;
 
@@ -369,7 +369,7 @@ uint32_t Node::getType() const
 
 void Node::_addMulticast(NodePtr node, ConnectionPtr connection)
 {
-    lunchbox::ScopedMutex<> mutex(_impl->outMulticast);
+    lunchbox::ScopedWrite mutex(_impl->outMulticast);
     MCData data;
     data.connection = connection;
     data.node = node;
@@ -380,7 +380,7 @@ void Node::_removeMulticast(ConnectionPtr connection)
 {
     LBASSERT(connection->getDescription()->type >= CONNECTIONTYPE_MULTICAST);
 
-    lunchbox::ScopedMutex<> mutex(_impl->outMulticast);
+    lunchbox::ScopedWrite mutex(_impl->outMulticast);
     if (_impl->outMulticast == connection)
         _impl->outMulticast.data = 0;
     else
@@ -399,7 +399,7 @@ void Node::_removeMulticast(ConnectionPtr connection)
 
 void Node::_connectMulticast(NodePtr node)
 {
-    lunchbox::ScopedMutex<> mutex(_impl->outMulticast);
+    lunchbox::ScopedWrite mutex(_impl->outMulticast);
 
     if (node->_impl->outMulticast.data.isValid())
         // multicast already connected by previous _cmdID
@@ -455,7 +455,7 @@ void Node::_connectMulticast(NodePtr node)
 
 void Node::_connectMulticast(NodePtr node, ConnectionPtr connection)
 {
-    lunchbox::ScopedMutex<> mutex(_impl->outMulticast);
+    lunchbox::ScopedWrite mutex(_impl->outMulticast);
     MCDatas::iterator i = node->_impl->multicasts.begin();
     for (; i != node->_impl->multicasts.end(); ++i)
     {

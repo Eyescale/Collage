@@ -345,7 +345,7 @@ int main(int argc, char** argv)
         const float time = clock.getTimef();
         if (time > 1000.f)
         {
-            const lunchbox::ScopedMutex<> mutex(print_);
+            const lunchbox::ScopedWrite mutex(print_);
             std::cerr << "Send perf: " << mBytesSec / time * sentPackets
                       << "MB/s (" << sentPackets / time * 1000.f << "pps)"
                       << std::endl;
@@ -357,7 +357,7 @@ int main(int argc, char** argv)
     const float time = clock.getTimef();
     if (time > 1000.f)
     {
-        const lunchbox::ScopedMutex<> mutex(print_);
+        const lunchbox::ScopedWrite mutex(print_);
         std::cerr << "Send perf: " << mBytesSec / time * sentPackets << "MB/s ("
                   << sentPackets / time * 1000.f << "pps)" << std::endl;
         clock.reset();

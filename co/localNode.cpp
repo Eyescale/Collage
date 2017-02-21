@@ -101,7 +101,6 @@ public:
     }
 
     void run() override { _localNode->_runReceiverThread(); }
-
 private:
     co::LocalNode* const _localNode;
 };
@@ -932,57 +931,61 @@ NodePtr LocalNode::_connect(const NodeID& nodeID, NodePtr peer)
 
 NodePtr LocalNode::_connectFromZeroconf(const NodeID& nodeID)
 {
-    lunchbox::ScopedWrite mutex(_impl->service);
-
-    const Strings& instances =
-        _impl->service->discover(servus::Servus::IF_ALL, 500);
-    for (StringsCIter i = instances.begin(); i != instances.end(); ++i)
+    NodePtr node;
     {
-        const std::string& instance = *i;
-        const NodeID candidate(instance);
-        if (candidate != nodeID)
-            continue;
+        lunchbox::ScopedWrite mutex(_impl->service);
+        const Strings& instances =
+            _impl->service->discover(servus::Servus::IF_ALL, 500);
 
-        const std::string& typeStr = _impl->service->get(instance, "co_type");
-        if (typeStr.empty())
-            return 0;
-
-        std::istringstream in(typeStr);
-        uint32_t type = 0;
-        in >> type;
-
-        NodePtr node = createNode(type);
-        if (!node)
+        for (const auto& instance : instances)
         {
-            LBINFO << "Can't create node of type " << type << std::endl;
-            continue;
+            const NodeID candidate(instance);
+            if (candidate != nodeID)
+                continue;
+
+            const std::string& typeStr =
+                _impl->service->get(instance, "co_type");
+            if (typeStr.empty())
+                return 0;
+
+            std::istringstream in(typeStr);
+            uint32_t type = 0;
+            in >> type;
+
+            node = createNode(type);
+            if (!node)
+            {
+                LBINFO << "Can't create node of type " << type << std::endl;
+                continue;
+            }
+
+            const std::string& numStr =
+                _impl->service->get(instance, "co_numPorts");
+            uint32_t num = 0;
+
+            in.clear();
+            in.str(numStr);
+            in >> num;
+            LBASSERT(num > 0);
+            for (size_t j = 0; j < num; ++j)
+            {
+                ConnectionDescriptionPtr desc = new ConnectionDescription;
+                std::ostringstream out;
+                out << "co_port" << j;
+
+                std::string descStr = _impl->service->get(instance, out.str());
+                LBASSERT(!descStr.empty());
+                LBCHECK(desc->fromString(descStr));
+                LBASSERT(descStr.empty());
+                node->addConnectionDescription(desc);
+            }
+            break;
         }
-
-        const std::string& numStr =
-            _impl->service->get(instance, "co_numPorts");
-        uint32_t num = 0;
-
-        in.clear();
-        in.str(numStr);
-        in >> num;
-        LBASSERT(num > 0);
-        for (size_t j = 0; j < num; ++j)
-        {
-            ConnectionDescriptionPtr desc = new ConnectionDescription;
-            std::ostringstream out;
-            out << "co_port" << j;
-
-            std::string descStr = _impl->service->get(instance, out.str());
-            LBASSERT(!descStr.empty());
-            LBCHECK(desc->fromString(descStr));
-            LBASSERT(descStr.empty());
-            node->addConnectionDescription(desc);
-        }
-        mutex.leave();
-        if (_connect(node))
-            return node;
     }
-    return 0;
+
+    if (node && _connect(node))
+        return node;
+    return nullptr;
 }
 
 bool LocalNode::connect(NodePtr node)
@@ -1728,8 +1731,8 @@ bool LocalNode::_cmdConnect(ICommand& command)
     if (!peer->deserialize(data))
         LBWARN << "Error during node initialization" << std::endl;
     LBASSERTINFO(data.empty(), data);
-    LBASSERTINFO(peer->getNodeID() == nodeID,
-                 peer->getNodeID() << "!=" << nodeID);
+    LBASSERTINFO(peer->getNodeID() == nodeID, peer->getNodeID() << "!="
+                                                                << nodeID);
     LBASSERT(peer->getType() == nodeType);
 
     _impl->connectionNodes[connection] = peer;
@@ -1808,8 +1811,8 @@ bool LocalNode::_cmdConnectReply(ICommand& command)
         return true;
     }
 
-    LBASSERTINFO(peer->getType() == nodeType,
-                 peer->getType() << " != " << nodeType);
+    LBASSERTINFO(peer->getType() == nodeType, peer->getType() << " != "
+                                                              << nodeType);
     LBASSERT(peer->isClosed());
 
     if (!peer->deserialize(data))
@@ -1899,8 +1902,8 @@ bool LocalNode::_cmdID(ICommand& command)
             node = i->second;
     }
     LBASSERT(node);
-    LBASSERTINFO(node->getNodeID() == nodeID,
-                 node->getNodeID() << "!=" << nodeID);
+    LBASSERTINFO(node->getNodeID() == nodeID, node->getNodeID() << "!="
+                                                                << nodeID);
 
     _connectMulticast(node, connection);
     _impl->connectionNodes[connection] = node;

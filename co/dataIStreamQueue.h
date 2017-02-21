@@ -61,7 +61,7 @@ protected:
     lunchbox::MTQueue<QueuedStream> _queued;
 
     /** Cached input streams (+decompressor) */
-    lunchbox::Pool<ObjectDataIStream, true> _iStreamCache;
+    lunchbox::Pool<ObjectDataIStream> _iStreamCache;
 
     LB_TS_VAR(_thread);
 };

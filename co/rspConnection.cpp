@@ -141,54 +141,53 @@ void RSPConnection::close()
 
     if (isClosed())
         return;
-
-    lunchbox::ScopedWrite mutex(_mutexEvent);
-    if (_thread)
     {
-        LBASSERT(!_thread->isCurrent());
-        _sendSimpleDatagram(ID_EXIT, _id);
-        _ioService.stop();
-        _thread->join();
-        delete _thread;
-    }
-
-    _setState(STATE_CLOSING);
-    if (_thread)
-    {
-        _thread = 0;
-
-        // notify children to close
-        for (RSPConnectionsCIter i = _children.begin(); i != _children.end();
-             ++i)
+        lunchbox::ScopedWrite mutex(_mutexEvent);
+        if (_thread)
         {
-            RSPConnectionPtr child = *i;
-            lunchbox::ScopedWrite mutexChild(child->_mutexEvent);
-            child->_appBuffers.push(0);
-            child->_event->set();
+            LBASSERT(!_thread->isCurrent());
+            _sendSimpleDatagram(ID_EXIT, _id);
+            _ioService.stop();
+            _thread->join();
+            delete _thread;
         }
 
-        _children.clear();
-        _newChildren.clear();
+        _setState(STATE_CLOSING);
+        if (_thread)
+        {
+            _thread = 0;
+
+            // notify children to close
+            for (RSPConnectionsCIter i = _children.begin();
+                 i != _children.end(); ++i)
+            {
+                RSPConnectionPtr child = *i;
+                lunchbox::ScopedWrite mutexChild(child->_mutexEvent);
+                child->_appBuffers.push(0);
+                child->_event->set();
+            }
+
+            _children.clear();
+            _newChildren.clear();
+        }
+
+        _parent = 0;
+
+        if (_read)
+            _read->close();
+        delete _read;
+        _read = 0;
+
+        if (_write)
+            _write->close();
+        delete _write;
+        _write = 0;
+
+        _threadBuffers.clear();
+        _appBuffers.push(0); // unlock any other read/write threads
+
+        _setState(STATE_CLOSED);
     }
-
-    _parent = 0;
-
-    if (_read)
-        _read->close();
-    delete _read;
-    _read = 0;
-
-    if (_write)
-        _write->close();
-    delete _write;
-    _write = 0;
-
-    _threadBuffers.clear();
-    _appBuffers.push(0); // unlock any other read/write threads
-
-    _setState(STATE_CLOSED);
-
-    mutex.leave();
     _event->close();
 }
 

@@ -1,6 +1,6 @@
 
-/* Copyright (c) 2009-2014, Stefan Eilemann <eile@equalizergraphics.com>
- *               2010-2012, Daniel Nachbaur <danielnachbaur@gmail.com>
+/* Copyright (c) 2009-2017, Stefan Eilemann <eile@equalizergraphics.com>
+ *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
  *
@@ -99,7 +99,7 @@ bool InstanceCache::add(const ObjectVersion& rev, const uint32_t instanceID,
 
     const NodeID nodeID = command.getNode()->getNodeID();
 
-    lunchbox::ScopedMutex<> mutex(_items);
+    lunchbox::ScopedWrite mutex(_items);
     ItemHash::const_iterator i = _items->find(rev.identifier);
     if (i == _items->end())
     {

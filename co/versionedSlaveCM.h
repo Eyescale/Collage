@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2007-2016, Stefan Eilemann <eile@equalizergraphics.com>
+/* Copyright (c) 2007-2017, Stefan Eilemann <eile@equalizergraphics.com>
  *                          Daniel Nachbaur <danielnachbaur@gmail.com>
  *
  * This file is part of Collage <https://github.com/Eyescale/Collage>
@@ -77,7 +77,7 @@ private:
     lunchbox::MTQueue<ObjectDataIStream*> _queuedVersions;
 
     /** Cached input streams (+decompressor) */
-    lunchbox::Pool<ObjectDataIStream, true> _iStreamCache;
+    lunchbox::Pool<ObjectDataIStream> _iStreamCache;
 
     /** The output stream for slave object commits. */
     ObjectSlaveDataOStream _ostream;
