@@ -443,6 +443,9 @@ void RSPConnection::_handleAcceptIDTimeout()
         _addConnection(_id, _sequence);
         _idAccepted = true;
         _timeouts = 0;
+        // send a first datagram to announce me and discover all other
+        // connections
+        _sendCountNode();
     }
     _setTimeout(10);
 }
@@ -1549,6 +1552,8 @@ void RSPConnection::_removeConnection(const uint16_t id)
             break;
         }
     }
+
+    _sendCountNode();
 }
 
 int64_t RSPConnection::write(const void* inData, const uint64_t bytes)
