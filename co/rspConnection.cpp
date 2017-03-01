@@ -32,7 +32,7 @@
 
 #include <boost/bind.hpp>
 
-//#define CO_INSTRUMENT_RSP
+#define CO_INSTRUMENT_RSP
 #define CO_RSP_MERGE_WRITES
 #define CO_RSP_MAX_TIMEOUTS 1000
 #ifdef _WIN32
@@ -605,14 +605,6 @@ void RSPConnection::_postWakeup()
 
 void RSPConnection::_processOutgoing()
 {
-#ifdef CO_INSTRUMENT_RSP
-    if (instrumentClock.getTime64() > 1000)
-    {
-        LBWARN << *this << std::endl;
-        instrumentClock.reset();
-    }
-#endif
-
     if (!_repeatQueue.empty())
         _repeatData();
     else
