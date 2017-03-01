@@ -32,7 +32,7 @@
 
 #include <boost/bind.hpp>
 
-#define CO_INSTRUMENT_RSP
+//#define CO_INSTRUMENT_RSP
 #define CO_RSP_MERGE_WRITES
 #define CO_RSP_MAX_TIMEOUTS 1000
 #ifdef _WIN32
@@ -942,7 +942,7 @@ void RSPConnection::_handleAcceptIDData(const size_t bytes)
         break;
 
     default:
-        LBERROR << "Got unexpected datagram type " << node.type << std::endl;
+        LBDEBUG << "Got unexpected datagram type " << node.type << std::endl;
         LBUNIMPLEMENTED;
         break;
     }
@@ -984,8 +984,7 @@ void RSPConnection::_handleInitData(const size_t bytes, const bool connected)
         return;
 
     default:
-        LBERROR << "Got unexpected datagram type " << node.type << std::endl;
-        LBUNIMPLEMENTED;
+        LBDEBUG << "Got unexpected datagram type " << node.type << std::endl;
         break;
     }
 }
@@ -1720,6 +1719,9 @@ std::ostream& operator<<(std::ostream& os, const RSPConnection& connection)
     nNAcksSend = 0;
     nNAcksRead = 0;
     writeWaitTime = 0.f;
+
+    for (auto child : connection._children)
+        os << *child << std::endl;
 #endif
     os << std::endl << lunchbox::enableHeader << lunchbox::enableFlush;
 

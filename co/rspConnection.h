@@ -314,6 +314,8 @@ private:
     {
         return !_threadBuffers.isEmpty() || !_writeBuffers.empty();
     }
+
+    friend std::ostream& operator<<(std::ostream&, const RSPConnection&);
 };
 
 std::ostream& operator<<(std::ostream&, const RSPConnection&);

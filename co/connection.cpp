@@ -107,7 +107,7 @@ Connection::~Connection()
 {
     LBVERB << "Delete Connection @" << (void*)this << std::endl;
 #ifdef STATISTICS
-    if (_impl->outBytes || _impl->inBytes)
+    if (_impl->outBytes > LB_1MB || _impl->inBytes > LB_1MB)
         LBINFO << *this << ": " << (_impl->outBytes >> 20) << " MB out, "
                << (_impl->inBytes >> 20) << " MB in" << std::endl;
 #endif
