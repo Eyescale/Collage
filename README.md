@@ -55,8 +55,8 @@ environments are tested:
 
 Building from source is as simple as:
 
-    git clone https://github.com/Eyescale/Collage.git
+    git clone --recursive https://github.com/Eyescale/Collage.git
     mkdir Collage/build
     cd Collage/build
-    cmake -GNinja ..
+    cmake -GNinja .. -DCLONE_SUBPROJECTS=ON
     ninja

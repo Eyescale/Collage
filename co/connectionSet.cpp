@@ -174,7 +174,6 @@ public:
     }
 
     void interrupt() { selfConnection->set(); }
-
 private:
     virtual void notifyStateChanged(co::Connection*) { setDirty(); }
 };

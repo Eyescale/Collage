@@ -113,7 +113,6 @@ public:
     void expire(const int64_t age);
 
     bool isEmpty() { return _items->empty(); }
-
 private:
     struct Item
     {

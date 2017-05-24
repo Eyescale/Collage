@@ -525,11 +525,11 @@ void Node::_setLastReceive(const int64_t time)
 
 std::ostream& operator<<(std::ostream& os, const State state)
 {
-    os << (state == STATE_CLOSED
-               ? "closed"
-               : state == STATE_CONNECTED
-                     ? "connected"
-                     : state == STATE_LISTENING ? "listening" : "ERROR");
+    os << (state == STATE_CLOSED ? "closed" : state == STATE_CONNECTED
+                                                  ? "connected"
+                                                  : state == STATE_LISTENING
+                                                        ? "listening"
+                                                        : "ERROR");
     return os;
 }
 

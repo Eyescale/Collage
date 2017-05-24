@@ -467,7 +467,7 @@ public:
 
     CO_API int64_t getTime64() const;                       //!< @internal
     CO_API ssize_t getCounter(const Counter counter) const; //!< @internal
-    //@}
+                                                            //@}
 
     /** @name Operations */
     //@{

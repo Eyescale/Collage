@@ -40,7 +40,6 @@ tests/client/configVisitor_objc.mm
 tests/image/images/out_*
 tt.*
 tt?.*
-CMake/common
 Lunchbox
 Pression
 Servus

@@ -178,7 +178,6 @@ public:
     {
     }
     bool operator()(co::Object* candidate) { return candidate->getID() == _id; }
-
 private:
     const uint128_t _id;
 };

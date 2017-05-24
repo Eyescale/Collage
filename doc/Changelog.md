@@ -2,6 +2,8 @@
 
 # git master
 
+# Release 1.7 (24-May-2017)
+
 * [207](https://github.com/Eyescale/Collage/pull/207)
   Support sending of large payload for OCommands
 * [206](https://github.com/Eyescale/Collage/pull/206)

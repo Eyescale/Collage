@@ -203,7 +203,7 @@ public:
     CO_API bool recvSync(BufferPtr& buffer, const bool block = true);
 
     BufferPtr resetRecvData(); //!< @internal
-    //@}
+                               //@}
 
     /** @name Synchronous write to the connection */
     //@{
