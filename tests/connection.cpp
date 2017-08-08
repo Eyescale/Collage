@@ -37,7 +37,7 @@ namespace
 static co::ConnectionType types[] = {
     co::CONNECTIONTYPE_TCPIP, co::CONNECTIONTYPE_PIPE,
     co::CONNECTIONTYPE_NAMEDPIPE, co::CONNECTIONTYPE_RSP,
-    co::CONNECTIONTYPE_RDMA,
+    // co::CONNECTIONTYPE_RDMA, broken on cscs viz cluster
     //    co::CONNECTIONTYPE_UDT,
     co::CONNECTIONTYPE_NONE // must be last
 };
