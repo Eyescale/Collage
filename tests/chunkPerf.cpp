@@ -140,7 +140,11 @@ int main(const int argc, char* argv[])
         "connect to a chunkPerf server using the given connection");
     try
     {
-        arg::store(arg::parse_command_line(argc, argv, desc), vm);
+        arg::store(arg::command_line_parser(argc, argv)
+                       .options(desc)
+                       .allow_unregistered()
+                       .run(),
+                   vm);
         arg::notify(vm);
     }
     catch (...)
