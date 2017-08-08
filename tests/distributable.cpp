@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2015-2016, Daniel.Nachbaur@epfl.ch
+/* Copyright (c) 2015-2017, Daniel.Nachbaur@epfl.ch
  *                          Stefan.Eilemann@epfl.ch
  *
  * This library is free software; you can redistribute it and/or modify it under
@@ -21,6 +21,8 @@
 #include <co/co.h>
 #include <lunchbox/monitor.h>
 
+#include <array>
+
 class CameraBase;
 typedef co::Distributable<CameraBase> Camera;
 typedef std::array<float, 3> Vector3f;
@@ -32,6 +34,7 @@ lunchbox::Monitorb received(false);
 class CameraBase : public servus::Serializable
 {
 public:
+    virtual ~CameraBase() {}
     std::string getTypeName() const final { return "co::test::CameraBase"; }
     void setLookAt(const Vector3f& lookAt)
     {
@@ -55,6 +58,7 @@ public:
 
 protected:
     virtual void notifyChanged() {}
+
 private:
     bool _fromBinary(const void* data, const size_t size) final
     {

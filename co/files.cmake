@@ -1,7 +1,7 @@
 
-# Copyright (c) 2010-2016 Cedric Stalder <cedric.stalder@gmail.ch>
+# Copyright (c) 2010-2017 Cedric Stalder <cedric.stalder@gmail.ch>
 #                          Stefan Eilemann <eile@eyescale.ch>
-#                         Daniel Nachbaur <danielnachbaur@gmail.com>
+#                          Daniel Nachbaur <danielnachbaur@gmail.com>
 
 set(COLLAGE_PUBLIC_HEADERS
   barrier.h
@@ -19,13 +19,8 @@ set(COLLAGE_PUBLIC_HEADERS
   customOCommand.h
   dataIStream.h
   dataIStream.ipp
-  dataIStreamArchive.h
-  dataIStreamArchive.ipp
   dataOStream.h
   dataOStream.ipp
-  dataOStreamArchive.h
-  dataOStreamArchive.ipp
-  dataStreamArchiveException.h
   dispatcher.h
   distributable.h
   exception.h
@@ -61,7 +56,6 @@ set(COLLAGE_HEADERS
   bufferCache.h
   connectionListener.h
   dataIStreamQueue.h
-  dataStreamArchive.h
   deltaMasterCM.h
   eventConnection.h
   fullMasterCM.h
@@ -102,10 +96,8 @@ set(COLLAGE_SOURCES
   customICommand.cpp
   customOCommand.cpp
   dataIStream.cpp
-  dataIStreamArchive.cpp
   dataIStreamQueue.cpp
   dataOStream.cpp
-  dataOStreamArchive.cpp
   deltaMasterCM.cpp
   dispatcher.cpp
   eventConnection.cpp

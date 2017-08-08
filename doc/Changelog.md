@@ -2,6 +2,9 @@
 
 # git master
 
+* [214](https://github.com/Eyescale/Collage/pull/214)
+  Removed support for boost::serialization
+
 # Release 1.7 (24-May-2017)
 
 * [207](https://github.com/Eyescale/Collage/pull/207)
