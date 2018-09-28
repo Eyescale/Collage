@@ -18,7 +18,7 @@ option(COLLAGE_BUILD_V2_API
 set(COLLAGE_INCLUDE_NAME co)
 set(COLLAGE_DEB_DEPENDS librdmacm-dev libibverbs-dev librdmacm-dev libudt-dev
   libboost-date-time-dev libboost-regex-dev libboost-system-dev
-  libboost-thread-dev libboost-program-options-dev)
+  libboost-program-options-dev)
 set(COLLAGE_PORT_DEPENDS boost)
 
 include(Common)
@@ -32,8 +32,7 @@ set(COLLAGE_MAINTAINER "Stefan Eilemann <eile@eyescale.ch>")
 set(COLLAGE_LICENSE LGPL)
 set(COLLAGE_DEPENDENT_LIBRARIES Boost Lunchbox Pression)
 
-common_find_package(Boost REQUIRED COMPONENTS system regex date_time
-  program_options thread)
+common_find_package(Boost REQUIRED COMPONENTS system date_time program_options)
 common_find_package(Lunchbox REQUIRED)
 common_find_package(OFED)
 common_find_package(OpenMP)

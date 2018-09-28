@@ -119,7 +119,7 @@ int main(int argc, char** argv)
     {
         threads[i].join();
         writers[i]->close();
-        TESTINFO(std::abs(threads[i].runtime - runtime) < delta,
+        TESTINFO(fabs(threads[i].runtime - runtime) < delta,
                  threads[i].runtime << " != " << runtime);
     }
 

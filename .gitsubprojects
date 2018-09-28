@@ -1,4 +1,4 @@
 # -*- mode: cmake -*-
 git_subproject(Servus https://github.com/HBPVIS/Servus.git eee5765)
-git_subproject(Lunchbox https://github.com/Eyescale/Lunchbox.git 867f8d9)
+git_subproject(Lunchbox https://github.com/Eyescale/Lunchbox.git a7a24d3)
 git_subproject(Pression https://github.com/Eyescale/Pression.git 08cd4bf)
