@@ -911,10 +911,9 @@ NodePtr LocalNode::_connect(const NodeID& nodeID, NodePtr peer)
         }
         case CONNECT_BAD_STATE:
             LBWARN << "Internal connect error" << std::endl;
-        // no break;
+            return 0;
         case CONNECT_TIMEOUT:
             return 0;
-
         case CONNECT_UNREACHABLE:
             break; // maybe peer talks to us
         }
