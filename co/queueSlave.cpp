@@ -57,7 +57,7 @@ public:
     const uint32_t prefetchMark;
     const uint32_t prefetchAmount;
 };
-}
+} // namespace detail
 
 QueueSlave::QueueSlave(const uint32_t prefetchMark,
                        const uint32_t prefetchAmount)
@@ -116,6 +116,7 @@ ObjectICommand QueueSlave::pop(const uint32_t timeout)
 
         default:
             LBUNIMPLEMENTED;
+        /* fall-thru */
         case CMD_QUEUE_EMPTY:
             if (cmd.get<int32_t>() == request)
                 return ObjectICommand(0, 0, 0);
@@ -124,4 +125,4 @@ ObjectICommand QueueSlave::pop(const uint32_t timeout)
         }
     }
 }
-}
+} // namespace co

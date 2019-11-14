@@ -71,7 +71,7 @@ lunchbox::Clock instrumentClock;
 #endif
 
 static uint16_t _numBuffers = 0;
-}
+} // namespace
 
 RSPConnection::RSPConnection()
     : _id(0)
@@ -271,10 +271,10 @@ bool RSPConnection::listen()
         _write->set_option(ip::multicast::outbound_interface(ifAddr.to_v4()));
 #ifdef SO_BINDTODEVICE // https://github.com/Eyescale/Collage/issues/16
         const std::string& ifIP = ifAddr.to_string();
-        ::setsockopt(_write->native(), SOL_SOCKET, SO_BINDTODEVICE,
+        ::setsockopt(_write->native_handle(), SOL_SOCKET, SO_BINDTODEVICE,
                      ifIP.c_str(), ifIP.size() + 1);
-        ::setsockopt(_read->native(), SOL_SOCKET, SO_BINDTODEVICE, ifIP.c_str(),
-                     ifIP.size() + 1);
+        ::setsockopt(_read->native_handle(), SOL_SOCKET, SO_BINDTODEVICE,
+                     ifIP.c_str(), ifIP.size() + 1);
 #endif
 
         _write->connect(writeEndpoint);
@@ -1191,8 +1191,8 @@ void RSPConnection::_pushDataBuffer(Buffer* buffer)
     LBASSERT(_parent);
 #ifndef NDEBUG
     DatagramData* dgram = reinterpret_cast<DatagramData*>(buffer->getData());
-    LBASSERTINFO(dgram->sequence == _sequence, dgram->sequence << " != "
-                                                               << _sequence);
+    LBASSERTINFO(dgram->sequence == _sequence,
+                 dgram->sequence << " != " << _sequence);
 #endif
 
     if (((_sequence + _parent->_id) % _ackFreq) == 0)
@@ -1727,4 +1727,4 @@ std::ostream& operator<<(std::ostream& os, const RSPConnection& connection)
 
     return os;
 }
-}
+} // namespace co

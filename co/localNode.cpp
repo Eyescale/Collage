@@ -80,7 +80,7 @@ typedef std::pair<LocalNode::CommandHandler, CommandQueue*> CommandPair;
 typedef std::unordered_map<uint128_t, CommandPair> CommandHash;
 typedef CommandHash::const_iterator CommandHashCIter;
 typedef lunchbox::FutureFunction<bool> FuturebImpl;
-}
+} // namespace
 
 namespace detail
 {
@@ -101,6 +101,7 @@ public:
     }
 
     void run() override { _localNode->_runReceiverThread(); }
+
 private:
     co::LocalNode* const _localNode;
 };
@@ -215,7 +216,7 @@ public:
 
     Strings args; //!< Command line arguments for remote node launch
 };
-}
+} // namespace detail
 
 LocalNode::LocalNode(const uint32_t type)
     : Node(type)
@@ -911,7 +912,7 @@ NodePtr LocalNode::_connect(const NodeID& nodeID, NodePtr peer)
         }
         case CONNECT_BAD_STATE:
             LBWARN << "Internal connect error" << std::endl;
-        // no break;
+        /* fall-thru */
         case CONNECT_TIMEOUT:
             return 0;
 
@@ -1044,8 +1045,8 @@ uint32_t LocalNode::_connect(NodePtr node, ConnectionPtr connection)
     // send connect command to peer
     lunchbox::Request<bool> request = registerRequest<bool>(node.get());
     const uint32_t cmd = CMD_NODE_CONNECT;
-    OCommand(Connections(1, connection), cmd) << getNodeID() << request
-                                              << getType() << serialize();
+    OCommand(Connections(1, connection), cmd)
+        << getNodeID() << request << getType() << serialize();
 
     bool connected = false;
     try
@@ -1731,8 +1732,8 @@ bool LocalNode::_cmdConnect(ICommand& command)
     if (!peer->deserialize(data))
         LBWARN << "Error during node initialization" << std::endl;
     LBASSERTINFO(data.empty(), data);
-    LBASSERTINFO(peer->getNodeID() == nodeID, peer->getNodeID() << "!="
-                                                                << nodeID);
+    LBASSERTINFO(peer->getNodeID() == nodeID, peer->getNodeID()
+                                                  << "!=" << nodeID);
     LBASSERT(peer->getType() == nodeType);
 
     _impl->connectionNodes[connection] = peer;
@@ -1743,8 +1744,8 @@ bool LocalNode::_cmdConnect(ICommand& command)
     LBVERB << "Added node " << nodeID << std::endl;
 
     // send our information as reply
-    OCommand(Connections(1, connection), cmd) << getNodeID() << requestID
-                                              << getType() << serialize();
+    OCommand(Connections(1, connection), cmd)
+        << getNodeID() << requestID << getType() << serialize();
 
     return true;
 }
@@ -1811,8 +1812,8 @@ bool LocalNode::_cmdConnectReply(ICommand& command)
         return true;
     }
 
-    LBASSERTINFO(peer->getType() == nodeType, peer->getType() << " != "
-                                                              << nodeType);
+    LBASSERTINFO(peer->getType() == nodeType, peer->getType()
+                                                  << " != " << nodeType);
     LBASSERT(peer->isClosed());
 
     if (!peer->deserialize(data))
@@ -1902,8 +1903,8 @@ bool LocalNode::_cmdID(ICommand& command)
             node = i->second;
     }
     LBASSERT(node);
-    LBASSERTINFO(node->getNodeID() == nodeID, node->getNodeID() << "!="
-                                                                << nodeID);
+    LBASSERTINFO(node->getNodeID() == nodeID, node->getNodeID()
+                                                  << "!=" << nodeID);
 
     _connectMulticast(node, connection);
     _impl->connectionNodes[connection] = node;
@@ -1948,8 +1949,8 @@ bool LocalNode::_cmdGetNodeData(ICommand& command)
                 << " to " << toNode << std::endl;
     }
 
-    toNode->send(CMD_NODE_GET_NODE_DATA_REPLY) << nodeID << requestID
-                                               << nodeType << nodeData;
+    toNode->send(CMD_NODE_GET_NODE_DATA_REPLY)
+        << nodeID << requestID << nodeType << nodeData;
     return true;
 }
 
@@ -2171,4 +2172,4 @@ bool LocalNode::_cmdAddConnection(ICommand& command)
     connection->unref(); // ref'd by _addConnection
     return true;
 }
-}
+} // namespace co
